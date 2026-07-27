@@ -1,0 +1,242 @@
+﻿@page "/Usuarios/Detalle/{IdUsuario:int}"
+@using Miluc.Client.Interfaces.UsuariosRolesPermisos
+@using Miluc.Shared.DTOs.Usuarios
+@inject IUsuarioClientService usuarioService
+@inject NavigationManager nav
+@inject IJSRuntime JS
+@inject IAuthClientService authClient
+@inject ILogClientService logClient
+<div class="container-fluid animate__animated animate__fadeIn">
+
+    @* --- CABECERA DE NAVEGACIÓN --- *@
+    <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-white shadow-sm rounded border-start border-4 border-vinotinto">
+        <div>
+            <h2 class="fw-bold text-vinotinto m-0">Ficha Técnica de Usuario</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/Usuarios" class="text-decoration-none text-muted">Usuarios</a></li>
+                    <li class="breadcrumb-item active text-vinotinto fw-bold">Detalle #@IdUsuario</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary shadow-sm" @onclick="Volver">
+                <i class="bi bi-arrow-left me-2"></i>Volver al Listado
+            </button>
+        </div>
+    </div>
+
+    @if (Cargando)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-danger" style="width: 3.5rem; height: 3.5rem;" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="text-muted mt-3 fw-bold">Sincronizando con Miluc Server...</p>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(errorMensaje))
+    {
+        <div class="alert alert-danger shadow-sm border-start border-4 border-danger m-2">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-exclamation-octagon-fill fs-2 me-3"></i>
+                <div>
+                    <h5 class="fw-bold mb-1">No se pudo cargar la información</h5>
+                    <p class="mb-0">@errorMensaje</p>
+                </div>
+            </div>
+            <hr>
+            <button class="btn btn-danger btn-sm" @onclick="ObtenerUsuario">
+                <i class="bi bi-arrow-clockwise me-1"></i> Reintentar carga
+            </button>
+        </div>
+    }
+    else if (usuario != null)
+    {
+        <div class="card shadow-lg border-0 overflow-hidden">
+            <div class="row g-0">
+
+                @* --- PANEL IZQUIERDO: FOTO Y ACCIONES --- *@
+                <div class="col-lg-4 bg-light border-end p-5 text-center">
+                    <div class="position-relative d-inline-block mb-4">
+                        @if (usuario.Foto != null && usuario.Foto.Length > 0)
+                        {
+                            <img src="data:image/jpeg;base64,@Convert.ToBase64String(usuario.Foto)"
+                                 class="img-fluid rounded-circle shadow-sm border border-4 border-white"
+                                 style="width: 200px; height: 200px; object-fit: cover;"
+                                 alt="Foto de @usuario.UserName" />
+                        }
+                        else
+                        {
+                            <div class="rounded-circle bg-vinotinto d-flex align-items-center justify-content-center text-white shadow-sm mx-auto border border-4 border-white"
+                                 style="width: 200px; height: 200px; font-size: 5rem; font-weight: bold;">
+                                @usuario.UserName.Substring(0, 1).ToUpper()
+                            </div>
+                        }
+                        <span class="position-absolute bottom-0 end-0 translate-middle-x badge rounded-pill @(usuario.Activo ? "bg-success" : "bg-danger") p-2 border border-3 border-white shadow">
+                            <i class="bi @(usuario.Activo ? "bi-check-lg" : "bi-x-lg") fs-5"></i>
+                        </span>
+                    </div>
+
+                    <h3 class="fw-bold text-dark mb-1">@usuario.UserName</h3>
+                    <p class="text-muted mb-4">@usuario.Email</p>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <small class="text-start text-muted fw-bold ps-1 mb-1 text-uppercase" style="font-size: 0.7rem;">Operaciones</small>
+                      
+                        @if (authClient.HasPermission("Usuario.Update"))
+                        {
+                            <button class="btn btn-vinotinto shadow-sm" @onclick="IrAEditar">
+                                <i class="bi bi-pencil-square me-2"></i>Editar Datos
+                            </button>
+                        } 
+                    </div>
+                </div>
+                @* --- PANEL DERECHO: DATOS --- *@
+                <div class="col-lg-8 p-5 bg-white">
+                    <div class="row">
+
+                        @* ID Identificación *@
+                        <div class="col-md-12 mb-4">
+                            <h5 class="fw-bold text-vinotinto border-bottom pb-2 mb-3">
+                                <i class="bi bi-info-circle-fill me-2"></i>Información Personal
+                            </h5>
+                            <label class="text-muted small fw-bold d-block text-uppercase">Número de Identificación</label>
+                            <span class="fs-4 fw-bold text-primary">
+                                <i class="bi bi-person-vcard me-2"></i>@usuario.IdUsuario
+                            </span>
+                        </div>
+
+                        @* Categorías / Tipos de Usuario *@
+                        <div class="col-12 mb-4">
+                            <label class="text-muted small fw-bold d-block text-uppercase mb-2">Categorías de Usuario</label>
+                            <div class="d-flex flex-wrap gap-2">
+                                @if (usuario.NombresTiposUsuario != null && usuario.NombresTiposUsuario.Any())
+                                {
+                                    @foreach (var tipo in usuario.NombresTiposUsuario)
+                                    {
+                                        <span class="badge bg-info text-dark fs-6 px-3 py-2 shadow-sm border">
+                                            <i class="bi bi-tag-fill me-1"></i> @tipo
+                                        </span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted fst-italic">Sin categorías asignadas.</span>
+                                }
+                            </div>
+                        </div>
+                        @* Roles del Sistema *@
+                        <div class="col-12 mb-4 mt-2">
+                            <h5 class="fw-bold text-vinotinto border-bottom pb-2 mb-3">
+                                <i class="bi bi-shield-lock-fill me-2"></i>Privilegios y Roles
+                            </h5>
+                            <div class="row g-3">
+                                @if (usuario.NombresRoles != null && usuario.NombresRoles.Any())
+                                {
+                                    @foreach (var rol in usuario.NombresRoles)
+                                    {
+                                        <div class="col-md-6">
+                                            <div class="bg-light border rounded-3 px-3 py-2 d-flex align-items-center shadow-sm">
+                                                <i class="bi bi-patch-check-fill text-vinotinto fs-5 me-2"></i>
+                                                <span class="fw-semibold text-dark">@rol</span>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <div class="col-12">
+                                        <div class="p-3 bg-light rounded text-center border border-dashed">
+                                            <span class="text-muted">No se encontraron roles activos.</span>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        @* Resumen de Estado y Auditoría *@
+                        <div class="col-12 mt-4">
+                            <div class="p-3 bg-light rounded border shadow-sm">
+                                <div class="row align-items-center text-center">
+                                    <div class="col-md-4 border-end">
+                                        <small class="text-muted d-block text-uppercase" style="font-size: 0.65rem;">Estado de Cuenta</small>
+                                        <span class="fw-bold @(usuario.Activo ? "text-success" : "text-danger")">
+                                            @(usuario.Activo ? "Usuario Activo" : "Usuario Inactivo")
+                                        </span>
+                                    </div>
+                                    <div class="col-md-4 border-end">
+                                        <small class="text-muted d-block text-uppercase" style="font-size: 0.65rem;">Id Usuario</small>
+                                        <span class="fw-bold text-dark"># @usuario.IdUsuario</span>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <small class="text-muted d-block text-uppercase" style="font-size: 0.65rem;">Fecha de Consulta</small>
+                                        <span class="fw-bold text-dark">@DateTime.Now.ToString("dd/MM/yyyy HH:mm")</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+@code {
+    [Parameter] public int IdUsuario { get; set; }
+    private UsuarioReadDto? usuario;
+    private bool Cargando = true;
+    private string? errorMensaje = string.Empty;
+    private List<string> listaErrores = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (authClient.HasPermission("Usuario.Detail"))
+        {
+            await ObtenerUsuario();
+        }
+        else
+        {
+            nav.NavigateTo("/no-autorizado");
+            return;
+        }
+    }
+    private async Task ObtenerUsuario()
+    {
+        try
+        {
+            Cargando = true;
+            errorMensaje = string.Empty;
+            var response = await usuarioService.GetUsuarioByIdAsync(IdUsuario);
+
+            if (response != null && response.EsCorrecto)
+            {
+                usuario = response.Valor;
+            }
+            else
+            {
+                errorMensaje = response?.Mensaje ?? "No se encontró el registro.";
+                listaErrores = response?.Errores ?? new();
+            }
+        }
+        catch (Exception ex)
+        {
+            await logClient.GuardarErrorAsync(
+                   ex.Message,
+                   ex.StackTrace,
+                   usuario: authClient.CurrentSession?.UserName ?? "No encontrado",
+                   metodo: "ObtenerUsuario",
+                   ruta: $"/Usuarios/Detalle/{IdUsuario}",
+                   origen: "Cliente blazor ",
+                   nivel: "error");
+
+            errorMensaje = $"Error de comunicación: {ex.Message}";
+        }
+        finally
+        {
+            Cargando = false;
+        }
+    }
+    private void Volver() => nav.NavigateTo("/Usuarios");
+    private void IrAEditar() => nav.NavigateTo($"/Usuarios/Editar/{IdUsuario}");
+}

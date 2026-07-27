@@ -1,0 +1,182 @@
+﻿@page "/Roles/Editar/{idRole:int}"
+@using Miluc.Client.Interfaces.UsuariosRolesPermisos
+@using Miluc.Shared.DTOs.Roles
+@using System.Threading.Tasks
+@inject IRolClientService _roleService
+@inject IJSRuntime js
+@inject NavigationManager nav
+@inject IAuthClientService authClient
+@inject ILogClientService LogService
+
+<div class="role-page animate__animated animate__fadeIn p-2">
+
+    @* Cabecera *@
+    <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-2">
+        <div>
+            <h2 class="fw-bold text-vinotinto m-0"><i class="bi bi-pencil-square me-2"></i> Role</h2>
+            <p class="text-muted mb-0 small">Complete los datos obligatorios marcados con (*).</p>
+        </div>
+
+        <button class="btn btn-vinotinto btn-sm rounded-pill px-3" @onclick="Volver"><i class="bi bi-arrow-left me-1"> Volver Role</i> </button>
+    </div>
+
+    <EditForm Model="roleUpdateDto" OnValidSubmit="EditarRole">
+        <DataAnnotationsValidator />
+        <div class="row g-4">
+            <div class="col-xl-12 col-lg-6 col-lg-3">
+                <div class="card shadow-sm border-0 mb-4 rounded-4">
+                    <div class="card-body p-4">
+
+                        <div class="mb-3">
+
+                            <label class="form-label fw-bold small text-secondary">Nombre</label>
+                            <InputText class="form-control custom-input" @bind-Value="roleUpdateDto.Nombre" />
+                            <ValidationMessage For="@(() => roleUpdateDto.Nombre)"> </ValidationMessage>
+                        </div>
+                        <div class="mb-3">
+
+                            <label class="form-label fw-bold small text-secondary">Descripcion</label>
+                            <InputText class="form-control custom-input" @bind-Value="roleUpdateDto.Descripcion" />
+                            <ValidationMessage For="@(() => roleUpdateDto.Descripcion)"> </ValidationMessage>
+                        </div>
+
+                         <div class="mt-4 p-3 rounded-3 bg-light border-start border-4 border-warning shadow-sm">
+                            <div class="form-check form-switch m-0">
+                                <InputCheckbox class="form-check-input" id="chkPass" @bind-Value="roleUpdateDto.Activo" />
+                                <label class="form-check-label fw-bold small cursor-pointer" for="chkPass">Activo</label>
+                            </div>
+                        </div>
+                    </div>
+                   <div class="card-footer bg-white border-0 p-4 text-end">
+                        <button type="submit" class="btn btn-vinotinto btn-lg rounded-pill px-5 shadow-sm" disabled="@procesando">
+                            @if (procesando)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2"></span> <span>Guardando...</span>
+                            }
+                            else
+                            {
+                                <span><i class="bi bi-person-check-fill me-2"></i>Editar Role</span>
+                            }
+                        </button>
+                    </div>
+                
+                 </div>
+            </div>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+
+    [Parameter]
+    public int idRole { get; set; }
+
+    private RolUpdateDto roleUpdateDto = new();
+    private bool procesando;
+
+    private void Volver()
+        => nav.NavigateTo("/Configuracion/Roles");
+
+    protected override async Task OnParametersSetAsync()
+    {
+        try
+        {
+            if (!authClient.HasPermission("Rol.Create"))
+            {
+                nav.NavigateTo("/no-autorizado");
+                return;
+            }
+            procesando = true;
+
+            var response = await _roleService.GetByIdRolesAsync(idRole);
+
+            if (response == null || response.Valor == null)
+            {
+                await MostrarError("No se encontró el rol solicitado.");
+                nav.NavigateTo("/Configuracion/Roles");
+                return;
+            }
+
+            roleUpdateDto = new RolUpdateDto
+            {
+                IdRol = response.Valor.IdRol,
+                Nombre = response.Valor.Nombre,
+                Descripcion = response.Valor.Descripcion,
+                Activo = response.Valor.Activo
+            };
+        }
+        catch (Exception ex)
+        {
+            await LogService.GuardarErrorAsync(
+                       ex.Message,
+                       ex.StackTrace,
+                       usuario: authClient.CurrentSession?.UserName ?? "No encontrado",
+                       metodo:"OnParametersSetAsync",
+                       ruta:$"/Roles/Editar/{idRole}",
+                       origen: "Cargar roles Blazor",
+                        nivel:"Errores");
+
+            await MostrarError($"Error al cargar el rol: {ex.Message}");
+        }
+        finally
+        {
+            procesando = false;
+        }
+    }
+
+    private async Task EditarRole()
+    {
+        if (procesando) return;
+
+        try
+        {
+            procesando = true;
+
+            var response = await _roleService.UpdateRolAsync(roleUpdateDto);
+
+            if (response != null && response.CantRegistros > 0)
+            {
+                await js.InvokeVoidAsync("Swal.fire",
+                    "Actualizado",
+                    response.Mensaje ?? "El rol fue actualizado correctamente.",
+                    "success");
+
+                nav.NavigateTo("/Configuracion/Roles", true);
+            }
+            else
+            {
+                var errores = response?.Errores != null
+                    ? string.Join("<br>", response.Errores)
+                    : "No fue posible actualizar el rol.";
+
+                await MostrarError(errores);
+            }
+        }
+        catch (Exception ex)
+        {
+               await LogService.GuardarErrorAsync(
+                                    ex.Message,
+                                    ex.StackTrace,
+                                    usuario: authClient.CurrentSession?.UserName ?? "No encontrado",
+                                    metodo:"EditarRole",
+                                    ruta:$"/Roles/Editar/{idRole}",
+                                    origen: "Editar Roles",
+                                    nivel:"Errores");
+
+            await MostrarError($"Error inesperado: {ex.Message}");
+        }
+        finally
+        {
+            procesando = false;
+        }
+    }
+
+    private async Task MostrarError(string mensaje)
+    {
+        await js.InvokeVoidAsync("Swal.fire",
+            "Error",
+            mensaje,
+            "error");
+    }
+}
+

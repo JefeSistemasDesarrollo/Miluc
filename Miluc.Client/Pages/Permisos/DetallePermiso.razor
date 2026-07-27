@@ -1,0 +1,190 @@
+﻿@page "/Permiso/Detalle/{IdPermiso:int}"
+@using Miluc.Client.Interfaces.UsuariosRolesPermisos
+@using Miluc.Shared.DTOs.Permisos
+@inject NavigationManager nav
+@inject IPermisoClientService permisoService
+@inject IAuthClientService authClient
+@inject ILogClientService logClient
+<div class="container-fluid animate__animated animate__fadeIn py-4">
+    @* --- CABECERA ESTILIZADA --- *@
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-3 border-bottom">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a href="/configuracion/permisos" class="text-decoration-none text-muted">Configuración</a></li>
+                    <li class="breadcrumb-item active">Detalle de Permiso</li>
+                </ol>
+            </nav>
+            <h2 class="fw-bold text-dark m-0">
+                <i class="bi bi-shield-lock-fill text-vinotinto me-2"></i>Ficha de Permiso
+            </h2>
+        </div>
+        <div class="d-flex gap-2 mt-3 mt-md-0">
+            <button class="btn btn-outline-secondary rounded-pill px-4" @onclick="Volver">
+                <i class="bi bi-arrow-left me-2"></i>Regresar
+            </button>
+            <button class="btn btn-vinotinto rounded-pill px-4 shadow-sm" @onclick="IrAEditar">
+                <i class="bi bi-pencil-square me-2"></i>Editar Datos
+            </button>
+        </div>
+    </div>
+
+    @if (Cargando)
+    {
+        <div class="d-flex flex-column align-items-center justify-content-center py-5">
+            <div class="spinner-grow text-vinotinto" role="status" style="width: 3rem; height: 3rem;"></div>
+            <p class="text-muted mt-3 fw-medium">Consultando servidor...</p>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(errorMensaje))
+    {
+        <div class="card border-danger shadow-sm mx-auto" style="max-width: 600px;">
+            <div class="card-body text-center p-5">
+                <i class="bi bi-exclamation-triangle-fill text-danger display-1 mb-3"></i>
+                <h4 class="fw-bold">¡Ups! Algo salió mal</h4>
+                <p class="text-muted">@errorMensaje</p>
+                <button class="btn btn-danger w-100 mt-3" @onclick="ObtenerPermisos">
+                    <i class="bi bi-arrow-clockwise me-2"></i>Reintentar
+                </button>
+            </div>
+        </div>
+    }
+    else if (permiso != null)
+    {
+        <div class="row g-4">
+            @* Tarjeta Principal: Detalles *@
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold text-vinotinto">
+                            <i class="bi bi-card-text me-2"></i>Información General
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label class="text-muted small fw-bold text-uppercase mb-1 d-block">Identificador (ID)</label>
+                                <div class="p-3 bg-light rounded-3 border">
+                                    <span class="fs-5 fw-bold text-dark"># @permiso.IdPermiso</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small fw-bold text-uppercase mb-1 d-block">Nombre del Permiso</label>
+                                <div class="p-3 bg-light rounded-3 border">
+                                    <span class="fs-5 fw-bold text-vinotinto">@permiso.Nombre</span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12">
+                                <label class="text-muted small fw-bold text-uppercase mb-1 d-block">Descripción del Permiso</label>
+                                <div class="p-3 bg-light rounded-3 border">
+                                    <span class="fs-5 fw-bold text-vinotinto">@permiso.Descripcion</span>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <label class="text-muted small fw-bold text-uppercase mb-2 d-block">Roles con este acceso</label>
+                                <div class="d-flex flex-wrap gap-2">
+                                    @if (permiso.RolesNombre?.Any() == true)
+                                    {
+                                        @foreach (var rol in permiso.RolesNombre)
+                                        {
+                                            <span class="badge bg-soft-vinotinto text-vinotinto border border-vinotinto px-3 py-2 fs-6">
+                                                <i class="bi bi-person-badge me-1"></i> @rol
+                                            </span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted italic small">No hay roles asociados a este permiso.</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @* Tarjeta Lateral: Estado/Metadata *@
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm bg-vinotinto text-white">
+                    <div class="card-body p-4 text-center">
+                        <div class="mb-3">
+                            <i class="bi bi-shield-check display-4"></i>
+                        </div>
+                        <h4 class="fw-bold">Estado del Permiso</h4>
+                        <p class="opacity-75">Este permiso se encuentra activo en el sistema y es heredado por los roles listados.</p>
+                        <hr class="bg-white opacity-25">
+                        <div class="text-start small">
+                            <p class="mb-1"><i class="bi bi-clock me-2"></i> Última sincronización: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+@code {
+    [Parameter]
+    public int IdPermiso { get; set; }
+    private PermisosReadDto? permiso;
+
+    private bool Cargando = true;
+    private string? errorMensaje = string.Empty;
+    private List<string> listaErrores = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (authClient.HasPermission("Permiso.Details"))
+        {
+            await ObtenerPermisos();
+        }
+        else
+        {
+            nav.NavigateTo("/no-autorizado");
+            return;
+        }
+    }
+
+    private async Task ObtenerPermisos()
+    {
+
+        try
+        {
+            Cargando = true;
+            errorMensaje = string.Empty;
+            var response = await permisoService.GetByIdPermisoAsync(IdPermiso);
+             
+            if (response != null)
+            {
+                permiso = response.Valor;
+            }
+            else
+            {
+                errorMensaje = response?.Mensaje ?? "No se encontró el registro.";
+                listaErrores = response?.Errores ?? new();
+            }
+        }
+        catch (Exception ex)
+        {
+            await logClient.GuardarErrorAsync(
+                       ex.Message,
+                       ex.StackTrace,
+                       usuario: authClient.CurrentSession?.UserName ?? "No encontrado",
+                       metodo: "ObtenerPermisos() Detalle Permisos",
+                       ruta: $"/Permiso/Detalle/{IdPermiso}",
+                       origen: "Blazor cliente",
+                       nivel: "error");
+                        errorMensaje = $"Error de comunicación: {ex.Message}";
+        }
+        finally
+        {
+            Cargando = false;
+        }
+    }
+
+    private void Volver()
+    {
+        nav.NavigateTo("/configuracion/permisos");
+    }
+    private void IrAEditar() => nav.NavigateTo($"/permiso/Editar/{IdPermiso}");
+
+}

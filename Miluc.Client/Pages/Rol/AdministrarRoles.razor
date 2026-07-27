@@ -1,0 +1,245 @@
+﻿@page "/Configuracion/Roles"
+@using Miluc.Client.Interfaces.UsuariosRolesPermisos
+
+@using Miluc.Shared.DTOs.Roles
+@using Miluc.Shared.Models.Response
+@using System.Text.Json
+@inject IRolClientService _rolClientService
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+@inject IAuthClientService authClient
+@inject ILogClientService LogService
+
+<div class="roles-page animate__animated animate__fadeIn p-4">
+
+    @* --- CABECERA Y BÚSQUEDA --- *@
+    <div class="header-box mb-4">
+        <div class="row align-items-center">
+            <div class="col-12 col-md-4">
+                <h2 class="fw-bold text-vinotinto m-0">Gestión de Roles</h2>
+                <p class="text-muted m-0">Total de registros: <strong>@totalRegistros</strong></p>
+            </div>
+            <div class="col-12 col-md-5 mt-3 mt-md-0">
+                <div class="input-group shadow-sm">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" class="form-control border-start-0"
+                           placeholder="Buscar por nombre o descripción..."
+                           @bind="textoBusqueda" @oninput="FiltrarRoles" />
+                </div>
+            </div>
+
+            @if (authClient.HasPermission("Rol.Create"))
+            {
+                <div class="col-12 col-md-3 text-md-end mt-3 mt-md-0">
+                    <button class="btn btn-vinotinto shadow-sm w-100" @onclick="IrACrear">
+                        <i class="bi bi-plus-circle me-2"></i> Nuevo Rol
+                    </button>
+                </div>
+            }
+
+
+        </div>
+    </div>
+
+    @* --- TABLA CON PAGINACIÓN --- *@
+    <div class="card shadow-sm border-0">
+
+        @if (authClient.HasPermission("Rol.View"))
+        {
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light text-dark">
+                            <tr>
+                                <th class="ps-4" style="width: 80px;">ID</th>
+                                <th>Nombre del Rol</th>
+                                <th>Descripción</th>
+                                <th class="text-center">Usuarios</th>
+                                <th class="text-center">Estado</th>
+                                <th class="text-end pe-4">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (rolesFiltrados == null)
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center py-5">
+                                        <div class="spinner-border text-danger" role="status"></div>
+                                    </td>
+                                </tr>
+                            }
+                            else
+                            {
+                                @foreach (var rol in rolesPaginados)
+                                {
+                                    <tr class="@(rol.Activo ? "" : "table-secondary text-muted")">
+                                        <td class="ps-4 fw-bold">#@rol.IdRol</td>
+                                        <td>
+                                            @* Corregido el color: Texto oscuro por defecto *@
+                                            <span class="fw-bold text-dark">
+                                                <i class="bi bi-shield-lock me-2 text-vinotinto"></i>@rol.Nombre
+                                            </span>
+                                        </td>
+                                        <td class="text-muted small">@rol.Descripcion</td>
+                                        <td class="text-center">
+                                            <span class="badge rounded-pill bg-light text-dark border">
+                                                @rol.CantidadRoles
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge @(rol.Activo ? "bg-success" : "bg-danger")">
+                                                @(rol.Activo ? "Activo" : "Inactivo")
+                                            </span>
+                                        </td>
+                                        <td class="text-end pe-4">
+                                            <div class="btn-group">
+                                                @if (authClient.HasPermission("Rol.Update"))
+                                                {
+                                                    <button class="btn btn-sm btn-outline-primary" @onclick="() => IrAEditar(rol.IdRol)"><i class="bi bi-pencil"></i></button>
+
+                                                }
+                                                @if (authClient.HasPermission("Rol.Delete"))
+                                                {
+                                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => ConfirmarEliminar(rol)"><i class="bi bi-trash"></i></button>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+
+        @* --- PIE DE TABLA / PAGINADOR --- *@
+        <div class="pagination-footer card-footer bg-white border-0 py-3">
+            <div class="row align-items-center">
+                <div class="col-12 col-md-6 text-muted small">
+                    Mostrando @rolesPaginados.Count() de @rolesFiltrados?.Count() resultados
+                </div>
+                <div class="col-12 col-md-6">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination pagination-sm justify-content-md-end m-0">
+                            <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
+                                <button class="page-link" @onclick="() => CambiarPagina(paginaActual - 1)">Anterior</button>
+                            </li>
+                            @for (int i = 1; i <= totalPaginas; i++)
+                            {
+                                int p = i;
+                                <li class="page-item @(paginaActual == p ? "active" : "")">
+                                    <button class="btn btn-sm rounded-circle page-link @(paginaActual == p ? "bg-vinotinto border-vinotinto" : "")"
+                                            @onclick="() => CambiarPagina(p)">
+                                        @p
+                                    </button>
+                                </li>
+                            }
+                            <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
+                                <button class="btn btn-sm rounded-circle page-link" @onclick="() => CambiarPagina(paginaActual + 1)">Siguiente</button>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@code {
+    private List<RolReadDto>? listaRoles;
+    private List<RolReadDto> rolesFiltrados = new();
+    private string textoBusqueda = "";
+    private int totalRegistros = 0;
+
+    // Paginación
+    private int paginaActual = 1;
+    private int registrosPorPagina = 10;
+    private int totalPaginas => (int)Math.Ceiling((double)rolesFiltrados.Count / registrosPorPagina);
+
+    private IEnumerable<RolReadDto> rolesPaginados => rolesFiltrados
+        .Skip((paginaActual - 1) * registrosPorPagina)
+        .Take(registrosPorPagina);
+
+    protected override async Task OnInitializedAsync() => await CargarRoles();
+
+    private async Task CargarRoles()
+    {
+        try
+        {
+            var response = await _rolClientService.GetAllRolesAsync();
+    
+            if (response.EsCorrecto)
+            {
+                listaRoles = response.Valor;
+                totalRegistros = response.CantRegistros > 0 ? response.CantRegistros : listaRoles.Count;
+                FiltrarRoles();
+            }
+        }catch(Exception ex)
+        {
+            await LogService.GuardarErrorAsync(
+                        ex.Message,
+                        ex.StackTrace,
+                        usuario: authClient.CurrentSession.UserName ?? "No encontrado",
+                        metodo:"CargarRoles",
+                        ruta:"/Configuracion/Roles",
+                        $"Cargar roles Blazor",
+                         nivel:"Errores");
+        }
+    }
+
+    private void FiltrarRoles(ChangeEventArgs? e = null)
+    {
+        if (e != null) textoBusqueda = e.Value?.ToString() ?? "";
+
+        if (listaRoles != null)
+        {
+            rolesFiltrados = listaRoles
+                .Where(r => r.Nombre.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                            (r.Descripcion?.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ?? false))
+                .ToList();
+            paginaActual = 1; // Resetear a la primera página al buscar
+        }
+    }
+
+    private void CambiarPagina(int nuevaPagina) => paginaActual = nuevaPagina;
+
+    private void IrACrear() => Nav.NavigateTo("/Roles/Crear");
+    private void IrAEditar(int id) => Nav.NavigateTo($"/Roles/Editar/{id}");
+
+    private async Task ConfirmarEliminar(RolReadDto rol)
+    {
+
+        var result = await JS.InvokeAsync<JsonElement>("Swal.fire", new
+        {
+            title = "¿Está seguro?",
+            text = $"Se desactivará el rol {rol.Nombre}",
+            icon = "warning",
+            showCancelButton = true,
+            confirmButtonText = "Sí, desactivar",
+            cancelButtonText = "Cancelar",
+            reverseButtons = true
+        });
+
+        if (result.GetProperty("isConfirmed").GetBoolean())
+        {
+            await JS.InvokeVoidAsync("Swal.fire",
+                    "Desactivado",
+                    "El rol fue desactivado correctamente.",
+                    "success");
+
+            var res = await _rolClientService.DeleteRolAsync(rol.IdRol);
+            if (res.EsCorrecto)
+            {
+                await CargarRoles();
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("Swal.fire",
+                  "Error",
+                  "No fue posible desactivar el rol.",
+                  "error");
+            }
+
+        }
+    }
+}

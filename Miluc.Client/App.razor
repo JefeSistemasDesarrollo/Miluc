@@ -1,0 +1,117 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Miluc.Client.Interfaces
+@using Miluc.Client.Servicios.Autorizacion
+@* <Router AppAssembly="@typeof(App).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+</Router>
+ *@
+
+ @inject NavigationManager Nav
+@inject IAuthClientService authService
+@inject CustomAuthStateProvider customAuthStateProvider
+
+<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(Program).Assembly">
+        <Found Context="routeData">
+            @* AuthorizeRouteView verifica el estado de autenticación *@
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <NotAuthorized>
+                    @* Si el usuario no está logueado, lo enviamos al login.
+                       Podemos pasarle la URL actual como parámetro "returnUrl" 
+                       si quisiéramos que vuelva aquí después.
+                    *@
+
+                    @{
+                        Nav.NavigateTo("login");
+                    }
+                </NotAuthorized>
+
+                <Authorizing>
+                    @* Se muestra mientras el CustomAuthStateProvider valida la cookie con la API *@
+                    <div class="d-flex justify-content-center align-items-center" style="height: 100vh;">
+                        <div class="text-center">
+                            <div class="spinner-border text-primary" role="status"></div>
+                            <p class="mt-2">Verificando seguridad...</p>
+                        </div>
+                    </div>
+                </Authorizing>
+
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+
+        <NotFound>
+            <PageTitle>No encontrado</PageTitle>
+            <LayoutView Layout="@typeof(MainLayout)">
+                @* Si la ruta no existe, también es más seguro mandarlo al login 
+                   o al inicio si ya está logueado. 
+                *@
+                @{
+                    Nav.NavigateTo("login");
+                }
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>
+
+@inject CierrePorInactividad cierrePorInactividad
+@inject RefrescarToken refrescarToken
+@inject NavigationManager NavigationManager
+
+@code {
+    protected override void OnInitialized()
+    {
+        //este bloque es para el timer por inactividad de la aplicacion
+        cierrePorInactividad.OnTimeout += async () =>
+        {
+            var authState = await customAuthStateProvider.GetAuthenticationStateAsync();
+
+            if (authState.User.Identity!.IsAuthenticated)
+            {
+                await authService.Logout();
+                NavigationManager.NavigateTo("/login", true);
+            }
+        };
+
+        cierrePorInactividad.StartMonitoringInactividad(120); // 120 minutos para pruebas
+
+        //este bloque es para el timer de refresco de token
+        refrescarToken.OnTimeout += async () =>
+        {
+            var authState = await customAuthStateProvider.GetAuthenticationStateAsync();
+
+            if (authState.User.Identity!.IsAuthenticated)
+            {
+                //obtengo la fecha de expiracion del token
+                var fechaExpiracion = authState.User.FindFirst("fechaExpiracion")?.Value;
+
+                if (fechaExpiracion != null)
+                {
+                    var fechaExp = DateTime.Parse(fechaExpiracion);
+                    var tiempoRestante = fechaExp - DateTime.UtcNow;
+                    //si el token expira en menos de 5 minutos, lo refresco
+                    if (tiempoRestante.TotalMinutes < 5)
+                    {
+                        var result = await authService.RefreshSession();
+
+                        if(result.Valor!=null)
+                        {
+                            //si no se pudo refrescar, lo mando al login
+                            await authService.Logout();
+
+                        }
+                    }
+                }
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/login", true);
+            }
+        };
+
+        refrescarToken.StartMonitorRefreshToken(120); // 1 minuto para pruebas
+    }
+}

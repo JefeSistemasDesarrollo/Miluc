@@ -1,0 +1,129 @@
+﻿.bg-vinotinto {
+    background-color: #800020;
+    color: white;
+}
+
+.btn-vinotinto {
+    background-color: #800000;
+    color: white;
+}
+
+.empleado-page {
+    padding: 1rem;
+}
+
+.text-vinotinto {
+    color: #800020;
+}
+
+x-small {
+    font-size: 0.75rem;
+}
+
+
+.table-responsive {
+    overflow-x: auto;
+    width: 100%;
+}
+
+
+/* Botón Nuevo */
+.btn-nuevo {
+    background-color: #800000;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 24px;
+    font-weight: 700;
+}
+
+.x-small {
+    font-size: 0.75rem;
+}
+
+.search-group {
+    max-width: 450px;
+}
+
+/* Tabla */
+.card-container {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid #f0f0f0;
+}
+
+.table thead {
+    background: #fdfdfd;
+    border-bottom: 2px solid #f5f5f5;
+}
+
+    .table thead th {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 1.2rem;
+        color: #800020;
+    }
+
+
+
+.status-pill {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+
+
+/* Botón Detalle */
+.btn-detail {
+    border: 1px solid #eee;
+    background: #fff;
+    padding: 5px 12px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #800020;
+    transition: 0.2s;
+}
+
+    /*sombrear a color-profile vinotinto*/
+    .btn-detail:hover {
+        background: #800020;
+        color: white;
+    }
+
+.edit:hover {
+    background: #800020;
+    color: white;
+}
+
+.delete:hover {
+    background: #800020;
+    color: white;
+}
+/* Paginador */
+.pagination-footer {
+    padding: 1rem;
+    background: #f0f0f0;
+    border-top: 1px solid #eee;
+}
+
+.page-link {
+    border: none;
+    margin: 0 2px;
+    border-radius: 5px !important;
+    color: #666;
+}
+
+.page-item.active .page-link {
+    background: #D62F46 !important;
+    color: white;
+}
+.bgvinotinto {
+    color: #800020;
+
+    background: #800020;
+}

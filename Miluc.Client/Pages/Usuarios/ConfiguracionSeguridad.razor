@@ -1,0 +1,56 @@
+﻿@page "/Usuarios-Seguridad"
+@inject IAuthClientService authClient
+@inject NavigationManager nav
+
+<div class="seguridad-container animate__animated animate__fadeIn">
+    <div class="header-principal">
+        <h1>Configuración de Seguridad</h1>
+        <p>Administre los accesos y niveles de privilegio del sistema Miluc.</p>
+    </div>
+
+    <div class="grid-cartas">
+
+        <div class="card-miluc border-rojo">
+            <div class="card-cuerpo">
+                <div class="icono-wrapper bg-rojo-suave">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+                <h3>Usuarios</h3>
+                <p>Gestión de personal, creación de cuentas y control de accesos .</p>
+                <a href="/usuarios" class="btn-miluc btn-rojo">
+                    <span>Administrar Usuarios</span>
+                    <i class="bi bi-arrow-right-short"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="card-miluc border-vinotinto">
+            <div class="card-cuerpo">
+                <div class="icono-wrapper bg-vinotinto-suave">
+                    <i class="bi bi-shield-lock-fill"></i>
+                </div>
+                <h3>Roles</h3>
+                <p>Defina jerarquías de cargos como Administrador, Operador o Contador.</p>
+                <a href="/configuracion/roles" class="btn-miluc btn-vinotinto">
+                    <span>Administrar Roles</span>
+                    <i class="bi bi-arrow-right-short"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="card-miluc border-amarillo">
+            <div class="card-cuerpo">
+                <div class="icono-wrapper bg-amarillo-suave">
+                    <i class="bi bi-key-fill"></i>
+                </div>
+                <h3>Permisos</h3>
+                <p>Ajuste qué módulos específicos puede ver o editar cada perfil de usuario.</p>
+                <a href="/configuracion/permisos" class="btn-miluc btn-amarillo">
+                    <span>Asignar Permisos</span>
+                    <i class="bi bi-arrow-right-short"></i>
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>

@@ -1,0 +1,170 @@
+﻿@page "/nomina/detalle/{idEmpleado:int}"
+@using Miluc.Client.Interfaces.Nomina
+@using Miluc.Shared.DTOs.Nomina.EmpleadoDto
+@using Miluc.Shared.DTOs.Nomina.AfiliacionSeguridadSocialDto
+
+@inject NavigationManager nav
+@inject IAfSeguridadSocialClientService _afSeguridadSocialClientService
+@inject IEmpleadoClientService _empleadoService
+@inject IJSRuntime JS
+
+<div class="detalleAfiliacionesEmpleado-page p-4 animate__animated animate__fadeIn">
+    <div class="container-fluid max-width-container">
+
+        @* --- CABECERA DE LA PÁGINA --- *@
+        <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
+            <div>
+                <h2 class="fw-extrabold text-vinotinto m-0 tracking-tight">
+                    <i class="bi bi-eye"></i>
+                    Detalle de Afiliaciones
+                </h2>
+                <p class="text-muted mb-0 small mt-1">
+                    Visualización de afiliaciones de seguridad social del empleado:
+                    <strong>@(afiliacionSeguridadSocial?.NombreEmpleado ?? "Cargando...")</strong>.
+                </p>
+            </div>
+
+            <button class="btn btn-vinotinto btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
+                <i class="bi bi-arrow-left me-2"></i> Volver al listado
+            </button>
+        </div>
+
+        @if (cargando)
+        {
+            <div class="d-flex justify-content-center my-5">
+                <div class="spinner-border text-vinotinto" role="status">
+                    <span class="visually-hidden">Cargando datos...</span>
+                </div>
+            </div>
+        }
+        else if (afiliacionSeguridadSocial != null)
+        {
+            @* --- VISTA DE DATOS (SOLO LECTURA) --- *@
+            <div class="row g-4">
+
+                @* --- BLOQUE 1: DATOS DE AFILIACIONES --- *@
+                <div class="col-12">
+                    <div class="card card-custom border-0 shadow-sm rounded-4">
+                        <div class="card-body p-4">
+                            <div class="section-title-container mb-4">
+                                <span class="badge bg-vinotinto-light text-vinotinto rounded-pill mb-2 px-3 py-2 fw-bold text-uppercase tracking-wider">
+                                    Entidades de Seguridad Social
+                                </span>
+                            </div>
+
+                            <div class="row g-4">
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">Colaborador</label>
+                                    <input type="text" class="form-control input-custom-view" value="@afiliacionSeguridadSocial.NombreEmpleado" readonly />
+                                </div>
+
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">EPS</label>
+                                    <input type="text" class="form-control input-custom-view" value="@afiliacionSeguridadSocial.NombreEps" readonly />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">Fondo de Pensiones (AFP)</label>
+                                    <input type="text" class="form-control input-custom-view" value="@afiliacionSeguridadSocial.NombreAfp" readonly />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">ARL</label>
+                                    <input type="text" class="form-control input-custom-view" value="@afiliacionSeguridadSocial.NombreArl" readonly />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">Caja de Compensación</label>
+                                    <input type="text" class="form-control input-custom-view" value="@afiliacionSeguridadSocial.NombreCajaCompensacion" readonly />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">Estado de Afiliación</label>
+                                    <div class="mt-2">
+                                        @if (afiliacionSeguridadSocial.Activo ?? false)
+                                        {
+                                            <span class="badge bg-success px-3 py-2 rounded-pill"><i class="bi bi-check-circle me-1"></i> Activo</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger px-3 py-2 rounded-pill"><i class="bi bi-x-circle me-1"></i> Inactivo</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                
+                @* --- INFORMACIÓN EXTRA --- *@
+                <div class="col-12">
+                    <div class="card card-info-banner border-0 shadow-sm rounded-4 p-4 position-relative overflow-hidden">
+                        <div class="position-relative z-index-2 d-flex flex-column justify-content-center">
+                            <h5 class="fw-bold text-vinotinto mb-2"><i class="bi bi-shield-lock-fill me-2"></i>Seguridad de los datos</h5>
+                            <p class="text-secondary small mb-0 lh-lg">
+                                Todos los datos registrados en esta plataforma son almacenados y procesados de manera segura.
+                                La organización garantiza la confidencialidad de la información del colaborador y limita su acceso
+                                exclusivamente a usuarios autorizados para fines administrativos, legales y de gestión humana.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int idEmpleado { get; set; }
+
+    private AfiliacionSeguridadSocialreaderDto? afiliacionSeguridadSocial = null;
+    private bool cargando = true;
+
+    private void Volver() => nav.NavigateTo("/afiliacionseguridadSocial/empleados");
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if (idEmpleado <= 0)
+            {
+                await JS.InvokeVoidAsync("alert", "ID de empleado no válido.");
+                Volver();
+                return;
+            }
+
+            // Cambiamos la consulta directa por la búsqueda filtrada en el listado
+            var respuestaListado = await _afSeguridadSocialClientService.GetAfSeguridadSocialAsync(string.Empty, 1, 100);
+
+            if (respuestaListado != null && respuestaListado.EsCorrecto && respuestaListado.Valor != null)
+            {
+                // Buscamos exactamente la afiliación que corresponda al idEmpleado enviado por URL
+                afiliacionSeguridadSocial = respuestaListado.Valor.FirstOrDefault(x => x.EmpleadoId == idEmpleado);
+                
+                if (afiliacionSeguridadSocial == null)
+                {
+                    await JS.InvokeVoidAsync("alert", "El empleado no cuenta con un registro de seguridad social activo.");
+                    Volver();
+                }
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("alert", "No se pudo obtener la información de seguridad social.");
+                Volver();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al consultar: {ex.Message}");
+            await JS.InvokeVoidAsync("alert", "Error interno al recuperar el detalle.");
+            Volver();
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+}

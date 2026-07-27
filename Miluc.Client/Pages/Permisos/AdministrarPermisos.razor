@@ -1,0 +1,337 @@
+﻿@page "/configuracion/permisos"
+@using Miluc.Client.Interfaces.UsuariosRolesPermisos
+@using Miluc.Shared.DTOs.Permisos
+@using System.Text.Json
+@inject NavigationManager nav
+@inject IPermisoClientService _permisoService
+@inject IJSRuntime js
+@inject IAuthClientService authClient
+@inject ILogClientService LogService
+
+
+<div class="permisos-page animate__animated animate__fadeIn p-4">
+    @* --- HEADER --- *@
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+        <div>
+            <h2 class="fw-bold text-vinotinto m-0">
+                <i class="bi bi-person-badge-fill me-2"></i> Gestión de Permisos
+            </h2>
+            <p class="m-0 text-muted">Administración de capacidades del sistema</p>
+        </div>
+
+        @if (authClient.HasPermission("Permiso.Create"))
+        {
+            <button class="btn btn-vinotinto btn-nuevo rounded-pill px-4 shadow-sm" @onclick="IrACrear">
+                <i class="bi bi-plus-lg me-1"></i> Nuevo Permiso
+            </button>
+        }
+      
+    </div>
+
+    @* --- BARRA DE BÚSQUEDA --- *@
+    <div class="card shadow-sm border-0 mb-4 rounded-4">
+        <div class="card-body p-3">
+            <div class="row g-3 align-items-center">
+                <div class="col-lg-7">
+                    <div class="input-group input-group-lg search-group">
+                        <span class="input-group-text bg-white border-end-0 rounded-start-pill ps-3">
+                            <i class="bi bi-search text-muted small"></i>
+                        </span>
+                        <input type="text" class="form-control border-start-0 shadow-none fs-6"
+                               placeholder="Filtrar local o Enter para buscar en servidor..."
+                               @bind="textoBusqueda" @bind:event="oninput" @onkeyup="HandleEnter" />
+                        <button class="btn btn-vinotinto rounded-end-pill px-4" @onclick="BuscarEnServidor">
+                            Buscar
+                        </button>
+                    </div>
+                </div>
+                <div class="col-lg-5 text-lg-end">
+                    <div class="d-inline-flex align-items-center bg-light p-2 rounded-pill border">
+                        <label class="mx-3 small fw-bold text-muted text-uppercase">Mostrar</label>
+                        <select class="form-select form-select-sm rounded-pill border-0 bg-transparent fw-bold"
+                                style="width: 80px;"
+                                @onchange="CambiarCantidadPagina">
+                            <option value="5">5</option>
+                            <option value="10">10</option>
+                            <option value="20" selected>20</option>
+                            <option value="50">50</option>
+                        </select>
+                        <span class="badge bg-vinotinto rounded-pill ms-2 px-3 py-2">
+                            Total: @totalRegistros
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* --- TABLA --- *@
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+        @if (authClient.HasPermission("Permiso.View"))
+        {
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="bg-vinotinto text-white">
+                        <tr>
+                            <th class="ps-4 py-3">ID</th>
+                            <th class="py-3">Nombre</th>
+                            <th class="py-3">Descripción</th>
+                            <th class="text-center">Estado</th>
+                            <th class="text-center">Roles Asignados</th>
+                            <th class="text-center pe-4">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white">
+                        @if (Cargando)
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center py-5">
+                                    <div class="spinner-border text-vinotinto"></div>
+                                    <p class="mt-2 text-muted">Cargando permisos...</p>
+                                </td>
+                            </tr>
+                        }
+                        else if (!listPermisosApi.Any())
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-muted">
+                                    <i class="bi bi-exclamation-circle fs-2"></i>
+                                    <p>No se encontraron permisos.</p>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var permiso in listPermisosApi)
+                            {
+                                <tr>
+                                    <td class="ps-4">@permiso.IdPermiso</td>
+                                    <td><span class="fw-bold">@permiso.Nombre</span></td>
+                                    <td class="small text-muted">@permiso.Descripcion</td>
+                                    <td class="text-center">
+                                        <span class="badge @(permiso.Activo ? "bg-success" : "bg-secondary") rounded-pill">
+                                            @(permiso.Activo ? "Activo" : "Inactivo")
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-warning-subtle text-dark border border-warning-subtle rounded-pill me-1">
+                                            @permiso.RolesNombre.Count
+                                        </span>
+                                        @foreach (var rol in permiso.RolesNombre.Take(2))
+                                        {
+                                            <span class="badge bg-light text-dark border rounded-pill small me-1">@rol</span>
+                                        }
+                                        @if (permiso.RolesNombre.Count > 2)
+                                        {
+                                            <span class="small text-muted">...</span>
+                                        }
+                                    </td>
+                                    <td class="text-center pe-4">
+                                        <div class="btn-group shadow-sm border rounded-pill bg-white">
+                                            @if (authClient.HasPermission("Permiso.Detail"))
+                                            {
+                                                <button class="btn btn-white btn-sm" @onclick="() => VerDetalle(permiso.IdPermiso)"><i class="bi bi-eye"></i></button>
+                                            }
+                                            @if (authClient.HasPermission("Permiso.Update"))
+                                            {
+                                                <button class="btn btn-white btn-sm" @onclick="() => EditarPermiso(permiso.IdPermiso)"><i class="bi bi-pencil text-primary"></i></button>
+
+                                            }
+                                            @if (authClient.HasPermission("Permiso.Delete"))
+                                            {
+                                                <button class="btn btn-white btn-sm" @onclick="() => EliminarPermiso(permiso.IdPermiso)"><i class="bi bi-trash text-danger"></i></button>
+
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        @* --- FOOTER / PAGINACIÓN --- *@
+        <div class="pagination-footer d-flex justify-content-between align-items-center mt-4">
+            <div class=" page-link text-muted small">Página <b>@paginaActual</b> de @totalPaginas</div>
+            <div class="page-item.active pagination-container p-1 bg-white border rounded-pill shadow-sm">
+                <button class="btn btn-sm rounded-circle @(paginaActual <= 1 ? "disabled" : "")" @onclick="() => IrPagina(paginaActual - 1)"><i class="bi bi-chevron-left"></i></button>
+                <span class="mx-3 fw-bold text-vinotinto">@paginaActual</span>
+                <button class="btn btn-sm rounded-circle @(paginaActual >= totalPaginas ? "disabled" : "")" @onclick="() => IrPagina(paginaActual + 1)"><i class="bi bi-chevron-right"></i></button>
+            </div>
+        </div>  
+    </div>
+</div>
+@code {
+    private List<PermisosReadDto> ListaOriginal = new();
+    private List<PermisosReadDto> listPermisosApi = new();
+    private bool Cargando = false;
+    private string _textoBusqueda = "";
+
+    private string textoBusqueda
+    {
+        get => _textoBusqueda;
+        set
+        {
+            _textoBusqueda = value;
+            FiltrarLocal();
+        }
+    }
+
+    private int cantidadPorPagina = 20;
+    private int paginaActual = 1;
+    private int totalRegistros = 0;
+    private int totalPaginas => (int)Math.Ceiling((double)totalRegistros / cantidadPorPagina);
+
+    protected override async Task OnInitializedAsync() => await CargarDatos();
+
+    private async Task CargarDatos()
+    {
+        try
+        {
+            Cargando = true;
+            // Si hay texto de búsqueda, lo enviamos al servidor, si no, enviamos vacío.
+            var res = await _permisoService.GetPermisosAsync(_textoBusqueda, paginaActual, cantidadPorPagina);
+
+            if (res != null && res.EsCorrecto)
+            {
+                ListaOriginal = res.Valor ?? new();
+                listPermisosApi = ListaOriginal;
+                totalRegistros = res.CantRegistros;
+            }
+        }
+        catch (Exception ex)
+        {
+            await LogService.GuardarErrorAsync(
+                     ex.Message,
+                     ex.StackTrace,
+                     usuario: authClient.CurrentSession?.UserName ?? "No encontrado",
+                     metodo: "CargarDatos Administrar Permisos",
+                     ruta: $"/configuracion/permisos",
+                     origen: "Blazor Cliente",
+                     nivel: "error");
+
+
+            await js.InvokeVoidAsync("Swal.fire", "Error", ex.Message, "error");
+        }
+        finally { Cargando = false; }
+    }
+
+    private void FiltrarLocal()
+    {
+        if (string.IsNullOrWhiteSpace(_textoBusqueda))
+        {
+            listPermisosApi = ListaOriginal;
+        }
+        else
+        {
+            listPermisosApi = ListaOriginal
+                .Where(p => p.Nombre.Contains(_textoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                            (p.Descripcion?.Contains(_textoBusqueda, StringComparison.OrdinalIgnoreCase) ?? false))
+                .ToList();
+        }
+    }
+
+    private async Task BuscarEnServidor()
+    {
+        paginaActual = 1;
+        await CargarDatos();
+    }
+
+    private async Task HandleEnter(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await BuscarEnServidor();
+    }
+
+    private async Task IrPagina(int nuevaPagina)
+    {
+        if (nuevaPagina >= 1 && nuevaPagina <= totalPaginas)
+        {
+            paginaActual = nuevaPagina;
+            await CargarDatos();
+        }
+    }
+
+    private async Task CambiarCantidadPagina(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int nuevaCantidad))
+        {
+            cantidadPorPagina = nuevaCantidad;
+            paginaActual = 1;
+            await CargarDatos();
+        }
+    }
+
+    // Navegación
+    private void IrACrear() => nav.NavigateTo("/Permisos/Crear");
+    private void EditarPermiso(int id) => nav.NavigateTo($"/permiso/Editar/{id}");
+    // private void VerDetalle(int idPermisos) => nav.NavigateTo($"/Permisos/Detalle/{idPermisos}");
+    private void VerDetalle(int IdPermiso)
+    {
+
+        nav.NavigateTo($"/Permiso/Detalle/{IdPermiso}");
+    }
+
+    private async Task EliminarPermiso(int IdPermiso)
+    {
+        try
+        {
+
+            var result = await js.InvokeAsync<JsonElement>
+                 ("Swal.fire", new
+                 {
+                     title = "¿Estás seguro?",
+                     text = $"¿Deseas eliminar el Permiso {IdPermiso}?",
+                     icon = "warning",
+                     showCancelButton = true,
+                     confirmButtonColor = "#d33",
+                     cancelButtonColor = "#3085d6",
+                     confirmButtonText = "Sí, eliminar",
+                     cancelButtonText = "Cancelar"
+                 });
+
+            if (result.GetProperty("isConfirmed").GetBoolean())
+            {
+                var response = await _permisoService.DeletePermisoAsync(IdPermiso);
+                if (response.EsCorrecto)
+                {
+                    await js.InvokeVoidAsync("Swal.fire", new
+                    {
+                        icon = "success",
+                        title = "Permiso Eliminado",
+                        text = response.Mensaje,
+                        confirmButtonColor = "#6c1d1d"
+                    });
+
+                    await CargarDatos();
+                }
+                else
+                {
+                    string erroresConcatenados = response.Errores != null && response.Errores.Any()
+                    ? string.Join("<br>", response.Errores)
+                    : "Ocurrió un error inesperado.";
+
+                    await js.InvokeVoidAsync("Swal.fire", new
+                    {
+                        icon = "error",
+                        title = "Error al eliminar el Permiso",
+                        html = erroresConcatenados,
+                        confirmButtonColor = "#6c1d1d"
+                    });
+                }
+            }
+
+            }
+        catch (Exception ex)
+        {
+            await LogService.GuardarErrorAsync(
+                 ex.Message,
+                 ex.StackTrace,
+                 usuario: authClient.CurrentSession?.UserName ?? "No encontrado",
+                 metodo: "EliminarPermiso",
+                 ruta: $"/configuracion/permisos",
+                 origen: "Blazor cliente",
+                 nivel: "error");
+        }
+    }
+}

@@ -1,0 +1,354 @@
+﻿@page "/Usuarios/Editar/{IdUsuario:int}"
+
+@using Miluc.Client.Interfaces.UsuariosRolesPermisos
+@using Miluc.Shared.DTOs.Roles
+@using Miluc.Shared.DTOs.Usuarios
+@inject IUsuarioClientService _usuarioClientService
+@inject IRolClientService _roleClienteService
+@inject ITipoUsuarioClienteService _tipoService
+@inject NavigationManager nav
+@inject IJSRuntime js
+@inject IAuthClientService authClient
+@inject ILogClientService logClient
+
+<div class="usuarios-page animate__animated animate__fadeIn p-4">
+    @* --- CABECERA --- *@
+    <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-3">
+        <div>
+            <h2 class="fw-bold text-vinotinto m-0"><i class="bi bi-person-plus-fill me-2"></i>Editar Usuario</h2>
+            <p class="text-muted mb-0 small">Complete los datos obligatorios marcados con (*).</p>
+        </div>
+        <button class="btn btn-outline-secondary btn-sm rounded-pill px-3" @onclick='() => nav.NavigateTo("/Usuarios")'>
+            <i class="bi bi-arrow-left me-1"></i> Volver a la lista
+        </button>
+    </div>
+
+    <EditForm Model="usuarioDto" OnValidSubmit="EditarUsuario">
+        <DataAnnotationsValidator/>
+
+        <div class="row g-4">
+            @* --- COLUMNA IZQUIERDA: PERFIL Y CREDENCIALES --- *@
+            <div class="col-xl-4 col-lg-5">
+                <div class="card shadow-sm border-0 mb-4 rounded-4">
+                    <div class="card-body p-4">
+                        @* FOTO DE PERFIL CON CARGA CORREGIDA *@
+                        <div class="text-center mb-4">
+                            <div class="position-relative d-inline-block">
+                                <img src="@(string.IsNullOrEmpty(previewImage) ? "img/default-user.png" : previewImage)"
+                                     class="rounded-circle shadow border-4 border-white" style="width: 130px; height: 130px; object-fit: cover;" />
+                                <label class="btn btn-vinotinto btn-sm position-absolute bottom-0 end-0 rounded-circle shadow p-2" style="cursor:pointer;">
+                                    <i class="bi bi-camera-fill"></i>
+                                    <InputFile OnChange="OnInputFileChange" class="d-none" accept=".jpg,.jpeg,.png" />
+                                </label>
+                            </div>
+                            <small class="d-block text-muted mt-2">Formatos: JPG, PNG (Máx 2MB)</small>
+                        </div>
+
+                     @*    <div class="mb-3">
+                            <label class="form-label fw-bold small text-secondary">Nombre de Usuario (Login)*</label>
+                            <InputText class="form-control custom-input" @bind-Value="usuarioDto.UserName" placeholder="Nombre único para el ingreso" />
+                            <ValidationMessage For="@(() => usuarioDto.UserName)" class="text-danger small" />
+                        </div> *@
+
+                        <div class="row g-2">
+                            <div class="col-6 mb-3">
+                                <label class="form-label fw-bold small text-secondary">Nombres*</label>
+                                <InputText class="form-control custom-input" @bind-Value="usuarioDto.Nombres" />
+                                <ValidationMessage For="@(() => usuarioDto.Nombres)" class="text-danger small" />
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label fw-bold small text-secondary">Apellidos*</label>
+                                <InputText class="form-control custom-input" @bind-Value="usuarioDto.Apellidos" />
+                                <ValidationMessage For="@(() => usuarioDto.Apellidos)" class="text-danger small" />
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-secondary">Email</label>
+                            <InputText class="form-control custom-input" @bind-Value="usuarioDto.Email" placeholder="correo@ejemplo.com" />
+                            <ValidationMessage For="@(() => usuarioDto.Email)" class="text-danger small" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-secondary">Teléfono</label>
+                            <InputText class="form-control custom-input" @bind-Value="usuarioDto.Telefono" />
+                        </div>
+
+                        <!--aca toca validar mas adelante si tiene permisos de cambiar la contraseña -->
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label class="form-label fw-bold small text-secondary">Contraseña*</label>
+                                <InputText type="password" class="form-control custom-input" @bind-Value="usuarioDto.Password" />
+                                <ValidationMessage For="@(() => usuarioDto.Password)" class="text-danger small" />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-bold small text-secondary">Confirmar*</label>
+                                <InputText type="password" class="form-control custom-input" @bind-Value="usuarioDto.ConfirmarPassword" />
+                                <ValidationMessage For="@(() => usuarioDto.ConfirmarPassword)" class="text-danger small" />
+                            </div>
+                        </div>
+
+                         <div class="mt-4 p-3 rounded-3 bg-light border-start border-4 border-warning shadow-sm">
+                            <div class="form-check form-switch m-0">
+                                <InputCheckbox class="form-check-input" id="chkPass" @bind-Value="usuarioDto.Activo" />
+                                <label class="form-check-label fw-bold small cursor-pointer" for="chkPass">Activo</label>
+                            </div>
+                        </div>
+
+                         <div class="mt-4 p-3 rounded-3 bg-light border-start border-4 border-warning shadow-sm">
+                            <div class="form-check form-switch m-0">
+                                <InputCheckbox class="form-check-input" id="chkPass" @bind-Value="usuarioDto.TwoFactorEnabled" />
+                                <label class="form-check-label fw-bold small cursor-pointer" for="chkPass">2FA – Two-Factor Authentication </label>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 p-3 rounded-3 bg-light border-start border-4 border-warning shadow-sm">
+                            <div class="form-check form-switch m-0">
+                                <InputCheckbox class="form-check-input" id="chkPass" @bind-Value="usuarioDto.DebeCambiarPassword" />
+                                <label class="form-check-label fw-bold small cursor-pointer" for="chkPass">Obligar cambio de clave al entrar</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* --- TIPOS DE USUARIO --- *@
+                <div class="card shadow-sm border-0 rounded-4">
+                    <div class="card-header bg-white py-3 border-0"><h6 class="mb-0 fw-bold text-vinotinto">Tipos de Acceso*</h6></div>
+                    <div class="card-body pt-0">
+                        @if (listTipoUsuario != null)
+                        {
+                            @foreach (var tipo in listTipoUsuario)
+                            {
+                                <div class="tipo-item p-2 mb-2 rounded-3 @(usuarioDto.TiposUsuarioIds.Contains(tipo.IdTipoUsuario) ? "active" : "")">
+                                    <div class="form-check form-switch d-flex align-items-center justify-content-between p-0">
+                                        <label class="form-check-label fw-semibold small ms-2" for="tipo-@tipo.IdTipoUsuario">@tipo.Nombre</label>
+                                        <input class="form-check-input ms-0" type="checkbox" id="tipo-@tipo.IdTipoUsuario"
+                                               checked="@usuarioDto.TiposUsuarioIds.Contains(tipo.IdTipoUsuario)"
+                                               @onchange="@(e => ToggleTipoUsuario(tipo.IdTipoUsuario, e.Value))" />
+                                    </div>
+                                </div>
+                            }
+                        } 
+                    </div>
+                </div>
+            </div>
+
+            @* --- COLUMNA ROLES --- *@
+            <div class="col-xl-8 col-lg-7">
+                <div class="card shadow-sm border-0 rounded-4 h-100">
+                    <div class="card-header bg-white py-3 border-0">
+                        <div class="row align-items-center">
+                            <div class="col-md-6"><h6 class="mb-0 fw-bold text-vinotinto text-uppercase">Asignación de Roles*</h6></div>
+                            <div class="col-md-6">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-light border-end-0 rounded-start-pill"><i class="bi bi-search"></i></span>
+                                    <input type="text" class="form-control bg-light border-start-0 rounded-end-pill" placeholder="Buscar rol..." @oninput="FiltrarRoles" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body pt-0">
+                        <div class="alert alert-info py-2 small border-0 bg-opacity-10 mb-3 d-flex justify-content-between">
+                            <span><i class="bi bi-shield-check me-2"></i>Seleccione los permisos del sistema</span>
+                            @* <span class="badge bg-vinotinto rounded-pill">@usuarioDto.RolesIds.Count seleccionados</span> *@
+                        </div>
+
+                        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 overflow-auto pe-1" style="max-height: 580px;">
+                            @if (rolesFiltrados != null)
+                            {
+                                @foreach (var rol in rolesFiltrados)
+                                {
+                                    <div class="col">
+                                        <div class="role-card p-3 rounded-4 border-2 @(usuarioDto.RolesIds.Contains(rol.IdRol) ? "active" : "")"
+                                             @onclick="() => SeleccionarRolCard(rol.IdRol)">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div class="fw-bold small role-name text-truncate">@rol.Nombre</div>
+                                                <input class="form-check-input m-0" type="checkbox" checked="@usuarioDto.RolesIds.Contains(rol.IdRol)" readonly />
+                                            </div>
+                                            <div class="text-muted role-desc mt-1">@rol.Descripcion</div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div> 
+                    </div>
+                    <div class="card-footer bg-white border-0 p-4 text-end">
+                        <button type="submit" class="btn btn-vinotinto btn-lg rounded-pill px-5 shadow-sm" disabled="@procesando">
+                            @if (procesando)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2"></span> <span>Editando...</span>
+                            }
+                            else
+                            {
+                                <span><i class="bi bi-person-check-fill me-2"></i>Editar Usuario</span>
+                            }
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter]
+    public int IdUsuario { get; set; }
+    private UsuarioUpdateDto usuarioDto = new();
+    private List<TipoUsuarioReadDto> listTipoUsuario = new List<TipoUsuarioReadDto>();
+    private List<RolReadDto> listRole = new List<RolReadDto>();
+    private string? previewImage;
+    private bool procesando = false;
+    private List<RolReadDto>? rolesFiltrados;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if(!authClient.HasPermission("Usuario.Update"))
+        {
+            nav.NavigateTo("/no-autorizado");
+            return;
+        }
+        var usuariosRes = await _usuarioClientService.GetUsuarioByIdAsync(IdUsuario);
+        var lisRolesResponse = await _roleClienteService.GetAllRolesAsync();
+        var listTpoResponse = await _tipoService.GetAllTipoUsuarioAsync();
+
+        if (listTpoResponse != null)
+        {
+            listTipoUsuario = listTpoResponse.Valor;
+        }
+
+        if (lisRolesResponse != null)
+        {
+            listRole = lisRolesResponse.Valor;
+            rolesFiltrados = listRole;
+        }
+        if (usuariosRes != null)
+        {
+            usuarioDto.Nombres = usuariosRes.Valor.Nombres;
+            usuarioDto.IdUsuario = usuariosRes.Valor.IdUsuario;
+            usuarioDto.UserName = usuariosRes.Valor.UserName;
+            usuarioDto.Nombres = usuariosRes.Valor.Nombres;
+            usuarioDto.Apellidos = usuariosRes.Valor.Apellidos;
+            usuarioDto.Email = usuariosRes.Valor.Email;
+            usuarioDto.Telefono = usuariosRes.Valor.Telefono;
+            usuarioDto.Activo = usuariosRes.Valor.Activo;
+            usuarioDto.TwoFactorEnabled = usuariosRes.Valor.TwoFactorEnabled;
+            usuarioDto.DebeCambiarPassword = usuariosRes.Valor.DebeCambiarPassword;
+            //  AQUI ESTA LO IMPORTANTE PARA ASIGNAR LOS VALORES A LA NUEVA LISTA 
+            usuarioDto.RolesIds = usuariosRes.Valor.RolesIds != null
+                ? new List<int>(usuariosRes.Valor.RolesIds)
+                : new List<int>();
+            usuarioDto.TiposUsuarioIds = usuariosRes.Valor.TiposUsuarioIds != null
+                ? new List<int>(usuariosRes.Valor.TiposUsuarioIds)
+                : new List<int>();
+
+            // Imagen si existe
+            if (usuariosRes.Valor.Foto != null && usuariosRes.Valor.Foto.Length > 0)
+            {
+                previewImage = $"data:image/jpeg;base64,{Convert.ToBase64String(usuariosRes.Valor.Foto)}";
+            }
+            // usuarioDto = usuariosRes.Valor;
+        }
+    }
+        private void FiltrarRoles(ChangeEventArgs e)
+            {
+                var texto = e.Value?.ToString()?.ToLower() ?? "";
+                if (string.IsNullOrWhiteSpace(texto))
+                {
+                    rolesFiltrados = listRole;
+                }
+                else
+                {
+                    rolesFiltrados = listRole.Where(r => 
+                        r.Nombre.ToLower().Contains(texto) || 
+                        (r.Descripcion?.ToLower().Contains(texto) ?? false)
+                    ).ToList();
+                }
+            }
+    private async Task EditarUsuario()
+    {
+        try 
+        {
+            procesando = true;
+            var response = await _usuarioClientService.ActualizarUsuarioAsync(usuarioDto);
+
+            if (response != null && response.EsCorrecto)
+            {
+                await js.InvokeVoidAsync("Swal.fire", "¡Éxito!", "Usuario actualizado correctamente", "success");
+                nav.NavigateTo("/Usuarios");
+            }
+            else
+            {
+                await js.InvokeVoidAsync("Swal.fire", "Error", response?.Mensaje ?? "No se pudo actualizar", "error");
+            }
+        }
+        catch (Exception ex)
+        {
+             await logClient.GuardarErrorAsync(
+                    ex.Message,
+                    ex.StackTrace,
+                    usuario: authClient.CurrentSession?.UserName ?? "No encontrado",
+                    metodo: "EditarUsuario",
+                    ruta: $"/Usuarios/Editar",
+                    origen: "Cliente blazor ",
+                    nivel: "error"); 
+            await js.InvokeVoidAsync("Swal.fire", "Error crítico", ex.Message, "error");
+        }
+        finally
+        {
+            procesando = false;
+        }
+    }
+
+     private async Task OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file != null)
+        {
+            try
+            {
+                // 1. Redimensionar para optimizar peso (400x400)
+                var resized = await file.RequestImageFileAsync("image/jpeg", 400, 400);
+                
+                // 2. Abrir stream con límite de 5MB (importante para que no falle el guardado)
+                using var stream = resized.OpenReadStream(1024 * 1024 * 5); 
+                
+                var buffer = new byte[resized.Size];
+                await stream.ReadAsync(buffer);
+                
+                // 3. Asignar al DTO y generar vista previa
+                usuarioDto.Foto = buffer;
+                previewImage = $"data:image/jpeg;base64,{Convert.ToBase64String(buffer)}";
+                
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                  await logClient.GuardarErrorAsync(
+                    ex.Message,
+                    ex.StackTrace,
+                    usuario: authClient.CurrentSession?.UserName ?? "No encontrado",
+                    metodo: "OnInputFileChange",
+                    ruta: $"/Usuarios/Editar",
+                    origen: "Cliente blazor ",
+                    nivel: "error"); 
+                await js.InvokeVoidAsync("Swal.fire", "Error", "No se pudo procesar la imagen: " + ex.Message, "error");
+            }
+        }
+    }
+   
+
+    private void SeleccionarRolCard(int id)
+    {
+        if (usuarioDto.RolesIds.Contains(id)) 
+            usuarioDto.RolesIds.Remove(id);
+        else usuarioDto.RolesIds.Add(id);
+    }
+
+    private void ToggleTipoUsuario(int id, object? val)
+    {
+        bool isChecked = (bool)(val ?? false);
+        if (isChecked) { if (!usuarioDto.TiposUsuarioIds.Contains(id)) usuarioDto.TiposUsuarioIds.Add(id); }
+        else usuarioDto.TiposUsuarioIds.Remove(id);
+    }
+
+}

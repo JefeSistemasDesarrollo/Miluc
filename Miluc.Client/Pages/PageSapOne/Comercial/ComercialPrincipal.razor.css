@@ -1,0 +1,123 @@
+﻿:root {
+    --vinotinto: #800020;
+    --vinotinto-hover: #5d0017;
+    --rojo: #dc3545;
+    --rojo-hover: #bd2130;
+    --amarillo: #ffc107;
+    --amarillo-hover: #e0a800;
+}
+
+/* Clases de Identidad de Color */
+.text-vinotinto {
+    color: #800020 !important;
+}
+
+.border-vinotinto {
+    border-top-color: #800020 !important;
+}
+
+.bg-vinotinto-suave {
+    background-color: rgba(128, 0, 32, 0.08) !important;
+}
+
+.bg-rojo-suave-text {
+    background-color: #800020;
+    color: white;
+}
+
+.btn-vinotinto {
+    background-color: #800020;
+    color: white;
+    border: none;
+}
+
+    .btn-vinotinto:hover {
+        background-color: #5d0017;
+        color: white;
+    }
+
+.text-rojo {
+    color: #dc3545 !important;
+}
+
+.border-rojo {
+    border-top-color: #dc3545 !important;
+}
+
+.bg-rojo-suave {
+    background-color: rgba(220, 53, 69, 0.08) !important;
+}
+
+.btn-rojo {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+}
+
+    .btn-rojo:hover {
+        background-color: #bd2130;
+        color: white;
+    }
+
+.text-amarillo {
+    color: #b38600 !important;
+}
+/* Un tono más oscuro para contraste del icono */
+.border-amarillo {
+    border-top-color: #ffc107 !important;
+}
+
+.bg-amarillo-suave {
+    background-color: rgba(255, 193, 7, 0.12) !important;
+}
+
+.btn-amarillo {
+    background-color: #ffc107;
+    color: #212529;
+    border: none;
+}
+
+    .btn-amarillo:hover {
+        background-color: #e0a800;
+        color: #212529;
+    }
+
+/* Estilizado e Iconos Centrados */
+.fw-black {
+    font-weight: 900;
+}
+
+.tracking-wider {
+    letter-spacing: 1.5px;
+}
+
+.bg-light-gradient {
+    background: linear-gradient(145deg, #f8f9fa 0%, #f1f3f5 100%);
+}
+
+.icon-box {
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Efecto Suave y Animación Mínima (Hover) */
+.custom-hover-card {
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.4s ease;
+    will-change: transform, box-shadow;
+}
+
+    .custom-hover-card:hover {
+        transform: translateY(-4px) scale(1.01); /* Movimiento mínimo vertical y escala sutil */
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06) !important;
+    }
+
+.btn {
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+    .btn:active {
+        transform: scale(0.98);
+    }

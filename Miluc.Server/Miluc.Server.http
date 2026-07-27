@@ -1,0 +1,6 @@
+@Miluc.Server_HostAddress = http://localhost:5094
+
+GET {{Miluc.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

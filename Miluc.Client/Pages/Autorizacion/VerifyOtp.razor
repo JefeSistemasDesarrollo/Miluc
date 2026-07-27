@@ -1,0 +1,213 @@
+﻿@page "/verify-otp/{IdUsuario:int}"
+@attribute [AllowAnonymous]
+
+@using Miluc.Shared.DTOs.Autorizacion
+@inject IAuthClientService AuthService
+@inject NavigationManager Nav
+@inject IJSRuntime js
+
+<div class="container-fluid min-vh-100 d-flex align-items-center justify-content-center bg-light animate__animated animate__fadeIn">
+    <div class="card shadow-lg border-0 rounded-4 overflow-hidden" style="max-width: 400px; width: 100%;">
+        
+        @* Encabezado con color institucional *@
+        <div class="bg-vinotinto p-4 text-center text-white">
+            <div class="mb-3">
+                <i class="bi bi-shield-lock-fill fs-1"></i>
+            </div>
+            <h4 class="fw-bold m-0">Verificación de Seguridad</h4>
+            <p class="small opacity-75 mb-0">Seguridad en dos pasos (2FA)</p>
+        </div>
+
+        <div class="card-body p-4 p-md-5">
+            <p class="text-center text-muted mb-4 small">
+                Hemos enviado un código de seguridad a su correo electrónico registrado. Por favor, ingréselo a continuación.
+            </p>
+
+            <EditForm Model="model" OnValidSubmit="VerificarCodigo">
+                <DataAnnotationsValidator />
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold small text-secondary">Código de Verificación</label>
+                    <div class="input-group input-group-lg search-group">
+                        <span class="input-group-text bg-white border-end-0 rounded-start-pill ps-3">
+                            <i class="bi bi-safe2 text-vinotinto"></i>
+                        </span>
+                        <InputText class="form-control border-start-0 shadow-none fs-5 fw-bold rounded-end-pill custom-input"
+                                   @bind-Value="model.Codigo"
+                                   placeholder="______" 
+                                   maxlength="6" />
+                    </div>
+                    <ValidationMessage For="@(() => model.Codigo)" class="text-danger small mt-1" />
+                </div>
+
+                <button type="submit" class="btn btn-vinotinto w-100 rounded-pill py-3 shadow-sm fw-bold d-flex align-items-center justify-content-center" disabled="@loading">
+                    @if (loading)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2"></span> <span>Validando...</span>
+                    }
+                    else
+                    {
+                        <i class="bi bi-check-circle-fill me-2"></i> <span>Verificar Identidad</span>
+                    }
+                </button>
+            </EditForm>
+
+            <div class="mt-4 text-center">
+                <button class="btn btn-link btn-sm text-decoration-none text-muted" @onclick="VolverAlLogin" disabled="@loading">
+                    <i class="bi bi-arrow-left me-1"></i> Volver al inicio de sesión
+                </button>
+            </div>
+        </div>
+        
+        <div class="card-footer bg-white border-0 pb-4 text-center">
+            <small class="text-muted" style="font-size: 0.7rem;">&copy; 2026 Miluc - Sistema de Gestión de Permisos</small>
+        </div>
+    </div>
+</div>
+@code {
+    [Parameter] public int IdUsuario { get; set; }
+    private VerifyOtpRequest model = new();
+    private bool loading = false;
+
+    protected override void OnInitialized()
+    {
+        model.IdUsuario = IdUsuario;
+    }
+
+    private async Task VerificarCodigo()
+    {
+        if (string.IsNullOrWhiteSpace(model.Codigo)) return;
+        
+        loading = true;
+        try
+        {
+            var result = await AuthService.VerifyOtp(model);
+
+            if (result.EsCorrecto && result.Valor != null)
+            {
+                await js.InvokeVoidAsync("Swal.fire", new {
+                    title = "¡Bienvenido!",
+                    text = "Identidad confirmada con éxito",
+                    icon = "success",
+                    confirmButtonColor = "#800020"
+                });
+
+                Nav.NavigateTo("/");
+            }
+            else
+            {
+                await js.InvokeVoidAsync("Swal.fire", new {
+                    title = "Código Inválido",
+                    text = result.Mensaje,
+                    icon = "error",
+                    confirmButtonColor = "#800020"
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            await js.InvokeVoidAsync("Swal.fire", "Error de Conexión", ex.Message, "error");
+        }
+        finally { loading = false; }
+    }
+
+    private void VolverAlLogin() => Nav.NavigateTo("/login");
+}
+
+@* 
+@page "/verify-otp/{IdUsuario:int}"
+@attribute [AllowAnonymous]
+
+@using Miluc.Shared.DTOs.Autorizacion
+@inject IAuthClientService AuthService
+@inject NavigationManager Nav
+@inject IJSRuntime js
+
+<div class="container mt-5">
+    <div class="card shadow p-4" style="max-width:450px;margin:auto;">
+
+        <h4 class="text-center mb-3">Verificación en dos pasos</h4>
+
+        <p class="text-center text-muted">
+            Ingrese el código enviado a su correo
+        </p>
+
+        <EditForm Model="model" OnValidSubmit="VerificarCodigo">
+
+            <DataAnnotationsValidator />
+
+            <div class="mb-3">
+                <label>Código</label>
+                <InputText class="form-control"
+                           @bind-Value="model.Codigo"
+                           placeholder="000000" />
+            </div>
+
+            <button class="btn btn-primary w-100" disabled="@loading">
+
+                @if (loading)
+                {
+                    <span class="spinner-border spinner-border-sm"></span>
+                }
+                else
+                {
+                    <span>Verificar</span>
+                }
+
+            </button>
+
+        </EditForm>
+
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public int IdUsuario { get; set; }
+
+    private VerifyOtpRequest model = new();
+
+    private bool loading = false;
+
+    protected override void OnInitialized()
+    {
+        model.IdUsuario = IdUsuario;
+    }
+
+    private async Task VerificarCodigo()
+    {
+        loading = true;
+
+        try
+        {
+            var result = await AuthService.VerifyOtp(model);
+
+            if (result.EsCorrecto && result.Valor != null)
+            {
+                await js.InvokeVoidAsync("Swal.fire",
+                    "Correcto",
+                    "Código verificado",
+                    "success");
+
+                Nav.NavigateTo("/");
+            }
+            else
+            {
+                await js.InvokeVoidAsync("Swal.fire",
+                    "Error",
+                    result.Mensaje,
+                    "error");
+            }
+        }
+        catch (Exception ex)
+        {
+            await js.InvokeVoidAsync("Swal.fire",
+                "Error",
+                ex.Message,
+                "error");
+        }
+
+        loading = false;
+    }
+} *@

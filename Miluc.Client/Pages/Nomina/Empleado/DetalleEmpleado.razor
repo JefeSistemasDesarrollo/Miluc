@@ -1,0 +1,218 @@
+﻿@page "/Administrar/Empleado/Detalle/{id:int}"
+
+@using Miluc.Client.Interfaces.Nomina
+@using Miluc.Shared.DTOs.Nomina.EmpleadoDto
+@using Miluc.Shared.DTOs.Nomina.EstadoCivilDto
+@using Miluc.Shared.DTOs.Nomina.MunicipioDto
+@using Miluc.Shared.DTOs.Nomina.TipoDocumento
+
+@inject NavigationManager nav
+@inject IDepartamentosClientService _municipioClientService
+@inject ITipoDocumentoClienteService _tipoDocumentoClientService
+@inject IEmpleadoClientService _empleadoService
+@inject IEstadoCivilClientService _estadoCivil
+@inject IJSRuntime JS
+
+<div class="empleado-page p-4 animate__animated animate__fadeIn">
+    <div class="container-fluid max-width-container">
+
+        @* --- CABECERA DE LA PÁGINA --- *@
+        <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
+            <div>
+                <h2 class="fw-extrabold text-vinotinto m-0 tracking-tight">
+                    <i class="bi bi-eye"></i>
+                    Detalle del Empleado
+                </h2>
+                <p class="text-muted mb-0 small mt-1">
+                    Visualización de la hoja de vida y datos maestros del colaborador.
+                </p>
+            </div>
+
+            <button class="btn btn-vinotinto btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
+                <i class="bi bi-arrow-left me-2"></i> Volver al listado
+            </button>
+        </div>
+
+        @if (empleado == null)
+        {
+            <div class="d-flex justify-content-center my-5">
+                <div class="spinner-border text-vinotinto" role="status">
+                    <span class="visually-hidden">Cargando datos...</span>
+                </div>
+            </div>
+        }
+        else
+        {
+            @* --- VISTA DE DATOS (SOLO LECTURA) --- *@
+            <div class="row g-4">
+
+                @* --- BLOQUE 1: DATOS PERSONALES --- *@
+                <div class="col-12">
+                    <div class="card card-custom border-0 shadow-sm rounded-4">
+                        <div class="card-body p-4">
+                            <div class="section-title-container mb-4">
+                                <span class="badge bg-vinotinto-light text-vinotinto rounded-pill mb-2 px-3 py-2 fw-bold text-uppercase tracking-wider">Información Básica</span>
+                            </div>
+
+                            <div class="row g-4">
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">Primer Nombre</label>
+                                    <input type="text" class="form-control input-custom-view" value="@empleado.PrimerNombre" readonly />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">Segundo Nombre</label>
+                                    <input type="text" class="form-control input-custom-view" value="@empleado.SegundoNombre" readonly />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">Primer Apellido</label>
+                                    <input type="text" class="form-control input-custom-view" value="@empleado.PrimerApellido" readonly />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">Segundo Apellido</label>
+                                    <input type="text" class="form-control input-custom-view" value="@empleado.SegundoApellido" readonly />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">Fecha de Nacimiento</label>
+                                    <input type="text" class="form-control input-custom-view" value="@empleado.FechaNacimiento.ToString("dd/MM/yyyy")" readonly />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">Número de Documento</label>
+                                    <input type="text" class="form-control input-custom-view" value="@empleado.Documento" readonly />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">Fecha Expedición Documento</label>
+                                    <input type="text" class="form-control input-custom-view" value="@empleado.FechaExpedicionDoc.ToString("dd/MM/yyyy")" " readonly  />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">Celular</label>
+                                    <input type="text" class="form-control input-custom-view" value="@empleado.Celular" readonly />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">Celular Alterno</label>
+                                    <input type="text" class="form-control input-custom-view" value="@empleado.CelularAlterno" readonly />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">Correo Electrónico</label>
+                                    <input type="text" class="form-control input-custom-view" value="@empleado.CorreoElectronico" readonly />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">Dirección</label>
+                                    <input type="text" class="form-control input-custom-view" value="@empleado.Direccion" readonly />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">Barrio</label>
+                                    <input type="text" class="form-control input-custom-view" value="@empleado.Barrio" readonly />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">Estado</label>
+                                    <div>
+                                        @if (empleado.Activo)
+                                        {
+                                            <span class="badge bg-success px-3 py-2 rounded-pill"><i class="bi bi-check-circle me-1"></i> Activo</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger px-3 py-2 rounded-pill"><i class="bi bi-x-circle me-1"></i> Inactivo</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                @* --- BLOQUE 2: UBICACIÓN GEOGRÁFICA --- *@
+                <div class="col-12 col-md-6">
+                    <div class="card card-custom border-0 shadow-sm rounded-4 h-100">
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold text-dark mb-3">Ubicación Laboral / Residencia</h5>
+                            <div class="mb-3">
+                                <label class="form-label label-custom">Municipio / Departamento</label>
+                                @* Mostramos el Nombre unificado que viene del JOIN en el backend *@
+                                <input type="text" class="form-control input-custom-view" value="@empleado.NombreMunicipio" readonly />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @* --- INFORMACIÓN EXTRA ILUSTRATIVA / COMPLEMENTARIA --- *@
+                <div class="col-12 col-lg-6 col-md-4 col-sm-12">
+                    <div class="card card-info-banner border-0 shadow-sm rounded-4 h-100 p-4 position-relative overflow-hidden">
+                        <div class="position-relative z-index-2 d-flex flex-column h-100 justify-content-center">
+                            <h5 class="fw-bold text-vinotinto mb-2"><i class="bi bi-shield-lock-fill me-2"></i>Seguridad de los datos</h5>
+                            <p class="text-secondary small mb-0 lh-lg">
+                                Todos los datos registrados en esta plataforma son almacenados y procesados de manera segura.
+                                La organización garantiza la confidencialidad de la información del colaborador y limita su acceso
+                                exclusivamente a usuarios autorizados para fines administrativos, legales y de gestión humana.
+                            </p>
+                        </div>
+                        <div class="decorative-circle"></div>
+                    </div>
+                </div>
+            </div>
+            
+        }
+    </div>
+</div>
+
+
+
+@code {
+    // Definición correcta de los parámetros para capturar el ID sin importar cómo lo envíe el listado
+    [Parameter]
+    public int id { get; set; }
+
+    [Parameter]
+    public int IdEmpleado { get; set; }
+
+    // Usamos el DTO con tipado fuerte
+    private EmpleadoReaderDto? empleado = null;
+
+    private void Volver() => nav.NavigateTo("/Administrar/Empleado");
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Validamos cuál parámetro trae el valor de la URL
+            int idFinal = id > 0 ? id : IdEmpleado;
+
+            if (idFinal == 0)
+            {
+                await JS.InvokeVoidAsync("alert", "ID de empleado no válido.");
+                Volver();
+                return;
+            }
+
+            var respuesta = await _empleadoService.GetEmpleadoByIdAsync(idFinal);
+
+            if (respuesta != null && respuesta.EsCorrecto && respuesta.Valor != null)
+            {
+                empleado = respuesta.Valor;
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("alert", "No se pudo obtener la información del empleado.");
+                Volver();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al consultar: {ex.Message}");
+            await JS.InvokeVoidAsync("alert", "Error interno al recuperar el detalle.");
+            Volver();
+        }
+    }
+}

@@ -1,0 +1,488 @@
+﻿@page "/Administrar/Empleado/Editar/{idEmpleado:int}"
+
+@using Miluc.Client.Interfaces.Nomina
+@using Miluc.Shared.DTOs.Nomina.EmpleadoDto
+@using Miluc.Shared.DTOs.Nomina.EstadoCivilDto
+@using Miluc.Shared.DTOs.Nomina.MunicipioDto
+@using Miluc.Shared.DTOs.Nomina.TipoDocumento
+
+@inject NavigationManager nav
+@inject IDepartamentosClientService _municipioClientService
+@inject ITipoDocumentoClienteService _tipoDocumentoClientService
+@inject IEmpleadoClientService _empleadoService
+@inject IEstadoCivilClientService _estadoCivil
+@inject IJSRuntime JS
+
+<div class="empleado-page p-4 animate__animated animate__fadeIn">
+    <div class="container-fluid max-width-container">
+
+        @* --- CABECERA DE LA PÁGINA --- *@
+        <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
+            <div>
+                <h2 class="fw-extrabold text-vinotinto m-0 tracking-tight">
+                    <i class="bi bi-pen"></i>
+                    Editar Empleado
+                </h2>
+                <p class="text-muted mb-0 small mt-1">
+                    Actualización de datos personales. Los campos marcados con <span class="text-danger">*</span> son requeridos.
+                </p>
+            </div>
+
+            <button class="btn btn-vinotinto btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
+                <i class="bi bi-arrow-left me-2"></i> Volver al listado
+            </button>
+        </div>
+
+        @* --- FORMULARIO PRINCIPAL --- *@
+        <EditForm Model="editarEmpleado" OnValidSubmit="EjecutarGuardado">
+            <DataAnnotationsValidator />
+
+            <div class="row g-4">
+
+                @* --- BLOQUE 1: DATOS PERSONALES --- *@
+                <div class="col-12">
+                    <div class="card card-custom border-0 shadow-sm rounded-4">
+                        <div class="card-body p-4">
+                            <div class="section-title-container mb-4">
+                                <span class="badge bg-vinotinto-light text-vinotinto rounded-pill mb-2 px-3 py-2 fw-bold text-uppercase tracking-wider">Paso 1</span>
+                                <h5 class="fw-bold text-dark m-0">Datos de Identificación</h5>
+                            </div>
+
+                            <div class="row g-4">
+
+
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">Primer Nombre <span class="text-danger">*</span></label>
+                                    <div class="input-group-custom">
+                                        <span class="input-icon"><i class="bi bi-person"></i></span>
+                                        <InputText class="form-control input-custom" @bind-Value="editarEmpleado.PrimerNombre" placeholder="Ej: Juan" />
+                                    </div>
+                                    @* esto es para hacer las validaciones  que esta en el dto  *@
+                                    <ValidationMessage For="@(() => editarEmpleado.PrimerNombre)" class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom text-muted-custom">Segundo Nombre</label>
+                                    <div class="input-group-custom">
+                                        <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
+                                        <InputText class="form-control input-custom" @bind-Value="editarEmpleado.SegundoNombre" placeholder="Opcional" />
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom text-muted-custom">Primer Apellido</label>
+                                    <div class="input-group-custom">
+                                        <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
+                                        <InputText class="form-control input-custom" @bind-Value="editarEmpleado.PrimerApellido" placeholder="Primer Apellido" />
+                                        <ValidationMessage For="@(() => editarEmpleado.PrimerApellido)" class="text-danger small mt-1 d-block fw-medium" />
+
+                                    </div>
+                                </div>
+
+
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom text-muted-custom">Segundo Apellido</label>
+                                    <div class="input-group-custom">
+                                        <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
+                                        <InputText class="form-control input-custom" @bind-Value="editarEmpleado.SegundoApellido" placeholder="Segundo apellido" />
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom text-muted-custom">Fecha nacimiento</label>
+                                    <div class="input-group-custom">
+                                        <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
+
+                                        <InputDate class="form-control input-custom"
+                                                   @bind-Value="editarEmpleado.FechaNacimiento"
+                                                   max="@DateTime.Today.ToString("yyyy-MM-dd")"
+                                                   placeholder="Fecha de nacimiento" />
+                   
+                                        <ValidationMessage For="@(() => editarEmpleado.FechaNacimiento)" class="text-danger small mt-1 d-block fw-medium" />
+                                    </div>
+                                </div>
+
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom text-muted-custom">Tipo de documento</label>
+                                    <div class="input-group-custom">
+                                        <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
+
+
+                                        <InputSelect @bind-Value="editarEmpleado.TipoDocumentoId" class="form-control input-custom">
+                                            <option value="">Seleccionar tipo de documento</option>
+                                            @foreach (var m in listDocumento)
+                                            {
+                                                <option value="@m.TipoDocumentoId">@m.Nombre</option>
+                                            }
+                                        </InputSelect>
+
+                                     
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">Número de Documento <span class="text-danger">*</span></label>
+                                    <div class="input-group-custom">
+                                        <span class="input-icon"><i class="bi bi-card-text"></i></span>
+                                        <InputText class="form-control input-custom" @bind-Value="editarEmpleado.Documento" placeholder="Ej: 100023456" />
+                                    </div>
+                                    <ValidationMessage For="@(() => editarEmpleado.Documento)" class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom text-muted-custom">Fecha Expedición Documento</label>
+                                    <div class="input-group-custom">
+                                        <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
+
+                                        <InputDate class="form-control input-custom"
+                                                   @bind-Value="editarEmpleado.FechaExpedicionDoc"
+                                                   max="@DateTime.Today.ToString("yyyy-MM-dd")"
+                                                   placeholder="Fecha expedicion doc" />
+                   
+                                        <ValidationMessage For="@(() => editarEmpleado.FechaExpedicionDoc)" class="text-danger small mt-1 d-block fw-medium" />
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom text-muted-custom">Estado Civil</label>
+                                    <div class="input-group-custom">
+                                        <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
+
+
+                                        <div class="select2-wrapper">
+
+                                            <InputSelect @bind-Value="editarEmpleado.EstadoCivilId" class="form-control input-custom">
+                                                <option value="">Seleccionar estado civil</option>
+                                                @foreach (var estado in listEstadoCivil)
+                                                {
+                                                    <option value="@estado.EstadoCivilId">@estado.Nombre</option>
+                                                }
+                                            </InputSelect>
+
+                                          
+                                        </div>
+                                    </div>
+                                </div>
+
+                               
+ 
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom text-muted-custom">Celular</label>
+                                    <div class="input-group-custom">
+                                        <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
+
+                                        <InputText class="form-control input-custom" @bind-Value="editarEmpleado.Celular" placeholder="Celular" />
+                                        <ValidationMessage For="@(() => editarEmpleado.Celular)" class="text-danger small mt-1 d-block fw-medium" />
+                                        @* <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.SegundoApellido" placeholder="Segundo apellido" /> *@
+                                    </div>
+                                </div>
+
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom text-muted-custom">Celular Alterno</label>
+                                    <div class="input-group-custom">
+                                        <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
+
+                                        <InputText class="form-control input-custom" @bind-Value="editarEmpleado.CelularAlterno" placeholder="Celular Alterno" />
+                                        <ValidationMessage For="@(() => editarEmpleado.CelularAlterno)" class="text-danger small mt-1 d-block fw-medium" />
+                                        @* <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.SegundoApellido" placeholder="Segundo apellido" /> *@
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom text-muted-custom">Correo</label>
+                                    <div class="input-group-custom">
+                                        <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
+
+                                        <InputText class="form-control input-custom" @bind-Value="editarEmpleado.CorreoElectronico" placeholder="Correo" />
+                                        <ValidationMessage For="@(() => editarEmpleado.CorreoElectronico)" class="text-danger small mt-1 d-block fw-medium" />
+                                        @* <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.SegundoApellido" placeholder="Segundo apellido" /> *@
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom text-muted-custom">Dirección</label>
+                                    <div class="input-group-custom">
+                                        <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
+
+                                        <InputText class="form-control input-custom" @bind-Value="editarEmpleado.Direccion" placeholder="Direccion" />
+                                        <ValidationMessage For="@(() => editarEmpleado.Direccion)" class="text-danger small mt-1 d-block fw-medium" />
+                                        @* <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.SegundoApellido" placeholder="Segundo apellido" /> *@
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom text-muted-custom">Barrio</label>
+                                    <div class="input-group-custom">
+                                        <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
+
+                                        <InputText class="form-control input-custom" @bind-Value="editarEmpleado.Barrio" placeholder="Barrio" />
+                                        <ValidationMessage For="@(() => editarEmpleado.Barrio)" class="text-danger small mt-1 d-block fw-medium" />
+                                        @* <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.SegundoApellido" placeholder="Segundo apellido" /> *@
+                                    </div>
+                                </div>
+                           
+                                <div class="col-md-4 ">
+
+                                    <label class="form-label label-custom text-muted-custom">Estado</label>
+
+
+
+                                    <div class="input-group-custom">
+                                        <div class=" card card-custom border-0 shadow-sm rounded-4">
+                                            <div class="card-body input-custom">                                           
+                                           
+                                                <div class="input-group-custom ">                                             
+                                                    <div class="form-check form-switch switch-lg ">
+                                                        <InputCheckbox class=" form-check-input form-control " @bind-Value="editarEmpleado.Activo"> </InputCheckbox>
+                                                        @if (editarEmpleado.Activo) {
+                                                            <span class="text-success ">
+                                                                        Activo
+                                                            </span>
+
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="text-danger">
+                                                                     Inactivo
+                                                            </span>
+                                                        }
+
+                                                    </div>
+
+                                                    
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+
+                                   
+                                  
+                                </div>
+                     
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @* --- BLOQUE 2: UBICACIÓN --- *@
+           <div class="row">
+
+                <div class="col-12 col-lg-6 col-md-8 col-sm-12">
+                    <div class="card card-custom border-0 shadow-sm rounded-4 h-100">
+                        <div class="card-body p-4 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="section-title-container mb-4">
+                                    <span class="badge bg-vinotinto-light text-vinotinto rounded-pill mb-2 px-3 py-2 fw-bold text-uppercase tracking-wider">Paso 2</span>
+                                    <h5 class="fw-bold text-dark m-0">Ubicación y Residencia</h5>
+
+                                    @*munucipio*@
+                                    <div class="mb-2">
+                                        <label class="form-label label-custom">Seleccione el municipio <span class="text-danger">*</span></label>
+                                        <div class="select2-wrapper">
+
+                                            <div class="col-12 col-lg-8">
+                                                <label class="form-label label-custom text-muted-custom"> Municipio</label>
+                                                <div class="input-group-custom">
+                                                    <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
+                                            
+
+                                                
+
+
+                                                    <div class="select2-wrapper">
+                                                        <select id="municipiosSelect"@bind="editarEmpleado.CodigoMunicipio"  class="form-select input-custom">
+                                                            <option value="">Buscar municipio...</option>
+                                                            @foreach (var m in listmunicipios)
+                                                            {
+                                                                <option value="@m.Codigo">@m.Nombre - @m.NombreDepartamento</option>
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    
+                    </div>
+                </div>
+
+              
+
+                    
+                    @* --- INFORMACIÓN EXTRA ILUSTRATIVA / COMPLEMENTARIA --- *@
+                <div class="col-12 col-lg-6 col-md-4 col-sm-12">
+                        <div class="card card-info-banner border-0 shadow-sm rounded-4 h-100 p-4 position-relative overflow-hidden">
+                            <div class="position-relative z-index-2 d-flex flex-column h-100 justify-content-center">
+                                <h5 class="fw-bold text-vinotinto mb-2"><i class="bi bi-shield-lock-fill me-2"></i>Seguridad de los datos</h5>
+                                <p class="text-secondary small mb-0 lh-lg">
+                                    Al actualizar la información de un colaborador, confirme que el número de identificación y demás datos coincidan con los documentos oficiales. Esta verificación garantiza la correcta gestión de afiliaciones y trámites de seguridad social.
+                                </p>
+                            </div>
+                            <div class="decorative-circle"></div>
+                        </div>
+                    </div>
+           </div>
+
+            
+                
+            
+
+
+           
+
+
+            @* --- BARRA DE ACCIONES / BOTÓN GUARDAR --- *@
+            <div class="mt-5 pt-3 border-top d-flex justify-content-end gap-3">
+                <button type="button" class="btn btn-light-custom rounded-pill px-4 py-2.5 fw-semibold transition-all" @onclick="Volver">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn btn-vinotinto btn-lg px-5 rounded-pill shadow-sm fw-bold transition-all d-flex align-items-center" disabled="@isProcessing">
+                    @if (isProcessing)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        <span>Procesando...</span>
+                    }
+                    else
+                    {
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        <span>Actualizar Empleado</span>
+                    }
+                </button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+
+@code {
+
+    [Parameter]
+    public int idEmpleado { get; set; }
+
+    private EmpleadoUpdateDto editarEmpleado = new();
+    private List<MunicipioReaderDto> listmunicipios = new();
+
+    private List<TipoDocumentoReaderDto> listDocumento = new List<TipoDocumentoReaderDto>();
+
+    private List<EstadoCivilReaderDto> listEstadoCivil = new List<EstadoCivilReaderDto>();
+    private bool isProcessing = false;
+
+    private void Volver() => nav.NavigateTo("/Administrar/Empleado");
+    private DateTime MaxFechaNacimiento => DateTime.Today;
+
+    [JSInvokable]
+    public void ActualizarMunicipioDesdeJS(string codigo)
+    {
+        editarEmpleado.CodigoMunicipio = codigo;
+        StateHasChanged();
+    }
+    //cuando se inicializala aplicacion por primera vez
+    //aca vamos acargar todos las tablas dependientes paara crear empleados
+
+    protected override async Task OnInitializedAsync()
+    {
+
+
+        //aca vamos a consultar el empleado por id empleado que estamos capturando
+
+        var empleado = await _empleadoService.GetEmpleadoByIdAsync(idEmpleado);
+
+        if (empleado.Valor != null)
+        {
+            editarEmpleado.EmpleadoId = empleado.Valor.EmpleadoId;
+
+            editarEmpleado.PrimerNombre = empleado.Valor.PrimerNombre;
+            editarEmpleado.SegundoNombre = empleado.Valor.SegundoNombre;
+            editarEmpleado.PrimerApellido = empleado.Valor.PrimerApellido;
+            editarEmpleado.SegundoApellido = empleado.Valor.SegundoApellido;
+            editarEmpleado.FechaNacimiento = empleado.Valor.FechaNacimiento;
+            editarEmpleado.FechaExpedicionDoc = empleado.Valor.FechaExpedicionDoc;
+            editarEmpleado.TipoDocumentoId = empleado.Valor.TipoDocumentoId;
+            editarEmpleado.Documento = empleado.Valor.Documento;
+            editarEmpleado.EstadoCivilId = empleado.Valor.EstadoCivilId;
+            editarEmpleado.Celular = empleado.Valor.Celular;
+            editarEmpleado.CelularAlterno = empleado.Valor.CelularAlterno;
+            editarEmpleado.CorreoElectronico = empleado.Valor.CorreoElectronico;
+            editarEmpleado.Direccion = empleado.Valor.Direccion;
+            editarEmpleado.Barrio = Convert.ToString(empleado.Valor.Barrio);
+            editarEmpleado.CodigoMunicipio = empleado.Valor.CodigoMunicipio;
+            editarEmpleado.Activo = empleado.Valor.Activo;
+
+        }
+
+        var respuestaMunicipios = await _municipioClientService.GetMunicipiosAsync();
+        if (respuestaMunicipios.EsCorrecto) listmunicipios = respuestaMunicipios.Valor;
+
+        // //aca vamos a caragar el tipo de documento para mostrarlo en el select
+        var respuestaTipoDocumento = await _tipoDocumentoClientService.GetTipoDocumentosAsync();
+        if (respuestaTipoDocumento.EsCorrecto)
+            listDocumento = respuestaTipoDocumento.Valor;
+
+        var respuestaEstado = await _estadoCivil.GetEstadosCivilesAsync();
+        if (respuestaEstado.EsCorrecto) listEstadoCivil = respuestaEstado.Valor;
+
+
+
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var dotNetHelper = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("inicializarSelect2", dotNetHelper);
+        }
+    }
+
+    public async Task EjecutarGuardado()
+    {
+        isProcessing = true;
+        try
+        {
+
+
+
+            var respuesta = await _empleadoService.UpdateEmpleadosAsync(editarEmpleado);
+            if (respuesta.EsCorrecto)
+            {
+                await JS.InvokeVoidAsync("Swal.fire", "Exito", "La información De el empleado ha sido actualizada correctamente.", "success");
+                Volver();
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("Swal.fire", "Error", $"No se pudo actualizar: {respuesta.Mensaje}", "error");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("Swal.fire", "Fatal Error", $"Exception Interna :{ex.Message}", "error");
+        }
+        finally { isProcessing = false; }
+    }
+}
+
+@* --- LÓGICA JAVASCRIPT --- *@
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    window.inicializarSelect2 = (dotNetHelper) => {
+    const select = $('#municipiosSelect');
+
+    select.select2({
+    placeholder: "Buscar municipio...",
+    allowClear: true,
+    width: '100%'
+    });
+
+    select.on('change', function () {
+    dotNetHelper.invokeMethodAsync('ActualizarMunicipioDesdeJS', $(this).val());
+    });
+    };
+</script>

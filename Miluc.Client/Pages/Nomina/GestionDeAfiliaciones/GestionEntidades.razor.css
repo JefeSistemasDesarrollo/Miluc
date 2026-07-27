@@ -1,0 +1,226 @@
+﻿.card-miluc {
+    background: linear-gradient(145deg, #ffffff, #f8f8f8);
+    border-radius: 22px;
+    border: none;
+    border-top: 6px solid #800020;
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    /* SOMBRA */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    /* ANIMACIÓN */
+    /*transition: transform 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;*/
+    /* MOVIMIENTO SUAVE */
+    /*animation: flotar 4s ease-in-out infinite;*/
+}
+
+    /* EFECTO BRILLO */
+    .card-miluc::before {
+        content: "";
+        position: absolute;
+        top: -100%;
+        left: -100%;
+        /*  width: 200%;
+        height: 200%;*/
+        background: linear-gradient( 120deg, transparent, rgba(255,255,255,0.4), transparent );
+        transform: rotate(25deg);
+        transition: 0.5s;
+    }
+
+    .card-miluc:hover::before {
+        top: 100%;
+        left: 100%;
+    }
+
+    /* HOVER */
+    .card-miluc:hover {
+        transform: translateY(-12px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(128, 0, 32, 0.25);
+        border-top-color: #D62F46;
+    }
+
+        .card-miluc:hover .icono-wrapper {
+            transform: rotate(10deg) scale(1.1);
+            background: rgba(214, 47, 70, 0.2);
+        }
+
+/* ANIMACIÓN FLOTANTE */
+@keyframes flotar {
+    0% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-6px);
+    }
+
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+/* ICONO */
+.icono-wrapper {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    background: rgba(214, 47, 70, 0.1);
+    color: #D62F46;
+    transition: transform 0.3s ease, background 0.3s ease;
+}
+
+/* BOTONES */
+.btn-miluc {
+    width: 90%;
+    padding: 10px;
+    border-radius: 7px;
+    text-decoration: none;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-rojo {
+    background: #800020;
+    /*background: linear-gradient(135deg, #D62F46, #800020);*/
+    color: white;
+    box-shadow: 0 5px 15px rgba(214, 47, 70, 0.1);
+}
+
+    .btn-rojo:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 20px rgba(214, 47, 70, 0.5);
+    }
+
+
+
+/*color-amarillo*/
+
+.card-miluc-amarillo {
+    background: linear-gradient(145deg, #ffffff, #f8f8f8);
+    border-radius: 22px;
+    border: none;
+    border-top: 6px solid #d3980b;
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    /* SOMBRA */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    /* ANIMACIÓN */
+    /*transition: transform 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;*/
+    /* MOVIMIENTO SUAVE */
+    /*animation: flotar 4s ease-in-out infinite;*/
+}
+
+
+
+
+.btn-miluc-amarillo {
+    width: 90%;
+    padding: 10px;
+    border-radius: 7px;
+    text-decoration: none;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+/* EFECTO BRILLO */
+.card-miluc-amarillo::before {
+    content: "";
+    position: absolute;
+    top: -100%;
+    left: -100%;
+    /*  width: 200%;
+        height: 200%;*/
+    background: linear-gradient( 120deg, transparent, rgba(255,255,255,0.4), transparent );
+    transform: rotate(25deg);
+    transition: 0.5s;
+}
+
+.card-miluc-amarillo:hover::before {
+    top: 100%;
+    left: 100%;
+}
+
+/* HOVER */
+.card-miluc-amarillo:hover {
+    transform: translateY(-12px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(128, 0, 32, 0.25);
+    border-top-color: #d3980b;
+}
+
+    .card-miluc-amarillo:hover .icono-wrapper {
+        transform: rotate(10deg) scale(1.1);
+        background: rgba(214, 47, 70, 0.2);
+    }
+
+.btn-amarillo:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(214, 47, 70, 0.5);
+}
+
+.btn-amarillo:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(214, 47, 70, 0.5);
+}
+/* ICONO */
+.icono-wrapper-amarillo {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    background: #800020;
+    color: #d3980b;
+    transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.btn-amarillo {
+    background: #d3980b;
+    /*background: linear-gradient(135deg, #D62F46, #800020);*/
+    color: white;
+    box-shadow: 0 5px 15px rgba(214, 47, 70, 0.1);
+}
+
+
+/* HOVER */
+.card-miluc-amarillo:hover {
+    transform: translateY(-12px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(128, 0, 32, 0.25);
+    border-top-color: #D62F46;
+}
+
+
+    .card-miluc-amarillo:hover .icono-wrapper-amarillo {
+        transform: rotate(10deg) scale(1.1);
+        background: rgba(214, 47, 70, 0.2);
+    }
+
+.btn-vinotinto {
+    background: #800020;
+    color: white;
+}

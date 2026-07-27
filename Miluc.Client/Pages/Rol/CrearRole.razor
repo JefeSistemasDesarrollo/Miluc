@@ -1,0 +1,131 @@
+﻿@page "/Roles/Crear"
+@using Miluc.Client.Interfaces.UsuariosRolesPermisos
+@using Miluc.Shared.DTOs.Roles
+@using System.Threading.Tasks
+@inject IRolClientService _roleService
+@inject IJSRuntime js
+@inject NavigationManager nav
+@inject IAuthClientService authClient
+@inject ILogClientService LogService
+
+<div class="role-page animate__animated animate__fadeIn p-2">
+
+    @* Cabecera *@
+    <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-2">
+        <div>
+            <h2 class="fw-bold text-vinotinto m-0"><i class="bi bi-person-plus-fill me-2"></i>Registrar Role</h2>
+            <p class="text-muted mb-0 small">Complete los datos obligatorios marcados con (*).</p>
+        </div>
+
+        <button class="btn btn-vinotinto btn-sm rounded-pill px-3" @onclick="Volver"><i class="bi bi-arrow-left me-1"> Volver Role</i> </button>
+    </div>
+
+    <EditForm Model="roleCreateDto" OnValidSubmit="EjecutarGuardado">
+        <DataAnnotationsValidator />
+        <div class="row g-4">
+            <div class="col-xl-12 col-lg-6 col-lg-3">
+                <div class="card shadow-sm border-0 mb-4 rounded-4">
+                    <div class="card-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-secondary">Nombre</label>
+                            <InputText class="form-control custom-input" @bind-Value="roleCreateDto.Nombre" />
+                            <ValidationMessage For="@(() => roleCreateDto.Nombre)"> </ValidationMessage>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-secondary">Descripcion</label>
+                            <InputText class="form-control custom-input" @bind-Value="roleCreateDto.Descripcion" />
+                            <ValidationMessage For="@(() => roleCreateDto.Descripcion)"> </ValidationMessage>
+                        </div>
+                    </div>
+                   <div class="card-footer bg-white border-0 p-4 text-end">
+                        <button type="submit" class="btn btn-vinotinto btn-lg rounded-pill px-5 shadow-sm" disabled="@procesando">
+                            @if (procesando)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2"></span> <span>Guardando...</span>
+                            }
+                            else
+                            {
+                                <span><i class="bi bi-person-check-fill me-2"></i>Guardar Role</span>
+                            }
+                        </button>
+                    </div>
+                
+                 </div>
+            </div>
+        </div>
+    </EditForm>
+</div>
+@code {
+
+    private RolCreateDto roleCreateDto = new RolCreateDto();
+
+    private bool procesando = false;
+
+    private void Volver()
+    {
+        nav.NavigateTo("/Configuracion/Roles");
+    }
+    protected override  async Task OnInitializedAsync()
+    {
+        if (!authClient.HasPermission("Rol.Create"))
+        {
+              nav.NavigateTo("/no-autorizado");
+
+            return;
+        }
+    }
+
+    private async Task EjecutarGuardado()
+    {
+        try
+        {
+            procesando = true;
+            if (roleCreateDto != null)
+            {
+
+                var resposeRole = await _roleService.CreateRolAsync(roleCreateDto);
+
+                if (resposeRole!=null && resposeRole.CantRegistros>=1)
+                {
+
+                    await js.InvokeVoidAsync("Swal.fire", "¡Excelente!", $"{resposeRole.Mensaje}", "success");
+
+                    nav.NavigateTo("/Configuracion/Roles");
+                }
+                else
+                {
+                var mensaje = string.Join("<br>", resposeRole.Errores);
+
+                        await js.InvokeVoidAsync(
+                            "Swal.fire",
+                            "Error de comunicación",
+                            "Hubo un problema al contactar al servidor:<br>" + mensaje,
+                            "error"
+                        );
+
+                }
+
+            }
+
+        }
+        catch (Exception ex)
+        {
+             await LogService.GuardarErrorAsync(
+                        ex.Message,
+                        ex.StackTrace,
+                        usuario: authClient.CurrentSession.UserName ?? "No encontrado",
+                        metodo:"Guardar Roles",
+                        ruta:"/Roles/Crear",
+                        origen: "Cargar roles Blazor",
+                         nivel:"Errores");
+
+         await js.InvokeVoidAsync("Swal.fire", "Error de comunicación", "Hubo un problema al contactar al servidor: " + ex.Message, "error");
+
+        }
+        finally
+        {
+             procesando = false;
+        }
+
+    }
+}

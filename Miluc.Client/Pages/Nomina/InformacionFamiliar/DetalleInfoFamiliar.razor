@@ -1,0 +1,259 @@
+﻿@page "/nomina/detalleInformacionFamiliar/{IdEmpleado:int}"
+
+@using System.Text.Json
+@using Miluc.Client.Interfaces.Nomina
+@using Miluc.Client.Pages.Nomina.MatrizSociodemografica
+@using Miluc.Shared.DTOs.Nomina.InformacionFamiliarDto
+@using Miluc.Shared.DTOs.Nomina.ParentescoDto
+@using Miluc.Shared.DTOs.Nomina.EmpleadoDto
+@inject NavigationManager nav
+@inject IEmpleadoClientService _empleadoService
+@inject IInfoFamiliarClientService _infoFamiliarService
+@inject IParentescoClient _parentescoService
+@inject IJSRuntime JS
+
+
+<div class="empleado-page p-4 animate__animated animate__fadeIn">
+    <div class="container-fluid max-width-container">
+
+        
+        <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
+            <div>
+                <h2 class="fw-extrabold text-vinotinto m-0 tracking-tight">
+                    <i class="bi bi-person-plus-fill me-2 header-icon"></i>
+                    Información Familiar
+                </h2>
+                <p class="text-muted mb-0 small mt-1">
+                    Ver información familiar de empleado
+                </p>
+            </div>
+            <button class="btn btn-vinotinto btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
+                <i class="bi bi-arrow-left me-2"></i> Volver al Empleado
+            </button>
+        </div>
+
+       
+        <div class="row g-4 mb-4">
+            @if (listaOrigen != null && listaOrigen.Any())
+            {
+                @foreach (var familiar in listaOrigen)
+                {
+                    <div class="col-12 col-md-6 col-xl-4">
+                        <div class="card h-100 shadow-sm border-0 border-start border-4">
+                            <div class="card-body p-4 border-vinotinto rounded-4">
+                                <div class="d-flex align-items-center gap-2 mb-3 text-muted text-uppercase small fw-bold tracking-wider">
+                                    <i class="bi bi-person-badge text-danger fs-5"></i> Datos Familiar
+                                </div>
+                                
+                                <h5 class="fw-bold text-dark mb-1">@familiar.NombreCompleto</h5>
+                                <p class="text-muted small mb-2">Documento: <span class="badge bg-light text-dark border">@familiar.Documento</span></p>
+
+                                <div class="d-flex flex-column gap-2 border-top pt-3 small">
+                                    <div class="d-flex justify-content-between gap-2">
+                                        <span class="text-muted">Parentesco:</span>
+                                        <strong class="text-dark">@familiar.Parentesco</strong>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between gap-2 b">
+                                        <span class="text-muted">Fecha Nacimiento:</span>
+                                        <strong class="text-dark">@(familiar.FechaNacimiento.ToString("dd/MM/yyyy") ?? "-")</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between gap-2">
+                                        <span class="text-muted">Vive Con Empleado:</span>
+                                        <strong class="text-dark">@(familiar.ViveConEmpleado ? "Sí" : "No")</strong>
+                                    </div>
+                                    <div class="col-12 d-flex justify-content-between gap-2">
+                                        <span class="text-muted">Depende Económicamente:</span>
+                                        <strong class="text-dark">@(familiar.DependeEconomicamente ? "Sí" : "No")</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between gap-2">
+                                        <span class="text-muted">Persona a cargo:</span>
+                                        <strong class="text-dark">@(familiar.PersonaaCargo ? "Sí" : "No")</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <label class="form-label label-custom mb-0">Estado</label>
+
+                                        @if (familiar.Activo)
+                                        {
+                                            <span class="badge bg-success px-3 py-2 rounded-pill">
+                                                <i class="bi bi-check-circle me-1"></i> Activo
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger px-3 py-2 rounded-pill">
+                                                <i class="bi bi-x-circle me-1"></i> Inactivo
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+                               
+                                @* Botón Editar *@
+                                <button class="btn btn-white btn-sm px-2 border-end edit"
+                                        title="Editar Informacion Familiar"
+                                        @onclick="() => EditarInformacionFamiliar(familiar.InformacionFamiliarId)">
+                                    <i class="bi bi-pencil-square text-primary"></i>
+                                </button>
+
+                                @* Botón Eliminar *@
+                                <button class="btn btn-white btn-sm px-2 border-end delete"
+                                        title="Eliminar Informacion Familiar"
+                                        @onclick="() => EliminarInformacionFamiliar(familiar.InformacionFamiliarId)">
+                                    <i class="bi bi-trash text-danger"></i>
+                                </button>
+                                @**@
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12 text-center text-muted py-5">
+                    <p>No se encontró información familiar para este empleado.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int IdEmpleado { get; set; }
+
+    private List<InfoFamiliarReaderDto> listaOrigen = new();
+    private EmpleadoReaderDto listEmpleado = new();
+    private bool cargando = false;
+    
+
+    private void Volver() => nav.NavigateTo("/Administrar/informacionFamiliar");
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var resultado = await _infoFamiliarService.GetFamiliarByIdAsync(IdEmpleado);
+            var resultadoEmpleado = await _empleadoService.GetEmpleadoByIdAsync(IdEmpleado);
+
+            // Validación de las respuestas de los servicios
+            if (resultado != null && resultado.EsCorrecto && resultado.Valor != null)
+            {
+                listaOrigen = resultado.Valor;
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("alert", "Error al cargar la información familiar.");
+                Volver();
+            }
+
+            if (resultadoEmpleado != null && resultadoEmpleado.EsCorrecto && resultadoEmpleado.Valor != null)
+            {
+                listEmpleado = resultadoEmpleado.Valor;
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("alert", $"Ocurrió un error: {ex.Message}");
+            Volver();
+        }
+    }
+
+    private async Task cargarFamiliar()
+    {
+        try
+        {
+            var resultado = await _infoFamiliarService.GetFamiliarByIdAsync(IdEmpleado);
+            if (resultado != null && resultado.EsCorrecto && resultado.Valor != null)
+            {
+                listaOrigen = resultado.Valor;
+            }
+            else
+            {
+                listaOrigen = new List<InfoFamiliarReaderDto>();
+            }
+        }
+        catch
+        {
+            listaOrigen = new List<InfoFamiliarReaderDto>();
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task eliminarinfofamiliar(int id)
+    {
+       
+       
+
+        var result = await JS.InvokeAsync<JsonElement>
+           ("Swal.fire", new
+           {
+               title = "¿Estás seguro?",
+               text = $"¿Deseas Cancelar el pedido?",
+               icon = "info",
+               showCancelButton = true,
+               confirmButtonColor = "#d33",
+               cancelButtonColor = "#3085d6",
+               confirmButtonText = "Sí",
+               cancelButtonText = "Cancelar"
+           });
+       
+
+        if (result.GetProperty("isConfirmed").GetBoolean())
+            {
+             
+                try
+                {
+                    // Invocación al cliente HTTP para eliminar físicamente el id seleccionado
+                    var respuesta = await _infoFamiliarService.DeleteFamiliarAsync(id);
+
+                    if (respuesta.Valor==true)
+                    {
+                        await JS.InvokeVoidAsync("Swal.fire", new
+                        {
+                            icon = "success",
+                            title = "¡Eliminado!",
+                            text = respuesta.Mensaje ?? "El empleado ha sido removido con éxito.",
+                            confirmButtonText = "Aceptar"
+                        });
+
+                        // Refresca la lista desde el servidor para actualizar el grid de datos de forma limpia
+                        await cargarFamiliar();
+                    }
+                    else
+                    {
+                        string mensajeServidor = respuesta != null ? respuesta.Mensaje : "No se pudo procesar la solicitud.";
+                
+                        await JS.InvokeVoidAsync("Swal.fire", new
+                        {
+                            icon = "error",
+                            title = "No se puede eliminar",
+                            text = mensajeServidor,
+                            confirmButtonText = "Aceptar"
+                        });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error durante el proceso de borrado: {ex.Message}");
+                }
+                finally
+                {
+                    cargando = false;
+                    StateHasChanged();
+                }
+            }
+        }
+
+    
+    
+    // Reemplaza tu método anterior por este:
+    private void EditarInformacionFamiliar(int idFamiliar)
+    {
+        // Pasamos de forma jerárquica: /EmpleadoId/FamiliarId
+        nav.NavigateTo($"/nomina/editar/informacion-familiar/{IdEmpleado}/{idFamiliar}");
+    }
+
+    private void EliminarInformacionFamiliar(int idFamiliar) => eliminarinfofamiliar(idFamiliar);
+
+}

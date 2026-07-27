@@ -1,0 +1,66 @@
+﻿@page "/administrar/Afiliaciones"
+@inject IAuthClientService authClient
+@inject NavigationManager nav
+
+<div class="welcome-container animate__animated animate__fadeIn">
+    @* --- SALUDO  --- *@
+    <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
+        <div>
+            <h2 class="fw-extrabold text-vinotinto m-0 tracking-tight">
+                <i class="bi bi-person-plus-fill me-2 header-icon"></i>
+                Gestion de afiliaciones
+            </h2>
+            <p class="text-muted mb-0 small mt-1">
+                Gestione la vinculación de afiliaciones y el registro de entidades. 
+            </p>
+        </div>
+            
+        <button class="btn btn-vinotinto btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
+            <i class="bi bi-arrow-left me-2"></i> Volver al listado
+        </button>
+    </div>
+
+    @* --- ACCESO RÁPIDO / RESUMEN --- *@
+    <div class="quick-stats row g-4 mt-2">
+        
+        
+        <div class="col-12 col-md-6">
+            <div class="card ">
+                <div class="card-body card-miluc">
+                    <div class="icono-wrapper bg-rojo-suave">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <h4 class="text-center">Administrar seguridad empleados</h4>
+                    <a href="/afiliacionseguridadSocial/empleados" class="btn-miluc btn-rojo">
+                        <span>Afiliaciones</span>
+                        <i class="bi bi-arrow-right-short"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6">
+            <div class="card">
+                <div class="card-body card-miluc-amarillo">
+                    <div class="icono-wrapper-amarillo bg-amarillo">
+                        <i class="bi bi-house-heart"></i>
+                    </div>
+                    <h4 class="text-center">Registrar Entidades</h4>
+                   
+                    
+                    <a href="/administrar-entidadesSeguridadSocial" class="btn-miluc-amarillo btn-amarillo">
+                        <span>Nueva Entidad</span>
+                        <i class="bi bi-arrow-right-short"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+        
+   
+    
+@code {
+  
+    private void Volver() => nav.NavigateTo("/administrar-Nomina");
+}

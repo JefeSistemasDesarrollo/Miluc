@@ -1,0 +1,258 @@
+﻿
+.text-maroon {
+    color: #800020;
+}
+.border-maroon {
+    border-left: 5px solid #800020;
+    
+}
+.bg-marron {
+    background-color: #800020;
+}
+.bg-maroon {
+    background-color: #800020;
+}
+
+.text-blue {
+    color: #5d0017;
+}
+
+.fw-black {
+    font-weight: 900;
+}
+
+.tracking-wider {
+    letter-spacing: 1px;
+}
+
+.bg-light-gradient {
+    background: linear-gradient(145deg, #f8f9fa 0%, #f1f3f5 100%);
+}
+
+/* PILLS DE ESTADO INGENIERÍA DE SEMÁFORO */
+.status-pill {
+    padding: 10px 24px;
+    border-radius: 50px;
+    font-weight: 800;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+/* Cancelado en Rojo */
+.status-canceled {
+    background-color: #ffe3e3;
+    color: #dc3545;
+    border: 1px solid #ffc9c9;
+}
+/* Cerrado en Verde (CANCELED = N & Cerrado) */
+.status-closed {
+    background-color: #d3f9d8;
+    color: #2b8a3e;
+    border: 1px solid #b2f2bb;
+}
+/* Abierto / Activo */
+.status-open {
+    background-color: #e7f5ff;
+    color: #1c7ed6;
+    border: 1px solid #d0ebff;
+}
+
+/* GLASS CARDS GENERALES */
+.glass-card {
+    background: #ffffff;
+    border-radius: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.02);
+}
+
+.border-start-maroon {
+    border-left: 5px solid #800020;
+}
+
+.border-start-blue {
+    border-left: 5px solid #5d0017;
+}
+
+.border-start-dark {
+    border-left: 5px solid #343a40;
+}
+
+.border-top-maroon {
+    border-top: 5px solid #800020;
+}
+
+.btn-white-modern { 
+    background: #ffffff;
+    border: 1px solid #e3e6f0;
+    color: #000000;
+    font-weight: 700;
+    transition: all 0.2s ease;
+}
+
+    .btn-white-modern:hover {
+        background: #f8f9fc;
+        transform: translateY(-1px);
+    }
+
+/* NOVEDOSO: FLEX-STREAM ITEMS SYSTEM */
+.item-stream-row {
+    background: #ffffff;
+    border-radius: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.04);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.01);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .item-stream-row:hover {
+        transform: scale(1.005);
+        box-shadow: 0 8px 25px rgba(128, 0, 32, 0.06);
+        border-color: rgba(128, 0, 32, 0.15);
+    }
+
+.item-index {
+    padding: 2rem 1.2rem;
+    font-weight: 900;
+    color: #adb5bd;
+    text-align: center;
+    min-width: 55px;
+}
+
+.item-main-info {
+    flex: 1;
+    min-width: 250px;
+    padding: 1rem 1.5rem;
+}
+
+.code-tag {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.text-truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.item-qty-box {
+    padding: 1rem 1.5rem;
+    text-align: center;
+    background: #f8f9fa;
+    min-width: 100px;
+}
+
+.qty-num {
+    display: block;
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: #212529;
+    line-height: 1;
+}
+
+.qty-unit {
+    font-size: 0.75rem;
+    text-uppercase: uppercase;
+    color: #868e96;
+    font-weight: 700;
+}
+
+.item-pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    padding: 1rem 2rem;
+    flex: 1.5;
+    min-width: 380px;
+}
+
+.price-block {
+    display: flex;
+    flex-column: column;
+}
+
+.price-lbl {
+    font-size: 0.7rem;
+    text-uppercase: uppercase;
+    color: #868e96;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.price-val {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #495057;
+}
+
+.item-total-box {
+    padding: 1.5rem 2rem;
+    text-align: right;
+    min-width: 160px;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.bg-maroon-subtle-light {
+    background-color: rgba(128,0,32, 0.03);
+    border-left: 1px dashed rgba(128,0,32, 0.1);
+}
+
+.bg-maroon-subtle {
+    background-color: rgba(128, 0, 32, 0.08);
+}
+
+/* RESPONSIVE DESIGN BREAKPOINTS */
+@media (max-width: 991px) {
+    .item-stream-row {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: left;
+    }
+
+    .item-index {
+        display: none;
+    }
+
+    .item-qty-box {
+        text-align: left;
+        background: #ffffff;
+        border-top: 1px solid #f1f3f5;
+    }
+
+    .qty-num {
+        display: inline-block;
+        font-size: 1.1rem;
+    }
+
+    .qty-unit {
+        display: inline-block;
+        margin-left: 5px;
+    }
+
+    .item-pricing-grid {
+        grid-template-columns: 1fr 1fr;
+        border-top: 1px solid #f1f3f5;
+        padding: 1rem;
+        min-width: 100%;
+    }
+
+    .item-total-box {
+        text-align: left;
+        background-color: rgba(128,0,32, 0.04);
+        padding: 1rem;
+        border-left: none;
+        border-top: 1px solid rgba(128,0,32, 0.1);
+    }
+}

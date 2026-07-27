@@ -1,0 +1,205 @@
+﻿@page "/api/Afp/CrearAfp"
+
+
+@using Miluc.Client.Interfaces.Nomina.SeguridadSocial
+@using Miluc.Shared.DTOs.Nomina.Afp
+
+@inject NavigationManager nav
+@inject IAfpClientService _afpService   
+@inject IJSRuntime JS
+
+<div class="empleado-page p-4 animate__animated animate__fadeIn">
+    <div class="container-fluid max-width-container">
+        
+        @* --- CABECERA DE LA PÁGINA --- *@
+        <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
+            <div>
+                <h2 class="fw-extrabold text-vinotinto m-0 tracking-tight">
+                    <i class="bi bi-hospital-fill me-2 header-icon"></i>
+                    Registrar Afp
+                </h2>
+                <p class="text-muted mb-0 small mt-1">
+                    Gestione la vinculación de una nueva entidad Administradora de Fondos de Pensiones (AFP). Los campos marcados con (*) son obligatorios. <span class="text-danger">*</span> son requeridos.
+                </p>
+            </div>
+            
+            <button class="btn btn-vinotinto btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
+                <i class="bi bi-arrow-left me-2"></i> Volver al listado
+            </button>
+           
+          
+        </div>
+
+        @* --- FORMULARIO PRINCIPAL --- *@
+        <EditForm Model="afpCreate" OnValidSubmit="EjecutarGuardado">
+            <DataAnnotationsValidator />
+
+            <div class="row g-4">
+                @* --- BLOQUE: DATOS DE LA EPS --- *@
+                <div class="col-12">
+                    <div class="card card-custom border-0 shadow-sm rounded-4">
+                        <div class="card-body p-4">
+                            <div class="section-title-container mb-4">
+                                <span class="badge bg-vinotinto-light text-vinotinto rounded-pill mb-2 px-3 py-2 fw-bold text-uppercase tracking-wider">Paso 1</span>
+                                <h5 class="fw-bold text-dark m-0">Datos de la Entidad</h5>
+                            </div>
+
+                            <div class="row g-4 align-items-center">
+                                @* Nombre de la EPS *@
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">
+                                        <i class="bi bi-building me-1"></i> Nombre <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group-custom">
+                                        <InputText class="form-control input-custom" @bind-Value="afpCreate.Nombre" placeholder="Ej: Sanitas" />
+                                    </div>
+                                    <ValidationMessage For="@(() => afpCreate.Nombre)" class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
+
+                                @* Código *@
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">
+                                        <i class="bi bi-card-heading me-1"></i> Código EPS
+                                    </label>
+                                    <div class="input-group-custom">
+                                        <InputText class="form-control input-custom" @bind-Value="afpCreate.Codigo" placeholder="Ej: AFP001" />
+                                    </div>
+                                    <ValidationMessage For="@(() => afpCreate.Codigo)" class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
+
+                               
+                                <div class="col-md-4 ">
+
+                                    <label class="form-label label-custom text-muted-custom">Estado</label>
+
+
+
+                                    <div class="input-group-custom">
+                                        <div class=" card card-custom border-0 shadow-sm rounded-4">
+                                            <div class="card-body input-custom">
+                                           
+                                                <div class="input-group-custom ">
+                                                    <div class="form-check form-switch switch-lg ">
+                                                        <InputCheckbox class=" form-check-input form-control " @bind-Value="afpCreate.Activo"> </InputCheckbox>
+                                                        @if (afpCreate.Activo)
+                                                        {
+                                                            <span class="text-success ">
+                                                                Activo
+                                                            </span>
+
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="text-bg-danger">
+                                                                Inactivo
+                                                            </span>
+                                                        }
+
+                                                    </div>
+
+                                                    
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* --- BANNER INFORMATIVO --- *@
+                <div class="col-12">
+                    <div class="card card-info-banner border-0 shadow-sm rounded-4 p-4 position-relative overflow-hidden">
+                        <div class="position-relative z-index-2 d-flex flex-column justify-content-center">
+                            <h5 class="fw-bold text-vinotinto mb-2">
+                                <i class="bi bi-shield-lock-fill me-2"></i>Seguridad de las Entidades
+                            </h5>
+                            <p class="text-secondary small mb-0 lh-lg">
+                                Seguridad de las Entidades
+                                Asegúrese de que el código asignado corresponda al código oficial de la ARL (con formato de 6 dígitos, ej: 14-28) registrado ante el Sistema General de Riesgos Laborales para evitar inconsistencias en la planilla PILA o reportes de novedades.
+                            </p>
+                        </div>
+                        <div class="decorative-circle"></div>
+                    </div>
+                </div>
+            </div>
+
+         
+            @* --- ACCIONES --- *@
+            <div class="card-footer bg-light p-4 d-flex justify-content-end gap-3 rounded-bottom-4 border-0">
+                <button type="button" class="btn btn-light-custom rounded-pill px-4 py-2.5 fw-semibold" @onclick="Volver">
+                    Cancelar
+                </button>
+        
+                <button type="submit" class="btn btn-vinotinto btn-secondary rounded-pill px-4" disabled="@isProcessing">
+                    @if (isProcessing)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        <span>Guardando en Servidor...</span>
+                    }
+                    else
+                    {
+                        <i class="bi bi-cloud-upload-fill me-2"></i>
+                        <span>Guardar Cambios</span>
+                    }
+                </button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private AfpCreateDto afpCreate = new();
+    private bool cargando = true;
+    private bool isProcessing = false;
+    private string mensajeError = string.Empty;
+    private string mensajeExito = string.Empty;
+
+    private void Volver() => nav.NavigateTo("/api/Afp/Afp");
+    private void CrearEps() => nav.NavigateTo("/api/Afp/Afp");
+
+
+    // Alerta mensaje error o exito
+    public async Task EjecutarGuardado()
+    {
+        isProcessing = true;
+        mensajeError = string.Empty;
+
+        try
+        {
+            var respuesta = await _afpService.CreateAfpAsync(afpCreate);
+
+            if (respuesta != null && respuesta.EsCorrecto)
+            {
+                mensajeExito = "AFP guardada con éxito.";
+                await JS.InvokeVoidAsync("Swal.fire", "¡Guardado!", "La AFP se guardó correctamente.", "success");
+                await Task.Delay(1500);
+                Volver();
+            }
+            else
+            {
+            
+                mensajeError = respuesta?.Mensaje ?? "Error al procesar la solicitud en el servidor.";
+            
+          
+                await JS.InvokeVoidAsync("Swal.fire", "Atención", mensajeError, "warning");
+            }
+        }
+        catch (Exception ex)
+        {
+            mensajeError = ex.Message;
+        
+            // Disparar la alerta si el backend lanzó una excepción
+            await JS.InvokeVoidAsync("Swal.fire", "Atención", ex.Message, "warning");
+        
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+}
+        
+    

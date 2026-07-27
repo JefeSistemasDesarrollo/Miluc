@@ -1,0 +1,458 @@
+﻿@page "/Administrar/Empleado"
+@using Miluc.Client.Interfaces.Nomina
+@using Miluc.Shared.DTOs.Nomina.EmpleadoDto
+@using Miluc.Shared.Models.Response
+
+@inject NavigationManager nav
+@inject IEmpleadoClientService _empleadoClientService
+@inject IJSRuntime js
+
+@* CONTENEDOR PRINCIPAL: Define el diseño y la animación de entrada para toda la vista de gestión *@
+<div class="empleados-page animate__animated animate__fadeIn p-4">
+
+    @* ENCABEZADO DE LA PÁGINA: Título descriptivo con icono y botón para redireccionar a la creación de un nuevo empleado *@
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+        <div>
+            <h2 class="fw-bold text-vinotinto m-0 ">
+                <i class="bi bi-person-badge-fill me-2"> Gestionar Empleados</i>
+            </h2>
+            <p class="m-0 text-muted">Administración de empleados</p>
+        </div>
+        
+        @* Botón que dispara el método para ir al formulario de creación *@
+    
+        <button class="btn btn-vinotinto btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
+            <i class="bi bi-arrow-left me-2"></i> Volver
+        </button>
+    </div>
+    <button class="btn btn-vinotinto btn-nuevo rounded-pill px-4 shadow-sm" @onclick=IrACrearEmpleado>
+        <i class="bi bi-plus-lg me-1"></i> Nuevo empleado
+    </button>
+</div>
+
+@* SECCIÓN DE FILTROS: Tarjeta contenedora de la barra de búsqueda y las opciones de paginación *@
+<div class="card shadow-sm border-0 mb-4 rounded-4">
+    <div class="card-body p-3">
+        <div class="row g-3 align-items-center">
+            
+            @* Barra de búsqueda *@
+            <div class="col-lg-7">
+                <div class="input-group input-group-lg search-group">
+                    <span class="input-group-text bg-white border-end-0 rounded-start-pill ps-3">
+                        <i class="bi bi-search text-muted"></i>
+                    </span>
+                    
+                    @* Input text vinculado bidireccionalmente a la propiedad "textoBusqueda". Actualiza en cada evento de escritura (oninput) y reacciona al presionar Enter *@
+                    <input type="text" class="form-control border-start-0 shadow-none fs-6"
+                           placeholder="Filtrar local o buscar en servidor..."
+                           @bind="textoBusqueda" @bind:event="oninput" @onkeyup="HandleEnter" />
+
+                    @* Botón de lupa para ejecutar explícitamente la búsqueda remota en el servidor *@
+                    <button class="btn btn-vinotinto rounded-end-pill px-4" @onclick="() => BuscarEnServidor(false)">
+                        <i class="bi bi-search me-2"></i>
+                    </button>
+                </div>
+            </div>
+            
+            @* Selector de paginación y Badge de Total *@
+            <div class="col-lg-5 text-lg-end">
+                <div class="d-inline-flex align-items-center bg-light p-2 rounded-pill border">
+                    <label class="mx-3 small fw-bold text-muted text-uppercase">Mostrar</label>
+                    
+                    @* Dropdown para elegir el tamaño de la página (10, 20 o 50 ítems). Llama a CambiarCantidadPagina al cambiar de opción *@
+                    <select class="form-select form-select-sm rounded-pill border-0 bg-transparent fw-bold"
+                            style="width: 80px;"
+                            value="@cantidadPorPagina"
+                            @onchange="CambiarCantidadPagina">
+                        <option value="10" selected>10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                    </select>
+                    
+                    @* Insignia (badge) dinámica que expone la cantidad total de registros coincidentes *@
+                    <span class="badge bg-vinotinto rounded-pill ms-2 px-3 py-2">
+                        Total: @totalRegistros
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* TABLA DE EMPLEADOS *@
+<div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+    <div class="table-responsive">
+        <table class="table table-striped table-hover mb-0">
+            <thead class="bg-vinotinto text-white">
+                <tr>
+                    <th class="text-lg-center text-center">Documento</th>
+                    <th class="ps-4 py-3 text-center">Nombre</th>
+                    <th class="text-center">Apellidos</th>
+                    <th class="text-center">Celular</th>
+                    <th class="text-center">Correo Electrónico</th>
+                    <th class="text-center">Dirección</th>
+                    <th class="text-center">Activo</th>
+                    <th class="text-center pe-4">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white">
+                
+                @* CONDICIONAL 1: Muestra indicador visual de carga si la petición asíncrona está en proceso *@
+                @if (cargando)
+                {
+                    <tr>
+                        <td colspan="8" class="text-center py-5">
+                            <div class="spinner-border text-vinotinto"></div>
+                        </td>
+                    </tr>
+                }
+                @* CONDICIONAL 2: Muestra mensaje de ausencia de datos si la colección devuelta está vacía *@
+                else if (!listempleadosAlservidor.Any())
+                {
+                    <tr>
+                        <td colspan="8" class="text-center py-5">
+                            No hay empleados registrados
+                        </td>
+                    </tr>
+                }
+                @* BLOQUE PRINCIPAL: Itera e imprime las celdas de cada empleado que reside en listempleadosAlservidor *@
+                else
+                {
+                    @foreach (var em in listempleadosAlservidor)
+                    {
+                        <tr>
+                            <td>
+                                <div class="text-muted x-small text-center">@em.Documento</div>
+                            </td>
+                            <td>
+                                <div class="text-muted x-small text-center text-uppercase ">@em.PrimerNombre @em.SegundoNombre</div>
+                            </td>
+                            <td>
+                                <div class="text-muted x-small text-center text-uppercase">@em.PrimerApellido @em.SegundoApellido</div>
+                            </td>
+                            <td>
+                                <div class="text-muted x-small text-center">@em.Celular</div>
+                            </td>
+                            <td>
+                                <div class="text-muted x-small text-center">@em.CorreoElectronico</div>
+                            </td>
+                            <td>
+                                <div class="text-muted x-small text-center">@em.Direccion</div>
+                            </td>
+                            <td>
+                                @* Badge que altera su clase Bootstrap según el estado booleano de la propiedad Activo *@
+                                <span class="status-badge status-pill text-center @(em.Activo ? "Activo" : "Inactivo")">
+                                    @(em.Activo ? "Activo" : "Inactivo")
+                                </span>
+                            </td>
+                            
+                            <td class="text-center pe-4">
+                                @* Botonera de acciones CRUD para cada registro individual *@
+                                <div class="btn-group shadow-sm border rounded-pill bg-white overflow-hidden">
+                                    
+                                    @* Botón para ir al detalle del empleado *@
+                                    <button class="btn-detail btn btn-dark btn-sm px-2 border-end" title="Ver Detalle" @onclick="() => VerDetalle(em.EmpleadoId)">
+                                        <i class="bi bi-eye text-dark"></i>
+                                    </button>
+                                    
+                                    @* Botón para navegar al formulario de edición *@
+                                    <button class="btn btn-white btn-sm px-2 border-end edit" title="Editar Usuario" @onclick="() => EditarEmpleado(em.EmpleadoId)">
+                                        <i class="bi bi-pencil-square text-primary"></i>
+                                    </button>
+                                    
+                                    @* Botón para accionar el flujo de eliminación *@
+                                    <button class="btn btn-white btn-sm px-2 delete" title="Eliminar" @onclick="() => EliminarEmpleado(em.EmpleadoId)">
+                                        <i class="bi bi-trash3 text-danger"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@* PIE DE PÁGINA CON EL PAGINADOR INTEGRADO *@
+<div class="pagination-footer d-flex justify-content-between align-items-center mt-4 p-3 bg-light rounded-4 border">
+    <div class="text-muted small">
+        Página <b>@paginaActual</b> de <b>@totalPaginas</b> (Total: @totalRegistros registros)
+    </div>
+
+   
+                    
+    <div class="page-item.active pagination-container p-1 bg-white border rounded-pill shadow-sm">
+        <button class="btn btn-sm rounded-circle @(paginaActual <= 1 ? "disabled" : "")" @onclick="() => IrPagina(paginaActual - 1)"><i class="bi bi-chevron-left"></i></button>
+        <span class="mx-3 fw-bold text-vinotinto">@paginaActual</span>
+        <button class="btn btn-sm rounded-circle @(paginaActual >= totalPaginas ? "disabled" : "")" @onclick="() => IrPagina(paginaActual + 1)"><i class="bi bi-chevron-right"></i></button>
+    </div>
+   
+</div>
+
+
+@code {
+    // Listas en memoria para el control de la información
+    private List<EmpleadoReaderDto> listempleadosOrigen = new List<EmpleadoReaderDto>();     // Copia de respaldo con los datos del servidor
+    private List<EmpleadoReaderDto> listempleadosAlservidor = new List<EmpleadoReaderDto>(); // Lista que se itera en la tabla HTML
+
+    // Variable interna de control para el buscador
+    private string _textoBusqueda = "";
+
+    // Propiedad Completa (Full Property) para interceptar los cambios en el buscador en tiempo real
+    private string textoBusqueda
+    {
+        get => _textoBusqueda;
+        set
+        {
+            _textoBusqueda = value;
+            FiltrarLocal(); // Cada vez que el usuario escribe/borra una letra, ejecuta el filtro local en memoria
+        }
+    }
+
+    // Variables de control de configuración y paginación
+    private int cantidadPorPagina = 10;
+    private int paginaActual = 1;
+    private int totalRegistros = 0;
+    private bool cargando = false; 
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await cargarEmpleados(); // Solicita la primera tanda de empleados
+    }
+
+    // Carga los empleados de forma inicial o al cambiar de página básica sin filtros pesados
+    public async Task cargarEmpleados()
+    {
+        cargando = true; // Muestra el Spinner de carga
+
+        // Petición asíncrona enviando los parámetros de paginación actuales
+        var respuesta = await _empleadoClientService.GetEmpleadosAsync(textoBusqueda, paginaActual, cantidadPorPagina);
+
+        if (respuesta.EsCorrecto)
+        {
+            listempleadosOrigen = respuesta.Valor == null ? new List<EmpleadoReaderDto>() : respuesta.Valor;     // Guardamos el respaldo original
+            listempleadosAlservidor = listempleadosOrigen; // Asignamos los datos a mostrar en la tabla
+            totalRegistros = respuesta.CantRegistros;  // Almacenamos cuántos registros existen en total en la DB
+        }
+
+        cargando = false; // Oculta el Spinner de carga
+    }
+
+    // Filtra la lista en memoria local (Frontend) instantáneamente sin hacer peticiones HTTP al servidor
+    private void FiltrarLocal()
+    {
+        if (string.IsNullOrWhiteSpace(textoBusqueda))
+        {
+            // Si el buscador está vacío, volvemos a mostrar la lista original de respaldo
+            listempleadosAlservidor = listempleadosOrigen;
+        }
+        else
+        {
+            // Filtra la lista original buscando coincidencia parcial en múltiples campos (Ignorando mayúsculas/minúsculas)
+            listempleadosAlservidor = listempleadosOrigen.Where(e =>
+                e.Documento.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                e.PrimerNombre.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                e.SegundoNombre.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                e.PrimerApellido.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)
+            ).ToList();
+        }
+    }
+
+    // Realiza una búsqueda directa y estricta consultando la base de datos a través de la API
+    public async Task BuscarEnServidor(bool resetPage = true)
+    {
+        if (resetPage)
+            paginaActual = 1; 
+
+
+        var respuesta = await _empleadoClientService.GetEmpleadosAsync(textoBusqueda, paginaActual, cantidadPorPagina);
+
+        if (respuesta != null && respuesta.EsCorrecto)
+        {
+            listempleadosOrigen = respuesta.Valor;
+            listempleadosAlservidor = respuesta.Valor;
+            totalRegistros = respuesta.CantRegistros;
+        }
+        else
+        {
+            // Reinicia las listas en caso de error para evitar inconsistencias visuales
+            listempleadosOrigen = new List<EmpleadoReaderDto>();
+            listempleadosAlservidor = new List<EmpleadoReaderDto>();
+
+            string erroresConcatenados = respuesta != null && respuesta.Errores != null && respuesta.Errores.Any()
+               ? string.Join("<br>", respuesta.Errores)
+               : "Empleado no existe.";
+
+            var mensaje = respuesta != null ? respuesta.Mensaje : "Sin respuesta del servidor.";
+
+            // Invoca una alerta modal interactiva de JavaScript (SweetAlert)
+            await js.InvokeVoidAsync("Swal.fire", new
+            {
+                icon = "error",
+                title = $"No se encontraron coincidencias. {mensaje} ",
+                text = $"{erroresConcatenados}",
+                confirmButtonColor = "#6c1d1d"
+
+            });
+        }
+
+
+        cargando = false;
+
+    }
+
+    // Captura el teclado en el input de búsqueda; si la tecla presionada es "Enter", fuerza la consulta al servidor
+    private async Task HandleEnter(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            paginaActual = 1;
+            await BuscarEnServidor();
+        }
+    }
+
+    // Evento que se dispara cuando cambias el tamaño de visualización de páginas (10, 20, 50)
+    private async Task CambiarCantidadPagina(ChangeEventArgs e)
+    {
+        // Convierte el valor seleccionado en el HTML a un entero C#
+        cantidadPorPagina = int.Parse(e.Value!.ToString()!);
+        paginaActual = 1; // Resetea a la página uno
+
+        // Decide qué método de recarga usar según si hay texto o no en el buscador
+        if (string.IsNullOrWhiteSpace(_textoBusqueda))
+        {
+            await cargarEmpleados();
+        }
+        else
+        {
+            await BuscarEnServidor();
+        }
+        
+    }
+        
+    // Propiedad calculada (Shorthand): Divide el total de registros entre la cantidad configurada por página
+    private int totalPaginas
+    {
+        get
+        {
+            var total = string.IsNullOrWhiteSpace(_textoBusqueda)
+                ? totalRegistros
+                : listempleadosAlservidor.Count;
+
+            // Math.Ceiling redondea hacia arriba en caso de decimales (ej: 10.2 páginas se convierte en 11 páginas)
+            return (int)Math.Ceiling((double)total / cantidadPorPagina);
+        }
+    }
+
+    // Gestiona el cambio de página desde los botones Anterior / Siguiente
+    private async Task IrPagina(int nuevaPagina)
+    {
+        if (nuevaPagina < 1)
+            return;
+
+        paginaActual = nuevaPagina;
+
+        if (string.IsNullOrWhiteSpace(_textoBusqueda))
+            await cargarEmpleados();
+        else
+            await BuscarEnServidor();
+    }
+    private async Task eliminarEmpleado(int id)
+    {
+        
+        var resultadoSwal = await js.InvokeAsync<System.Text.Json.JsonElement>("Swal.fire", new
+        {
+            title = "¿Deseas eliminar este empleado?",
+            text = "Esta acción removerá el registro permanentemente si no cuenta con transacciones.",
+            icon = "warning",
+            showCancelButton = true,
+            confirmButtonColor = "#800020",
+            cancelButtonColor = "#6c757d",
+            confirmButtonText = "Sí, eliminar",
+            cancelButtonText = "Cancelar"
+        });
+
+        // Extrae el valor booleano resultante del JSON devuelto por JavaScript para comprobar si se confirmó la acción
+        bool confirmado = false;
+        if (resultadoSwal.ValueKind == System.Text.Json.JsonValueKind.Object &&
+            resultadoSwal.TryGetProperty("isConfirmed", out var propiedadConfirmado))
+        {
+            confirmado = propiedadConfirmado.GetBoolean();
+        }
+
+        if (confirmado)
+        {
+            cargando = true;
+            StateHasChanged();
+
+            try
+            {
+                // Invocación al cliente HTTP para eliminar físicamente el id seleccionado
+                var respuesta = await _empleadoClientService.DeleteEmpleadosAsync(id);
+
+                if (respuesta != null && respuesta.EsCorrecto)
+                {
+                    await js.InvokeVoidAsync("Swal.fire", new
+                    {
+                        icon = "success",
+                        title = "¡Eliminado!",
+                        text = respuesta.Mensaje ?? "El empleado ha sido removido con éxito.",
+                        confirmButtonText = "Aceptar"
+                    });
+
+                    
+                    await cargarEmpleados();
+                }
+                else
+                {
+                    string mensajeServidor = respuesta != null ? respuesta.Mensaje : "No se pudo procesar la solicitud.";
+                
+                    await js.InvokeVoidAsync("Swal.fire", new
+                    {
+                        icon = "error",
+                        title = "No se puede eliminar",
+                        text = mensajeServidor,
+                        confirmButtonText = "Aceptar"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error durante el proceso de borrado: {ex.Message}");
+            }
+            finally
+            {
+                cargando = false;
+                StateHasChanged();
+            }
+        }
+    }
+
+
+    // MÉTODOS DE REDIRECCIÓN Y NAVEGACIÓN (Utilizan NavigationManager 'nav')
+    
+
+    // Redirige a la pantalla del formulario de creación
+    private void IrACrearEmpleado()
+    {
+        nav.NavigateTo("/nomina/empleado/crear");
+    }
+
+    // Redirige al Detalle usando interpolación de cadenas para mandar el ID en la URL
+    private void VerDetalle(int id)
+    {
+        nav.NavigateTo($"/Administrar/Empleado/Detalle/{id}");
+    }
+
+    // Redirige al formulario de Edición pasando el ID por la URL
+    private void EditarEmpleado(int id)
+    {
+        nav.NavigateTo($"/Administrar/Empleado/Editar/{id}");
+    }
+    private void Volver() => nav.NavigateTo("/administrar-Nomina");
+
+    // Redirige a la pantalla de confirmación de Eliminación pasando el ID por la URL
+    private void EliminarEmpleado(int id) => eliminarEmpleado(id);
+    }

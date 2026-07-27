@@ -1,0 +1,315 @@
+﻿@page "/nomina/seguridad-social/editar/{EmpleadoId:int}" 
+@using Miluc.Shared.DTOs.Nomina.AfiliacionSeguridadSocialDto
+@using Miluc.Shared.Models.Response
+@using Miluc.Client.Interfaces.Nomina
+@using Miluc.Client.Interfaces.Nomina.SeguridadSocial
+@using Miluc.Shared.DTOs.Nomina.EpsDto
+@using Miluc.Shared.DTOs.Nomina.Afp.Dto
+@using Miluc.Shared.DTOs.Nomina.CajaCompensacionDto
+@using Miluc.Shared.DTOs.Nomina.Arl.Dto
+
+@inject IJSRuntime JS
+@inject IAfSeguridadSocialClientService AfiliacionService
+@inject IEpsClientService EpsService
+@inject IAfpClientService AfpService
+@inject IArlClientService ArlService
+@inject ICajaCompensacionClientService CajaService
+@inject IEmpleadoClientService EmpleadoService
+@inject NavigationManager nav
+
+<div class="ActualizarAfiliaciones-page p-4 animate__animated animate__fadeIn">
+    <div class="container-fluid max-width-container">
+
+        @* --- HEADER --- *@
+        <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
+            <div>
+                <h2 class="fw-extrabold text-vinotinto m-0 tracking-tight">
+                    <i class="bi bi-hospital"></i>
+                    Editar seguridad social
+                </h2>
+                <p class="text-muted mb-0 small mt-1">
+                    Gestión de seguridad social del Empleado: <strong>@nombreEmpleado</strong>. Los campos marcados con <span class="text-danger">*</span> son requeridos.
+                </p>
+            </div>
+            <button class="btn btn-vinotinto btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
+                <i class="bi bi-arrow-left me-2"></i> Volver al listado
+            </button>
+        </div>
+
+        @if (cargando)
+        {
+            <div class="d-flex justify-content-center my-5">
+                <div class="spinner-border text-vinotinto" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+            </div>
+        }
+        else
+        {
+            <EditForm Model="nuevaAfiliacion" OnValidSubmit="EjecutarGuardado">
+                <DataAnnotationsValidator />
+                
+                <div class="col-12">
+                    <div class="card card-custom border-0 shadow-sm rounded-4">
+                        <div class="card-body p-4">
+                            <div class="section-title-container mb-4">
+                                <span class="badge bg-vinotinto-light text-vinotinto rounded-pill mb-2 px-3 py-2 fw-bold text-uppercase tracking-wider">Paso 1</span>
+                                <h5 class="fw-bold text-dark m-0">Datos De seguridad Social</h5>
+                            </div>
+
+                            <div class="row g-4">
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-heart-pulse"></i></span> EPS*</label>
+                                    <div class="input-group-custom">
+                                        <InputSelect @bind-Value="nuevaAfiliacion.EpsId" class="form-control input-custom">
+                                            <option value="0">Seleccionar EPS</option>
+                                            @foreach (var eps in listaEps)
+                                            {
+                                                <option value="@eps.EpsId">@eps.Nombre</option>
+                                            }
+                                        </InputSelect>
+                                    </div>
+                                    <ValidationMessage For="@(() => nuevaAfiliacion.EpsId)" class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-piggy-bank"></i></span> Fondo de Pensiones (AFP)*</label>
+                                    <div class="input-group-custom">
+                                        <InputSelect @bind-Value="nuevaAfiliacion.AfpId" class="form-control input-custom">
+                                            <option value="0">Seleccionar AFP</option>
+                                            @foreach (var afp in listaAfp)
+                                            {
+                                                <option value="@afp.AfpId">@afp.Nombre</option>
+                                            }
+                                        </InputSelect>
+                                    </div>
+                                    <ValidationMessage For="@(() => nuevaAfiliacion.AfpId)" class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-shield-shaded"></i></span> ARL*</label>
+                                    <div class="input-group-custom">
+                                        <InputSelect @bind-Value="nuevaAfiliacion.ArlId" class="form-control input-custom">
+                                            <option value="0">Seleccionar ARL</option>
+                                            @foreach (var arl in listaArl)
+                                            {
+                                                <option value="@arl.ArlId">@arl.Nombre</option>
+                                            }
+                                        </InputSelect>
+                                    </div>
+                                    <ValidationMessage For="@(() => nuevaAfiliacion.ArlId)" class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-house-door"></i></span> Caja Compensación*</label>
+                                    <div class="input-group-custom">
+                                        <InputSelect @bind-Value="nuevaAfiliacion.CajaCompensacionId" class="form-control input-custom">
+                                            <option value="0">Seleccionar Caja</option>
+                                            @foreach (var caja in listaCajas)
+                                            {
+                                                <option value="@caja.CajaCompensacionId">@caja.Nombre</option>
+                                            }
+                                        </InputSelect>
+                                    </div>
+                                    <ValidationMessage For="@(() => nuevaAfiliacion.CajaCompensacionId)" class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom text-muted-custom">Estado</label>
+                                    <i class="bi bi-check-all"></i>
+                                    <div class="input-group-custom">
+                                        <div class="card card-custom border-0 shadow-sm rounded-4 w-100">
+                                            <div class="card-body input-custom py-2">
+                                                <div class="input-group-custom">
+                                                    <div class="form-check form-switch switch-lg d-flex align-items-center gap-2">
+                                                        <InputCheckbox class="form-check-input" @bind-Value="nuevaAfiliacion.Activo" id="switchActivo" />
+                                                        <label class="form-check-label m-0" for="switchActivo">
+                                                            @if (nuevaAfiliacion.Activo)
+                                                            {
+                                                                <span class="text-success fw-bold">Activo</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="text-danger fw-bold">Inactivo</span>
+                                                            }
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(mensajeError))
+                        {
+                            <div class="alert alert-danger mx-4 mt-3 rounded-3" role="alert">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i> @mensajeError
+                            </div>
+                        }
+                        
+                        @if (!string.IsNullOrEmpty(mensajeExito))
+                        {
+                            <div class="alert alert-success mx-4 mt-3 rounded-3" role="alert">
+                                <i class="bi bi-check-circle-fill me-2"></i> @mensajeExito
+                            </div>
+                        }
+                        
+                        @* --- ACCIONES --- *@
+                        <div class="card-footer bg-light p-4 d-flex justify-content-end gap-3 rounded-bottom-4 border-0">
+                            <button type="button" class="btn btn-light-custom rounded-pill px-4 py-2.5 fw-semibold" @onclick="Volver">
+                                Cancelar
+                            </button>
+        
+                            <button type="submit" class="btn btn-vinotinto btn-secondary rounded-pill px-4" disabled="@isProcessing">
+                                @if (isProcessing)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    <span>Guardando en Servidor...</span>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-cloud-upload-fill me-2"></i>
+                                    <span>Guardar Cambios</span>
+                                }
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </EditForm>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int EmpleadoId { get; set; }
+    
+
+    private UpdateAFiliacionDto nuevaAfiliacion = new();
+    private string nombreEmpleado = string.Empty;
+    
+    private bool cargando = true;
+    private bool isProcessing = false;
+    private string mensajeError = string.Empty;
+    private string mensajeExito = string.Empty;
+
+    private List<EpsReaderDto> listaEps = new();
+    private List<AfpReaderDto> listaAfp = new();
+    private List<ArlReaderDto> listaArl = new();
+    private List<CajaCompensacionReaderDto> listaCajas = new();
+    
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            mensajeError = string.Empty;
+
+            var tareaArl = ArlService.GetArlAsync(string.Empty, 1, 100);
+            var tareaEps = EpsService.GetEpsAsync(string.Empty, 1, 100);
+            var tareaAfp = AfpService.GetAfpAsyc(string.Empty, 1, 100);
+            var tareaCajas = CajaService.GetCajaCompensacionAsync(string.Empty, 1, 100);
+            var tareaEmpleado = EmpleadoService.GetEmpleadoByIdAsync(EmpleadoId);
+
+            await Task.WhenAll(tareaArl, tareaEps, tareaAfp, tareaCajas, tareaEmpleado);
+
+            if (tareaArl.Result?.EsCorrecto == true && tareaArl.Result.Valor != null)
+                listaArl = tareaArl.Result.Valor;
+
+            if (tareaEps.Result?.EsCorrecto == true && tareaEps.Result.Valor != null)
+                listaEps = tareaEps.Result.Valor;
+
+            if (tareaAfp.Result?.EsCorrecto == true && tareaAfp.Result.Valor != null)
+                listaAfp = tareaAfp.Result.Valor;
+
+            if (tareaCajas.Result?.EsCorrecto == true && tareaCajas.Result.Valor != null)
+                listaCajas = tareaCajas.Result.Valor;
+
+            if (tareaEmpleado.Result?.EsCorrecto == true && tareaEmpleado.Result.Valor != null)
+            {
+                var emp = tareaEmpleado.Result.Valor;
+                nombreEmpleado = $"{emp.PrimerNombre} {emp.SegundoNombre ?? ""} {emp.PrimerApellido} {emp.SegundoApellido ?? ""}".Replace("  ", " ").Trim();
+            }
+            else
+            {
+                nombreEmpleado = $"Colaborador #{EmpleadoId}";
+            }
+
+            //  Buscamos en el listado general filtrando por el EmpleadoId actual
+            var respuestaListado = await AfiliacionService.GetAfSeguridadSocialAsync(string.Empty, 1, 100);
+            
+            AfiliacionSeguridadSocialreaderDto? datosActuales = null;
+            if (respuestaListado?.EsCorrecto == true && respuestaListado.Valor != null)
+            {
+                datosActuales = respuestaListado.Valor.FirstOrDefault(x => x.EmpleadoId == EmpleadoId);
+            }
+
+            if (datosActuales != null && datosActuales.AfiliacionId > 0)
+            {
+                nuevaAfiliacion.AfiliacionId = datosActuales.AfiliacionId;
+                nuevaAfiliacion.EmpleadoId = datosActuales.EmpleadoId;
+                nuevaAfiliacion.EpsId = datosActuales.EpsId ?? 0; //
+                nuevaAfiliacion.AfpId = datosActuales.AfpId ?? 0;
+                nuevaAfiliacion.ArlId = datosActuales.ArlId ?? 0;
+                nuevaAfiliacion.CajaCompensacionId = datosActuales.CajaCompensacionId ?? 0;
+                nuevaAfiliacion.Activo = datosActuales.Activo ?? false;
+            }
+            else
+            {
+                nuevaAfiliacion.AfiliacionId = 0;
+                nuevaAfiliacion.EmpleadoId = EmpleadoId;
+                nuevaAfiliacion.EpsId = 0;
+                nuevaAfiliacion.AfpId = 0;
+                nuevaAfiliacion.ArlId = 0;
+                nuevaAfiliacion.CajaCompensacionId = 0;
+                nuevaAfiliacion.Activo = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Error al inicializar el formulario: {ex.Message}";
+        }
+        finally
+        {
+            cargando = false;
+            StateHasChanged();
+        }
+    }
+
+    public async Task EjecutarGuardado()
+    {
+        isProcessing = true;
+        mensajeError = string.Empty;
+
+        try
+        {
+            nuevaAfiliacion.EmpleadoId = EmpleadoId;
+
+            var respuesta = await AfiliacionService.UpdateAfiliacionAsync(nuevaAfiliacion);
+            if (respuesta != null && respuesta.EsCorrecto)
+            {
+                mensajeExito = "Afiliación guardada con éxito.";
+                await JS.InvokeVoidAsync("Swal.fire", "¡Guardado!", "La afiliación se guardó correctamente.", "success");
+                await Task.Delay(1500);
+                Volver();
+            }
+            else
+            {
+                mensajeError = respuesta?.Mensaje ?? "Error al procesar la solicitud en el servidor.";
+            }
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Error en la transacción: {ex.Message}";
+            await JS.InvokeVoidAsync("Swal.fire", "Fatal Error", $"Ocurrió un error inesperado: {ex.Message}", "error");
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private void Volver() => nav.NavigateTo("/afiliacionseguridadSocial/empleados");
+}

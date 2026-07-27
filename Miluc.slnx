@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="Miluc.Client/Miluc.Client.csproj" Id="29f83eae-da2c-4d17-b3c0-fa6fc11f0117" />
+  <Project Path="Miluc.Server/Miluc.Server.csproj" Id="d301aa12-c96d-4a73-9d80-da8102eb20a1" />
+  <Project Path="Miluc.Shared/Miluc.Shared.csproj" Id="33d8a562-9e1d-4a36-b695-7da03a2bfbc4" />
+</Solution>

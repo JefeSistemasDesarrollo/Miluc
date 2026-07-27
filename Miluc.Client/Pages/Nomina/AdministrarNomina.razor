@@ -1,0 +1,122 @@
+﻿@page "/administrar-Nomina"
+@inject IAuthClientService authClient
+@inject NavigationManager nav
+
+<div class="welcome-container animate__animated animate__fadeIn">
+    @* --- SALUDO  --- *@
+    <header class="welcome-header">
+        
+        <p class="text-muted">Bienvenido a administrar Nomina : <strong>Avícola Miluc</strong>. </p>
+
+    </header>
+
+    @* --- ACCESO RÁPIDO / RESUMEN --- *@
+    <div class="quick-stats row g-4 mt-2">
+        
+        
+        <div class="col-12 col-md-4">
+            <div class="card ">
+                <div class="card-body card-miluc">
+                    <div class="icono-wrapper bg-rojo-suave">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <h4 class="text-center">Administrar Empleados</h4>
+                    <a href="/Administrar/Empleado" class="btn-miluc btn-rojo">
+                        <span>Colaborador</span>
+                        <i class="bi bi-arrow-right-short"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card">
+                <div class="card-body card-miluc-amarillo">
+                    <div class="icono-wrapper-amarillo bg-amarillo">
+                        <i class="bi bi-house-heart"></i>
+                    </div>
+                    <h4 class="text-center">Informacion Familiar</h4>
+                   
+                    
+                    <a href="/Administrar/informacionFamiliar" class="btn-miluc-amarillo btn-amarillo">
+                        <span>Parentescos</span>
+                        <i class="bi bi-arrow-right-short"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card">
+                <div class="card-body card-miluc">
+                    <div class="icono-wrapper bg-rojo-suave">
+                        <i class="bi bi-heart-pulse"></i>
+                    </div>
+                    <h4 class="text-center"> seguridad Social</h4>
+                   
+                    
+                    <a href="/Administrar/AfiliacionseguridadSocial" class="btn-miluc btn-rojo">
+                        <span>Afiliaciones</span>
+                        <i class="bi bi-arrow-right-short"></i>
+                    </a>
+        
+                </div>
+            </div>
+            </div>
+        <div class="col-12 col-md-4">
+            <div class="card">
+                <div class="card-body card-miluc-amarillo">
+                    <div class="icono-wrapper-amarillo bg-amarillo">
+                        <i class="bi bi-person-lines-fill"></i>
+                    </div>
+                    <h5 class="text-center">Matriz </h5>
+                   
+                    
+                    <a href="/Administrar/MatrizSociodemografica" class="btn-miluc-amarillo btn-amarillo">
+                        <span>Sociodemografica</span>
+                        <i class="bi bi-arrow-right-short"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card">
+                <div class="card-body card-miluc">
+                <div class=" icono-wrapper  bg-rojo-suave">
+                    <i class="bi bi-pencil-square"></i>
+
+                </div>
+                    <h4 class="text-center">Contrato Laboral</h4>
+                <a href="/Administrar/contratoLaboral" class="btn-miluc btn-rojo">
+                    <span>Contrato</span>
+                    <i class="bi bi-arrow-right-short"></i>
+
+                    </a>
+
+                </div>
+
+        </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card">
+                <div class="card-body card-miluc-amarillo">
+                    <div class="icono-wrapper-amarillo bg-amarillo">
+                        <i class="bi bi-prescription2"></i>
+
+                    </div>
+                    <h5 class="text-center">Esquema Vacunación</h5>
+
+                   
+                    <a href="/esquema-vacunacion" class="btn-miluc-amarillo btn-amarillo">
+                        <span>Esquema  </span>
+                        <i class="bi bi-arrow-right-short"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+        
+   
+    
+@code {
+
+}

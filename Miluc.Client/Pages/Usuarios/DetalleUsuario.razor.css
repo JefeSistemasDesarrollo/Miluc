@@ -1,0 +1,32 @@
+﻿
+
+.text-vinotinto {
+    color: #800020;
+}
+
+.bg-vinotinto {
+    background-color: #800020;
+}
+
+.btn-vinotinto {
+    background-color: #800020;
+    color: white;
+    border: none;
+    transition: 0.3s;
+}
+
+    .btn-vinotinto:hover {
+        background-color: #600018;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+.border-dashed {
+    border-style: dashed !important;
+}
+
+.badge {
+    font-weight: 500;
+}
+

@@ -1,0 +1,878 @@
+﻿@page "/administrar-pedido/editar/{DocEntry:int}"
+@using System.Globalization
+@using Miluc.Client.Interfaces.SapInterfaces.Cliente
+@using Miluc.Client.Interfaces.SapInterfaces.Oslp
+@using Miluc.Client.Interfaces.SapInterfaces.SapOitm
+@using Miluc.Client.Interfaces.SapInterfaces.SapOrdr
+@using Miluc.Shared.DTOs.Sap.Articulos
+@using Miluc.Shared.DTOs.Sap.Cliente
+@using Miluc.Shared.DTOs.Sap.Pedidos
+@using Miluc.Shared.DTOs.Sap.Vendedor
+@inject ISapOcrdClientService _sapOcrdClientService
+@inject NavigationManager nav
+@inject ILogClientService _logClientService
+@inject IAuthClientService _authClientService
+@inject ISapOslpService _sapOslpVendedorService
+@inject ISapOitmClientService _sapOitmClientService
+@inject ISapOrdrService _sapOrdrService
+@inject IJSRuntime _jsRuntime
+<div class="container-fluid py-3 bg-light min-vh-100">
+    @* encabezado de los pedidos *@
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="text-title fw-bold mb-0">
+            <i class="bi bi-file-earmark-plus me-2"></i>Orden de Venta - @modelUpdateOrden.DocNum
+        </h4>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-secondary rounded-pill px-4" @onclick='() => nav.NavigateTo("/administrar-pedido/pedidos")'>
+                <i class="bi bi-arrow-left me-1"></i> Volver
+            </button>
+            <button type="submit" form="pedidoForm" class="btn btn-miluc rounded-pill px-4">
+                <i class="bi bi-check-circle me-1"></i> Editar Orden de venta
+            </button>
+        </div>
+    </div>
+    <EditForm id="pedidoForm" Model="modelUpdateOrden" OnValidSubmit="EditarOrdenVenta">
+        <div class="row g-3">
+            @* --- DATOS DEL CLIENTE --- *@
+            <div class="col-12 col-xl-4">
+                <div class="card shadow-sm border-0 border-top border-maroon border-4 h-100">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3 small text-uppercase text-muted">Datos del Cliente</h6>
+                        <div class="mb-3">
+                            <label class="form-label">Cliente (Socio de Negocio)</label>
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-white"><i class="bi bi-person"></i></span>
+                                <InputText class="form-control cursor-pointer" @bind-Value="clienteSeleccionado.CardCode" />
+                                @*      <button class="btn btn-maroon" type="button" @onclick="AbrirModalCliente">
+                                    <i class="bi bi-search"></i>
+                                </button> *@
+
+                                @* @onclick="AbrirModalCliente" *@
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Lista de precios  : @clienteSeleccionado?.ListName</label>
+                        </div>
+                        <div class="mb-2">
+                            Sucursal : @(clienteSeleccionado?.CardFName ?? "")
+                        </div>
+                        <div class="mb-2">
+                            Estado de cuenta : @(clienteSeleccionado?.Balance?.ToString("N2", new CultureInfo("es-CO")) ?? "0,00")
+                        </div>
+                        <div class="mt-3">
+                            <span class="badge @(clienteSeleccionado?.CardCode != null ? "bg-success" : "bg-secondary") w-100 py-2">
+                                Estado: @(clienteSeleccionado?.CardCode != null ? "Activo" : "No seleccionado")
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @* --- LOGÍSTICA --- *@
+            <div class="col-12 col-md-6 col-xl-4">
+                <div class="card shadow-sm border-0 border-top border-maroon border-4 h-100">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3 small text-uppercase text-muted">Logística y Fechas</h6>
+                        <div class="mb-3">
+                            <label class="form-label">Fecha Emisión</label>
+                            <InputDate class="form-control form-control-sm" @bind-Value="fechaContabilizacion" disabled />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Fecha de Entrega</label>
+                            <InputDate class="form-control form-control-sm" @bind-Value="fechaEntrega" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @* --- VENTAS --- *@
+            <div class="col-12 col-md-6 col-xl-4">
+                <div class="card shadow-sm border-0 border-top border-maroon border-4 h-100">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3 small text-uppercase text-muted">Encabezado de Ventas</h6>
+                        <div class="mb-3">
+                            <label class="form-label">Empleado de Ventas</label>
+                            <select class="form-select form-select-sm" disabled>
+                                @if (clienteSeleccionado?.SlpCode != null)
+                                {
+                                    var vendedorPredeterminado = listVendedores.FirstOrDefault(v => v.SlpCode == modelUpdateOrden.SlpCode);
+                                    if (vendedorPredeterminado != null)
+                                    {
+                                        <option value="@vendedorPredeterminado.SlpCode" selected>@vendedorPredeterminado.SlpName</option>
+                                    }
+                                }
+                                @foreach (var vendedor in listVendedores)
+                                {
+                                    <option value="@vendedor.SlpCode">@vendedor.SlpName</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Origen del Pedido</label>
+                            <select class="form-select form-select-sm" @bind="origenSeleccionado" disabled>
+                                @if (modelUpdateOrden != null)
+                                {
+
+                                    var origenPredeterminado = listOrigenPedidos.FirstOrDefault(o => o.OrigenPedidoId == modelUpdateOrden.U_OrigenPedido);
+
+                                    @foreach (var origen in listOrigenPedidos)
+                                    {
+                                        if (origen.OrigenPedidoId == modelUpdateOrden.U_OrigenPedido)
+                                        {
+                                            <option value="@origen.OrigenPedidoId" selected>@origen.OrigenNombre</option>
+                                        }
+                                    }
+                                    @foreach (var vendedor in listVendedores)
+                                    {
+                                        <option value="@vendedor.SlpCode">@vendedor.SlpName</option>
+                                    }
+                                }
+                                @*         @foreach (var origen in listOrigenPedidos)
+                                {
+                                    <option value="@origen.OrigenPedidoId">@origen.OrigenNombre</option>
+                                } *@
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @* --- GRILLA DE ARTÍCULOS DINÁMICA --- *@
+        <div class="col-12 mt-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-box-seam me-2"></i>Contenido del Pedido</h6>
+                    <button type="button" class="btn btn-sm btn-outline-maroon" @onclick="AbrirModalArticulo">
+                        <i class="bi bi-plus-lg me-1"></i> Agregar Línea
+                    </button>
+                </div>
+                <div class="table-responsive" style="max-height: 350px;">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light small text-uppercase">
+                            <tr>
+                                <th class="ps-3" style="width: 3%">#</th>
+                                <th style="width: 5%">Código</th>
+                                <th style="width: 15%">Descripción</th>
+                                <th class="text-center" style="width: 3%">Cantidad</th>
+                                <th style="width: 3%">U.M</th>
+                                <th style="width: 8%">Equi.k</th>
+                                <th style="width: 8%">Equi.U</th>
+                                <th class="text-end" style="width: 10%">Precio</th>
+                                <th class="text-end" style="width: 10%">Precio Cliente</th>
+                                <th class="text-end" style="width: 8%">Precio Especial</th>
+                                <th class="text-end" style="width: 10%">Impuesto</th>
+                                <th class="text-end" style="width: 10%">% Renta</th>
+                                <th class="text-end pe-3" style="width: 10%">Total Impuesto</th>
+                                <th class="text-end pe-3" style="width: 10%">Total</th>
+                                <th class="text-center" style="width: 5%"> Eliminar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < lineasPedido.Count; i++)
+                            {
+                                var index = i;
+                                var linea = lineasPedido[index];
+                                <tr>
+                                    <td class="ps-3 text-muted">@(index + 1)</td>
+
+                                    <td>
+                                        <span class="text-vinotinto">@linea.ItemCode</span>
+                                    </td>
+
+                                    <td>
+                                        <input type="text" readonly class="form-control form-control-sm" @bind="linea.ItemName">
+                                    </td>
+
+                                    <!-- CANTIDAD -->
+                                    <!-- CANTIDAD -->
+                                    <td>
+                                        @if (linea.BuyUnitMsr?.ToUpper() == "KG")
+                                        {
+                                            <InputNumber TValue="decimal?"
+                                                         Value="linea.Quantity"
+                                                         ValueChanged="@(v => OnCantidadChanged(v, linea))"
+                                                         ValueExpression="() => linea.Quantity"
+                                                         class="form-control form-control-sm text-end"
+                                                         step="any"
+                                                         min="0" />
+                                        }
+                                        else
+                                        {
+                                            <InputNumber TValue="decimal?"
+                                                         Value="linea.Quantity"
+                                                         ValueChanged="@(v => OnCantidadChanged(Math.Round(v ?? 0,0,MidpointRounding.AwayFromZero), linea))"
+                                                         ValueExpression="() => linea.Quantity"
+                                                         class="form-control form-control-sm text-end"
+                                                         step="1"
+                                                         min="0" />
+                                        }
+                                    </td>
+
+                                    <td class="align-content-center">
+                                        @linea.BuyUnitMsr
+                                    </td>
+
+                                    <!-- EQUIVALENTE KG -->
+                                    <td>
+                                        @if (linea.BuyUnitMsr?.ToUpper() == "KG")
+                                        {
+                                            <!-- Cuando el artículo se vende por Kg, este campo solo muestra el valor -->
+                                            <InputNumber TValue="decimal?"
+                                                         Value="linea.U_EquivalentedKg"
+                                                         ValueExpression="() => linea.U_EquivalentedKg"
+                                                         class="form-control form-control-sm text-end"
+                                                         step="any"
+                                                         readonly />
+                                        }
+                                        else
+                                        {
+                                            <!-- Cuando el artículo se vende por unidades, este campo SI se puede editar -->
+                                            <InputNumber TValue="decimal?"
+                                                         Value="linea.U_EquivalentedKg"
+                                                         ValueChanged="@(v => OnKgChanged(v, linea))"
+                                                         ValueExpression="() => linea.U_EquivalentedKg"
+                                                         class="form-control form-control-sm text-end"
+                                                         step="any"
+                                                         min="0" />
+                                        }
+                                    </td>
+
+                                    <!-- EQUIVALENTE UNIDADES -->
+                                    <td>
+                                        @if (linea.BuyUnitMsr?.ToUpper() == "KG")
+                                        {
+                                            <!-- Cuando el artículo se vende por Kg, este campo SI se puede editar -->
+                                            <InputNumber TValue="decimal?"
+                                                         Value="linea.U_EquivalenteUni"
+                                                         ValueChanged="@(v => OnUnidadesChanged(v, linea))"
+                                                         ValueExpression="() => linea.U_EquivalenteUni"
+                                                         class="form-control form-control-sm text-end"
+                                                         step="1"
+                                                         min="0" />
+                                        }
+                                        else
+                                        {
+                                            <!-- Cuando el artículo se vende por unidades, solo muestra el valor -->
+                                            <InputNumber TValue="decimal?"
+                                                         Value="linea.U_EquivalenteUni"
+                                                         ValueExpression="() => linea.U_EquivalenteUni"
+                                                         class="form-control form-control-sm text-end"
+                                                         readonly />
+                                        }
+
+
+                                    </td>
+                                   
+
+                                    <!-- PRECIOS -->
+                                    <td>
+                                        <input type="number" readonly class="form-control form-control-sm text-end" @bind="linea.PriceAcobrar" @bind:event="oninput">
+                                    </td>
+                                    <td>
+                                        <input type="number" readonly class="form-control form-control-sm text-end" @bind="linea.PriceAsignado" @bind:event="oninput">
+                                    </td>
+                                    <td>
+                                        <input type="number" readonly class="form-control form-control-sm text-end" @bind="linea.PriceEspecial" @bind:event="oninput">
+                                    </td>
+                                    <td>
+                                        <input type="text" readonly class="form-control form-control-sm" @bind="linea.TaxCode">
+                                    </td>
+                                    <td>
+                                        <input type="number" readonly class="form-control form-control-sm text-end" @bind="linea.Rate" @bind:event="oninput">
+                                    </td>
+                                    <td class="text-end pe-3 fw-bold text-maroon">
+                                        @linea.TotalImpuesto.ToString("N2", new CultureInfo("es-CO"))
+                                    </td>
+                                    <td class="text-end pe-3 fw-bold text-maroon">
+                                        @linea.BaseSum.ToString("N2", new CultureInfo("es-CO"))
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm text-danger" @onclick="() => lineasPedido.Remove(linea)">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        @* --- COMENTARIOS Y TOTALES --- *@
+        <div class="row g-3 mt-1">
+            <div class="col-12 col-lg-7">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Comentarios</label>
+                        <InputTextArea class="form-control" rows="6" @bind-Value="comentarios" placeholder="Notas adicionales..."></InputTextArea>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-lg-5">
+                <div class="card shadow-sm border-0 bg-white">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3 border-bottom pb-2 text-muted small text-uppercase">Resumen de Totales</h6>
+                        <div class="d-flex justify-content-between mb-2 small">
+                            <span class="text-muted">Subtotal</span>
+                            <span>@Subtotal.ToString("N2", new CultureInfo("es-CO"))</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2 small align-items-center">
+                            <span class="text-muted">Redondeo (%)</span>
+                            <span>@Redondeo.ToString("N2", new CultureInfo("es-CO"))</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2 small">
+                            <span class="text-muted">IVA (19%)</span>
+                            <span>@Iva.ToString("N2", new CultureInfo("es-CO"))</span>
+                        </div>
+                        <hr class="my-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="h5 mb-0 fw-bold">TOTAL DOCUMENTO</span>
+                            <span class="h4 mb-0 fw-bold text-maroon"> @TotalFinal.ToString("N2", new CultureInfo("es-CO")) </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+</div>
+
+@* modal de articulos *@
+@* MODAL DE ARTICULOS *@
+<div class="modal fade @(mostrarModalArticulo ? "show d-block" : "")" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 1050;">
+
+    <!-- MODAL  PEQUEÑO -->
+    <div class="modal-dialog modal-md modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <!-- HEADER -->
+            <div class="modal-header bg-maroon text-white">
+                <h5 class="modal-title mb-0"><i class="bi bi-box-seam me-2"></i>Buscar Artículo</h5>
+                <button type="button" class="btn-close btn-close-white ms-auto" @onclick="CerrarModalArticulo"></button>
+
+            </div>
+
+            <!-- BODY -->
+            <div class="modal-body">
+
+                <!-- BUSCADOR -->
+                <div class="input-group mb-3">
+
+                    <input type="text" class="form-control" placeholder="Buscar artículo..." @bind="textoBusquedaArticulo" @onkeyup="HandleEnterArticulo">
+
+                    <button class="btn btn-maroon" @onclick="BuscarEnServidorArticulo"><i class="bi bi-search"></i>Buscar</button>
+                </div>
+                <!-- INFORMACION -->
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <small class="text-muted">
+                        Registros encontrados:
+                        <strong>@CantidadDeArticulosEncontrados</strong>
+                    </small>
+
+                    <small class="text-muted">
+                        Página @paginaActualArticulo de @TotalPaginasArticulo
+                    </small>
+                </div>
+                <!-- LISTA -->
+                <div class="list-group"
+                     style="max-height: 350px; overflow-y: auto;">
+
+                    @if (listaArticulosApi.Any())
+                    {
+                        @foreach (var item in listaArticulosApi)
+                        {
+                            <button type="button" class="list-group-item list-group-item-action" @onclick="() => SeleccionarArticulo(item)">
+                                <div class="d-flex flex-column">
+                                    <strong class="text-maroon">
+                                        @item.ItemCode
+                                    </strong>
+                                    <small class="text-muted">
+                                        @item.ItemName
+                                    </small>
+                                </div>
+                            </button>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-search fs-3"></i>
+                            <div class="mt-2">
+                                No se encontraron artículos
+                            </div>
+                        </div>
+                    }
+                </div>
+                <!-- PAGINADOR -->
+                @if (CantidadDeArticulosEncontrados > 0)
+                {
+                    <div class="d-flex justify-content-center mt-3">
+
+                        <div class="btn-group">
+
+                            <!-- ANTERIOR -->
+                            <button class="btn btn-outline-secondary btn-sm" disabled="@(paginaActualArticulo == 1)" @onclick="PaginaAnteriorArticulo">
+                                <i class="bi bi-chevron-left"></i>
+                            </button>
+                            <!-- PAGINAS -->
+                            @for (int i = Math.Max(1, paginaActualArticulo - 2); i <= Math.Min(TotalPaginasArticulo, paginaActualArticulo + 2); i++)
+                            {
+                                var pagina = i;
+                                <button class="btn @(paginaActualArticulo == pagina ? "btn-maroon text-white" : "btn-outline-secondary") btn-sm" @onclick="() => IrPaginaArticulo(pagina)">
+                                    @pagina
+                                </button>
+                            }
+                            <!-- SIGUIENTE -->
+                            <button class="btn btn-outline-secondary btn-sm" disabled="@(paginaActualArticulo == TotalPaginasArticulo)" @onclick="SiguientePaginaArticulo">
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+@code {
+    private bool mostrarModalArticulo = false;
+    private int paginaActualArticulo = 1;
+    private int CantidadRegistrosPorPaginaArticulo = 10;
+    private int CantidadDeArticulosEncontrados = 0;
+    private int CantidadDeClientesEncontrados = 0;
+    private int cantidadPorPaginaCliente = 10;
+    // private int cantidadPorPaginaArticulo = 10;
+    private string textoBusquedaArticulo = "";
+
+    private bool Cargando = false;
+    private string comentarios = "";
+    [Parameter]
+    public int DocEntry { get; set; }
+    // private decimal descuentoPorcentaje = 0;
+    private SapClienteReaderDto? clienteSeleccionado = new();
+
+    private SapOitmDto? ArticuloSeleccionado = new();
+    //EL PEDIDO QUE VAMOS A EDITAR, INICIALIZAMOS CON LOS VALORES EXISTENTES PARA MOSTRARLOS EN EL FORMULARIO
+    private OrdersReaderDto modelUpdateOrden = new();
+    //LA LISTA ORIGEN DEL PEDIDO LA INICIALIZAMOS CON LOS VALORES FIJOS QUE TENEMOS EN SAP, PARA QUE EL USUARIO PUEDA SELECCIONAR EL ORIGEN DEL PEDIDO
+    private List<OrigenPedidoDto> listOrigenPedidos = new();
+    //LA LISTA DE LINEAS DEL PEDIDO, INICIALIZAMOS VACIA Y SE IRÁ LLENANDO A MEDIDA QUE EL USUARIO VAYA AGREGANDO ARTÍCULOS, CADA VEZ QUE SE AGREGA O MODIFICA UNA LÍNEA SE CALCULAN LOS TOTALES CORRESPONDIENTES
+    private List<ArticuloPorListaDePreciosDto> lineasPedido = new();
+    //LA LISTA DE VENDEDORES LA INICIALIZAMOS CON LOS VENDEDORES QUE TENEMOS EN SAP, PARA QUE EL USUARIO PUEDA SELECCIONAR EL VENDEDOR RESPONSABLE DEL PEDIDO
+    private List<SapVendedorReaderDto> listVendedores = new();
+    //LA LISTA DE ARTÍCULOS LA INICIALIZAMOS VACÍA Y SE IRÁ LLENANDO CON LOS RESULTADOS DE LA BÚSQUEDA QUE EL USUARIO HAGA EN EL MODAL DE ARTÍCULOS, CADA VEZ QUE EL USUARIO HAGA UNA BÚSQUEDA SE CONSULTA A SAP Y SE ACTUALIZA ESTA LISTA CON LOS RESULTADOS OBTENIDOS
+
+    private List<SapOitmDto> listaArticulosApi = new();
+    //FECHAS DEL PEDIDO, INICIALIZAMOS CON LA FECHA ACTUAL PERO EL USUARIO PUEDE MODIFICARLA SI LO DESEA, LA FECHA DE CONTABILIZACIÓN SE UTILIZA PARA CALCULAR LOS TOTALES Y LA FECHA DE ENTREGA SE UTILIZA PARA CALCULAR LOS PLAZOS DE ENTREGA Y LAS CONDICIONES DE PAGO
+    private DateTime fechaContabilizacion = DateTime.Now;
+    private DateTime fechaEntrega = DateTime.Now;
+    //LA VAMOS A PASAR DESDE EL CLIENTE DEL PEDIDO , CUANDO EL USUARIO SELECCIONE EL PEDIDO QUE DESEA EDITAR, SE CONSULTA A SAP POR LOS DETALLES DE ESE PEDIDO Y SE INICIALIZA ESTE OBJETO CON LOS VALORES O
+    private Int16? origenSeleccionado = 0;
+    private ArticuloPorListaDePreciosDto articuloPorListaDePreciosDto = new();
+    // Totales calculados
+    private decimal Subtotal => lineasPedido.Sum(x => x.BaseSum);
+    // El IVA se calcula sumando el TotalImpuesto de cada línea, que ya incluye el cálculo del impuesto según la cantidad y el precio
+    private decimal Iva => lineasPedido.Sum(x => x.TotalImpuesto);
+    //private decimal TotalFinal =>Math.Round(Subtotal + Iva, 2, MidpointRounding.AwayFromZero);
+    private decimal TotalFinal => Math.Round((Subtotal + Iva));
+    // El redondeo se calcula como la diferencia entre el total final redondeado y el total sin redondear, para mostrar al usuario cuánto se está redondeando en el documento
+
+    private decimal TotalSinRedondeo => (Subtotal + Iva);
+    // El redondeo se calcula como la diferencia entre el total final redondeado y el total sin redondear, para mostrar al usuario cuánto se está redondeando en el documento
+    private decimal Redondeo => TotalFinal - TotalSinRedondeo;
+    //private decimal ValorRedondeo => TotalFinal - TotalSinRedondeo;
+
+    private int TotalPaginasArticulo=> (int)Math.Ceiling((double)CantidadDeArticulosEncontrados / CantidadRegistrosPorPaginaArticulo);
+
+    private async Task PaginaAnteriorArticulo()
+    {
+        if (paginaActualArticulo > 1)
+        {
+            paginaActualArticulo--;
+            await BuscarEnServidorArticulo();
+        }
+    }
+
+    private async Task SiguientePaginaArticulo()
+    {
+        if (paginaActualArticulo < TotalPaginasArticulo)
+        {
+            paginaActualArticulo++;
+            await BuscarEnServidorArticulo();
+        }
+    }
+    private async Task IrPaginaArticulo(int pagina)
+    {
+        paginaActualArticulo = pagina;
+        await BuscarEnServidorArticulo();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+
+        if (!_authClientService.HasPermission("Orders.Update"))
+        {
+            nav.NavigateTo("/no-autorizado");
+            return;
+        }
+        await InicializarFormulario();
+    }
+    private async Task RecargarPagina()
+    {
+        await InicializarFormulario();
+        StateHasChanged();
+        nav.NavigateTo(nav.Uri, forceLoad: true);
+    }
+    private async Task InicializarFormulario()
+    {
+        clienteSeleccionado = new();
+        ArticuloSeleccionado = new();
+        lineasPedido.Clear();
+        comentarios = "";
+        //ACA VAMOS A INICIALIZAR EL OBJETO modelUpdateOrden CONSULTANDO A SAP POR
+        // LOS DETALLES DEL PEDIDO QUE VAMOS A EDITAR, Y ASIGNAMOS LOS VALORES OBTENIDOS A LAS VARIABLES CORRESPONDIENTES
+        //  PARA MOSTRARLOS EN EL FORMULARIO, COMO EL CLIENTE SELECCIONADO, LAS LINEAS DEL PEDIDO, LAS FECHAS, EL ORIGEN DEL PEDIDO, ETC
+        var responseOrdenUpdate = await _sapOrdrService.GetOrderByIdAsync(DocEntry);
+
+        if (responseOrdenUpdate != null && responseOrdenUpdate.Valor != null)
+        {
+            modelUpdateOrden = responseOrdenUpdate.Valor;
+            origenSeleccionado = modelUpdateOrden.U_OrigenPedido;
+            fechaContabilizacion = modelUpdateOrden.DocDate;
+            fechaEntrega = modelUpdateOrden.DocDueDate;
+
+            comentarios = modelUpdateOrden.Comments;
+            // ASIGNAMOS EL CLIENTE SELECCIONADO
+            if (!string.IsNullOrEmpty(modelUpdateOrden.CardCode))
+            {
+                // var responseCliente = await _sapOcrdClientService.GetClienteByCardCodeAsync(modelUpdateOrden.CardCode);
+                clienteSeleccionado.CardCode = modelUpdateOrden.CardCode;
+                clienteSeleccionado.CardName = modelUpdateOrden.CardName;
+                clienteSeleccionado.ListName = modelUpdateOrden.ListName;
+                // clienteSeleccionado.ListName = modelUpdateOrden.ListName;
+                // clienteSeleccionado.LicTradNum = modelUpdateOrden.LicTradNum;
+                clienteSeleccionado.CardFName = modelUpdateOrden.CardFName;
+                clienteSeleccionado.SlpCode = Convert.ToInt32(modelUpdateOrden.SlpCode);
+            }
+            // ASIGNAMOS LAS LINEAS DEL PEDIDO
+
+            if (modelUpdateOrden.detalle != null)
+            {
+                lineasPedido = modelUpdateOrden.detalle.Select(linea => new ArticuloPorListaDePreciosDto
+                {
+                    ItemCode = linea.ItemCode,
+                    ItemName = linea.ItemName,
+                    Quantity = linea.Quantity,
+                    BuyUnitMsr = linea.BuyUnitMsr,
+                    PriceAcobrar = Math.Round(Convert.ToDecimal(linea.PriceAcobrar), 2),
+                    PriceAsignado = Math.Round(Convert.ToDecimal(linea.PriceAsignado), 2),
+                    PriceEspecial = Math.Round(Convert.ToDecimal(linea.PriceAcobrar), 2),
+                    TaxCode = linea.TaxCode,
+                    Rate = Math.Round(Convert.ToDecimal(linea.Rate), 2),
+                    // NombreRate = linea.NombreRate,
+                    SWeight1 = Math.Round(Convert.ToDecimal(linea.SWeight1), 2)
+                }).ToList();
+
+                //aca vamos
+
+                foreach (var linea in lineasPedido)
+                {
+
+                    if (linea.SWeight1 > 0)
+                    {
+                        //calcular el equivalente en kg y unidades dependiendo de la unidad de medida de compra, teniendo en cuenta el peso del artículo
+                        if (!string.IsNullOrEmpty(linea.BuyUnitMsr))
+                        {
+                            if (linea.BuyUnitMsr.ToUpper() == "KG")
+                            {
+                                linea.U_EquivalentedKg = linea.Quantity;
+                                decimal pesoUnidades = Math.Round(Convert.ToDecimal(linea.U_EquivalentedKg / linea.SWeight1), 2);
+                                linea.U_EquivalenteUni = (int)Math.Round(pesoUnidades, MidpointRounding.AwayFromZero);
+                            }
+                            else
+                            {
+                                linea.U_EquivalenteUni = linea.Quantity;
+                                linea.U_EquivalentedKg = Math.Round(Convert.ToDecimal(linea.U_EquivalenteUni * linea.SWeight1), 2);
+                            }
+
+                        }
+                    }
+                    linea.BaseSum = Math.Round(Convert.ToDecimal(linea.Quantity) * Convert.ToDecimal((linea.PriceAcobrar ?? 0)), 2);
+                    linea.TotalImpuesto = Math.Round(Convert.ToDecimal((linea.BaseSum * linea.Rate) / 100), 2);
+
+                }
+
+            }
+
+        }
+        fechaContabilizacion = DateTime.Now;
+        fechaEntrega = DateTime.Now;
+
+        listOrigenPedidos = new List<OrigenPedidoDto>
+    {
+        new OrigenPedidoDto{OrigenPedidoId=1,OrigenNombre="Seleccione.."},
+        new OrigenPedidoDto{OrigenPedidoId=2,OrigenNombre="Redes Sociales"},
+        new OrigenPedidoDto{OrigenPedidoId=3,OrigenNombre="WhatsApp"},
+        new OrigenPedidoDto{OrigenPedidoId=4,OrigenNombre="Télefono Celular"},
+        new OrigenPedidoDto{OrigenPedidoId=5,OrigenNombre="Correo"},
+        new OrigenPedidoDto{OrigenPedidoId=6,OrigenNombre="Tienda - pag"},
+        new OrigenPedidoDto{OrigenPedidoId=7,OrigenNombre="Referidos"}
+    };
+
+        listVendedores = (await _sapOslpVendedorService.GetListVendedoresAsync()).Valor ?? new List<SapVendedorReaderDto>();
+
+        listaArticulosApi = (await _sapOitmClientService.GetListOitmAsync("P", paginaActualArticulo, CantidadRegistrosPorPaginaArticulo)).Valor ?? new List<SapOitmDto>();
+
+        // await BuscarEnServidorCliente();
+    }
+
+
+    private void AgregarLinea()
+    {
+        if (clienteSeleccionado == null)
+        {
+            _jsRuntime.InvokeVoidAsync("Swal.fire", "Error.", "Seleccione el cliente", "error");
+            return;
+        }
+        lineasPedido.Add(new ArticuloPorListaDePreciosDto());
+    }
+    private void AbrirModalArticulo()
+    {
+        if (clienteSeleccionado.CardCode == null)
+        {
+            _jsRuntime.InvokeVoidAsync("Swal.fire", "Error.", "Seleccione el cliente Por favor", "error");
+            return;
+
+            mostrarModalArticulo = false;
+        }
+        else
+        {
+            mostrarModalArticulo = true;
+
+        }
+    }
+    //para manejar los valores de cantidad y
+    // recalcular la fila cada vez que cambie la cantidad, teniendo en cuenta el tipo de unidad de medida
+ 
+    private void CerrarModalArticulo() => mostrarModalArticulo = false;
+
+    private async Task HandleEnterArticulo(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await BuscarEnServidorArticulo();
+    }
+    private async Task BuscarEnServidorArticulo()
+    {
+        try
+        {
+            Cargando = true;
+
+            var response = await _sapOitmClientService.GetListOitmAsync(textoBusquedaArticulo.Trim(), paginaActualArticulo, CantidadRegistrosPorPaginaArticulo);
+
+            listaArticulosApi = response?.Valor ?? new();
+
+            CantidadDeArticulosEncontrados = response?.CantRegistros ?? 0;
+
+        }
+        catch (Exception ex)
+        {
+            await _logClientService.GuardarErrorAsync(ex.Message, ex.StackTrace, nivel: "error", metodo: "BuscarEnServidor");
+
+        }
+        finally
+        {
+            Cargando = false;
+            StateHasChanged();
+        }
+    }
+    private async Task SeleccionarArticulo(SapOitmDto item)
+    {
+        // 1. Validación inicial: Sin cliente no hay precios.
+        if (string.IsNullOrEmpty(clienteSeleccionado?.CardCode))
+        {
+            await _jsRuntime.InvokeVoidAsync("Swal.fire", "Error.", "Seleccione un cliente antes de agregar artículos", "error");
+            return;
+        }
+        try
+        {
+            // Usamos item.ItemCode del objeto seleccionado en el modal, NO el texto de búsqueda.
+            var responseArticulo = await _sapOitmClientService.GetOitmCarcodeItemcodeAsync(clienteSeleccionado.CardCode, item.ItemCode, 1);
+
+            if (responseArticulo?.Valor != null)
+            {
+                var artData = responseArticulo.Valor;
+
+                //  Validación de Precio
+                if (artData.PriceAsignado == 0 || artData.PriceAsignado == null)
+                {
+                    await _jsRuntime.InvokeVoidAsync("Swal.fire", "Error", $"El artículo {artData.ItemCode} no tiene precio asignado para este cliente.", "error");
+                    return;
+                }
+
+                // 4Lógica de Agregado o Actualización
+                var existente = lineasPedido.FirstOrDefault(x => x.ItemCode == artData.ItemCode);
+
+                if (existente != null)
+                {
+                    // Si ya existe, solo aumentamos la cantidad y recalculamos
+                    existente.Quantity++;
+                    CalcularTotales(existente);
+                }
+                else
+                {
+                    // Si es nuevo, inicializamos cantidad y calculamos antes de añadir
+                    artData.Quantity = 1;
+                    CalcularTotales(artData);
+
+                    lineasPedido.Add(new ArticuloPorListaDePreciosDto
+                    {
+                        ItemCode = artData.ItemCode,
+                        ItemName = artData.ItemName,
+                        BuyUnitMsr = artData.BuyUnitMsr,
+                        SWeight1 = Math.Round(Convert.ToDecimal(artData.SWeight1), 2),
+                        PriceAcobrar = Math.Round(Convert.ToDecimal(artData.PriceAcobrar), 2),
+                        // PriceAcobrar = Math.Round(Convert.ToDecimal(artData.PriceAcobrar), 2),
+                        PriceAsignado = Math.Round(Convert.ToDecimal(artData.PriceAsignado), 2),
+                        //    SWeight1 = Math.Round(d.OITM.SWeight1, 2),
+                        PriceEspecial = Math.Round(Convert.ToDecimal(artData.PriceEspecial), 2),
+                        Quantity = artData.Quantity,
+                        BaseSum = Math.Round(Convert.ToDecimal(artData.BaseSum), 2),
+                        Rate = Math.Round(Convert.ToDecimal(artData.Rate), 2),
+                        TaxCode = artData.TaxCode,
+                        U_EquivalentedKg = Math.Round(Convert.ToDecimal(artData.U_EquivalentedKg), 2),
+                        U_EquivalenteUni = Math.Round(Convert.ToDecimal(artData.U_EquivalenteUni), 2),
+                        TotalImpuesto = Math.Round(Convert.ToDecimal(artData.TotalImpuesto), 2)
+                    });
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await _logClientService.GuardarErrorAsync(ex.Message, ex.StackTrace, "error", "SeleccionarArticulo");
+        }
+        finally
+        {
+            CerrarModalArticulo();
+            StateHasChanged();
+        }
+    }
+
+    private async Task EditarOrdenVenta()
+    {
+        if (string.IsNullOrEmpty(clienteSeleccionado?.CardCode)) return;
+
+        if (lineasPedido != null)
+        {
+
+            PedidoUpdateDto pedidoUpdateDto = new PedidoUpdateDto
+            {
+                DocEntry = DocEntry,
+                CardCode = clienteSeleccionado.CardCode,
+                DocDate = fechaContabilizacion,
+                DocDueDate = fechaEntrega,
+                Reference2 = "Generado por pagina web",
+                Comments = comentarios,
+                JournalMemo = "Pedido editado desde Miluc Web",
+                SalesPersonCode = clienteSeleccionado.SlpCode,
+                U_OrigenPedido = origenSeleccionado,
+                U_Responsable = _authClientService.CurrentSession.UserName,
+                DocumentLines = lineasPedido.Select(x => new PedidoCrearDetalleLineaDTO
+                {
+                    ItemCode = x.ItemCode,
+                    Quantity = Convert.ToDecimal(x.Quantity),
+                    // PriceAcobrar = x.PriceAcobrar ?? 0,
+                    // PriceAsignado = x.PriceAsignado ?? 0,
+                    // PriceEspecial = x.PriceEspecial ?? 0,
+                    // TaxCode = x.TaxCode,
+                    // Rate = x.Rate ?? 0,
+                    // U_EquivalentedKg = x.U_EquivalentedKg ?? 0,
+                    // U_EquivalenteUni = x.U_EquivalenteUni ?? 0
+                }).ToList()
+            };
+
+            var response = await _sapOrdrService.UpdatePedidoAsync(pedidoUpdateDto);
+
+
+            if (response.EsCorrecto == true)
+            {
+                await _jsRuntime.InvokeVoidAsync("Swal.fire",
+                    "Correcto",
+                    $"Pedido creado correctamente. Número de documento: {response.Valor.DocNum}",
+                    "success");
+                nav.NavigateTo("/administrar-pedido/pedidos", forceLoad: true);
+            }
+            else
+            {
+                await _jsRuntime.InvokeVoidAsync("Swal.fire", "Error", $"No se pudo editar el  pedido. Detalles: {response.Mensaje}", "error");
+            }
+        }
+
+    }
+    private void OnCantidadChanged(decimal? value, ArticuloPorListaDePreciosDto linea)
+    {
+        linea.Quantity = value ?? 0;
+
+        if (linea.SWeight1 <= 0)
+        {
+            CalcularTotales(linea);
+            return;
+        }
+
+        if (linea.BuyUnitMsr?.ToUpper() == "KG")
+        {
+            // Cantidad está en Kg
+            linea.U_EquivalentedKg = linea.Quantity;
+
+            linea.U_EquivalenteUni = Math.Round(Convert.ToDecimal(linea.Quantity) / Convert.ToDecimal(linea.SWeight1), 0, MidpointRounding.AwayFromZero);
+        }
+        else
+        {
+            // Cantidad está en Unidades
+            linea.U_EquivalenteUni = linea.Quantity;
+
+            linea.U_EquivalentedKg = Math.Round(Convert.ToDecimal(linea.Quantity) * Convert.ToDecimal(linea.SWeight1), 2);
+        }
+
+        CalcularTotales(linea);
+    }
+
+    private void OnKgChanged(decimal? value, ArticuloPorListaDePreciosDto linea)
+    {
+        linea.U_EquivalentedKg = value ?? 0;
+
+        if (linea.SWeight1 <= 0)
+        {
+            CalcularTotales(linea);
+            return;
+        }
+
+        linea.U_EquivalenteUni = Math.Round(
+           Convert.ToDecimal(linea.U_EquivalentedKg) / Convert.ToDecimal(linea.SWeight1),
+            0,
+            MidpointRounding.AwayFromZero);
+
+        // Como el artículo es por unidades,
+        // Quantity siempre representa unidades.
+        linea.Quantity = linea.U_EquivalenteUni;
+
+        CalcularTotales(linea);
+    }
+    private void OnUnidadesChanged(decimal? value, ArticuloPorListaDePreciosDto linea)
+    {
+        linea.U_EquivalenteUni = Math.Round(value ?? 0, 0);
+
+        if (linea.SWeight1 <= 0)
+        {
+            CalcularTotales(linea);
+            return;
+        }
+
+        linea.U_EquivalentedKg = Math.Round(Convert.ToDecimal(linea.U_EquivalenteUni) * Convert.ToDecimal(linea.SWeight1), 2);
+
+        // Como el artículo es por Kg,
+        // Quantity siempre representa Kg.
+        linea.Quantity = linea.U_EquivalentedKg;
+
+        CalcularTotales(linea);
+    }
+    private void CalcularTotales(ArticuloPorListaDePreciosDto linea)
+    {
+        linea.BaseSum = Math.Round((linea.Quantity ?? 0) * (linea.PriceAcobrar ?? 0), 2);
+
+        linea.TotalImpuesto = Math.Round((linea.BaseSum * linea.Rate) / 100, 2);
+    }
+}

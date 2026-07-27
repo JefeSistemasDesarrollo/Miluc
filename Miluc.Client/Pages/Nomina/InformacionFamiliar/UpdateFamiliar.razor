@@ -1,0 +1,281 @@
+﻿@page "/nomina/editar/informacion-familiar/{empleadoid:int}/{informacionfamiliarid:int}"
+
+@using System.Linq
+@using System.Text.Json
+@using Miluc.Client.Interfaces.Nomina
+@using Miluc.Shared.DTOs.Nomina.InformacionFamiliarDto
+@using Miluc.Shared.DTOs.Nomina.ParentescoDto
+@using Miluc.Shared.DTOs.Nomina.EmpleadoDto
+@inject NavigationManager nav
+@inject IInfoFamiliarClientService _infoFamiliarService
+@inject IParentescoClient _parentescoService
+@inject IJSRuntime JS
+
+<div class="empleado-page p-4 animate__animated animate__fadeIn">
+    <div class="container-fluid max-width-container">
+
+        @* --- HEADER --- *@
+        <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
+            <div>
+                <h2 class="fw-extrabold text-vinotinto m-0 tracking-tight">
+                    <i class="bi bi-pencil-square me-2 header-icon"></i>
+                    Editar Familiar
+                </h2>
+                <p class="text-muted mb-0 small mt-1">
+                    Modifique la información del familiar seleccionado. Los campos marcados con <span class="text-danger">*</span> son requeridos.
+                </p>
+            </div>
+            
+            <button class="btn btn-vinotinto btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
+                <i class="bi bi-arrow-left me-2"></i> Volver al listado
+            </button>
+        </div>
+  
+        @if (informacionFamiliar == null)
+        {
+            <div class="d-flex justify-content-center my-5">
+                <div class="spinner-border text-vinotinto" role="status">
+                    <span class="visually-hidden">Cargando datos del familiar...</span>
+                </div>
+            </div>
+        }
+        else
+        {
+            @* --- FORMULARIO DE EDICIÓN DIRECTO --- *@
+            <EditForm Model="informacionFamiliar" OnValidSubmit="ActualizarFamiliar">
+                <DataAnnotationsValidator />
+                
+                <div class="col-12">
+                    <div class="card card-custom border-0 shadow-sm rounded-4">
+                        <div class="card-body p-4">
+                            <div class="section-title-container mb-4">
+                                <h5 class="fw-bold text-dark m-0">Datos de Información familiar</h5>
+                            </div>
+
+                            <div class="row g-4">
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-person"></i></span> Nombre Completo*</label>
+                                    <div class="input-group-custom">
+                                        <InputText class="form-control input-custom" @bind-Value="informacionFamiliar.NombreCompleto" placeholder="Ej: Juan Pérez" />
+                                    </div>
+                                    <ValidationMessage For="@(() => informacionFamiliar.NombreCompleto)" class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-card-text"></i></span> Documento*</label>
+                                    <div class="input-group-custom">
+                                        <InputText class="form-control input-custom" @bind-Value="informacionFamiliar.Documento" placeholder="Ej: 12345678" />
+                                    </div>
+                                    <ValidationMessage For="@(() => informacionFamiliar.Documento)" class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-person-dash"></i></span> Parentesco*</label>
+                                    <div class="input-group-custom">
+                                        <InputSelect @bind-Value="informacionFamiliar.ParentescoId" class="form-control input-custom">
+                                            <option value="">Seleccionar Parentesco</option>
+                                            @foreach (var parentesco in listParentescos)
+                                            {
+                                                <option value="@parentesco.ParentescoId">@parentesco.NombreParentesco</option>
+                                            }
+                                        </InputSelect>
+                                    </div>
+                                    <ValidationMessage For="@(() => informacionFamiliar.ParentescoId)" class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-calendar-event"></i></span> Fecha nacimiento</label>
+                                    <div class="input-group-custom">
+                                        <InputDate class="form-control input-custom" @bind-Value="informacionFamiliar.FechaNacimiento" max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                                    </div>
+                                    <ValidationMessage For="@(() => informacionFamiliar.FechaNacimiento)" class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-house-heart"></i></span> ¿Vive con el empleado? *</label>
+                                    <div class="input-group-custom">
+                                        <InputSelect @bind-Value="ViveConEmpleadoString" class="form-control input-custom">
+                                            <option value="">-- Seleccione --</option>
+                                            <option value="true">Sí</option>
+                                            <option value="false">No</option>
+                                        </InputSelect>
+                                    </div>
+                                    <ValidationMessage For="@(() => informacionFamiliar.ViveConEmpleado)" class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-currency-dollar"></i></span> ¿Depende económicamente? *</label>
+                                    <div class="input-group-custom">
+                                        <InputSelect @bind-Value="DependeEconomicamenteString" class="form-control input-custom">
+                                            <option value="">-- Seleccione --</option>
+                                            <option value="true">Sí</option>
+                                            <option value="false">No</option>
+                                        </InputSelect>
+                                    </div>
+                                    <ValidationMessage For="@(() => informacionFamiliar.DependeEconomicamente)" class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-people"></i></span> ¿Persona a cargo? *</label>
+                                    <div class="input-group-custom">
+                                        <InputSelect @bind-Value="PersonaaCargoString" class="form-control input-custom">
+                                            <option value="">-- Seleccione --</option>
+                                            <option value="true">Sí</option>
+                                            <option value="false">No</option>
+                                        </InputSelect>
+                                    </div>
+                                    <ValidationMessage For="@(() => informacionFamiliar.PersonaaCargo)" class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
+
+
+                                <div class="col-md-4 d-flex align-items-end">
+                                    <div class="form-check form-switch switch-lg w-100 p-3 border rounded-3 bg-light d-flex align-items-center gap-3">
+                                        <InputCheckbox class="form-check-input ms-0" @bind-Value="informacionFamiliar.Activo" id="switchActivo" />
+                                        <label class="form-check-label fw-bold m-0 user-select-none" for="switchActivo">
+                                            @if (informacionFamiliar.Activo)
+                                            {
+                                                <span class="text-success"><i class="bi bi-check-circle-fill me-1"></i>  Activo</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-danger"><i class="bi bi-x-circle-fill me-1"></i>  Inactivo</span>
+                                            }
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @* --- BOTONES DE ACCIÓN --- *@
+                            <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-3">
+                                <button type="button" class="btn btn-light-custom rounded-pill px-4 py-2.5 fw-semibold" @onclick="Volver">
+                                    Cancelar
+                                </button>
+        
+                                <button type="submit" class="btn btn-vinotinto btn-secondary rounded-pill px-4" disabled="@isProcessing">
+                                    @if (isProcessing)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                        <span>Actualizando...</span>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-cloud-upload-fill me-2"></i>
+                                        <span>Guardar Cambios</span>
+                                    }
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </EditForm>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public int empleadoid { get; set; }
+    [Parameter] public int informacionfamiliarid { get; set; }
+
+    private InfoFamiliarUpdateDto informacionFamiliar;
+    private List<ParentescoReaderDto> listParentescos = new();
+    private bool isProcessing = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDatosIniciales();
+    }
+
+    private async Task CargarDatosIniciales()
+    {
+        var respuestaParentescos = await _parentescoService.GetAllParentescosAsync();
+        if (respuestaParentescos.EsCorrecto) listParentescos = respuestaParentescos.Valor;
+
+        var respuestaFamiliar = await _infoFamiliarService.GetFamiliarByIdAsync(empleadoid);
+
+        if (respuestaFamiliar.EsCorrecto && respuestaFamiliar.Valor != null && respuestaFamiliar.Valor.Any())
+        {
+            var familiarEspecifico = respuestaFamiliar.Valor
+                .FirstOrDefault(f => f.InformacionFamiliarId == informacionfamiliarid);
+
+            if (familiarEspecifico != null)
+            {
+                informacionFamiliar = new InfoFamiliarUpdateDto
+                {
+                    InformacionFamiliarId = familiarEspecifico.InformacionFamiliarId,
+                    EmpleadoId = empleadoid,
+                    NombreCompleto = familiarEspecifico.NombreCompleto,
+                    Documento = familiarEspecifico.Documento,
+                    ParentescoId = familiarEspecifico.ParentescoId,
+                    FechaNacimiento = familiarEspecifico.FechaNacimiento,
+                    ViveConEmpleado = familiarEspecifico.ViveConEmpleado,
+                    DependeEconomicamente = familiarEspecifico.DependeEconomicamente,
+                    PersonaaCargo = familiarEspecifico.PersonaaCargo,
+                    Activo = familiarEspecifico.Activo
+                };
+            }
+            else
+            
+            {
+                await JS.InvokeVoidAsync("Swal.fire", "Error", "El familiar no corresponde al empleado seleccionado.", "error");
+                Volver();
+            }
+        }
+    }
+
+    private async Task ActualizarFamiliar()
+    {
+        if (isProcessing) return;
+        isProcessing = true;
+
+        try
+        {
+           
+            var estadoActivo = informacionFamiliar.Activo;
+            informacionFamiliar.Activo = estadoActivo;
+
+            
+            Console.WriteLine($"Enviando Familiar con Estado Activo = {informacionFamiliar.Activo}");
+
+            var respuesta = await _infoFamiliarService.UpdateFamiliarAsync(informacionFamiliar);
+
+            if (!respuesta.EsCorrecto)
+            {
+                await JS.InvokeVoidAsync("Swal.fire", "Error", $"No se pudo actualizar: {respuesta.Mensaje}", "error");
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("Swal.fire", "Éxito", "La información familiar ha sido actualizada correctamente.", "success");
+                Volver();
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("Swal.fire", "Fatal Error", $"Excepción interna: {ex.Message}", "error");
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private string ViveConEmpleadoString
+    {
+        get => informacionFamiliar?.ViveConEmpleado?.ToString().ToLower() ?? "";
+        set { if (informacionFamiliar != null) informacionFamiliar.ViveConEmpleado = string.IsNullOrEmpty(value) ? null : bool.Parse(value); }
+    }
+
+    private string DependeEconomicamenteString
+    {
+        get => informacionFamiliar?.DependeEconomicamente?.ToString().ToLower() ?? "";
+        set { if (informacionFamiliar != null) informacionFamiliar.DependeEconomicamente = string.IsNullOrEmpty(value) ? null : bool.Parse(value); }
+    }
+
+    private string PersonaaCargoString
+    {
+        get => informacionFamiliar?.PersonaaCargo?.ToString().ToLower() ?? "";
+        set { if (informacionFamiliar != null) informacionFamiliar.PersonaaCargo = string.IsNullOrEmpty(value) ? null : bool.Parse(value); }
+    }
+
+    private void Volver() => nav.NavigateTo($"/nomina/detalleInformacionFamiliar/{empleadoid}");
+}

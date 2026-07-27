@@ -1,0 +1,150 @@
+﻿.check-rojo:checked {
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+    color: #dc3545 !important;
+}
+.check-amarillo:checked {
+    background-color: #ffc107 !important;
+    border-color: #ffc107 !important;
+}
+.check-vinotinto:checked {
+    background-color: #800020 !important;
+    border-color: #800020 !important;
+}
+.text-vinotinto{
+    color : #800020;
+}
+.text-rojo{
+    color : #dc3545;
+}
+.bg-vinotinto-suave {
+    background-color: rgba(128, 0, 32, 0.08);
+}
+.bg-rojo-suave {
+    background-color: rgba(220, 53, 69, 0.08);
+}
+.btn-vinotinto {
+    background-color: #800020;
+    color: white;
+    border: none;
+}/**/
+
+    .btn-vinotinto:hover {
+        background-color: #800020;
+        color : white;
+    }
+.bg-light-gradient {
+    background: linear-gradient(145deg, #f8f9fa 0%, #f1f3f5 100%);
+}
+.xx-small {
+    font-size: 0.72rem;
+    /*  fw-bold: 0; */
+}
+
+.active-sap-tab {
+    border-bottom: 3px solid #800020 !important;
+    background-color: transparent;
+    font-weight: bold;
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    border-radius: 0;
+}
+    .nav-tabs .nav-link:hover {
+       /* background-color: #f8f9fa !important;*/
+        border: none !important;
+    border-bottom: 3px solid #800020 !important;
+    color: #800020 !important;
+    background-color: #fff !important;
+    font-weight: 700 !important;
+    }
+
+
+.table-sap th {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #555;
+}
+
+.style-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.style-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 4px;
+}
+
+
+/* ESTILOS VINOTINTO PARA EL MODAL*/
+
+.bg-maroon {
+    background: linear-gradient(135deg, #6b0f1a 0%, #4a0811 100%) !important;
+    color: #ffffff !important;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+    .bg-maroon h5,
+    .bg-maroon svg {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+    }
+
+/* Botón Principal (Buscar / Acciones) */
+.btn-maroon {
+    background-color: #6b0f1a !important;
+    border-color: #6b0f1a !important;
+    color: #ffffff !important;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+}
+
+    .btn-maroon:hover,
+    .btn-maroon:focus {
+        background-color: #4a0811 !important;
+        border-color: #4a0811 !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 10px rgba(107, 15, 26, 0.3);
+    }
+
+/* Texto de código/destacados en la lista */
+.text-maroon {
+    color: #6b0f1a !important;
+    font-weight: 600;
+}
+
+/* Hover suave en los elementos seleccionables de la lista */
+.list-group-item-action:hover {
+    background-color: #fdf2f4 !important;
+    border-left: 4px solid #6b0f1a !important;
+}
+
+/* Botón activo del paginador (Página actual) */
+.btn-maroon.text-white {
+    background-color: #6b0f1a !important;
+    border-color: #6b0f1a !important;
+    color: #ffffff !important;
+}
+
+/* Personalización del Scrollbar interno */
+.list-group::-webkit-scrollbar {
+    width: 6px;
+}
+
+.list-group::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.list-group::-webkit-scrollbar-thumb {
+    background: #6b0f1a;
+    border-radius: 4px;
+}
+
+    .list-group::-webkit-scrollbar-thumb:hover {
+        background: #4a0811;
+    }
+

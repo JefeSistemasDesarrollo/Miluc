@@ -1,0 +1,16 @@
+﻿.text-vinotinto {
+    color: #6c1d1d;
+}
+
+.btn-vinotinto {
+    background-color: #6c1d1d;
+    color: white;
+    border: none;
+    transition: 0.3s;
+}
+
+    .btn-vinotinto:hover {
+        background-color: #551616;
+        transform: translateY(-2px);
+        color: white;
+    }

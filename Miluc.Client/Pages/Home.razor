@@ -1,0 +1,52 @@
+﻿@page "/"
+
+@* <PageTitle>Inicio</PageTitle> *@
+<PageTitle>Inicio | Miluc ERP</PageTitle>
+
+<div class="welcome-container animate__animated animate__fadeIn">
+    @* --- SALUDO  --- *@
+    <header class="welcome-header">
+        <h1 class="fw-bold">Hola de nuevo, <span class="text-red"> </span></h1>
+        <p class="text-muted">Bienvenido al panel de control de <strong>Avícola Miluc</strong>. </p>
+    </header>
+
+    @* --- ACCESO RÁPIDO / RESUMEN --- *@
+    <div class="quick-stats row g-4 mt-2">
+        <div class="col-12 col-md-4">
+            <div class="simple-stat-card shadow-sm">
+                <div class="stat-info">
+                  
+                    <span class="stat-label">Adminsitrar Pedidos</span>
+                    <a href="/administrar-pedido/pedidos" class="stat-link">Gestionar de pedidos <i class="bi bi-arrow-right"></i></a>
+
+                </div>
+                <div class="stat-icon-bg"><i class="bi bi-people"></i></div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+            <div class="simple-stat-card shadow-sm">
+                <div class="stat-info">
+                    <span class="stat-value">500</span>
+                    <span class="stat-label">Unidades hoy</span>
+                </div>
+                <div class="stat-icon-bg"><i class="bi bi-egg-fried"></i></div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+            <div class="simple-stat-card shadow-sm">
+                <div class="stat-info">
+                    <span class="stat-label fw-bold">Atajos</span>
+                    <a href="/administrar-pedido/pedidos" class="stat-link">Gestionar personal <i class="bi bi-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* --- MENSAJE DE ESTADO --- *@
+    <div class="status-footer mt-5 p-3 rounded-3 bg-light d-flex align-items-center">
+        <span class="status-indicator"></span>
+        <span class="small text-muted">El sistema está sincronizado y funcionando correctamente.</span>
+    </div>
+</div>

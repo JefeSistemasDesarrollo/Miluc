@@ -1,0 +1,219 @@
+﻿@page "/Permisos/Crear"
+@using Miluc.Client.Interfaces.UsuariosRolesPermisos
+@using Miluc.Shared.DTOs.Permisos
+@using Miluc.Shared.DTOs.Roles
+@inject NavigationManager nav
+@inject IPermisoClientService _permisoService
+@inject IRolClientService _rolService
+@inject IJSRuntime js
+@inject IAuthClientService authClient
+@inject ILogClientService LogService
+
+<div class="permisos-page animate__animated animate__fadeIn p-4">
+    @* --- CABECERA --- *@
+    <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-3">
+        <div>
+            <h2 class="fw-bold text-vinotinto m-0"><i class="bi bi-shield-lock me-2"></i>Crear Permiso</h2>
+            <p class="text-muted mb-0 small">Complete los datos obligatorios marcados con (*).</p>
+        </div>
+        <button class="btn btn-vinotinto btn-sm rounded-pill px-3" @onclick='() => nav.NavigateTo("/configuracion/permisos")'>
+            <i class="bi bi-arrow-left me-1"></i> Volver a la lista
+        </button>
+    </div>
+
+    <EditForm Model="permisosCreateDto" OnValidSubmit="GuardarPermiso">
+        <DataAnnotationsValidator />
+
+        <div class="row g-4">
+            @* --- COLUMNA IZQUIERDA: PERFIL Y CREDENCIALES --- *@
+            <div class="col-xl-12 col-lg-10 col-12 col-md-6 col-lg-4 col-xl-4">
+                <div class="card shadow-sm border-0 mb-4 rounded-4">
+                    <div class="card-body p-4">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small text-secondary">Nombre del permiso*</label>
+                                <InputText class="form-control custom-input" @bind-Value="permisosCreateDto.Nombre" placeholder="ejemplo Productos.view" />
+                                <ValidationMessage For="@(() => permisosCreateDto.Nombre)" class="text-danger small" />
+                            </div>
+
+                        
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small text-secondary">Descripcion del permiso*</label>
+                                <InputText class="form-control custom-input" placeholder="Descripción Permiso" @bind-Value="permisosCreateDto.Descripcion" />
+                                <ValidationMessage For="@(() => permisosCreateDto.Descripcion)" class="text-danger small" />
+                            </div>
+                    </div>
+                 </div>
+
+            </div>
+      
+         
+
+                @* --- TIPOS DE USUARIO --- *@
+
+            <div class="col-xl-12 col-lg-10 col-12 col-md-6 col-lg-4 col-xl-4">
+
+                 <div class="card shadow-sm border-0 rounded-4 h-100">
+
+
+                 <div class="card-header bg-white py-3 border-0">
+                        <div class="row align-items-center">
+                            <div class="col-md-6"><h6 class="mb-0 fw-bold text-vinotinto text-uppercase">Asignación de Roles*</h6></div>
+                            <div class="col-md-6">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-light border-end-0 rounded-start-pill"><i class="bi bi-search"></i></span>
+                                    <input type="text" class="form-control bg-light border-start-0 rounded-end-pill" placeholder="Buscar rol..." @oninput="FiltrarRoles" />
+                                </div>
+                            </div>
+                        </div>
+                 </div>
+
+                 <div class="card-body pt-0">
+                               <div class="alert alert-warning py-2 small border-0 bg-opacity-10 mb-3 d-flex justify-content-between">
+                            <span><i class="bi bi-shield-check me-2"></i>Seleccione los Roles</span>
+                            <span class="badge bg-vinotinto rounded-pill">@permisosCreateDto.RolesIds.Count seleccionados</span>
+                  </div>
+
+                <div class="card shadow-sm border-0 rounded-4">
+                    <div class="card-header bg-white py-3 border-0"><h6 class="mb-0 fw-bold text-vinotinto">Roles*</h6></div>
+
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-2 g-2 overflow-auto pe-1" style="max-height: 580px;">
+                        @if (rolesFiltrados != null)
+                        {
+                            @foreach (var roles in rolesFiltrados)
+                            {
+                                 <div class="col">
+                                    <div class=" role-card tipo-item p-2 mb-2 rounded-3 @(permisosCreateDto.RolesIds.Contains(roles.IdRol) ? "active" : "")">
+                                        <div class="form-check form-switch d-flex align-items-center justify-content-between p-0">
+                                            <label class="form-check-label fw-semibold small ms-2" for="tipo-@roles.IdRol">@roles.Nombre</label>
+                                            <input class="form-check-input ms-0" type="checkbox" id="tipo-@roles.IdRol"
+                                                   checked="@permisosCreateDto.RolesIds.Contains(roles.IdRol)"
+                                                   @onchange="@(e => ToggleRoles(roles.IdRol, e.Value))" />
+                                        </div>
+                                      <span class="text-muted role-desc ">@roles.Descripcion</span>
+
+
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+                </div>
+
+
+
+                     <div class="card-footer bg-white border-0 p-4 text-end">
+                        <button type="submit" class="btn btn-vinotinto btn-lg rounded-pill px-5 shadow-sm" disabled="@procesando">
+                            @if (procesando)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2"></span> <span>Guardando...</span>
+                            }
+                            else
+                            {
+                          
+                                <span><i class="bi bi-shield-lock me-2"></i>Guardar Permiso</span>
+                            }
+                        </button>
+                    </div> 
+                </div> 
+           </div> 
+       </div> 
+
+
+
+    </EditForm>
+</div>
+
+@code {
+    private PermisosCreateDto permisosCreateDto = new PermisosCreateDto { RolesIds = new List<int>() };
+    private List<RolReadDto> listRoles = new();
+    private List<RolReadDto>? rolesFiltrados;
+    private bool procesando = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if (authClient.HasPermission("Permiso.Create"))
+        {
+            var resRole = await _rolService.GetAllRolesAsync();
+            if (resRole != null && resRole.EsCorrecto)
+            {
+                listRoles = resRole.Valor;
+                rolesFiltrados = listRoles;
+            }
+        }
+        else
+        {
+            nav.NavigateTo("/no-autorizado");
+            return;
+        }
+        }
+        catch (Exception ex)
+        {
+             await LogService.GuardarErrorAsync(
+                      ex.Message,
+                      ex.StackTrace,
+                      usuario: authClient.CurrentSession?.UserName ?? "No encontrado",
+                      metodo: "OnInitializedAsync Crear Permisos",
+                      ruta: $"Permisos/Crear",
+                      origen: "Blazor cliente",
+                      nivel: "error");
+        }
+    }
+    private void FiltrarRoles(ChangeEventArgs e)
+    {
+        var texto = e.Value?.ToString()?.ToLower() ?? "";
+        rolesFiltrados = string.IsNullOrEmpty(texto)
+        ? listRoles
+        : listRoles?.Where(r => r.Nombre.ToLower().Contains(texto)).ToList();
+    }
+    private async Task GuardarPermiso()
+    {
+        // Validación manual adicional
+        if (permisosCreateDto.RolesIds.Count == 0)
+        {
+            await js.InvokeVoidAsync("Swal.fire", "Atención", "Debe asignar este permiso a al menos un rol.", "warning");
+            return;
+        }
+        procesando = true;
+        try
+        {
+            var res = await _permisoService.CreatePermisoAsync(permisosCreateDto);
+
+            if (res.EsCorrecto)
+            {
+                await js.InvokeVoidAsync("Swal.fire", "¡Éxito!", "El permiso se creó correctamente.", "success");
+                nav.NavigateTo("/configuracion/permisos"); // Ajustado a la ruta lógica
+            }
+            else
+            {
+                await js.InvokeVoidAsync("Swal.fire", "Error", res.Mensaje, "error");
+            }
+        }
+        catch (Exception ex)
+        {
+             await LogService.GuardarErrorAsync(
+                      ex.Message,
+                      ex.StackTrace,
+                      usuario: authClient.CurrentSession?.UserName ?? "No encontrado",
+                      metodo: "Crear Permisos OnInitializedAsync",
+                      ruta: $"Permisos/Crear",
+                      origen: "Blazor Cliente",
+                      nivel: "error");
+
+            await js.InvokeVoidAsync("Swal.fire", "Error de sistema", ex.Message, "error");
+        }
+        finally
+        {
+            procesando = false;
+        }
+    }
+
+    private void ToggleRoles(int id, object? val)
+    {
+        bool isChecked = (bool)(val ?? false);
+        if (isChecked) { if (!permisosCreateDto.RolesIds.Contains(id)) permisosCreateDto.RolesIds.Add(id); }
+        else permisosCreateDto.RolesIds.Remove(id);
+    }
+}

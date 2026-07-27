@@ -1,0 +1,1554 @@
+﻿@page "/administrar-cliente/crear-socio"
+@using Miluc.Client.Interfaces.SapInterfaces.Cliente
+@using Miluc.Shared.DTOs.Sap.Cliente
+@using Miluc.Shared.DTOs.Sap.GrupoDeVenta
+@using Miluc.Client.Interfaces.SapInterfaces.LocalizacionSap
+@using Shared.DTOs.Sap.RegimenFiscal
+@using Shared.DTOs.Sap.Retenciones
+@using Miluc.Client.Interfaces.SapInterfaces.Oslp
+@using Miluc.Shared.DTOs.Sap.Cliente.RegimeNTributario
+@using Shared.DTOs.Sap.Credito
+@using Shared.DTOs.Sap.Vendedor
+@using Shared.DTOs.Sap.Opln
+@using Miluc.Client.Interfaces.SapInterfaces.Rutas
+@using Miluc.Client.Interfaces.SapInterfaces.Octg
+@using Miluc.Client.Interfaces.SapInterfaces.Opln
+@using Shared.DTOs.Sap.Rutas
+@using Shared.DTOs.Sap.ActividadEconomica
+@using Shared.DTOs.Sap.Cliente.EntidadCliente
+@using Shared.DTOs.Sap.Cliente.MediosDePago
+@using Shared.DTOs.Sap.Cliente.InformacionTributaria
+@using Shared.DTOs.Sap.Cliente.HBT_RESPFISCAL
+@using Shared.DTOs.Sap.Impuesto
+@using Shared.DTOs.Sap.DireccionCliente
+@inject NavigationManager _nav
+@inject IJSRuntime _jsRuntime
+@inject ILocalizacionClientSap _sapLocalizacionService
+@inject ISapOcrdClientService _sapOcrdClientService
+@inject ISapOslpService _sapOslpClienteService
+@inject ISapObppClientService _sapObppClienteService
+@inject ISapOctgClientService _sapoctgClienteService
+@inject ISapOplnClientService _sapOplnClientService
+<div class="container-fluid py-4 bg-light-gradient min-vh-100 animate__animated animate__fadeIn">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <div class="p-3 bg-rojo-suave text-rojo rounded-3 fs-3">
+                <i class="bi bi-person-fill-add"></i>
+            </div>
+            <div>
+                <h2 class="fw-bold text-dark m-0 fs-3">Maestro de Clientes (SAP B1)</h2>
+                <p class="m-0 text-muted small">Creación y sincronización de Socios de Negocio</p>
+            </div>
+        </div>
+        <div>
+            <button type="button" class="btn btn-outline-secondary btn-lg rounded-pill px-4 shadow-sm w-100 w-sm-auto fs-6 fw-semibold transition-all mb-lg-2 " @onclick='() => _nav.NavigateTo("/administrar-cliente/sap")'>
+                <i class="bi bi-arrow-left me-2"></i> Volver
+            </button>
+
+            <span class="badge bg-vinotinto-suave text-vinotinto border border-vinotinto-subtle rounded-pill px-3 py-2 fw-bold">
+                <i class="bi bi-cloud-arrow-up-fill me-1"></i> Creación socio en SAP
+            </span>
+        </div>
+    </div>
+    <EditForm Model="@cliente" OnValidSubmit="GuardarClienteAsync">
+        <DataAnnotationsValidator />
+
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4">
+            <div class="card-header bg-white border-0 p-0">
+                <ul class="nav nav-tabs nav-justified border-bottom-0" id="sapTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active py-3 fw-semibold text-secondary @(activeTab == "general" ? "active-sap-tab text-vinotinto" : "")"
+                                @onclick='() => CambiarTab("general")' type="button">
+                            <i class="bi bi-info-circle-fill me-2"></i>General
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link py-3 fw-semibold text-secondary @(activeTab == "fiscales" ? "active-sap-tab text-vinotinto" : "")"
+                                @onclick='() => CambiarTab("fiscales")' type="button">
+                            <i class="bi bi-file-earmark-gavel me-2"></i>Datos Fiscales
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link py-3 fw-semibold text-secondary @(activeTab == "propiedades" ? "active-sap-tab text-vinotinto" : "")"
+                                @onclick='() => CambiarTab("propiedades")' type="button">
+                            <i class="bi bi-tags-fill me-2"></i>Propiedades y Comentarios
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body p-4 bg-white">
+                <div class="tab-content">
+
+                    @* - TAB 1: GENERAL - *@
+                    <div class="tab-pane fade @(activeTab == "general" ? "show active" : "")">
+                        <div class="row g-3">
+                            <div class="col-12 col-md-4">
+                                <label class="form-label text-muted small fw-semibold">Tipo Documento *</label>
+                                <InputSelect @bind-Value="cliente.U_HBT_TipDoc" class="form-select form-select-sm">
+                                    <option value="@int.MinValue"> Seleccione Tipo Documento</option>
+                                    @foreach (var tipo in listaTiposDocumento)
+                                    {
+                                        <option value="@tipo.Code"> @tipo.Code - @tipo.Name  </option>
+                                    }
+                                </InputSelect>
+                                <ValidationMessage For="@(() => cliente.U_HBT_TipDoc)" class="text-danger small" />
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label class="form-label text-muted small fw-semibold">Número Documento *</label>
+                                <div class="input-group input-group-sm">
+
+                                    <input type="text" class="form-control" @bind="cliente.FederalTaxID" @bind:event="oninput" />
+                                    <span class="input-group-text bg-light">-</span>
+                                    <input readonly class="form-control" value="@DigitoVerificacion" style="max-width:45px;" />
+                                </div>
+                                <ValidationMessage For="@(() => cliente.FederalTaxID)" class="text-danger small" />
+                            </div>
+                            <div class="col-12 col-md-4 d-flex align-items-end">
+                                <div class="form-check form-switch mb-2">
+                                    <InputCheckbox @bind-Value="cliente.validFor" class="form-check-input check-rojo" id="chkActivo" />
+                                    <label class="form-check-label fw-semibold text-dark small" for="chkActivo">Cliente Activo</label>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label text-muted small fw-semibold">Razón Social *</label>
+                                <InputText @bind-Value="cliente.CardName" class="form-control form-control-sm" placeholder="Nombre completo o Empresa" />
+                                <ValidationMessage For="@(() => cliente.CardName)" class="text-danger small" />
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label text-muted small fw-semibold">Grupo *</label>
+                                <InputSelect @bind-Value="cliente.GroupCode" class="form-select form-select-sm">
+                                    <option value="@int.MinValue">Seleccione Canal de ventas</option>
+                                    @foreach (var grupo in listaGrupoDeclientes)
+                                    {
+                                        <option value="@grupo.GroupCode">@grupo.GroupCode-@grupo.GroupName</option>
+                                    }
+                                </InputSelect>
+                                <ValidationMessage For="@(() => cliente.GroupCode)" class="text-danger small" />
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label class="form-label text-muted small fw-semibold">Sucursal </label>
+                                <InputText @bind-Value="cliente.CardForeignName" class="form-control form-control-sm" />
+                                <ValidationMessage For="@(() => cliente.CardForeignName)" class="text-danger small" />
+
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label class="form-label text-muted small fw-semibold">Nombres</label>
+                                <InputText @bind-Value="cliente.U_HBT_Nombres" class="form-control form-control-sm" disabled="@EsPersonaJuridica()" />
+                            </div>
+
+                            <div class="col-12 col-md-4">
+                                <label class="form-label text-muted small fw-semibold">Primer Apellido </label>
+                                <InputText @bind-Value="cliente.U_HBT_Apellido1" class="form-control form-control-sm" disabled="@EsPersonaJuridica()" />
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label class="form-label text-muted small fw-semibold">Segundo Apellido </label>
+                                <InputText @bind-Value="cliente.U_HBT_Apellido2" class="form-control form-control-sm" disabled="@EsPersonaJuridica()" />
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label class="form-label text-muted small fw-semibold">Teléfono 1 *</label>
+                                <InputText @bind-Value="cliente.Phone1" class="form-control form-control-sm" />
+                                <ValidationMessage For="@(() => cliente.Phone1)" class="text-danger small" />
+
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label class="form-label text-muted small fw-semibold">Móvil</label>
+                                <InputText @bind-Value="cliente.Cellular" class="form-control form-control-sm" />
+                                <ValidationMessage For="@(() => cliente.Cellular)" class="text-danger small" />
+
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label class="form-label text-muted small fw-semibold">Correo Electrónico *</label>
+                                <InputText @bind-Value="cliente.EmailAddress" class="form-control form-control-sm" />
+                                <ValidationMessage For="@(() => cliente.EmailAddress)" class="text-danger small" />
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label class="form-label text-muted small fw-semibold">Vendedor *</label>
+
+                                <InputSelect @bind-Value="cliente.SalesPersonCode" class="form-select form-select-sm">
+
+                                    <option value="@int.MinValue"> Seleccione Vendedor</option>
+                                    @foreach (var o in listaOslp)
+                                    {
+                                        <option value="@o.SlpCode">@o.SlpCode - @o.SlpName </option>
+                                    }
+                                </InputSelect>
+                                <ValidationMessage For="@(() => cliente.SalesPersonCode)" class="text-danger small" />
+                            </div>
+
+                            <div class="col-12 col-md-4">
+                                <label class="form-label text-muted small fw-semibold">Condición de Pago *</label>
+
+                                <InputSelect @bind-Value="cliente.PayTermsGrpCode" class="form-select form-select-sm">
+                                    <option> Seleccione Condición de pago</option>
+                                    @foreach (var dias in listDias)
+                                    {
+                                        <option value="@dias.GroupNum">@dias.GroupNum-@dias.PymntGroup</option>
+                                    }
+                                </InputSelect>
+
+                                <ValidationMessage For="@(() => cliente.PayTermsGrpCode)" class="text-danger small" />
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label class="form-label text-muted small fw-semibold">Lista de Precios *</label>
+                                <InputSelect @bind-Value="cliente.PriceListNum" class="form-select form-select-sm">
+                                    <option> Seleccione Lista de precios</option>
+                                    @foreach (var opl in listOpln)
+                                    {
+                                        <option value="@opl.ListNum">@opl.ListNum-@opl.ListName</option>
+                                    }
+                                </InputSelect>
+                                <ValidationMessage For="@(() => cliente.PriceListNum)" class="text-danger small" />
+                            </div>
+                            <div class="col-12 col-md-4">
+                            </div>
+                            <div class="col-12 col-lg-6 mt-4">
+                                <div class="card bg-light border-0 rounded-3 p-3 h-100">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="fw-bold text-vinotinto m-0 small"><i class="bi bi-geo-alt-fill me-1"></i> Dirección Factura</h6>
+                                        <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill" @onclick="CopiarADespacho" style="font-size: 0.75rem;">
+                                            Copiar a Despacho <i class="bi bi-arrow-right-short"></i>
+                                        </button>
+                                    </div>
+                                    <div class="row g-2">
+                                        <div class="col-12">
+                                            <label class="form-label text-muted small fw-semibold">Código Postal *</label>
+                                            <InputText class="form-control cursor-pointer" readonly @onclick="AbrirModalCodigoPostal" @bind-Value="cliente.ZipCode" />
+                                            <ValidationMessage For="@(() => cliente.ZipCode)" class="text-danger small" />
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label text-muted xx-small mb-1">Calle / Número / Conjunto</label>
+                                            <InputText @bind-Value="direccionFactura.Street" class="form-control form-control-sm" />
+                                            <ValidationMessage For="@(() => direccionFactura.Street)" class="text-danger small" />
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label text-muted xx-small mb-1">Barrio</label>
+                                            <InputText @bind-Value="direccionFactura.Block" class="form-control form-control-sm" />
+                                            <ValidationMessage For="@(() => direccionFactura.Block)" class="text-danger small" />
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label text-muted xx-small mb-1">Departamento/Ciudad</label>
+                                            <InputText @bind-Value="direccionFactura.County" class="form-control form-control-sm" />
+                                            <ValidationMessage For="@(() => direccionFactura.County)" class="text-danger small" />
+                                        </div>
+
+                                        <div class="col-12">
+                                            <label class="form-label text-muted small fw-semibold">Municipio*</label>
+                                            <InputText class="form-control cursor-pointer" readonly @onclick="AbrirModalMunicipio" @bind-Value="cliente.U_HBT_MunMed" />
+                                            <ValidationMessage For="@(() => cliente.U_HBT_MunMed)" class="text-danger small" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-lg-6 mt-4">
+                                <div class="card bg-light border-0 rounded-3 p-3 h-100">
+                                    <h6 class="fw-bold text-danger m-0 mb-2 small"><i class="bi bi-truck me-1"></i> Dirección Despacho</h6>
+                                    <div class="row g-2">
+
+                                        <div class="col-12">
+                                            <label class="form-label text-muted xx-small mb-1">Calle / Número / Conjunto</label>
+                                            <InputText @bind-Value="direccionDespacho.Street" class="form-control form-control-sm" />
+                                            <ValidationMessage For="@(() => direccionDespacho.Street)" class="text-danger small" />
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label text-muted xx-small mb-1">Barrio</label>
+                                            <InputText @bind-Value="direccionDespacho.Block" class="form-control form-control-sm" />
+                                            <ValidationMessage For="@(() => direccionDespacho.Block)" class="text-danger small" />
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label text-muted xx-small mb-1">Departamento/Ciudad</label>
+                                            <InputText @bind-Value="direccionDespacho.County" class="form-control form-control-sm" />
+                                            <ValidationMessage For="@(() => direccionDespacho.County)" class="text-danger small" />
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label text-muted small fw-semibold">Ruta *</label>
+
+                                            <InputSelect @bind-Value="cliente.Priority" class="form-select form-select-sm">
+                                                <option> Seleccione Ruta</option>
+                                                @foreach (var ruta in listObpp)
+                                                {
+                                                    <option value="@ruta.PrioCode"> @ruta.PrioCode-@ruta.PrioDesc</option>
+                                                }
+                                            </InputSelect>
+                                            <ValidationMessage For="@(() => cliente.Priority)" class="text-danger small" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @*  TAB 2: DATOS FISCALES  *@
+                    <div class="tab-pane fade @(activeTab == "fiscales" ? "show active" : "")">
+                        <div class="row g-4">
+                            <div class="col-12 col-lg-6">
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <label class="form-label text-muted small fw-semibold">Regimen Tributario</label>
+                                        <InputSelect @bind-Value="cliente.U_HBT_RegTrib" class="form-select form-select-sm">
+                                            <option> Seleccione Regimen Tributario</option>
+                                            @foreach (var tribu in listaRegimeneTributario)
+                                            {
+                                                <option value="@tribu.code">@tribu.code - @tribu.Name</option>
+                                            }
+                                        </InputSelect>
+                                        <ValidationMessage For="@(() => cliente.U_HBT_RegTrib)" class="text-danger small" />
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label text-muted small fw-semibold">Actividad Economica*</label>
+                                        <InputText class="form-control cursor-pointer" readonly @onclick="AbrirModalActividadEconomica" @bind-Value="cliente.U_HBT_ActEco" />
+                                        <ValidationMessage For="@(() => cliente.U_HBT_ActEco)" class="text-danger small" />
+                                    </div>
+
+                                    <div class="col-6">
+                                        <label class="form-label text-muted small fw-semibold">Tipo Entidad *</label>
+
+                                        <InputSelect @bind-Value="cliente.U_HBT_TipEnt" class="form-select form-select-sm">
+                                            <option> Seleccione Tipo Entidad</option>
+                                            @foreach (var entidad in listTipoEntidad)
+                                            {
+                                                <option value="@entidad.Code">@entidad.Code - @entidad.U_HbtTipoEntidad</option>
+                                            }
+                                        </InputSelect>
+                                        <ValidationMessage For="@(() => cliente.U_HBT_TipEnt)" class="text-danger small" />
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label text-muted small fw-semibold">Nacionalidad </label>
+                                        <InputSelect @bind-Value="cliente.U_HBT_Nacional" class="form-select form-select-sm">
+                                            <option> Seleccione Nacionalidad</option>
+                                            @foreach (var nacionalidad in listNacionalidad)
+                                            {
+                                                <option value="@nacionalidad.Code">@nacionalidad.Code - @nacionalidad.U_hbtNacionalidad</option>
+                                            }
+                                        </InputSelect>
+                                        <ValidationMessage For="@(() => cliente.U_HBT_Nacional)" class="text-danger small" />
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label text-muted small fw-semibold">Régimen Fiscal *</label>
+                                        <InputSelect @bind-Value="cliente.U_HBT_RegFis" class="form-select form-select-sm">
+                                            <option> Seleccione Régimen</option>
+                                            @foreach (var reg in listRegimenFiscal)
+                                            {
+                                                <option value="@reg.Code"> @reg.Code - @reg.Name</option>
+                                            }
+                                        </InputSelect>
+                                        <ValidationMessage For="@(() => cliente.U_HBT_RegFis)" class="text-danger small" />
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label text-muted small fw-semibold">Medios de pago</label>
+                                        <InputSelect @bind-Value="cliente.U_HBT_MedPag" class="form-select form-select-sm">
+                                            <option> Seleccione Medio de pago</option>
+                                            @foreach (var medios in lisMediosDePago)
+                                            {
+                                                <option value="@medios.UHBTMedPag">@medios.UHBTMedPag-@medios.NameMediosDepago </option>
+                                            }
+                                        </InputSelect>
+                                        <ValidationMessage For="@(() => cliente.U_HBT_MedPag)" class="text-danger small" />
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label text-muted small fw-semibold">Recidente</label>
+                                        <InputSelect @bind-Value="cliente.U_HBT_Residente" class="form-select form-select-sm">
+                                            <option> Seleccione Recidente</option>
+                                            @foreach (var medios in listResidente)
+                                            {
+                                                <option value="@medios.U_HBT_Residente">@medios.U_HBT_Residente </option>
+                                            }
+                                        </InputSelect>
+                                        <ValidationMessage For="@(() => cliente.U_HBT_Residente)" class="text-danger small" />
+
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label text-muted small fw-semibold">Informacion Tributaria</label>
+                                        <InputSelect @bind-Value="cliente.U_HBT_InfoTrib" class="form-select form-select-sm">
+                                            <option> Seleccione Informacion Tributaria</option>
+                                            @foreach (var medios in lisInformacionTributaria)
+                                            {
+                                                <option value="@medios.Code">@medios.Name </option>
+                                            }
+                                        </InputSelect>
+                                        <ValidationMessage For="@(() => cliente.U_HBT_InfoTrib)" class="text-danger small" />
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label text-muted small fw-semibold">Regimen Fiscal  </label>
+                                        <InputSelect @bind-Value="cliente.U_HBT_ResFis" class="form-select form-select-sm">
+                                            <option> Seleccione Regimen Fiscal</option>
+                                            @foreach (var medios in lisregimenfiscal1)
+                                            {
+                                                <option value="@medios.Code">@medios.Code - @medios.Name</option>
+                                            }
+                                        </InputSelect>
+                                        <ValidationMessage For="@(() => cliente.U_HBT_ResFis)" class="text-danger small" />
+                                    </div>
+
+                                    <div class="col-6">
+                                        <label class="form-label text-muted small fw-semibold">Regimen Fiscal 1 </label>
+                                        <InputSelect @bind-Value="cliente.U_HBT_ResFis1" class="form-select form-select-sm">
+                                            <option> Seleccione Regimen Fiscal 1</option>
+                                            @foreach (var regimen in lisregimenfiscal1)
+                                            {
+                                                <option value="@regimen.Code">@regimen.Code - @regimen.Name</option>
+                                            }
+                                        </InputSelect>
+                                        <ValidationMessage For="@(() => cliente.U_HBT_ResFis1)" class="text-danger small" />
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div class="col-12 col-lg-6">
+                                <label class="form-label text-muted small fw-semibold d-block mb-2">Códigos de Retención IVA/ICA Permitidos</label>
+                                <div class="table-responsive border rounded-3 overflow-hidden style-scrollbar">
+                                    <table class="table table-sm table-hover align-middle m-0 table-sap">
+                                        <thead class="table-light sticky-top">
+                                            <tr>
+                                                <th class="text-center" style="width: 60px;">Activa</th>
+                                                <th>Código</th>
+                                                <th>Descripción</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var retencion in listretencionDtos)
+                                            {
+                                                <tr>
+                                                    <td class="text-center">
+                                                        <input type="checkbox" class="form-check-input check-vinotinto" @bind="retencion.Activa" />
+                                                    </td>
+                                                    <td class="fw-semibold text-dark small">@retencion.WTCode - @retencion.WTName</td>
+                                                    <td class="text-muted small">@retencion.WTName</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @*   3 PROPIEDADES Y COMENTARIOS  *@
+                    <div class="tab-pane fade @(activeTab == "propiedades" ? "show active" : "")">
+                        <div class="row g-4">
+                            <div class="col-12 col-lg-7">
+                                <label class="form-label text-muted small fw-semibold d-block mb-2">Clasificación de Canales (Propiedades SAP)</label>
+                                <div class="table-responsive border rounded-3 overflow-hidden style-scrollbar" style="max-height: 360px;">
+                                    <table class="table table-sm table-hover align-middle m-0 table-sap">
+                                        <thead class="table-light sticky-top">
+                                            <tr>
+                                                <th class="text-center" style="width: 60px;">Activa</th>
+                                                <th>Descripción Propiedad</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var prop in listaPropiedades)
+                                            {
+                                                <tr>
+                                                    <td class="text-center">
+                                                        <input type="checkbox" class="form-check-input check-amarillo" @bind="prop.Activa" />
+                                                    </td>
+                                                    <td class="text-dark small fw-medium">@prop.GroupName</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-lg-5">
+                                <label class="form-label text-muted small fw-semibold">Comentarios / Observaciones Internas</label>
+                                <InputTextArea @bind-Value="cliente.FreeText" class="form-control form-control-sm" rows="10" placeholder="Escribe aquí anotaciones relevantes para el despacho o condiciones especiales de entrega..." />
+                                <ValidationMessage For="@(() => cliente.FreeText)" class="text-danger small" />
+                            </div>
+                            <div class="col-12 col-md-4 d-flex align-items-end">
+                                <div class="form-check form-switch mb-2">
+                                    <InputCheckbox @bind-Value="cliente.U_AplicaBolsaMercantilcheck" class="form-check-input check-rojo" id="chkActivo" />
+                                    <label class="form-check-label fw-semibold text-dark small" for="chkActivo">Aplica Bolsa Mercantil</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-light p-3 d-flex justify-content-end gap-3 border-0">
+                <button type="button" class="btn btn-sm btn-light border rounded-pill px-4" @onclick="Cancelar">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn btn-sm btn-vinotinto rounded-pill px-4 shadow-sm">
+                    <i class="bi bi-save2-fill me-1"></i> Crear Socio Negocio
+                </button>
+            </div>
+        </div>
+    </EditForm>
+</div>
+<div class="modal fade @(mostrarActividadEconomica ? "show d-block" : "")" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 1050;">
+    <div class="modal-dialog modal-md modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-maroon text-white">
+                <h5 class="modal-title mb-0">
+                    <svg xmlns="http://w3.org" width="16" height="16" fill="currentColor" class="bi bi-geo-alt" viewBox="0 0 16 16">
+                        Actividad Economica
+                        <path d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.03A31.513 31.513 0 0 1 8 14.58a31.513 31.513 0 0 1-2.206-2.61c-.726-.91-1.436-1.968-1.96-3.03C3.366 7.42 3 5.99 3 4.58 3 2.58 4.63 1 6.63 1h2.74C11.37 1 13 2.63 13 4.58c0 1.41-.366 2.84-1.166 4.36zM8 16s6-5.686 6-10.5C14 2.7 12.314 1 10.5 1h-5C3.686 1 2 2.686 2 4.5S8 16 8 16z" />
+                        <path d="M8 6a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
+                    </svg> Buscar Actividad Econmica
+                </h5>
+                <button type="button" class="btn-close btn-close-white ms-auto" @onclick="CerrarModalActividadEconomica"></button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" @bind:event="oninput" placeholder="Buscar codigo..." @bind="textoBusquedaActividadEconomica" @onkeyup="HandleEnterActividadEconomica">
+                    <button class="btn btn-maroon" @onclick="() => BuscarEnServidorActividadEconomica()"><i class="bi bi-search"></i>Buscar</button>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <small class="text-muted">
+                        Registros encontrados:
+                        <strong>@CantidadDeActividadEconomicaEncontrados</strong>
+                    </small>
+                    <small class="text-muted">
+                        Página @PaginaActualActividadEconomica de @TotalPaginasActividadEconomica
+                    </small>
+                </div>
+                <!-- LISTA -->
+                <div class="list-group" style="max-height: 350px; overflow-y: auto;">
+                    @if (listActividadEconomicaApi.Any())
+                    {
+                        @foreach (var item in listActividadEconomicaApi)
+                        {
+                            <button type="button" class="list-group-item list-group-item-action" @onclick="() => SeleccionarActividadEconomica(item)">
+                                <div class="d-flex flex-column">
+                                    <strong class="text-maroon">@item.Code</strong>
+                                    <small class="text-muted">@item.U_Descripcion</small>
+                                </div>
+                            </button>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-search fs-3"></i>
+                            <div class="mt-2">
+                                No se encontraron Actividad Economica
+                            </div>
+                        </div>
+                    }
+                </div>
+                <!-- PAGINADOR -->
+                @if (CantidadDeActividadEconomicaEncontrados > 0)
+                {
+                    <div class="d-flex justify-content-center mt-3">
+                        <div class="btn-group">
+                            <!-- ANTERIOR -->
+                            <button class="btn btn-outline-secondary btn-sm" disabled="@(PaginaActualActividadEconomica == 1)" @onclick="PaginaAnteriorActividadEconomica">
+                                <i class="bi bi-chevron-left"></i>
+                            </button>
+
+                            <!-- PAGINAS -->
+                            @for (int i = Math.Max(1, PaginaActualActividadEconomica - 2); i <= Math.Min(TotalPaginasActividadEconomica, PaginaActualActividadEconomica + 2); i++)
+                            {
+                                var pagina = i;
+                                <button class="btn @(PaginaActualActividadEconomica == pagina ? "btn-maroon text-white" : "btn-outline-secondary") btn-sm"
+                                        @onclick="() => IrPaginaActividadEconomica(pagina)">
+                                    @pagina
+                                </button>
+                            }
+                            <!-- SIGUIENTE -->
+                            <button class="btn btn-outline-secondary btn-sm" disabled="@(PaginaActualActividadEconomica == TotalPaginasActividadEconomica)"
+                                    @onclick="PaginaSiguienteActividadEconomica">
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade @(mostrarCodigoPostal ? "show d-block" : "")" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 1050;">
+    <div class="modal-dialog modal-md modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-maroon text-white">
+                <h5 class="modal-title mb-0">
+                    <svg xmlns="http://w3.org" width="16" height="16" fill="currentColor" class="bi bi-geo-alt" viewBox="0 0 16 16">
+                        Codigo Postal
+                        <path d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.03A31.513 31.513 0 0 1 8 14.58a31.513 31.513 0 0 1-2.206-2.61c-.726-.91-1.436-1.968-1.96-3.03C3.366 7.42 3 5.99 3 4.58 3 2.58 4.63 1 6.63 1h2.74C11.37 1 13 2.63 13 4.58c0 1.41-.366 2.84-1.166 4.36zM8 16s6-5.686 6-10.5C14 2.7 12.314 1 10.5 1h-5C3.686 1 2 2.686 2 4.5S8 16 8 16z" />
+                        <path d="M8 6a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
+                    </svg> Buscar Codigo Postal
+                </h5>
+                <button type="button" class="btn-close btn-close-white ms-auto" @onclick="CerrarModalCodigoPostal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" @bind:event="oninput" placeholder="Buscar codigo..." @bind="textoBusquedaCodigo" @onkeyup="HandleEnterCodigoPostal">
+                    <button class="btn btn-maroon" @onclick="() => BuscarEnServidorCodigoPostal()"><i class="bi bi-search"></i>Buscar</button>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <small class="text-muted">
+                        Registros encontrados:
+                        <strong>@CantidadDeCodigosPostalesEncontrados</strong>
+                    </small>
+                    <small class="text-muted">
+                        Página @PaginaActualCodigo de @TotalPaginasCodigo
+                    </small>
+                </div>
+                <!-- LISTA -->
+                <div class="list-group" style="max-height: 350px; overflow-y: auto;">
+                    @if (listCodigosPostalesApi.Any())
+                    {
+                        @foreach (var item in listCodigosPostalesApi)
+                        {
+                            <button type="button" class="list-group-item list-group-item-action" @onclick="() => SeleccionarCodigoPostal(item)">
+                                <div class="d-flex flex-column">
+                                    <strong class="text-maroon">@item.Code</strong>
+                                    <small class="text-muted">@item.U_HBT_Lugar</small>
+                                </div>
+                            </button>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-search fs-3"></i>
+                            <div class="mt-2">
+                                No se encontraron municipios
+                            </div>
+                        </div>
+                    }
+                </div>
+                <!-- PAGINADOR -->
+                @if (CantidadDeCodigosPostalesEncontrados > 0)
+                {
+                    <div class="d-flex justify-content-center mt-3">
+                        <div class="btn-group">
+                            <!-- ANTERIOR -->
+                            <button class="btn btn-outline-secondary btn-sm" disabled="@(PaginaActualCodigo == 1)" @onclick="PaginaAnteriorCodigo">
+                                <i class="bi bi-chevron-left"></i>
+                            </button>
+
+                            <!-- PAGINAS -->
+                            @for (int i = Math.Max(1, PaginaActualCodigo - 2); i <= Math.Min(TotalPaginasCodigo, PaginaActualCodigo + 2); i++)
+                            {
+                                var pagina = i;
+                                <button class="btn @(PaginaActualCodigo == pagina ? "btn-maroon text-white" : "btn-outline-secondary") btn-sm"
+                                        @onclick="() => IrPaginaCodigo(pagina)">
+                                    @pagina
+                                </button>
+                            }
+                            <!-- SIGUIENTE -->
+                            <button class="btn btn-outline-secondary btn-sm" disabled="@(PaginaActualCodigo == TotalPaginasCodigo)"
+                                    @onclick="PaginaSiguienteCodigo">
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade @(mostrarModalMunicipio ? "show d-block modal-backdrop-custom" : "")" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 1050;">
+    <div class="modal-dialog modal-md modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-maroon text-white">
+                <h5 class="modal-title mb-0">
+                    <svg xmlns="http://w3.org" width="16" height="16" fill="currentColor" class="bi bi-geo-alt" viewBox="0 0 16 16">
+                        Municipio
+                        <path d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.03A31.513 31.513 0 0 1 8 14.58a31.513 31.513 0 0 1-2.206-2.61c-.726-.91-1.436-1.968-1.96-3.03C3.366 7.42 3 5.99 3 4.58 3 2.58 4.63 1 6.63 1h2.74C11.37 1 13 2.63 13 4.58c0 1.41-.366 2.84-1.166 4.36zM8 16s6-5.686 6-10.5C14 2.7 12.314 1 10.5 1h-5C3.686 1 2 2.686 2 4.5S8 16 8 16z" />
+                        <path d="M8 6a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
+                    </svg> Buscar Municipio
+                </h5>
+                <button type="button" class="btn-close btn-close-white ms-auto" @onclick="CerrarModalMunicipio"></button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" @bind:event="oninput" placeholder="Buscar Municipio..." @bind="textoBusquedaMunicipio" @onkeyup="HandleEnterMunicipio">
+@*                     <button class="btn btn-maroon" @onclick="() => BuscarEnServidorMunicipio()"><i class="bi bi-search"></i>Buscar</button>
+ *@
+                    <button class="btn btn-maroon text-white" @onclick="() => BuscarEnServidorMunicipio()">
+                        <i class="bi bi-search me-1"></i>Buscar
+                    </button>
+
+
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <small class="text-muted">
+                        Registros encontrados:
+                        <strong>@CantidadDeMunicipiosEncontrados</strong>
+                    </small>
+                    <small class="text-muted">
+                        Página @PaginaActualMunicipio de @TotalPaginasCodigo
+                    </small>
+                </div>
+                <!-- LISTA -->
+                <div class="list-group" style="max-height: 350px; overflow-y: auto;">
+                    @if (listaMunicipiosApi.Any())
+                    {
+                        @foreach (var item in listaMunicipiosApi)
+                        {
+                            <button type="button" class="list-group-item list-group-item-action" @onclick="() => SeleccionarMunicipio(item)">
+                                <div class="d-flex flex-column">
+                                    <strong class="text-maroon">@item.Code</strong>
+                                    <small class="text-muted">@item.Name</small>
+                                </div>
+                            </button>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-search fs-3"></i>
+                            <div class="mt-2">
+                                No se encontraron municipios
+                            </div>
+                        </div>
+                    }
+                </div>
+                <!-- PAGINADOR -->
+                @if (CantidadPorPaginaMunicipio > 0)
+                {
+                    <div class="d-flex justify-content-center mt-3">
+                        <div class="btn-group">
+                            <!-- ANTERIOR -->
+                            <button class="btn btn-outline-secondary btn-sm" disabled="@(PaginaActualMunicipio == 1)" @onclick="PaginaAnteriorMunicipio">
+                                <i class="bi bi-chevron-left"></i>
+                            </button>
+
+                            <!-- PAGINAS -->
+                            @for (int i = Math.Max(1, PaginaActualMunicipio - 2); i <= Math.Min(TotalPaginasMunicipio, PaginaActualMunicipio + 2); i++)
+                            {
+                                var pagina = i;
+                                <button class="btn @(PaginaActualMunicipio == pagina ? "btn-maroon text-white" : "btn-outline-secondary") btn-sm"
+                                        @onclick="() => IrPaginaMunicipio(pagina)">
+                                    @pagina
+                                </button>
+                            }
+                            <!-- SIGUIENTE -->
+                            <button class="btn btn-outline-secondary btn-sm" disabled="@(PaginaActualMunicipio == TotalPaginasMunicipio)"
+                                    @onclick="PaginaSiguienteMunicipio">
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string activeTab = "general";
+    private string _textoBusquedaCodigo = "";
+    private string _textoBusquedaMunicipio = "";
+    private string _textoBusquedaActividadEconomica = "";
+    private List<PropiedadDto> listaPropiedades = new();
+    // public SapClienteCreateDto clienteSeleccionado = new();
+    public SocioDeNegocio cliente = new();
+    public List<BusinessPartnerGroupsDto> listaGrupoDeclientes = new();
+    public List<RegimenTributarioDto> listaRegimeneTributario = new();
+    public List<TiposDocumentoDto> listaTiposDocumento = new();
+    public List<SapVendedorReaderDto> listaOslp = new();
+    public List<SapObppDto> listObpp = new();
+    public List<DiasCreditoDto> listDias = new();
+    public List<OplnReaderDto> listOpln = new();
+    public List<OkiResponsabilidadesFiscalesDto> ListResposabilidadFIscal = new();
+    public List<HBT_RegimenFiscalDto> listRegimenFiscal = new();
+    public List<RetencionDto> listretencionDtos = new();
+    public List<HBT_codigosPostalesDto> listCodigosPostalesApi = new();
+    public List<HBT_codigosPostalesDto> listOiginalCodigosPostales = new();
+    public List<HbtMunicipiosDto> listaMunicipiosApi = new();
+    public List<HbtMunicipiosDto> listaOriginalMunicipios = new();
+    public List<HbtActividadEconomicaDto> listActividadEconomicaApi = new();
+    public List<HbtActividadEconomicaDto> listOriginalActividadEconomica = new();
+    public List<TipoEntidadPersonaDto> listTipoEntidad = new();
+    public List<NacionalidadClienteDto> listNacionalidad = new();
+    public List<SapMediosDePagoDto> lisMediosDePago = new();
+    public List<SapInformacionTributariaDto> lisInformacionTributaria = new();
+    public List<SapResponsabilidadFiscalDto> lisregimenfiscal1 = new();
+    public List<RecidenteDto> listResidente = new();
+    //codigo postal
+    public AddressClienteDto direccionFactura = new AddressClienteDto();
+    public AddressClienteDto direccionDespacho = new AddressClienteDto();
+    private bool mostrarCodigoPostal = false;
+    private bool mostrarActividadEconomica = false;
+    private bool mostrarModalMunicipio = false;
+    public int PaginaActualCodigo = 1;
+    public int PaginaActualMunicipio = 1;
+    public int PaginaActualActividadEconomica = 1;
+    private int CantidadDeActividadEconomicaEncontrados = 0;
+    private int CantidadDeCodigosPostalesEncontrados = 0;
+    private int CantidadDeMunicipiosEncontrados = 0;
+    private int CantidadPorPaginaCodigo = 10; // Cantidad de registros por página
+    private int CantidadPorPaginaMunicipio = 10; // Cantidad de registros por página
+    private int CantidadPorPaginaActividadEconomica = 10; // Cantidad de registros por página
+    private bool cargandoCodigoPostal = false;
+    private bool cargandoMunicipio = false;
+    private string textoBusquedaActividadEconomica
+    {
+        get => _textoBusquedaActividadEconomica;
+        set
+        {
+            if (_textoBusquedaActividadEconomica != value)
+            {
+                _textoBusquedaActividadEconomica = value;
+                FiltrarActividadEconomica();
+            }
+        }
+    }
+    private string TipoEntidad
+    {
+        get => cliente.U_HBT_TipEnt; set
+        {
+            cliente.U_HBT_TipEnt = value;
+
+            if (value == "2") // Jurídica
+            {
+                cliente.U_HBT_Nombres = "";
+                cliente.U_HBT_Apellido1 = "";
+                cliente.U_HBT_Apellido2 = "";
+            }
+        }
+    }
+
+    private string textoBusquedaCodigo
+    {
+        get => _textoBusquedaCodigo;
+        set
+        {
+            if (_textoBusquedaCodigo != value)
+            {
+                _textoBusquedaCodigo = value;
+                FiltrarCodigoPostal();
+            }
+        }
+    }
+    private string textoBusquedaMunicipio
+    {
+        get => _textoBusquedaMunicipio;
+        set
+        {
+            if (_textoBusquedaMunicipio != value)
+            {
+                _textoBusquedaMunicipio = value;
+                FiltrarMunicipio();
+            }
+        }
+    }
+    public int TotalPaginasCodigo => (int)Math.Ceiling((double)CantidadDeCodigosPostalesEncontrados / CantidadPorPaginaCodigo);
+    private int TotalPaginasActividadEconomica => (int)Math.Ceiling((double)CantidadDeActividadEconomicaEncontrados / CantidadPorPaginaActividadEconomica);
+    private int TotalPaginasMunicipio => (int)Math.Ceiling((double)CantidadDeMunicipiosEncontrados / CantidadPorPaginaMunicipio);
+    private string DigitoVerificacion => string.IsNullOrWhiteSpace(cliente.FederalTaxID) ? "" : CalcularDV(cliente.FederalTaxID).ToString();
+    private async Task PaginaAnteriorCodigo()
+    {
+        if (PaginaActualCodigo > 1)
+        {
+            PaginaActualCodigo--;
+            await BuscarEnServidorCodigoPostal(_textoBusquedaCodigo, PaginaActualCodigo, CantidadPorPaginaCodigo);
+        }
+    }
+    private async Task PaginaSiguienteCodigo()
+    {
+        if (PaginaActualCodigo < TotalPaginasCodigo)
+        {
+            PaginaActualCodigo++;
+            await BuscarEnServidorCodigoPostal(_textoBusquedaCodigo, PaginaActualCodigo, CantidadPorPaginaCodigo);
+        }
+    }
+    private async Task IrPaginaCodigo(int pagina)
+    {
+        PaginaActualCodigo = pagina;
+        await BuscarEnServidorCodigoPostal(_textoBusquedaCodigo, PaginaActualCodigo, CantidadPorPaginaCodigo);
+    }
+    private async Task IrPaginaActividadEconomica(int pagina)
+    {
+        PaginaActualActividadEconomica = pagina;
+        await BuscarEnServidorActividadEconomica(_textoBusquedaActividadEconomica, PaginaActualActividadEconomica, CantidadPorPaginaActividadEconomica);
+    }
+    private async Task PaginaSiguienteActividadEconomica()
+    {
+        if (PaginaActualActividadEconomica < TotalPaginasActividadEconomica)
+        {
+            PaginaActualActividadEconomica++;
+            await BuscarEnServidorActividadEconomica(_textoBusquedaActividadEconomica, PaginaActualActividadEconomica, CantidadPorPaginaActividadEconomica);
+        }
+    }
+    public async Task PaginaAnteriorActividadEconomica()
+    {
+        if (PaginaActualActividadEconomica > 1)
+        {
+            PaginaActualActividadEconomica--;
+            await BuscarEnServidorActividadEconomica(_textoBusquedaActividadEconomica, PaginaActualActividadEconomica, CantidadPorPaginaActividadEconomica);
+        }
+    }
+    //municipio
+    private async Task PaginaAnteriorMunicipio()
+    {
+        if (PaginaActualMunicipio > 1)
+        {
+            PaginaActualMunicipio--;
+            await BuscarEnServidorMunicipio(_textoBusquedaMunicipio, PaginaActualMunicipio, CantidadPorPaginaMunicipio);
+        }
+    }
+    private async Task PaginaSiguienteMunicipio()
+    {
+        if (PaginaActualMunicipio < TotalPaginasMunicipio)
+        {
+            PaginaActualMunicipio++;
+            await BuscarEnServidorMunicipio(_textoBusquedaMunicipio, PaginaActualMunicipio, CantidadPorPaginaMunicipio);
+        }
+    }
+    private async Task IrPaginaMunicipio(int pagina)
+    {
+        PaginaActualMunicipio = pagina;
+        await BuscarEnServidorMunicipio(_textoBusquedaMunicipio, PaginaActualMunicipio, CantidadPorPaginaMunicipio);
+    }
+
+    //seleccionar
+    private void SeleccionarCodigoPostal(HBT_codigosPostalesDto codigo)
+    {
+        if (codigo.Code != null)
+        {
+            cliente.ZipCode = codigo.Code;
+            CerrarModalCodigoPostal();
+        }
+    }
+    private void SeleccionarMunicipio(HbtMunicipiosDto municipio)
+    {
+        if (municipio.Code != null)
+        {
+            cliente.U_HBT_MunMed = municipio.Code;
+            CerrarModalMunicipio();
+        }
+    }
+    private void SeleccionarActividadEconomica(HbtActividadEconomicaDto actividad)
+    {
+        if (actividad.Code != null)
+        {
+            cliente.U_HBT_ActEco = actividad.Code;
+            CerrarModalActividadEconomica();
+        }
+    }
+    //filtrar
+    private void FiltrarActividadEconomica()
+    {
+        if (string.IsNullOrEmpty(_textoBusquedaActividadEconomica))
+        {
+            listActividadEconomicaApi = listOriginalActividadEconomica.ToList();
+            return;
+        }
+        listActividadEconomicaApi = listOriginalActividadEconomica
+            .Where(a => a.Code.Contains(_textoBusquedaActividadEconomica, StringComparison.OrdinalIgnoreCase) ||
+                        a.Name.Contains(_textoBusquedaActividadEconomica, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+    private void FiltrarCodigoPostal()
+    {
+        if (string.IsNullOrEmpty(_textoBusquedaCodigo))
+        {
+            listCodigosPostalesApi = listOiginalCodigosPostales.ToList();
+            return;
+        }
+        listCodigosPostalesApi = listOiginalCodigosPostales
+            .Where(c => c.Code.Contains(_textoBusquedaCodigo, StringComparison.OrdinalIgnoreCase) ||
+                        c.U_HBT_Lugar.Contains(_textoBusquedaCodigo, StringComparison.OrdinalIgnoreCase) ||
+                        c.Name.Contains(_textoBusquedaCodigo, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
+    private void FiltrarMunicipio()
+    {
+        if (string.IsNullOrEmpty(_textoBusquedaMunicipio))
+        {
+            listaMunicipiosApi = listaOriginalMunicipios.ToList();
+            return;
+        }
+
+        listaMunicipiosApi = listaOriginalMunicipios
+            .Where(m => m.Code.Contains(_textoBusquedaMunicipio, StringComparison.OrdinalIgnoreCase) ||
+                        m.Name.Contains(_textoBusquedaMunicipio, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+
+    }
+
+    private async Task HandleEnterCodigoPostal(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await BuscarEnServidorCodigoPostal(_textoBusquedaCodigo, 1, CantidadPorPaginaCodigo);
+        }
+    }
+    private async Task HandleEnterActividadEconomica(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await BuscarEnServidorActividadEconomica(_textoBusquedaActividadEconomica.ToUpper(), 1, CantidadPorPaginaActividadEconomica);
+        }
+    }
+
+    private async Task HandleEnterMunicipio(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await BuscarEnServidorMunicipio(_textoBusquedaMunicipio, 1, CantidadPorPaginaCodigo);
+        }
+    }
+    private async Task BuscarEnServidorActividadEconomica(string? textoBusqueda = null, int? pagina = null, int? cantidadPorPagina = null)
+    {
+        try
+        {
+            if (Convert.ToInt32(pagina) <= 0)
+            {
+                pagina = 1;
+            }
+            if (textoBusqueda == null)
+            {
+                textoBusqueda = _textoBusquedaActividadEconomica;
+            }
+            if (cantidadPorPagina == null)
+            {
+                cantidadPorPagina = CantidadPorPaginaActividadEconomica;
+            }
+            cargandoMunicipio = true;
+            var responseActividadEconomica = await _sapLocalizacionService.GetActividadEconomica(textoBusqueda.ToString(), Convert.ToInt32(pagina), Convert.ToInt32(cantidadPorPagina));
+            if (responseActividadEconomica.Valor.data != null)
+            {
+                listOriginalActividadEconomica = responseActividadEconomica.Valor.data;
+                listActividadEconomicaApi = listOriginalActividadEconomica.ToList();
+                CantidadDeActividadEconomicaEncontrados = responseActividadEconomica.Valor.cantidad;
+            }
+            else
+            {
+                listActividadEconomicaApi = new List<HbtActividadEconomicaDto>();
+                string errores = responseActividadEconomica.Errores != null && responseActividadEconomica.Errores.Any()
+                    ? string.Join("<br>", responseActividadEconomica.Errores)
+                    : "Ocurrió un error inesperado.";
+                await _jsRuntime.InvokeVoidAsync("Swal.fire", new
+                {
+                    icon = "error",
+                    title = $"Error al consultar actividad economica {errores} ",
+                    text = $"{errores}",
+                    confirmButtonColor = "#6c1d1d"
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al buscar actividad economica: {ex.Message}");
+        }
+    }
+
+    private async Task BuscarEnServidorMunicipio(string? textoBusqueda = null, int? pagina = null, int? cantidadPorPagina = null)
+    {
+        try
+        {
+            if (Convert.ToInt32(pagina) <= 0)
+            {
+                pagina = 1;
+            }
+            if (textoBusqueda == null)
+            {
+                textoBusqueda = _textoBusquedaMunicipio;
+            }
+            if (cantidadPorPagina == null)
+            {
+                cantidadPorPagina = CantidadPorPaginaCodigo;
+            }
+
+            cargandoMunicipio = true;
+
+            var responseMunicipio = await _sapLocalizacionService.GetAllMunicipiosAsync(textoBusqueda.ToString(), Convert.ToInt32(pagina), Convert.ToInt32(cantidadPorPagina));
+
+            if (responseMunicipio.Valor.data != null)
+            {
+                listaOriginalMunicipios = responseMunicipio.Valor.data;
+                listaMunicipiosApi = listaOriginalMunicipios.ToList();
+                CantidadDeMunicipiosEncontrados = responseMunicipio.Valor.cantidad;
+            }
+            else
+            {
+                listaMunicipiosApi = new List<HbtMunicipiosDto>();
+                string errores = responseMunicipio.Errores != null && responseMunicipio.Errores.Any()
+                    ? string.Join("<br>", responseMunicipio.Errores)
+                    : "Ocurrió un error inesperado.";
+
+                await _jsRuntime.InvokeVoidAsync("Swal.fire", new
+                {
+                    icon = "error",
+                    title = $"Error al consultar municipio {errores} ",
+                    text = $"{errores}",
+                    confirmButtonColor = "#6c1d1d"
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al buscar municipio: {ex.Message}");
+        }
+    }
+    private async Task BuscarEnServidorCodigoPostal(string? textoBusqueda = null, int? pagina = null, int? cantidadPorPagina = null)
+    {
+        try
+        {
+            if (Convert.ToInt32(pagina) <= 0)
+            {
+                pagina = 1;
+            }
+            if (textoBusqueda == null)
+            {
+                textoBusqueda = _textoBusquedaCodigo;
+            }
+            if (cantidadPorPagina == null)
+            {
+                cantidadPorPagina = CantidadPorPaginaCodigo;
+            }
+            cargandoCodigoPostal = true;
+            var responseCodigoPostal = await _sapLocalizacionService.GetAllCodigosPostales(textoBusqueda.ToString(), Convert.ToInt32(pagina), Convert.ToInt32(cantidadPorPagina));
+
+            if (responseCodigoPostal.Valor.data != null)
+            {
+                listOiginalCodigosPostales = responseCodigoPostal.Valor.data;
+                listCodigosPostalesApi = listOiginalCodigosPostales.ToList();
+                CantidadDeCodigosPostalesEncontrados = responseCodigoPostal.Valor.cantidad;
+            }
+            else
+            {
+                listCodigosPostalesApi = new List<HBT_codigosPostalesDto>();
+                string errores = responseCodigoPostal.Errores != null && responseCodigoPostal.Errores.Any()
+                  ? string.Join("<br>", responseCodigoPostal.Errores)
+                  : "Ocurrió un error inesperado.";
+
+                await _jsRuntime.InvokeVoidAsync("Swal.fire", new
+                {
+                    icon = "error",
+                    title = $"Error al consultar codigo postal {errores} ",
+                    text = $"{errores}",
+                    confirmButtonColor = "#6c1d1d"
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            // Console.WriteLine($"Error al buscar código postal: {ex.Message}");
+
+            await _jsRuntime.InvokeVoidAsync("Swal.fire", new
+            {
+                icon = "error",
+                title = $"Error al consultar codigo postal {ex.Message} ",
+                text = $"{ex.InnerException}",
+                confirmButtonColor = "#6c1d1d"
+            });
+        }
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            //aca vamos a validar
+            var responseGrupoDeClientes = await _sapOcrdClientService.GetGrupoDeVentasAsync();
+            if (responseGrupoDeClientes.Valor != null)
+            {
+                listaGrupoDeclientes = responseGrupoDeClientes.Valor;
+            }
+            //aca tengo los tipos de documentos
+            var responseTipoDocumento = await _sapLocalizacionService.GetAllTiposDocumentoAsync();
+            if (responseTipoDocumento.Valor != null)
+            {
+                listaTiposDocumento = responseTipoDocumento.Valor;
+            }
+            var responseOslp = await _sapOslpClienteService.GetListVendedoresAsync();
+
+            if (responseOslp.Valor != null)
+            {
+                listaOslp = responseOslp.Valor;
+            }
+            var responseObpp = await _sapObppClienteService.GetObppsAsync();
+            if (responseObpp.Valor != null)
+            {
+                listObpp = responseObpp.Valor;
+            }
+            var resposeOctg = await _sapoctgClienteService.GetAllOctgAsync();
+
+            if (resposeOctg.Valor != null)
+            {
+                listDias = resposeOctg.Valor;
+            }
+
+            var responseOpln = await _sapOplnClientService.GetListOplnAsync();
+
+            if (responseOpln.Valor != null)
+            {
+                listOpln = responseOpln.Valor;
+            }
+            var responseRegimenfiscal = await _sapLocalizacionService.GetRegimenFiscal();
+
+            if (responseRegimenfiscal != null)
+            {
+                listRegimenFiscal = responseRegimenfiscal.Valor;
+            }
+            var responseTributario = await _sapLocalizacionService.GetAllRegimenTributarioAsync();
+
+            if (responseTributario.Valor != null)
+            {
+                listaRegimeneTributario = responseTributario.Valor;
+            }
+            var responseTiposDocumento = await _sapLocalizacionService.GetAllTiposDocumentoAsync();
+            if (responseTiposDocumento.Valor != null)
+            {
+                listaTiposDocumento = responseTiposDocumento.Valor;
+            }
+            var resposneMunicipios = await _sapLocalizacionService.GetAllMunicipiosAsync("", 1, 10);
+            if (resposneMunicipios.Valor.data != null)
+            {
+                listaOriginalMunicipios = resposneMunicipios.Valor.data;
+                listaMunicipiosApi = listaOriginalMunicipios.ToList();
+                CantidadDeMunicipiosEncontrados = resposneMunicipios.Valor.cantidad;
+            }
+            else
+            {
+                listaMunicipiosApi = new List<HbtMunicipiosDto>();
+                string errores = resposneMunicipios.Errores != null && resposneMunicipios.Errores.Any()
+                    ? string.Join("<br>", resposneMunicipios.Errores)
+                    : "Ocurrió un error inesperado.";
+                await _jsRuntime.InvokeVoidAsync("Swal.fire", new
+                {
+                    icon = "error",
+                    title = $"Error al consultar municipio {errores} ",
+                    text = $"{errores}",
+                    confirmButtonColor = "#6c1d1d"
+                });
+            }
+
+            var responsabilidadFiscal = await _sapLocalizacionService.GetAllResponsabilidadesFiscales("", 1, 10);
+
+            if (responsabilidadFiscal.Valor != null)
+            {
+                ListResposabilidadFIscal = responsabilidadFiscal.Valor;
+            }
+            var retencionesClientes = await _sapLocalizacionService.GetRetenciones();
+
+            if (retencionesClientes.Valor != null)
+            {
+                listretencionDtos = retencionesClientes.Valor;
+            }
+            var responseCodigoPostal = await _sapLocalizacionService.GetAllCodigosPostales("", 1, 10);
+            if (responseCodigoPostal.Valor.data != null)
+            {
+                listOiginalCodigosPostales = responseCodigoPostal.Valor.data;
+                listCodigosPostalesApi = listOiginalCodigosPostales.ToList();
+                CantidadDeCodigosPostalesEncontrados = responseCodigoPostal.Valor.cantidad;
+            }
+            else
+            {
+                listCodigosPostalesApi = new List<HBT_codigosPostalesDto>();
+                string errores = responseCodigoPostal.Errores != null && responseCodigoPostal.Errores.Any()
+                    ? string.Join("<br>", responseCodigoPostal.Errores)
+                    : "Ocurrió un error inesperado.";
+                await _jsRuntime.InvokeVoidAsync("Swal.fire", new
+                {
+                    icon = "error",
+                    title = $"Error al consultar codigo postal {errores} ",
+                    text = $"{errores}",
+                    confirmButtonColor = "#6c1d1d"
+                });
+            }
+            var responseActividadEconomica = await _sapLocalizacionService.GetActividadEconomica("", 1, 10);
+            if (responseActividadEconomica.Valor.data != null)
+            {
+                listActividadEconomicaApi = responseActividadEconomica.Valor.data;
+                listOriginalActividadEconomica = responseActividadEconomica.Valor.data;
+                CantidadDeActividadEconomicaEncontrados = responseActividadEconomica.Valor.cantidad;
+            }
+            else
+            {
+                listActividadEconomicaApi = new List<HbtActividadEconomicaDto>();
+                string errores = responseActividadEconomica.Errores != null && responseActividadEconomica.Errores.Any()
+                    ? string.Join("<br>", responseActividadEconomica.Errores)
+                    : "Ocurrió un error inesperado.";
+                await _jsRuntime.InvokeVoidAsync("Swal.fire", new
+                {
+                    icon = "error",
+                    title = $"Error al consultar actividad economica {errores} ",
+                    text = $"{errores}",
+                    confirmButtonColor = "#6c1d1d"
+                });
+            }
+            var responsablidadFiscal1 = await _sapLocalizacionService.GetResponsabilidadFiscal1("", 1, 10);
+
+            if (responsablidadFiscal1.Valor != null)
+            {
+                lisregimenfiscal1 = responsablidadFiscal1.Valor;
+            }
+            else
+            {
+                lisregimenfiscal1 = new List<SapResponsabilidadFiscalDto>();
+                string errores = responsablidadFiscal1.Errores != null && responsablidadFiscal1.Errores.Any()
+                    ? string.Join("<br>", responsablidadFiscal1.Errores)
+                    : "Ocurrió un error inesperado.";
+                await _jsRuntime.InvokeVoidAsync("Swal.fire", new
+                {
+                    icon = "error",
+                    title = $"Error al consultar responsabilidad fiscal {errores} ",
+                    text = $"{errores}",
+                    confirmButtonColor = "#6c1d1d"
+                });
+            }
+            listTipoEntidad = new()
+        {
+            new(){Code="1" , U_HbtTipoEntidad="Natural"},
+            new(){Code="2" , U_HbtTipoEntidad="Jurídica"},
+        };
+            listNacionalidad = new()
+        {
+            new (){Code="1", U_hbtNacionalidad="Nacional"},
+            new (){Code="2", U_hbtNacionalidad="Extranjero"},
+            new (){Code="3", U_hbtNacionalidad="PT con clave"},
+            new (){Code="4", U_hbtNacionalidad="PT sin clave"},
+        };
+
+
+            lisMediosDePago = new()
+        {
+            new(){UHBTMedPag="1",NameMediosDepago="Instrumento no definido"},
+            new(){UHBTMedPag="10",NameMediosDepago="Efectivo"},
+            new(){UHBTMedPag="20",NameMediosDepago="Cheque"},
+            new(){UHBTMedPag="30",NameMediosDepago="Transferencia"},
+            new(){UHBTMedPag="42",NameMediosDepago="Consignación bancaria"},
+            new(){UHBTMedPag="48",NameMediosDepago="Tarjeta de crédito"}
+        };
+
+            lisInformacionTributaria = new()
+        {
+            new (){Code="01", Name="Iva"},
+            new (){Code="04", Name="INC"},
+            new (){Code="ZA", Name="iVA e INC"},
+            new (){Code="ZZ", Name="No Aplica"},
+        };
+
+            listaPropiedades = new()
+        {
+            new() { GroupCode=1,GroupName = "VENTA MASIVA", Propiedad="Properties1" , Activa = false },
+            new() { GroupCode=2, GroupName = "RESTAURANTES", Propiedad="Properties2" ,Activa = false },
+            new() { GroupCode=3,GroupName = "DOMICILIOS MOSQUERA",Propiedad="Properties3", Activa = true },
+            new() { GroupCode=4,GroupName = "DOMICILIOS MADRID",Propiedad="Properties4", Activa = false },
+            new() { GroupCode=5,GroupName = "DOMICILIOS FACA BOSQUE",Propiedad="Properties5", Activa = false },
+            new() { GroupCode=6,GroupName = "DOMICILIOS FACA PLAZA",Propiedad="Properties6", Activa = false },
+            new() { GroupCode=7,GroupName = "DOMICILIOS AVICOLA MILUC", Propiedad="Properties7",Activa = true },
+            new() { GroupCode=8,GroupName = "Socios de negocios propiedad 8",Propiedad="Properties8", Activa = false },
+            new() { GroupCode=9,GroupName = "Socios de negocios propiedad 9", Propiedad="Properties9",Activa = false },
+            new() { GroupCode=10,GroupName = "Socios de negocios propiedad 10",Propiedad="Properties10", Activa = false }
+
+         };
+            listResidente = new()
+            {
+              new() {U_HBT_Residente = "SI"},
+              new() {U_HBT_Residente = "NO"}
+
+            };
+        }
+        catch (Exception ex)
+        {
+            await _jsRuntime.InvokeVoidAsync("Swal.fire", new
+            {
+                icon = "error",
+                title = $"Error al inicializar la página {ex.Message} ",
+                text = $"Ocurrió un error inesperado al cargar los datos de la página.",
+                confirmButtonColor = "#6c1d1d"
+            });
+        }
+    }
+
+    private void CambiarTab(string tabName) => activeTab = tabName;
+
+    private void CopiarADespacho()
+    {
+        direccionDespacho.Street = direccionFactura.Street;
+        direccionDespacho.Block = direccionFactura.Block;
+        direccionDespacho.County = direccionFactura.County;
+    }
+    private int CalcularDV(string nit)
+    {
+        nit = new string(nit.Where(char.IsDigit).ToArray());
+
+        if (string.IsNullOrEmpty(nit))
+            return 0;
+
+        int[] pesos = { 3, 7, 13, 17, 19, 23, 29, 37, 41, 43, 47, 53, 59, 67, 71 };
+
+        int suma = 0;
+
+        for (int i = 0; i < nit.Length; i++)
+        {
+            suma += (nit[nit.Length - 1 - i] - '0') * pesos[i];
+        }
+
+        int residuo = suma % 11;
+
+        return residuo <= 1 ? residuo : 11 - residuo;
+    }
+
+    private async Task GuardarClienteAsync()
+    {
+        SapClienteCreateEditDto sapClienteCreateDto = new();
+        //vamos hacer el metodo para guardar todo
+
+        sapClienteCreateDto.U_HBT_TipDoc = cliente.U_HBT_TipDoc;
+        // sapClienteCreateDto.CardCode = cliente.FederalTaxID;
+        sapClienteCreateDto.CardCode = "C" + cliente.FederalTaxID;
+        sapClienteCreateDto.CardName = cliente.CardName;
+        sapClienteCreateDto.CardForeignName = cliente.CardForeignName;
+        sapClienteCreateDto.CardType = "cCustomer";
+        sapClienteCreateDto.GroupCode = cliente.GroupCode;
+        sapClienteCreateDto.FederalTaxID = cliente.FederalTaxID + "-" + DigitoVerificacion;
+        sapClienteCreateDto.U_HBT_Nombres = cliente.U_HBT_Nombres;
+        sapClienteCreateDto.U_HBT_Apellido1 = cliente.U_HBT_Apellido1;
+        sapClienteCreateDto.U_HBT_Apellido2 = cliente.U_HBT_Apellido2;
+        sapClienteCreateDto.Phone1 = cliente.Phone1;
+        sapClienteCreateDto.Cellular = cliente.Cellular;
+        sapClienteCreateDto.EmailAddress = cliente.EmailAddress;
+        sapClienteCreateDto.U_addInFaElectronica_email_contacto_FE = cliente.EmailAddress;
+        sapClienteCreateDto.SalesPersonCode = cliente.SalesPersonCode;
+        sapClienteCreateDto.PayTermsGrpCode = cliente.PayTermsGrpCode;
+        sapClienteCreateDto.PriceListNum = cliente.PriceListNum;
+        sapClienteCreateDto.Priority = cliente.Priority;
+        sapClienteCreateDto.Currency = "COP";
+        sapClienteCreateDto.U_HBT_RegTrib = cliente.U_HBT_RegTrib;
+        sapClienteCreateDto.U_HBT_RegFis = cliente.U_HBT_RegFis;
+        sapClienteCreateDto.U_HBT_ActEco = cliente.U_HBT_ActEco;
+        sapClienteCreateDto.U_HBT_MunMed = cliente.U_HBT_MunMed;
+        sapClienteCreateDto.U_HBT_MedPag = cliente.U_HBT_MedPag;
+        sapClienteCreateDto.U_HBT_TipEnt = cliente.U_HBT_TipEnt;
+        sapClienteCreateDto.U_HBT_Nacional = cliente.U_HBT_Nacional;
+        // clienteSeleccionado.U_HBT_TipExt = cliente.U_TipoEntidad;
+        sapClienteCreateDto.U_HBT_ResFis = cliente.U_HBT_ResFis;
+        sapClienteCreateDto.U_HBT_ResFis1 = cliente.U_HBT_ResFis1;
+        sapClienteCreateDto.U_HBT_ResFis2 = "";
+        sapClienteCreateDto.U_HBT_ResFis3 = "";
+        sapClienteCreateDto.U_HBT_Residente = cliente.U_HBT_Residente;
+        sapClienteCreateDto.U_HBT_InfoTrib = cliente.U_HBT_InfoTrib;
+        sapClienteCreateDto.U_HBT_MailRecep_FE = cliente.EmailAddress;
+        sapClienteCreateDto.ZipCode = cliente.ZipCode;
+
+
+        if (cliente.validFor == false)
+        {
+            sapClienteCreateDto.Valid = "tNO";
+            sapClienteCreateDto.Frozen = "tYES";
+        }
+        else
+        {
+            sapClienteCreateDto.Valid = "tYES";
+            sapClienteCreateDto.Frozen = "tNO";
+        }
+
+        sapClienteCreateDto.BPAddresses.Add(new AddressClienteDto
+        {
+            AddressName = "PRINCIPAL",
+            Street = direccionFactura.Street,
+            Block = direccionFactura.Block,
+            ZipCode = cliente.ZipCode,
+            City = "BOGOTA",
+            County = "BOGOTÁ (D.C)",
+            Country = "CO",
+            AddressType = "bo_BillTo",
+            U_HBT_MunMed = cliente.U_HBT_MunMed,
+            U_HBT_DirMM = "Y"
+        });
+
+        sapClienteCreateDto.BPAddresses.Add(new AddressClienteDto
+        {
+            AddressName = "PRINCIPAL",
+            Street = direccionDespacho.Street,
+            Block = direccionDespacho.Block,
+            ZipCode = cliente.ZipCode,
+            City = "BOGOTA",
+            County = "BOGOTÁ (D.C)",
+            Country = "CO",
+            AddressType = "bo_ShipTo",
+            U_HBT_MunMed = cliente.U_HBT_MunMed,
+            U_HBT_DirMM = "N"
+        });
+
+        if (cliente.U_AplicaBolsaMercantilcheck == false)
+        {
+            sapClienteCreateDto.U_AplicaBolsaMercantil = "N";
+        }
+        else
+        {
+            sapClienteCreateDto.U_AplicaBolsaMercantil = "Y";
+        }
+
+
+        var listtapropiedadesSelecionadas = listaPropiedades.Where(x => x.Activa == true).ToList();
+
+        foreach (var propiedad in listaPropiedades)
+        {
+            var info = sapClienteCreateDto.GetType().GetProperty(propiedad.Propiedad);
+
+            if (info != null && info.CanWrite)
+            {
+                info.SetValue(sapClienteCreateDto, propiedad.Activa ? "tYES" : "tNO");
+            }
+        }
+        sapClienteCreateDto.FreeText = cliente.FreeText;
+
+        foreach (var impuestos in listretencionDtos)
+        {
+            if (impuestos.Activa == true)
+            {
+
+                sapClienteCreateDto.BPWithholdingTaxCollection.Add(new SapBPWithholdingTaxDto
+                {
+                    WTCode = impuestos.WTCode,
+                    BPCode = sapClienteCreateDto.CardCode
+                });
+            }
+        }
+        var response = await _sapOcrdClientService.CreatePedido(sapClienteCreateDto);
+        if (response.EsCorrecto == true)
+        {
+            await _jsRuntime.InvokeVoidAsync("Swal.fire",
+                          "Correcto",
+                          $"El cliente se ha creado correctamente: {response.Valor.CardCode}",
+                          "success");
+            _nav.NavigateTo("/administrar-cliente/sap", forceLoad: true);
+        }
+        else
+        {
+            string errores = response.Errores != null && response.Errores.Any()
+            ? string.Join("<br>", response.Errores)
+            : "Ocurrió un error inesperado.";
+
+            await _jsRuntime.InvokeVoidAsync("Swal.fire", new
+            {
+                icon = "error",
+                title = $"Error al consultar socio de negocio",
+                text = $"{errores}",
+                confirmButtonColor = "#6c1d1d"
+            });
+        }
+    }
+    public bool EsPersonaJuridica()
+    {
+        bool exito = false;
+
+        if (cliente.U_HBT_TipEnt == "2")
+        {
+
+            exito = true;
+            cliente.U_HBT_Nombres = string.Empty;
+            cliente.U_HBT_Apellido1 = string.Empty;
+            cliente.U_HBT_Nombres = string.Empty;
+        }
+        return exito;
+    }
+    private void Cancelar() => activeTab = "general";
+    public class PropiedadDto
+    {
+        public Int32 GroupCode { get; set; }
+        public string GroupName { get; set; }
+        public string Propiedad { get; set; }
+        public bool Activa { get; set; }
+    }
+    public class RecidenteDto
+    {
+        public string U_HBT_Residente { get; set; }
+    }
+    private void AbrirModalCodigoPostal() => mostrarCodigoPostal = true;
+    private void CerrarModalCodigoPostal() => mostrarCodigoPostal = false;
+    private void AbrirModalActividadEconomica() => mostrarActividadEconomica = true;
+    private void CerrarModalActividadEconomica() => mostrarActividadEconomica = false;
+    private void AbrirModalMunicipio() => mostrarModalMunicipio = true;
+    private void CerrarModalMunicipio() => mostrarModalMunicipio = false;
+}

@@ -1,0 +1,611 @@
+﻿@page "/administrar-pedido/pedidos"
+@using Miluc.Shared.DTOs.Sap.Pedidos
+@using Miluc.Client.Interfaces.SapInterfaces.SapOrdr
+@using System.Globalization
+@using Shared.Models.Response
+@using System.Text.Json
+@inject ISapOrdrService _pedidoService
+@inject NavigationManager Nav
+@inject IJSRuntime _jsRuntime
+@inject ILogClientService _logserviceClient
+@inject IAuthClientService _authClientService
+
+
+<div class="pedidos-page animate__animated animate__fadeIn p-4">
+    @* Header *@
+
+    <div class="card border-0 bg-transparent mb-4">
+        <div class="row g-4 align-items-center">
+
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="p-3  bg-opacity-10 rounded-3 text-vinotinto">
+                        <i class="bi bi-box-seam-fill fs-3"></i>
+                    </div>
+                    <div>
+                        <h2 class="fw-bold text-vinotinto m-0 fs-3 ">Órdenes de Venta</h2>
+                        <p class="m-0 text-muted text-dark small ">Explora y gestiona los pedidos de SAP</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-5">
+                <div class="card shadow-sm border-0 rounded-3">
+                    <div class="card-body py-2 px-3">
+                        <div class="row g-2">
+                            <label class="form-label text-muted small fw-semibold mb-1">Filtrar con Fecha </label>
+                            <div class="input-group">
+                                <div class=" form-check form-switch  switch-lg mb-2 fw-bold m-1">
+                                    <InputCheckbox class="form-check-input " @bind-Value="checkFechas"></InputCheckbox>
+
+                                    @if (checkFechas)
+                                    {
+                                        <span class="text-success">Filtro Activo</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-danger">Filtro  Inactivo</span>
+                                    }
+
+                                </div>
+                            </div>
+
+                            <div class="col-6">
+                                <label class="form-label text-muted small fw-semibold mb-1">Fecha Contabilización </label>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white border-end-0 text-muted">
+                                        <i class="bi bi-calendar-event"></i>
+                                    </span>
+                                    <InputDate class="form-control ps-0 border-start-0" @bind-Value="fechaContabilizacion" />
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label text-muted small fw-semibold mb-1">Fecha Entrega</label>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white border-end-0 text-muted">
+                                        <i class="bi bi-calendar-check"></i>
+                                    </span>
+                                    <InputDate class="form-control ps-0 border-start-0" @bind-Value="fechaEntrega" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-lg-3 text-start text-md-end text-lg-end">
+                @if (_authClientService.HasPermission("Orders.Create"))
+                {
+
+                     <button type="button" class="btn btn-outline-secondary btn-lg rounded-pill px-4 shadow-sm w-100 w-sm-auto fs-6 fw-semibold transition-all mb-lg-2 " style="top:10px" @onclick='() => Nav.NavigateTo("/administrar-modulo-comercial")'>
+                        <i class="bi bi-arrow-left me-2"></i> Volver
+                    </button>
+
+
+                    <button class="btn btn-vinotinto btn-lg rounded-pill px-4 shadow-sm w-100 w-sm-auto fs-6 fw-semibold transition-all"
+                            @onclick="IrACrear">
+                        <i class="bi bi-plus-lg me-2"></i> Nuevo
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+
+    @* Filtros Modernos *@
+    <div class="row g-3 mb-4">
+        <div class="col-md-8">
+            <div class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden border">
+                <span class="input-group-text bg-white border-0 ps-4">
+                    <i class="bi bi-search text-muted"></i>
+                </span>
+                <input type="text" class="form-control border-0 shadow-none fs-6" placeholder="Cliente, documento o placa..." @bind="textoBusqueda" @bind:event="oninput" @onkeyup="HandleEnter" />
+                <button class="btn btn-vinotinto px-4" @onclick="BuscarEnServidor">Buscar</button>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="d-flex align-items-center justify-content-md-end h-100">
+                <div class="badge bg-white text-dark border p-2 px-3 rounded-pill shadow-sm">
+                    Total: <span class="fw-bold text-vinotinto">@totalRegistros</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Contenedor de Pedidos *@
+    @if (cargando)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-grow text-vinotinto" role="status"></div>
+            <p class="mt-2 text-muted">Sincronizando con SAP...</p>
+        </div>
+    }
+    else if (!listPedidosApi.Any())
+    {
+        <div class="text-center py-5 border rounded-4 bg-light">
+            <i class="bi bi-emoji-frown fs-1 text-muted"></i>
+            <p class="mt-2">No encontramos pedidos con ese criterio.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+            @foreach (var pedido in listPedidosApi)
+            {
+                <div class="col">
+                    <div class="card h-100 rounded-4 shadow-sm pedido-card overflow-hidden" @onclick="() => VerDetalle(pedido.DocEntry ?? 0)">
+                        <div class="card-body p-4">
+                            @* Estado *@
+                            <div class="status-badge">
+                                @if (pedido.CANCELED == 'Y')
+                                {
+                                    <span class="badge bg-danger rounded-pill">Cancelado</span>
+                                }
+                                else
+                                {
+                                    <span class="badge @(pedido.DocStatus == 'C' ? "bg-success" : "bg-warning text-dark") rounded-pill">
+                                        @(pedido.DocStatus == 'C' ? "Cerrado" : "Abierto")
+                                    </span>
+                                }
+                            </div>
+
+                            @* Info Principal *@
+                            <div class="mb-3">
+                                <h6 class="text-muted small fw-bold mb-1 text-uppercase">Doc #@pedido.DocNum</h6>
+                                <h5 class="fw-bold text-dark mb-0 text-truncate">@pedido.CardName</h5>
+                                <small class="text-muted">@pedido.CardCode</small>
+                            </div>
+
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <div class="p-2 rounded-3 bg-light text-center">
+                                        <small class="d-block text-muted x-small">Fecha Emisión</small>
+                                        <span class="fw-bold small">@(pedido.DocDate.ToString("dd MMM yyyy"))</span>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="p-2 rounded-3 bg-light text-center">
+                                        <small class="d-block text-muted x-small">Placa</small>
+                                        <span class="fw-bold small">@pedido.U_PLACAS</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-end">
+                                <div>
+                                    <small class="d-block text-muted x-small">Monto Total</small>
+                                    <h4 class="fw-bold text-vinotinto m-0">
+                                        $@pedido.DocTotal?.ToString("N2", new CultureInfo("es-ES"))
+                                    </h4>
+                                </div>
+                                <div class="btn-group shadow-sm">
+
+                                    @if (_authClientService.HasPermission("Orders.Detail"))
+                                    {
+                                        <button class="btn btn-outline-warning border-0 btn-sm" @onclick:stopPropagation="true" @onclick="() => VerDetalle(pedido.DocEntry ?? 0)">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+
+                                    }
+
+                                    @if (pedido.DocStatus != 'C')
+                                    {
+
+                                        @if (_authClientService.HasPermission("Orders.Update"))
+                                        {
+                                            <button class="btn btn-outline-info border-0 btn-sm" @onclick:stopPropagation="true" @onclick="() => EditarPedido(pedido.DocEntry ?? 0)">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </button>
+                                        }
+                                    }
+                                    @if (pedido.DocStatus != 'C')
+                                    {
+                                        @*     @if (_authClientService.HasPermission("Orders.Cancelar"))
+                                        { *@
+                                        <button class="btn btn-outline-danger border-0 btn-sm" @onclick:stopPropagation="true" @onclick="() => CancelarPedido(pedido.DocEntry ?? 0)">
+                                            <i class="bi bi-x-octagon"></i>
+                                        </button>
+                                        @* } *@
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        @if (!string.IsNullOrEmpty(pedido.U_Picking.ToString()))
+                        {
+                            <div class="card-footer bg-vinotinto-light border-0 py-2">
+                                <small class="text-muted"><i class="bi bi-truck me-1"></i> Picking: <b>@pedido.U_Picking</b></small>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    @* Paginación Estilizada *@
+    <div class="d-flex justify-content-between align-items-center mt-5">
+        <select class="form-select rounded-pill border-0 shadow-sm" style="width: 120px;" @onchange="CambiarCantidadPagina">
+            <option value="12">12 items</option>
+            <option value="24">24 items</option>
+            <option value="36">36 items</option>
+            <option value="48">48 items</option>
+        </select>
+
+        <nav>
+            <ul class="pagination mb-0">
+                <li class="page-item @(paginaActual <= 1 ? "disabled" : "")">
+                    <button class="page-link border-0 rounded-circle mx-1 shadow-sm" disabled="@(paginaActual <= 1)" @onclick="() => IrPagina(paginaActual - 1)">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                </li>
+                <li class="page-item active">
+                    <span class="page-link border-0 rounded-circle mx-1 shadow-sm bg-vinotinto">@paginaActual</span>
+                </li>
+                <li class="page-item @(paginaActual >= totalPaginas ? "disabled" : "")">
+                    <button class="page-link border-0 rounded-circle mx-1 shadow-sm" disabled="@(paginaActual >= totalPaginas)"@onclick="() => IrPagina(paginaActual + 1)">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </li>
+            </ul>
+        </nav>
+     @*    <nav>
+            <ul class="pagination mb-0">
+                <li class="page-item @(paginaActual <= 1 ? "disabled" : "")">
+                    <button class="page-link border-0 rounded-circle mx-1 shadow-sm" @onclick="() => IrPagina(paginaActual - 1)">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                </li>
+                <li class="page-item active">
+                    <span class="page-link border-0 rounded-circle mx-1 shadow-sm bg-vinotinto">@paginaActual</span>
+                </li>
+                <li class="page-item @(paginaActual >= totalPaginas ? "disabled" : "")">
+                    <button class="page-link border-0 rounded-circle mx-1 shadow-sm" @onclick="() => IrPagina(paginaActual + 1)">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </li>
+            </ul>
+        </nav> *@
+    </div>
+</div>
+
+@code {
+    private List<OrdersReaderDto> listaOriginal = new();
+    private List<OrdersReaderDto> listPedidosApi = new();
+    private DateTime fechaContabilizacion;
+    private DateTime fechaEntrega;
+    private string _textoBusqueda = "";
+    private string textoBusqueda
+    {
+        get => _textoBusqueda;
+        set { _textoBusqueda = value; FiltrarLocal(); }
+    }
+    private bool checkFechas { get; set; }
+    private int cantidadPorPagina = 12;
+    private int paginaActual = 1;
+    private int totalRegistros = 0;
+    private bool cargando = false;
+    // private int totalPaginas
+    // {
+    //     get
+    //     {
+    //         var total = string.IsNullOrWhiteSpace(_textoBusqueda)
+    //         ? totalRegistros : listPedidosApi.Count;
+
+    //         return (int)Math.Ceiling((double)total / cantidadPorPagina);
+    //     }
+
+    // }
+    // 1. Propiedad totalPaginas corregida (siempre usa totalRegistros devuelto por SAP)
+
+    private int totalPaginas => totalRegistros == 0 ? 1 : (int)Math.Ceiling((double)totalRegistros / cantidadPorPagina);
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        fechaContabilizacion = DateTime.Now;
+        fechaEntrega = DateTime.Now;
+
+        paginaActual = 1;
+
+        cargando = true;
+        try
+        {
+            await ObtenerPedidosDesdeApiAsync(_textoBusqueda, paginaActual,cantidadPorPagina);
+        }
+        catch (Exception ex)
+        {
+            cargando = false;
+
+            await _logserviceClient.GuardarErrorAsync
+            (
+                ex.Message,
+                ex.StackTrace,
+                usuario: _authClientService.CurrentSession.UserName ?? "No encontrado",
+                metodo: nameof(ObtenerPedidosDesdeApiAsync),
+                ruta: "/administrar-pedido/pedidos",
+                origen: $"Orden Cliente Service Sap {ex.HelpLink}",
+                nivel: "error"
+
+            );
+
+            await _jsRuntime.InvokeVoidAsync("Swal.fire", new
+            {
+                icon = "error",
+                title = "Error al cargar usuarios",
+                text = ex.Message
+            });
+
+
+        }
+        fechaContabilizacion = DateTime.Now;
+        fechaEntrega = DateTime.Now;
+
+        cargando = false;
+    }
+    private async Task ObtenerPedidosDesdeApiAsync(string ?textoBusqueda=null, int ?pagina=null,int ?cantidadPagina=null)
+    {
+
+        if (string.IsNullOrEmpty(textoBusqueda))
+        {
+            textoBusqueda=string.Empty;
+        }
+        if (Convert.ToInt32(pagina)<0)
+        {
+            pagina = 1;
+        }
+        if (Convert.ToInt32(cantidadPagina) < 0)
+        {
+            cantidadPagina = 12;
+        }
+        cargando = true;
+        try
+        {
+            ResponseAPI<List<OrdersReaderDto>> responseApi = new ();
+  
+            if (!checkFechas)
+            {
+                responseApi = await _pedidoService.ListarPedidosAsync(textoBusqueda, pagina, cantidadPagina);
+            }
+            else
+            {
+                responseApi = await _pedidoService.ListarPedidosAsync(textoBusqueda, pagina, cantidadPagina, fechaContabilizacion, fechaEntrega);
+            }
+            // var peidos = await _pedidoService.ListarPedidosAsync(textoBusqueda, paginaActual, cantidadPorPagina);
+            if (responseApi.Valor != null)
+            {
+                listaOriginal = responseApi.Valor;
+                listPedidosApi = listaOriginal.ToList();
+                totalRegistros = responseApi.CantRegistros;
+            }
+            else
+            {
+                listPedidosApi = new List<OrdersReaderDto>();
+                totalRegistros = 0;
+
+                string errores = responseApi?.Errores != null && responseApi.Errores.Any()
+                                    ? string.Join("<br>", responseApi.Errores)
+                                    : "Ocurrió un error inesperado";
+
+                await _jsRuntime.InvokeVoidAsync("Swal.fire", new
+                {
+                    icon = "error",
+                    title = $"Error al consultar pedidos",
+                    html = $"{errores}",
+                    confirmButtonColor = "#6c1d1d"
+                });
+            }
+
+        }
+        catch (Exception ex)
+        {
+            await _logserviceClient.GuardarErrorAsync(
+                   ex.Message,
+                   ex.StackTrace,
+                   usuario: _authClientService.CurrentSession.UserName ?? "No encontrado",
+                   metodo: nameof(ObtenerPedidosDesdeApiAsync),
+                   ruta: "/administrar-pedido/pedidos",
+                   origen: $"Orden Cliente Service Sap",
+                   nivel: "error"
+               );
+
+            await _jsRuntime.InvokeVoidAsync("Swal.fire", new
+            {
+                icon = "error",
+                title = "Excepción al cargar pedidos",
+                text = ex.Message
+            });
+        }
+        finally
+        {
+            cargando = false;
+        }
+
+    }
+
+    private async Task CambiarCantidadPagina(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int nuevaCantidad))
+        {
+            cantidadPorPagina = nuevaCantidad;
+            paginaActual = 1;
+            await ObtenerPedidosDesdeApiAsync(_textoBusqueda, paginaActual,cantidadPorPagina);
+        }
+        // cantidadPorPagina = int.Parse(e.Value!.ToString()!);
+        // paginaActual = 1;
+
+        // if (string.IsNullOrWhiteSpace(_textoBusqueda))
+        //     await ObtenerPedidosDesdeApiAsync();
+        // else
+        //     await BuscarEnServidor();
+    }
+    private void FiltrarLocal()
+    {
+        if (string.IsNullOrWhiteSpace(_textoBusqueda))
+        {
+            listPedidosApi = listaOriginal.ToList();
+            return;
+        }
+
+        listPedidosApi = listaOriginal.Where(p =>
+            (p.CardName?.Contains(_textoBusqueda, StringComparison.OrdinalIgnoreCase) ?? false) ||
+            (p.CardCode?.Contains(_textoBusqueda, StringComparison.OrdinalIgnoreCase) ?? false) ||
+            (p.DocNum?.Contains(_textoBusqueda) ?? false) ||
+
+            (p.U_PLACAS?.Contains(_textoBusqueda, StringComparison.OrdinalIgnoreCase) ?? false)
+        ).ToList();
+    }
+
+    private async Task IrPagina(int nuevaPagina)
+    {
+        if (nuevaPagina < 1 || nuevaPagina > totalPaginas || nuevaPagina == paginaActual)
+            return;
+
+        paginaActual = nuevaPagina;
+        await ObtenerPedidosDesdeApiAsync(_textoBusqueda,nuevaPagina,cantidadPorPagina);
+        // if (nuevaPagina < 1)
+        //     return;
+
+        // paginaActual = nuevaPagina;
+
+        // if (string.IsNullOrWhiteSpace(_textoBusqueda))
+        //     await ObtenerPedidosDesdeApiAsync();
+        // else
+        //     await BuscarEnServidor();
+    }
+
+    private async Task BuscarEnServidor()
+    {
+
+
+        paginaActual = 1;
+
+        await ObtenerPedidosDesdeApiAsync(_textoBusqueda,paginaActual,cantidadPorPagina);
+
+
+
+        // if (checkFechas == false)
+        // {
+        //     responseApi = await _pedidoService.ListarPedidosAsync(_textoBusqueda, paginaActual, cantidadPorPagina);
+
+        // }
+        // else
+        // {
+        //     responseApi = await _pedidoService.ListarPedidosAsync(_textoBusqueda, paginaActual, cantidadPorPagina, fechaContabilizacion, fechaEntrega);
+        // }
+
+
+        // //var response = await _pedidoService.ListarPedidosAsync(_textoBusqueda, paginaActual, cantidadPorPagina, fechaContabilizacion, fechaEntrega);
+
+        // if (responseApi != null)
+        // {
+        //     listaOriginal = responseApi.Valor;
+        //     listPedidosApi = listaOriginal.ToList();
+        //     totalRegistros = responseApi.CantRegistros;
+
+        // }
+        // else
+        // {
+        //     listPedidosApi = new List<OrdersReaderDto>();
+        //     string errores = responseApi.Errores != null && responseApi.Errores.Any() ? string.Join("<br>", responseApi.Errores) : "Ocurrio un error inesperado";
+
+        //     await _jsRuntime.InvokeVoidAsync("swal.fire", new
+        //     {
+        //         icon = "error",
+        //         title = $"Error al consultar usuarios {responseApi.Mensaje} ",
+        //         text = $"{errores}",
+        //         confirmButtonColor = "#6c1d1d"
+
+        //     });
+        // }
+
+
+
+
+
+        // cargando = false;
+
+    }
+
+    private async Task HandleEnter(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+         
+            await BuscarEnServidor();
+        }
+
+    }
+
+    private void IrACrear() => Nav.NavigateTo("/administrar-pedido/crear-pedido");
+    private void VerDetalle(int id)
+    {
+        if (_authClientService.HasPermission("Orders.Detail"))
+        {
+            Nav.NavigateTo($"/administrar-pedido/detalle/{id}");
+        }
+
+    }
+    private void EditarPedido(int DocEntry) => Nav.NavigateTo($"/administrar-pedido/editar/{DocEntry}");
+    //cancela el pedido
+
+    private async Task CancelarPedido(int docEntry)
+    {
+        if (!_authClientService.HasPermission("Orders.Cancelar"))
+        {
+            Nav.NavigateTo("/no-autorizado");
+            return;
+        }
+        try
+        {
+            var result = await _jsRuntime.InvokeAsync<JsonElement>
+                      ("Swal.fire", new
+                      {
+                          title = "¿Estás seguro?",
+                          text = $"¿Deseas Cancelar el pedido?",
+                          icon = "info",
+                          showCancelButton = true,
+                          confirmButtonColor = "#d33",
+                          cancelButtonColor = "#3085d6",
+                          confirmButtonText = "Sí",
+                          cancelButtonText = "Cancelar"
+                      });
+            if (result.GetProperty("isConfirmed").GetBoolean())
+            {
+                var resultado = await _pedidoService.CancelPedidoAsync(docEntry);
+                if (resultado.EsCorrecto)
+                {
+                    await _jsRuntime.InvokeVoidAsync("Swal.fire", new
+                    {
+                        icon = "success",
+                        title = "cancelado Con Exito",
+                        text = resultado.Mensaje,
+
+                        confirmButtonColor = "#6c1d1d"
+                    });
+                    await ObtenerPedidosDesdeApiAsync();
+                }
+                else
+                {
+                    await _jsRuntime.InvokeVoidAsync("Swal.fire", "Error", $"No se pudo cancelar el pedido", "error");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await _logserviceClient.GuardarErrorAsync
+            (
+                ex.Message,
+                ex.StackTrace,
+                usuario: _authClientService.CurrentSession.UserName ?? "No encontrado",
+                metodo: nameof(CancelarPedido),
+                ruta: "/administrar-pedido/pedidos",
+                origen: $"Orden Cliente Service Sap {ex.HelpLink}",
+                nivel: "error"
+            );
+            await _jsRuntime.InvokeVoidAsync(
+                "mostrarMensaje",
+                "error",
+                "Error inesperado",
+                ex.Message
+            );
+        }
+    }
+
+}

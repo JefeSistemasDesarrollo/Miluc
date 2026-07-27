@@ -1,0 +1,35 @@
+﻿.bg-vinotinto {
+    background-color: #800020 !important;
+}
+
+.text-vinotinto {
+    color: #800020 !important;
+}
+
+.btn-vinotinto {
+    background-color: #800020;
+    color: white;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+    .btn-vinotinto:hover {
+        background-color: #600018;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+.custom-input:focus {
+    border-color: #800020;
+    box-shadow: none;
+}
+
+.search-group .input-group-text {
+    border: 1px solid #dee2e6;
+}
+
+/* Efecto de entrada para el icono */
+.bi-shield-lock-fill {
+    display: inline-block;
+    animation: pulse-lock 2s infinite;
+}

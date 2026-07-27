@@ -1,0 +1,35 @@
+﻿.text-vinotinto {
+    color: #800020 !important;
+}
+
+.bg-vinotinto {
+    background-color: #800020 !important;
+}
+
+.btn-vinotinto {
+    background-color: #800020;
+    color: white;
+    transition: 0.3s;
+}
+
+    .btn-vinotinto:hover {
+        background-color: #600018;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+.border-vinotinto {
+    border-color: #800020 !important;
+}
+
+.bg-soft-vinotinto {
+    background-color: rgba(128, 0, 32, 0.1);
+}
+
+.card {
+    border-radius: 12px;
+}
+
+.breadcrumb-item.active {
+    color: #800020;
+}

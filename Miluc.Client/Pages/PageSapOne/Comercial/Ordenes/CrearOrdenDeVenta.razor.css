@@ -1,0 +1,111 @@
+﻿.text-title {
+    color: #800020;
+}
+
+.bg-maroon {
+    background-color: #800020 !important;
+}
+
+.btn-miluc {
+    background-color: #800020;
+    color: white;
+    border: none;
+}
+
+    .btn-miluc:hover {
+        background-color: #600018;
+        color: white;
+    }
+
+.btn-outline-maroon {
+    border: 1px solid #800020;
+    color: #800020;
+}
+
+    .btn-outline-maroon:hover {
+        background-color: #800020;
+        color: white;
+    }
+
+.bg-soft-maroon {
+    background-color: rgba(128, 0, 32, 0.1);
+}
+
+.border-maroon {
+    border-color: #800020 !important;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.card {
+    border-radius: 12px;
+}
+.bg-maroon {
+    background: linear-gradient(135deg, #6b0f1a 0%, #4a0811 100%) !important;
+    color: #ffffff !important;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+    .bg-maroon h5,
+    .bg-maroon svg {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+    }
+
+/* Botón Principal (Buscar / Acciones) */
+.btn-maroon {
+    background-color: #6b0f1a !important;
+    border-color: #6b0f1a !important;
+    color: #ffffff !important;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+}
+
+    .btn-maroon:hover,
+    .btn-maroon:focus {
+        background-color: #4a0811 !important;
+        border-color: #4a0811 !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 10px rgba(107, 15, 26, 0.3);
+    }
+
+/* Texto de código/destacados en la lista */
+.text-maroon {
+    color: #6b0f1a !important;
+    font-weight: 600;
+}
+
+/* Hover suave en los elementos seleccionables de la lista */
+.list-group-item-action:hover {
+    background-color: #fdf2f4 !important;
+    border-left: 4px solid #6b0f1a !important;
+}
+
+/* Botón activo del paginador (Página actual) */
+.btn-maroon.text-white {
+    background-color: #6b0f1a !important;
+    border-color: #6b0f1a !important;
+    color: #ffffff !important;
+}
+
+/* Personalización del Scrollbar interno */
+.list-group::-webkit-scrollbar {
+    width: 6px;
+}
+
+.list-group::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.list-group::-webkit-scrollbar-thumb {
+    background: #6b0f1a;
+    border-radius: 4px;
+}
+
+    .list-group::-webkit-scrollbar-thumb:hover {
+        background: #4a0811;
+    }

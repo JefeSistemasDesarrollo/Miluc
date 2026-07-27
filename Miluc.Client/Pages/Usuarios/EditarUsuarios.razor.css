@@ -1,0 +1,72 @@
+﻿.text-vinotinto {
+    color: #6c1d1d;
+}
+
+.btn-vinotinto {
+    background-color: #6c1d1d;
+    color: white;
+    border: none;
+    transition: 0.3s;
+}
+
+    .btn-vinotinto:hover {
+        background-color: #551616;
+        transform: translateY(-2px);
+        color: white;
+    }
+
+.custom-input {
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    padding: 0.6rem;
+    font-size: 0.9rem;
+}
+
+    .custom-input:focus {
+        border-color: #6c1d1d;
+        box-shadow: 0 0 0 0.2rem rgba(108, 29, 29, 0.15);
+    }
+
+.tipo-item {
+    border: 1px solid transparent;
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+    .tipo-item.active {
+        background-color: rgba(108, 29, 29, 0.08);
+        border-color: #6c1d1d;
+    }
+
+.role-card {
+    background-color: #fcfcfc;
+    border: 2px solid #f0f0f0;
+    cursor: pointer;
+    transition: 0.3s;
+    height: 100%;
+}
+
+    .role-card:hover {
+        border-color: #6c1d1d;
+    }
+
+    .role-card.active {
+        background-color: white;
+        border-color: #6c1d1d;
+        box-shadow: 0 4px 10px rgba(108, 29, 29, 0.1);
+    }
+
+.role-name {
+    color: #444;
+}
+
+.role-card.active .role-name {
+    color: #6c1d1d;
+}
+
+.role-desc {
+    font-size: 0.68rem;
+    line-height: 1.2;
+    height: 2.4em;
+    overflow: hidden;
+}

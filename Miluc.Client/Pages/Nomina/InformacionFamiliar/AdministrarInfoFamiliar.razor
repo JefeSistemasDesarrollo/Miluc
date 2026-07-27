@@ -1,0 +1,374 @@
+﻿@page "/Administrar/informacionFamiliar"
+@using Miluc.Client.Interfaces.Nomina
+@using Miluc.Shared.DTOs.Nomina.EmpleadoDto
+@using Miluc.Shared.DTOs.Nomina.ParentescoDto
+@inject NavigationManager nav
+@inject IEmpleadoClientService _empleadoClientService
+@inject IJSRuntime js
+
+<div class="empleados-page animate__animated animate__fadeIn p-4">
+
+    @* ENCABEZADO DE LA PÁGINA: Título y Botón de Nuevo Empleado *@
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+        <div>
+            <h2 class="fw-bold text-vinotinto m-0 ">
+                <i class="bi bi-person-badge-fill me-2"> Gestionar InformacionFamiliar</i>
+            </h2>
+            <p class="m-0 text-muted">Administración de Ir A Informacion familiar</p>
+        </div>
+ 
+    </div>
+
+<div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
+    <div>
+        <h2 class="fw-extrabold text-vinotinto m-0 tracking-tight">
+               <i class=" bi bi-people-fill"></i> 
+            Familiares 
+        </h2>
+        <p class="text-muted mb-0 small mt-1">
+                Administración de la información familiar del empleado.
+        </p>
+    </div>
+            
+    <button class="btn btn-vinotinto btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
+        <i class="bi bi-arrow-left me-2"></i> Volver
+    </button>
+    </div>
+</div>
+
+@* SECCIÓN DE FILTROS: Buscador y Selector de cantidad de registros *@
+<div class="card shadow-sm border-0 mb-4 rounded-4">
+    <div class="card-body p-3">
+        <div class="row g-3 align-items-center">
+            
+            @* Barra de búsqueda *@
+            <div class="col-lg-7">
+                <div class="input-group input-group-lg search-group">
+                    <span class="input-group-text bg-white border-end-0 rounded-start-pill ps-3">
+                        <i class="bi bi-search text-muted"></i>
+                    </span>
+                    
+                    @*
+                        INPUT DE BÚSQUEDA EXPLICACIÓN:
+                        - @bind: Vincula el valor escrito a la propiedad 'textoBusqueda'.
+                        - @bind:event="oninput": Hace que el binding se actualice de forma inmediata tecla por tecla (en tiempo real).
+                        - @onkeyup: Escucha cuando el usuario suelta una tecla para verificar si presionó 'Enter'.
+                    *@
+                    <input type="text" class="form-control border-start-0 shadow-none fs-6"
+                           placeholder="Filtrar local o buscar en servidor..."
+                           @bind="textoBusqueda" @bind:event="oninput" @onkeyup="HandleEnter" />
+
+                    @* Botón para forzar la búsqueda directamente en la Base de Datos del Servidor *@
+                    <button class="btn btn-vinotinto rounded-end-pill px-4" @onclick="BuscarEnServidor">
+                        <i class="bi bi-search me-2"></i>
+                    </button>
+                </div>
+            </div>
+            
+            @* Selector de paginación y Badge de Total *@
+            <div class="col-lg-5 text-lg-end">
+                <div class="d-inline-flex align-items-center bg-light p-2 rounded-pill border">
+                    <label class="mx-3 small fw-bold text-muted text-uppercase">Mostrar</label>
+                    
+                    @* @onchange: Ejecuta el método cuando el usuario selecciona una opción diferente *@
+                    <select class="form-select form-select-sm rounded-pill border-0 bg-transparent fw-bold"
+                            style="width: 80px;"
+                            value="@cantidadPorPagina"
+                            @onchange="CambiarCantidadPagina">
+                        <option value="10" selected>10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                    </select>
+                    
+                    @* Muestra el total de registros encontrados *@
+                    <span class="badge bg-vinotinto rounded-pill ms-2 px-3 py-2">
+                        Total: @totalRegistros
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* TABLA DE EMPLEADOS *@
+<div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+    <div class="table-responsive">
+        <table class="table table-striped table-hover mb-0">
+            <thead class="bg-vinotinto text-white">
+                <tr>
+                    <th class="text-lg-center text-center">Documento</th>
+                    <th class="ps-4 py-3 text-center">Nombre</th>
+                    <th class="text-center ">Apellidos</th>
+             
+                </tr>
+            </thead>
+            <tbody class="bg-white">
+                
+                @if (cargando)
+                {
+                    @* ESTADO 1: Si la variable 'cargando' es verdadera, dibuja un spinner de carga *@
+                    <tr>
+                        <td colspan="8" class="text-center py-5">
+                            <div class="spinner-border text-vinotinto"></div>
+                        </td>
+                    </tr>
+                }
+                else if (!listempleadosAlservidor.Any())
+                {
+                    @* ESTADO 2: Si terminó de cargar pero la lista está totalmente vacía *@
+                    <tr>
+                        <td colspan="8" class="text-center py-5">
+                            No hay empleados registrados
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @* ESTADO 3: Si hay datos, recorre la lista mediante un bucle 'foreach' *@
+                    @foreach (var em in listempleadosAlservidor)
+                    {
+                        <tr>
+                            <td>
+                                <div class="text-muted x-small text-center">@em.Documento</div>
+                            </td>
+                            <td>
+                                <div class="text-muted x-small text-uppercase text-center">@em.PrimerNombre @em.SegundoNombre</div>
+                            </td>
+                            <td>
+                                <div class="text-muted x-small text-uppercase text-center">@em.PrimerApellido @em.SegundoApellido</div>
+                            </td>
+                     
+                            <td class="text-center pe-4">
+                                <div class="btn-group shadow-sm border rounded-pill bg-white overflow-hidden">
+                                    
+                                    @* Botón Detalle *@
+                                    <button class="btn-detail btn btn-dark btn-sm px-2 border-end" title="Ver Detalle" @onclick="() => VerDetalle(em.EmpleadoId)">
+                                        <i class="bi bi-eye text-dark"></i>
+
+                                    </button>
+                                    
+                                    @* Botón Editar *@
+                                    <button class="btn btn-white btn-sm px-2 border-end edit" title="Crear Informacion Familiar" @onclick="() => CrearInformacionFamiliar(em.EmpleadoId)">
+                                        <i class="bi bi-pencil-square text-primary"></i>
+                                    </button>
+                                    
+                                    
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @* SECCIÓN DE PAGINACIÓN (PIE DE TABLA) *@
+    <div class="pagination-footer d-flex justify-content-between align-items-center mt-4 p-3">
+        <div class="page-link text-muted small">Página <b>@paginaActual</b> de @totalPaginas</div>
+        
+        <div class="page-item.active pagination-container p-1 bg-white border rounded-pill shadow-sm">
+            @* Botón Anterior: Se deshabilita si estamos en la primera página *@
+            <button class="btn btn-sm rounded-circle @(paginaActual <= 1 ? "disabled" : "")" @onclick="() => IrPagina(paginaActual - 1)">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+            
+            <span class="mx-3 fw-bold text-vinotinto">@paginaActual</span>
+            
+            @* Botón Siguiente: Se deshabilita si llegamos a la última página calculada *@
+            <button class="btn btn-sm rounded-circle @(paginaActual >= totalPaginas ? "disabled" : "")" @onclick="() => IrPagina(paginaActual + 1)">
+                <i class="bi bi-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+</div>
+@*                                            LÓGICA DEL COMPONENTE                               *@
+
+@code {
+    // Listas en memoria para el control de la información
+    private List<EmpleadoReaderDto> listempleadosOrigen = new List<EmpleadoReaderDto>();     // Copia de respaldo con los datos del servidor
+    private List<EmpleadoReaderDto> listempleadosAlservidor = new List<EmpleadoReaderDto>(); // Lista que se itera en la tabla HTML
+
+    // Variable interna de control para el buscador
+    private string _textoBusqueda = "";
+
+    // Propiedad Completa (Full Property) para interceptar los cambios en el buscador en tiempo real
+    private string textoBusqueda
+    {
+        get => _textoBusqueda;
+        set
+        {
+            _textoBusqueda = value;
+            FiltrarLocal(); // Cada vez que el usuario escribe/borra una letra, ejecuta el filtro local en memoria
+        }
+    }
+
+    // Variables de control de configuración y paginación
+    private int cantidadPorPagina = 10;
+    private int paginaActual = 1;
+    private int totalRegistros = 0;
+    private bool cargando = false; // Controla la visualización del Spinner en el HTML
+
+    // Ciclo de vida de Blazor: Se ejecuta de manera automática una sola vez al cargar el componente en pantalla
+    protected override async Task OnInitializedAsync()
+    {
+        await cargarEmpleados(); // Solicita la primera tanda de empleados
+    }
+
+    // Carga los empleados de forma inicial o al cambiar de página básica sin filtros pesados
+    public async Task cargarEmpleados()
+    {
+        cargando = true; // Muestra el Spinner de carga
+
+        // Petición asíncrona enviando los parámetros de paginación actuales
+        var respuesta = await _empleadoClientService.GetEmpleadosAsync(textoBusqueda, paginaActual, cantidadPorPagina);
+
+        if (respuesta.EsCorrecto)
+        {
+            listempleadosOrigen = respuesta.Valor;     // Guardamos el respaldo original
+            listempleadosAlservidor = respuesta.Valor; // Asignamos los datos a mostrar en la tabla
+            totalRegistros = respuesta.CantRegistros;  // Almacenamos cuántos registros existen en total en la DB
+        }
+
+        cargando = false; // Oculta el Spinner de carga
+    }
+
+    // Filtra la lista en memoria local (Frontend) instantáneamente sin hacer peticiones HTTP al servidor
+    private void FiltrarLocal()
+    {
+        if (string.IsNullOrWhiteSpace(textoBusqueda))
+        {
+            // Si el buscador está vacío, volvemos a mostrar la lista original de respaldo
+            listempleadosAlservidor = listempleadosOrigen;
+        }
+        else
+        {
+            // Filtra la lista original buscando coincidencia parcial en múltiples campos (Ignorando mayúsculas/minúsculas)
+            listempleadosAlservidor = listempleadosOrigen.Where(e =>
+                e.Documento.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                e.PrimerNombre.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                e.SegundoNombre.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                e.PrimerApellido.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)
+
+            ).ToList();
+        }
+    }
+
+    // Realiza una búsqueda directa y estricta consultando la base de datos a través de la API
+    public async Task BuscarEnServidor()
+    {
+        paginaActual = 1; // Reseteamos a la página 1 para una nueva búsqueda
+        cargando = true;
+
+        // CORRECCIÓN: Se reemplazó el número fijo '4' por la propiedad dinámica 'cantidadPorPagina'
+        var respuesta = await _empleadoClientService.GetEmpleadosAsync(textoBusqueda, paginaActual, cantidadPorPagina);
+
+        if (respuesta != null)
+        {
+            listempleadosOrigen = respuesta.Valor;
+            listempleadosAlservidor = respuesta.Valor;
+            totalRegistros = respuesta.CantRegistros;
+        }
+        else
+        {
+            // Reinicia las listas en caso de error para evitar inconsistencias visuales
+            listempleadosOrigen = new List<EmpleadoReaderDto>();
+            listempleadosAlservidor = new List<EmpleadoReaderDto>();
+
+            // Concatena la lista de errores devuelta por el servidor si existen
+            string erroresConcatenados = respuesta.Errores != null && respuesta.Errores.Any()
+               ? string.Join("<br>", respuesta.Errores)
+               : "Ocurrió un error inesperado.";
+
+            // Invoca una alerta modal interactiva de JavaScript (SweetAlert)
+            await js.InvokeVoidAsync("Swal.fire", new
+            {
+                icon = "error",
+                title = $"Error al consultar empleados {respuesta.Mensaje} ",
+                text = $"{erroresConcatenados}",
+                confirmButtonColor = "#6c1d1d"
+            });
+        }
+
+        cargando = false;
+    }
+
+    // Captura el teclado en el input de búsqueda; si la tecla presionada es "Enter", fuerza la consulta al servidor
+    private async Task HandleEnter(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            paginaActual = 1;
+            await BuscarEnServidor();
+        }
+    }
+
+    // Evento que se dispara cuando cambias el tamaño de visualización de páginas (10, 20, 50)
+    private async Task CambiarCantidadPagina(ChangeEventArgs e)
+    {
+        // Convierte el valor seleccionado en el HTML a un entero C#
+        cantidadPorPagina = int.Parse(e.Value!.ToString()!);
+        paginaActual = 1; // Resetea a la página uno
+
+        // Decide qué método de recarga usar según si hay texto o no en el buscador
+        if (string.IsNullOrWhiteSpace(_textoBusqueda))
+        {
+            await cargarEmpleados();
+        }
+        else
+        {
+            await BuscarEnServidor();
+        }
+    }
+
+    // Propiedad calculada (Shorthand): Divide el total de registros entre la cantidad configurada por página
+    private int totalPaginas
+    {
+        get
+        {
+            var total = string.IsNullOrWhiteSpace(_textoBusqueda)
+                ? totalRegistros
+                : listempleadosAlservidor.Count;
+
+            // Math.Ceiling redondea hacia arriba en caso de decimales (ej: 10.2 páginas se convierte en 11 páginas)
+            return (int)Math.Ceiling((double)total / cantidadPorPagina);
+        }
+    }
+
+    // Gestiona el cambio de página desde los botones Anterior / Siguiente
+    private async Task IrPagina(int nuevaPagina)
+    {
+        if (nuevaPagina < 1)
+            return;
+
+        paginaActual = nuevaPagina;
+
+        if (string.IsNullOrWhiteSpace(_textoBusqueda))
+            await cargarEmpleados();
+        else
+            await BuscarEnServidor();
+    }
+    
+     
+    // MÉTODOS DE REDIRECCIÓN Y NAVEGACIÓN (Utilizan NavigationManager 'nav')
+
+
+    //boton que redirige para crear un nuevo registro de informacion familiar
+    private void IrAInformacionfamiliar()
+    {
+        nav.NavigateTo("/informacionfamiliar/{idempleado}");
+    }
+    private void VerDetalle(int idempleado)
+    {
+        nav.NavigateTo($"/nomina/detalleInformacionFamiliar/{idempleado}");
+
+    
+    }
+    private void CrearInformacionFamiliar(int id)
+    {
+        nav.NavigateTo($"/nomina/Crear/informacionFamiliar/{id}");
+    }
+    private void Volver()
+    {
+        nav.NavigateTo("/nomina/empleados");
+    }
+}

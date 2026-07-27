@@ -1,0 +1,358 @@
+﻿@page "/nomina/Crear/informacionFamiliar/{idempleado:int}"
+@using Miluc.Client.Interfaces.Nomina
+@using Miluc.Shared.DTOs.Nomina.InformacionFamiliarDto
+@using Miluc.Shared.DTOs.Nomina.ParentescoDto
+@using Miluc.Shared.DTOs.Nomina.EmpleadoDto
+@inject NavigationManager nav
+@inject IEmpleadoClientService _empleadoService
+@inject IInfoFamiliarClientService _infoFamiliarService
+@inject IParentescoClient _parentescoService
+@inject IJSRuntime JS
+
+<div class="empleado-page p-4 animate__animated animate__fadeIn">
+    <div class="container-fluid max-width-container">
+
+        @* --- HEADER --- *@
+        <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
+            <div>
+                <h2 class="fw-extrabold text-vinotinto m-0 tracking-tight">
+                    <i class="bi bi-person-plus-fill me-2 header-icon"></i>
+                    Registrar Información Familiar
+                </h2>
+                <p class="text-muted mb-0 small mt-1">
+                    Gestione la vinculación de nueva información familiar. Los campos marcados con <span class="text-danger">*</span> son requeridos.
+                </p>
+            </div>
+            <button class="btn btn-vinotinto btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
+                <i class="bi bi-arrow-left me-2"></i> Volver al listado
+            </button>
+        </div>
+
+        @* --- FORMULARIO PARA AGREGAR A LA LISTA TEMPORAL --- *@
+        <EditForm Model="nuevaInfoFamiliar" OnValidSubmit="AgregarAListaTemporal">
+            <DataAnnotationsValidator />
+            
+            <div class="col-12">
+                <div class="card card-custom border-0 shadow-sm rounded-4">
+                    <div class="card-body p-4">
+                        <div class="section-title-container mb-4">
+                            <span class="badge bg-vinotinto-light text-vinotinto rounded-pill mb-2 px-3 py-2 fw-bold text-uppercase tracking-wider">Paso 1</span>
+                            <h5 class="fw-bold text-dark m-0">Datos de Información familiar</h5>
+                        </div>
+
+                        <div class="row g-4">
+                            <div class="col-md-4">
+                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-person"></i></span> Nombre Completo*</label>
+                                <div class="input-group-custom">
+                                    <InputText class="form-control input-custom" @bind-Value="nuevaInfoFamiliar.NombreCompleto" placeholder="Ej: Juan Pérez" />
+                                </div>
+                                <ValidationMessage For="@(() => nuevaInfoFamiliar.NombreCompleto)" class="text-danger small mt-1 d-block fw-medium" />
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-card-text"></i></span> Documento*</label>
+                                <div class="input-group-custom">
+                                    <InputText class="form-control input-custom" @bind-Value="nuevaInfoFamiliar.Documento" placeholder="Ej: 12345678" />
+                                </div>
+                                <ValidationMessage For="@(() => nuevaInfoFamiliar.Documento)" class="text-danger small mt-1 d-block fw-medium" />
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-person-dash"></i></span> Parentesco*</label>
+                                <div class="input-group-custom">
+                                    <InputSelect @bind-Value="nuevaInfoFamiliar.ParentescoId" class="form-control input-custom">
+                                        <option value="">Seleccionar Parentesco</option>
+                                        @foreach (var parentesco in listParentescos)
+                                        {
+                                            <option value="@parentesco.ParentescoId">@parentesco.NombreParentesco</option>
+                                        }
+                                    </InputSelect>
+                                </div>
+                                <ValidationMessage For="@(() => nuevaInfoFamiliar.ParentescoId)" class="text-danger small mt-1 d-block fw-medium" />
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-calendar-event"></i></span> Fecha nacimiento</label>
+                                <div class="input-group-custom">
+                                    <InputDate class="form-control input-custom" @bind-Value="nuevaInfoFamiliar.FechaNacimiento" max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                                </div>
+                                <ValidationMessage For="@(() => nuevaInfoFamiliar.FechaNacimiento)" class="text-danger small mt-1 d-block fw-medium" />
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-house-heart"></i></span> ¿Vive con el empleado? *</label>
+                                <div class="input-group-custom">
+                                    <InputSelect @bind-Value="ViveConEmpleadoString" class="form-control input-custom">
+                                        <option value="">-- Seleccione --</option>
+                                        <option value="true">Sí</option>
+                                        <option value="false">No</option>
+                                    </InputSelect>
+                                </div>
+                                <ValidationMessage For="@(() => nuevaInfoFamiliar.ViveConEmpleado)" class="text-danger small mt-1 d-block fw-medium" />
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-currency-dollar"></i></span> ¿Depende económicamente? *</label>
+                                <div class="input-group-custom">
+                                    <InputSelect @bind-Value="DependeEconomicamenteString" class="form-control input-custom">
+                                        <option value="">-- Seleccione --</option>
+                                        <option value="true">Sí</option>
+                                        <option value="false">No</option>
+                                    </InputSelect>
+                                </div>
+                                <ValidationMessage For="@(() => nuevaInfoFamiliar.DependeEconomicamente)" class="text-danger small mt-1 d-block fw-medium" />
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-people"></i></span> ¿Persona a cargo? *</label>
+                                <div class="input-group-custom">
+                                    <InputSelect @bind-Value="PersonaaCargoString" class="form-control input-custom">
+                                        <option value="">-- Seleccione --</option>
+                                        <option value="true">Sí</option>
+                                        <option value="false">No</option>
+                                    </InputSelect>
+                                </div>
+                                <ValidationMessage For="@(() => nuevaInfoFamiliar.PersonaaCargo)" class="text-danger small mt-1 d-block fw-medium" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-light d-flex  justify-content-end">
+                        <button type="submit" class="btn btn-vinotinto btn-secondary rounded-pill px-4">
+                            <i class="bi bi-plus-circle me-2"></i> Añadir a la Lista Temporal
+                        </button>
+                    </div>
+                    
+                        <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-3">
+                            <button type="button" class="btn btn-light-custom rounded-pill px-4 py-2.5 fw-semibold" @onclick="Volver">
+                                Cancelar
+                            </button>
+    
+                            <!-- CAMBIO: type="button", se añade @onclick y se deshabilita si no hay elementos en la cola -->
+                            <button type="button"
+                                    class="btn btn-vinotinto btn-secondary rounded-pill px-4"
+                                    @onclick="PersistirEnBaseDeDatos"
+                                    disabled="@(!listainformacionFamiliar.Any() || isProcessing)">
+        
+                                @if (isProcessing)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    <span>Guardando en Servidor...</span>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-cloud-upload-fill me-2"></i>
+                                    <span> Guardar Cambios</span>
+                                }
+                            </button>
+                        </div>
+                   </div> 
+
+                </div>
+            
+        </EditForm>
+
+        @* --- TABLA 1: COLA TEMPORAL POR REGISTRAR (NUEVOS) --- *@
+        @if (listainformacionFamiliar.Any())
+        {
+            <div class="col-12 mt-4">
+                <div class="card shadow-sm border-0 border-start border-warning border-4">
+                    <div class="card-header bg-vinotinto py-3">
+                        <h6 class="m-0 text-white fw-bold"> <i class="bi bi-exclamation-circle-fill"></i> Familiares pendientes por guardar (@listainformacionFamiliar.Count)</h6>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-vinotinto small text-uppercase">
+                                <tr>
+                                    <th>Nombre Familiar</th>
+                                    <th>Documento</th>
+                                    <th>Parentesco</th>
+                                    <th class="text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var temp in listainformacionFamiliar)
+                                {
+                                    <tr>
+                                        <td>@temp.NombreCompleto</td>
+                                        <td>@temp.Documento</td>
+                                        <td>@temp.NombreParentesco</td>
+                                        <td class="text-center">
+                                            <button class="btn btn-sm btn-outline-danger rounded-pill" @onclick="() => RemoveDeListaTemporal(temp)">
+                                                <i class="bi bi-x-circle"></i> Quitar
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @* --- TABLA 2: INFORMACIÓN YA EXISTENTE EN BD --- *@
+        <div class="col-12 mt-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 text-dark fw-bold"> <i class="bi bi-cloud-check-fill text-success"></i> Información Familiar Registrada en el Sistema</h6>
+                </div>
+                <div class="table-responsive" style="max-height: 350px;">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light small text-uppercase">
+                            <tr>
+                                <th class="ps-3">Id Empleado</th>
+                                <th>Documento</th>
+                                <th>Nombre Familiar</th>
+                                <th>Parentesco</th>
+                                <th class="text-center">Activo</th>
+                                @* <th class="text-center">Operaciones</th> *@
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var info in listaInformacionReader)
+                            {
+                                <tr>
+                                    <td class="ps-3">@info.EmpleadoId</td>
+                                    <td>@info.Documento</td>
+                                    <td>@info.NombreCompleto</td>
+                                    <td>@info.Parentesco</td>
+                                    <td class="text-center">
+                                        <span class="badge @(info.Activo ? "bg-success" : "bg-danger")">@(info.Activo ? "Sí" : "No")</span>
+                                    </td>
+                                    
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+       
+       
+
+    </div>
+</div>
+
+@code {
+    [Parameter] public int idempleado { get; set; }
+    private InfoFamiliarCreateDto nuevaInfoFamiliar = new();
+    private List<InfoFamiliarReaderDto> listaInformacionReader = new();
+    private List<InfoFamiliarCreateDto> listainformacionFamiliar = new();
+    private List<ParentescoReaderDto> listParentescos = new();
+    private List<EmpleadoReaderDto> listEmpleados = new();
+    private bool isProcessing = false;
+
+    
+   
+        
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDatosIniciales();
+    }
+
+    private async Task CargarDatosIniciales()
+    {
+        var respuestaParentescos = await _parentescoService.GetAllParentescosAsync();
+        if (respuestaParentescos.EsCorrecto) listParentescos = respuestaParentescos.Valor;
+
+        var respuestaEmpleados = await _empleadoService.GetEmpleadosAsync(null, 1, 1000);
+        if (respuestaEmpleados?.EsCorrecto == true) listEmpleados = respuestaEmpleados.Valor ?? new();
+
+        await CargarFamiliaresExistentes();
+        ResetFormulario();
+    }
+
+    private async Task CargarFamiliaresExistentes()
+    {
+        var listinfo = await _infoFamiliarService.GetFamiliarByIdAsync(idempleado);
+        if (listinfo.EsCorrecto) listaInformacionReader = listinfo.Valor;
+    }
+
+    private void AgregarAListaTemporal()
+    {
+        // Validar si ya existe el documento en la BD o en la lista temporal
+        if (listaInformacionReader.Any(f => f.Documento == nuevaInfoFamiliar.Documento) ||
+            listainformacionFamiliar.Any(f => f.Documento == nuevaInfoFamiliar.Documento))
+        {
+            JS.InvokeVoidAsync("Swal.fire", "Error", $"El familiar con documento {nuevaInfoFamiliar.Documento} ya está registrado.", "error");
+            return;
+        }
+
+        // Mapear datos temporales de visualización
+        nuevaInfoFamiliar.EmpleadoId = idempleado;
+        nuevaInfoFamiliar.NombreParentesco = listParentescos.FirstOrDefault(x => x.ParentescoId == nuevaInfoFamiliar.ParentescoId)?.NombreParentesco ?? string.Empty;
+
+        listainformacionFamiliar.Add(nuevaInfoFamiliar);
+        ResetFormulario();
+        StateHasChanged();
+    }
+
+    private void RemoveDeListaTemporal(InfoFamiliarCreateDto dto)
+    {
+        listainformacionFamiliar.Remove(dto);
+    }
+
+    // ¡ESTA ES LA FUNCIÓN CLAVE QUE TE HACÍA FALTA!
+    private async Task PersistirEnBaseDeDatos()
+    {
+        if (isProcessing || !listainformacionFamiliar.Any()) return;
+        isProcessing = true;
+
+        try
+        {
+            // Enviar toda la lista a la API que espera un List<InfoFamiliarCreateDto>
+            var respuesta = await _infoFamiliarService.CreateFamiliarAsync(listainformacionFamiliar);
+
+            if (!respuesta.EsCorrecto)
+            {
+                await JS.InvokeVoidAsync("Swal.fire", "Error", $"No se pudo guardar la información familiar: {respuesta.Mensaje}", "error");
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("Swal.fire", "Éxito", "Toda la información familiar ha sido guardado correctamente.", "success");
+                listainformacionFamiliar.Clear(); // Limpiar cola temporal
+                await CargarFamiliaresExistentes(); // Refrescar tabla de datos reales
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("Swal.fire", "Fatal Error", $"Ocurrió un error inesperado: {ex.Message}", "error");
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+    // Esta propiedad auxiliar convierte el valor booleano de ViveConEmpleado a string para el InputSelect y viceversa
+    private string ViveConEmpleadoString
+    {
+        get => nuevaInfoFamiliar.ViveConEmpleado?.ToString().ToLower() ?? "";
+        set => nuevaInfoFamiliar.ViveConEmpleado = string.IsNullOrEmpty(value) ? null : bool.Parse(value);
+    }
+    private string DependeEconomicamenteString
+    {
+        get => nuevaInfoFamiliar.DependeEconomicamente?.ToString().ToLower() ?? "";
+        set => nuevaInfoFamiliar.DependeEconomicamente = string.IsNullOrEmpty(value) ? null : bool.Parse(value);
+    }
+private string PersonaaCargoString
+    {
+        get => nuevaInfoFamiliar.PersonaaCargo?.ToString().ToLower() ?? "";
+        set => nuevaInfoFamiliar.PersonaaCargo = string.IsNullOrEmpty(value) ? null : bool.Parse(value);
+    }
+
+    private void ResetFormulario()
+    {
+        nuevaInfoFamiliar = new InfoFamiliarCreateDto
+        {
+            EmpleadoId = idempleado,
+            FechaNacimiento = null,
+            ViveConEmpleado = null,
+            DependeEconomicamente = null,
+            PersonaaCargo = null
+        };
+    }
+
+    private void EditarInformacionFamiliar(int id) => nav.NavigateTo($"/nomina/editar/informacionFamiliar/{id}");
+    private void EliminarInformacionFamiliar(int id) => nav.NavigateTo($"/nomina/eliminar/informacionFamiliar/{id}");
+    private void Volver() => nav.NavigateTo("/Administrar/informacionFamiliar");
+}
