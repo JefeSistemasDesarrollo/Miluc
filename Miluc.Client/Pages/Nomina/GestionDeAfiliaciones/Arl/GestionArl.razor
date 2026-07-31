@@ -138,7 +138,7 @@
                                         <button class="btn btn-sm px-3" title="Ver Detalle" @onclick="() => VerDetalle(em.ArlId)">
                                             <i class="bi bi-eye text-dark"></i>
                                         </button>
-                                        <button class="btn btn-white btn-sm px-3" title="Modificar ARL" @onclick="() => ModificarSeguridadSocial(em.ArlId)">
+                                        <button class="btn btn-white btn-sm px-3" title="Modificar ARL" @onclick="() => ModificarArl(em.ArlId)">
                                             <i class="bi bi-pencil-square text-primary"></i>
                                         </button>
                                     </div>
@@ -280,7 +280,7 @@
     }
 
     private void VerDetalle(int idArl) => nav.NavigateTo($"/nomina/detalle/{idArl}");
-    private void ModificarSeguridadSocial(int idArl) => nav.NavigateTo($"/nomina/seguridad-social/editar/{idArl}");
+    private void ModificarArl(int idArl) => nav.NavigateTo($"/editar/api/Arl/{idArl}");
     private void Volver() => nav.NavigateTo("administrar-entidadesSeguridadSocial");
     private void IrACrearArl() => nav.NavigateTo("/api/Arl/CrearArl");
 }

@@ -18,11 +18,17 @@ namespace Miluc.Server.Servicios.Nomina
 
             try
             {   // validacion Trim() para evitar espacios en blanco y posibles duplicados visuales.
-                string documentoLimpio = dto.Documento != null ? dto.Documento.Trim() : string.Empty;
+            string documentoLimpio = dto.Documento != null ? dto.Documento.Trim() : string.Empty;
 
-                var existe = await _context.Empleado.AnyAsync(e => e.Documento == documentoLimpio);
-                if (existe) throw new Exception("El número de documento ya se encuentra registrado.");
+            // 1. Validar duplicado AFUERA del try-catch
+            var existe = await _context.Empleado.AnyAsync(e => e.Documento == documentoLimpio);
+            if (existe)
+            {
+                throw new Exception("El número de documento ya se encuentra registrado.");
+            }
 
+            try
+            {
                 var nuevoEmpleado = new Empleado
                 {
                     CodigoMunicipio = dto.CodigoMunicipio,
@@ -62,7 +68,7 @@ namespace Miluc.Server.Servicios.Nomina
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error al crear el registro completo: {ex.Message}");
+                throw new Exception($"Error en base de datos al crear: {ex.Message}");
             }
         }
 
@@ -76,6 +82,7 @@ namespace Miluc.Server.Servicios.Nomina
 
                 if (delete == null)
                 {
+
                     return false;
                 }
                 else _context.Empleado.Remove(delete);

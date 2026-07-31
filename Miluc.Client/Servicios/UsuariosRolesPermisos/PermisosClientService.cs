@@ -1,6 +1,8 @@
 ﻿using Miluc.Client.Interfaces.UsuariosRolesPermisos;
 using Miluc.Shared.DTOs.Permisos;
+using Miluc.Shared.DTOs.Usuarios;
 using Miluc.Shared.Models.Response;
+using System.ComponentModel.DataAnnotations;
 using System.Net.Http.Json;
 
 namespace Miluc.Client.Servicios.UsuariosRolesPermisos
@@ -8,6 +10,13 @@ namespace Miluc.Client.Servicios.UsuariosRolesPermisos
     public class PermisosClientService (HttpClient _http) : IPermisoClientService
     {
         public async Task<ResponseAPI<List<PermisosReadDto>>> GetPermisosAsync(string? busqueda = null, int ? pagina=null, int? cantidad = null)
+        {
+            _http = http;
+        }
+
+        
+
+        public async Task<ResponseAPI<List<PermisosReadDto>>> GetPermisosAsync(string? busqueda = null, int pagina = 1, int? cantidad = null)
         {
             try
             {
@@ -50,12 +59,14 @@ namespace Miluc.Client.Servicios.UsuariosRolesPermisos
                 return new ResponseAPI<PermisosReadDto>()
                     .ErroresResponse(false, "Tiempo de espera agotado.",new List<string> { ex.Message });
             }
-            catch (Exception ex)
+            catch (Exception ex) 
             {
                 return new ResponseAPI<PermisosReadDto>().ErroresResponse(false, "Ha ocurrido un error inesperado.",new List<string> { ex.Message });
             }
 
+            }
         }
+
         public async Task<ResponseAPI<bool>> DeletePermisoAsync(int idPermiso)
         {
             try
@@ -79,7 +90,9 @@ namespace Miluc.Client.Servicios.UsuariosRolesPermisos
             {
                 return new ResponseAPI<bool>().ErroresResponse(false, "Ha ocurrido un error inesperado.", new List<string> { ex.Message });
             }
+
         }
+
         public async Task<ResponseAPI<bool>> CreatePermisoAsync(PermisosCreateDto createDto)
         {
             try

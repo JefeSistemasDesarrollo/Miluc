@@ -1,8 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Nomina;
+using Miluc.Server.Servicios.Nomina;
 using Miluc.Shared.DTOs.Nomina.Afp;
 using Miluc.Shared.DTOs.Nomina.Afp.Dto;
+using Miluc.Shared.DTOs.Nomina.AfpDto;
+using Miluc.Shared.DTOs.Nomina.Arl.Dto;
+using Miluc.Shared.DTOs.Nomina.EpsDto;
 using Miluc.Shared.Models.Response;
 using Org.BouncyCastle.Bcpg.OpenPgp;
 
@@ -106,5 +110,111 @@ namespace Miluc.Server.Controllers.Nomina
                 });
             }
         }
+        [HttpGet("{id}")]
+        public async Task<ActionResult<ResponseAPI<AfpReaderDto>>> GetByAfpAsync(int id)
+
+
+        {
+            try
+            {
+                var afp = await afpService.GetByAfpAsync(id);
+                if (afp == null)
+                {
+                    return NotFound(new ResponseAPI<ArlReaderDto>
+                    {
+                        EsCorrecto = false,
+                        Valor = null,
+                        Mensaje = "AFP no encontrado",
+                        CantRegistros = 0,
+                    });
+                }
+                return Ok(new ResponseAPI<AfpReaderDto>
+                {
+                    EsCorrecto = true,
+                    Valor = afp,
+                    Mensaje = "AFP obtenido correctamente",
+                    CantRegistros = 1,
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR REAL EN GET]: {ex.Message} -> {ex.StackTrace}");
+                await _log.GuardarErrorAsync(
+                    message: ex.Message,
+                    StackTrace: ex.StackTrace,
+                    usuario: User.Identity?.Name ?? "Sistema",
+                    metodo: "HttpGet",
+                    ruta: $"/api/Afp/{id}",
+                    ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
+                    origen: "AfpController");
+                return StatusCode(500, new ResponseAPI<AfpReaderDto>
+                {
+                    EsCorrecto = false,
+                    Valor = null,
+                    Mensaje = "Ocurrió un error al obtener el eps.",
+                    CantRegistros = 0
+                });
+            }
+        }
+
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult<ResponseAPI<AfpReaderDto>>> UpdateAfpAsync(int id, [FromBody] UpdateAfp updateAfp)
+        {
+            // 1. Validaciones previas en un solo bloque 
+            if (updateAfp == null)
+                return BadRequest(ErrorResponse("Se debe enviar la información de la EPS."));
+
+            if (id != updateAfp.AfpId)
+                return BadRequest(ErrorResponse("El ID enviado en la URL no coincide con la EPS."));
+
+            if (!ModelState.IsValid)
+            {
+                var errores = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return BadRequest(ErrorResponse("Datos inválidos.", errores));
+            }
+
+            try
+            {
+                var afpActualizada = await afpService.UpdateAfpAsync(updateAfp);
+
+                return afpActualizada is null
+                    ? NotFound(ErrorResponse("No se encontró la AFp para actualizar."))
+                    : Ok(new ResponseAPI<AfpReaderDto>
+                    {
+                        EsCorrecto = true,
+                        Valor = afpActualizada,
+                        Mensaje = "Afp actualizada correctamente.",
+                        CantRegistros = 1
+                    });
+            }
+            catch (Exception ex)
+            {
+
+                await _log.GuardarErrorAsync(
+                    message: ex.Message,
+                    StackTrace: ex.StackTrace,
+                    usuario: User.Identity?.Name ?? "Sistema",
+                    metodo: "HttpPut",
+                    ruta: $"/api/Afp/{id}",
+                    ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
+                    origen: nameof(AfpController)
+                );
+
+                return BadRequest(ErrorResponse(ex.Message));
+            }
+        }
+
+
+        private static ResponseAPI<AfpReaderDto> ErrorResponse(string mensaje, List<string>? errores = null) => new()
+        {
+            EsCorrecto = false,
+            Valor = null,
+            Mensaje = mensaje,
+            Errores = errores,
+            CantRegistros = 0
+        };
     }
 }
+
+    

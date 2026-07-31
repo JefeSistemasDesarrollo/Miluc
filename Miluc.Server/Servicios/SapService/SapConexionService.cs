@@ -39,9 +39,9 @@ namespace Miluc.Server.Servicios.SapService
 
             }
             catch (Exception ex)
-            {
+{
                 return new ResponseAPI<bool>
-                {
+    {
                     EsCorrecto = false,
                     Mensaje = ex.Message,
                     Valor = false
@@ -73,6 +73,7 @@ namespace Miluc.Server.Servicios.SapService
                         Valor = null
                     };
                 }
+
                 // SOLO enviar datos requeridos por SAP
                 var loginRequest = new
                 {
@@ -80,6 +81,7 @@ namespace Miluc.Server.Servicios.SapService
                     UserName = conexion.UserName,
                     Password = conexion.Password
                 };
+
                 var json =  JsonConvert.SerializeObject(loginRequest);
 
                 var handler = new HttpClientHandler

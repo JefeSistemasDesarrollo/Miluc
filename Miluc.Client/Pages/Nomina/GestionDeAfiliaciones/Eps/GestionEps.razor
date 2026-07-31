@@ -4,8 +4,9 @@
 
 @using Miluc.Client.Interfaces.Nomina.SeguridadSocial
 @using Miluc.Shared.DTOs.Nomina.EpsDto
+
 @inject NavigationManager nav
-@inject IEpsClientService    _epsService
+@inject IEpsClientService _epsService
 @inject IAfSeguridadSocialClientService afSeguridadSocialClientService
 @inject IJSRuntime js
 
@@ -14,170 +15,172 @@
     <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
         <div>
             <h2 class="fw-extrabold text-vinotinto m-0 tracking-tight">
-                <i class="bi bi-people-fill"></i>
-                Gestión Eps
+                <i class="bi bi-people-fill me-2"></i>
+                Gestión EPS
             </h2>
             <p class="text-muted mb-0 small mt-1">
-                Administración  de Entidad Promotora de Salud.
+                Administración de Entidades Promotoras de Salud.
             </p>
         </div>
-            
+
         <button class="btn btn-vinotinto btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
             <i class="bi bi-arrow-left me-2"></i> Volver
         </button>
     </div>
-    <button class="btn btn-vinotinto btn-nuevo rounded-pill px-4 shadow-sm" @onclick=IrACrearEps>
-        <i class="bi bi-plus-lg me-1"></i> Nueva eps
+
+    <button class="btn btn-vinotinto btn-nuevo rounded-pill px-4 shadow-sm mb-4" @onclick="IrACrearEps">
+        <i class="bi bi-plus-lg me-1"></i> Nueva EPS
     </button>
 </div>
 
    
 
-@* SECCIÓN DE FILTROS: Buscador y Selector de cantidad de registros *@
-<div class="card shadow-sm border-0 mb-4 rounded-4">
-    <div class="card-body p-3">
-        <div class="row g-3 align-items-center">
-            
-            @* Barra de búsqueda *@
-            <div class="col-lg-7">
-                <div class="input-group input-group-lg search-group">
-                    <span class="input-group-text bg-white border-end-0 rounded-start-pill ps-3">
-                        <i class="bi bi-search text-muted"></i>
-                    </span>
-                    
-                    <input type="text" class="form-control border-start-0 shadow-none fs-6"
-                           placeholder="Filtrar local o buscar en servidor..."
-                           @bind="textoBusqueda" @bind:event="oninput" @onkeyup="HandleEnter" />
+    @* SECCIÓN DE FILTROS: Buscador y Selector de cantidad de registros *@
+    <div class="card shadow-sm border-0 mb-4 rounded-4">
+        <div class="card-body p-3">
+            <div class="row g-3 align-items-center">
 
-                    <button class="btn btn-vinotinto rounded-end-pill px-4" @onclick="BuscarEnServidor">
-                        <i class="bi bi-search me-2"></i>
-                    </button>
+                @* Barra de búsqueda *@
+                <div class="col-lg-7">
+                    <div class="input-group input-group-lg search-group">
+                        <span class="input-group-text bg-white border-end-0 rounded-start-pill ps-3">
+                            <i class="bi bi-search text-muted"></i>
+                        </span>
+
+                        <input type="text" class="form-control border-start-0 shadow-none fs-6"
+                               placeholder="Filtrar local o buscar en servidor..."
+                               @bind="textoBusqueda" @bind:event="oninput" @onkeyup="HandleEnter" />
+
+                        <button class="btn btn-vinotinto rounded-end-pill px-4" @onclick="BuscarEnServidor">
+                            <i class="bi bi-search me-2"></i>
+                        </button>
+                    </div>
                 </div>
-            </div>
-            
-            @* Selector de paginación y Badge de Total *@
-            <div class="col-lg-5 text-lg-end">
-                <div class="d-inline-flex align-items-center bg-light p-2 rounded-pill border">
-                    <label class="mx-3 small fw-bold text-muted text-uppercase">Mostrar</label>
-                    
-                    <select class="form-select form-select-sm rounded-pill border-0 bg-transparent fw-bold"
-                            style="width: 80px;"
-                            value="@cantidadPorPagina"
-                            @onchange="CambiarCantidadPagina">
-                        <option value="10" selected>10</option>
-                        <option value="20">20</option>
-                        <option value="50">50</option>
-                    </select>
-                    
-                    <span class="badge bg-vinotinto rounded-pill ms-2 px-3 py-2">
-                        Total: @totalRegistros
-                    </span>
+
+                @* Selector de paginación y Badge de Total *@
+                <div class="col-lg-5 text-lg-end">
+                    <div class="d-inline-flex align-items-center bg-light p-2 rounded-pill border">
+                        <label class="mx-3 small fw-bold text-muted text-uppercase">Mostrar</label>
+
+                        <select class="form-select form-select-sm rounded-pill border-0 bg-transparent fw-bold"
+                                style="width: 80px;"
+                                value="@cantidadPorPagina"
+                                @onchange="CambiarCantidadPagina">
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                        </select>
+
+                        <span class="badge bg-vinotinto rounded-pill ms-2 px-3 py-2">
+                            Total: @totalRegistros
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-@* TABLA DE AFILIACIONES *@
-<div class="card shadow-sm border-0 rounded-4 overflow-hidden">
-    <div class="table-responsive">
-        <table class="table table-striped table-hover mb-0">
-            <thead class="bg-vinotinto text-white">
-                <tr>
-                    <th class="ps-4 py-3 text-start">Nombre</th>
-                    <th class="ps-4 py-3 text-start">Codigo </th>
-                    <th class="text-center">Estado</th>
-                    <th class="text-center">Acciones</th>
+    @* TABLA DE EPS *@
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover mb-0">
+                <thead class="bg-vinotinto text-white">
+                    <tr>
+                        <th class="ps-4 py-3 text-start">Nombre</th>
+                        <th class="ps-4 py-3 text-start">Código</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-center">Acciones</th>
                     
                    
-                </tr>
-            </thead>
-            <tbody class="bg-white">
+                    </tr>
+                </thead>
+                <tbody class="bg-white">
                 
-                @if (cargando)
-                {
-                    <tr>
-                        <td colspan="6" class="text-center py-5">
-                            <div class="spinner-border text-vinotinto"></div>
-                        </td>
-                    </tr>
-                }
-                else if (!listaEpsAlservidor.Any())
-                {
-                    <tr>
-                        <td colspan="6" class="text-center py-5">
-                            No hay registros de seguridad social encontrados.
-                        </td>
-                    </tr>
-                }
-                else
-                {
-                    @foreach (var em in listaEpsAlservidor  )
+                    @if (cargando)
                     {
                         <tr>
-                            <td class="ps-4">
-                                <div class="text-dark fw-semibold small text-uppercase">@em.Nombre</div>
-                            </td>
-                            <td class="ps-4">
-                                <div class="text-dark fw-semibold small text-uppercase">@em.Codigo</div>
-                            </td>
-                            
-                            
-        
-                        
-                            <td class="text-center">
-                                @if (em.Activo ?? false)
-                                {
-                                    <span class="badge bg-success px-3 py-2 rounded-pill">
-                                        <i class="bi bi-check-circle me-1"></i> Activo
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-danger px-3 py-2 rounded-pill">
-                                        <i class="bi bi-x-circle me-1"></i> Inactivo
-                                    </span>
-                                }
-                            </td>
-
-                            @* Columna de Acciones Limpia *@
-                            <td class="text-center pe-4">
-                                <div class="btn-group shadow-sm border rounded-pill bg-white overflow-hidden">
-                                    <button class="btn  btn-sm px-3" title="Ver Detalle" @onclick="() => VerDetalle(em.EpsId)">
-                                        <i class="bi bi-eye text-black-"></i>
-                                    </button>
-                                    <button class="btn btn-white btn-sm px-3" title="Crear eps" @onclick="() => CrearEps(em.EpsId)">
-                                        <i class="bi bi-pencil-square text-primary"></i>
-                                    </button>
-                                </div>
+                            <td colspan="4" class="text-center py-5">
+                                <div class="spinner-border text-vinotinto"></div>
                             </td>
                         </tr>
                     }
+                    else if (!listaEpsAlservidor.Any())
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center py-5">
+                                No se encontraron registros de EPS.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var em in listaEpsAlservidor)
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="text-dark fw-semibold small text-uppercase">@em.Nombre</div>
+                                </td>
+                                <td class="ps-4">
+                                    <div class="text-dark fw-semibold small text-uppercase">@em.Codigo</div>
+                                </td>
+
+                            
+        
+                        
+                                <td class="text-center">
+                                    @if (em.Activo ?? false)
+                                    {
+                                        <span class="badge bg-success px-3 py-2 rounded-pill">
+                                            <i class="bi bi-check-circle me-1"></i> Activo
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger px-3 py-2 rounded-pill">
+                                            <i class="bi bi-x-circle me-1"></i> Inactivo
+                                        </span>
+                                    }
+                                </td>
+
+                            @* Columna de Acciones Limpia *@
+                                <td class="text-center pe-4">
+                                    <div class="btn-group shadow-sm border rounded-pill bg-white overflow-hidden">
+                                        <button class="btn btn-sm px-3" title="Ver Detalle" @onclick="() => VerDetalle(em.EpsId)">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        <button class="btn btn-white btn-sm px-3" title="Editar EPS" @onclick="() => EditarEps(em.EpsId)">
+                                            <i class="bi bi-pencil-square text-primary"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
                                   
                            
                 }
-                }
-            </tbody>
-        </table>
-    </div>
-    
+                    }
+                </tbody>
+            </table>
+        </div>
 
-    @* SECCIÓN DE PAGINACIÓN (PIE DE TABLA) *@
-    <div class="pagination-footer d-flex justify-content-between align-items-center mt-4 p-3">
-        <div class="page-link text-muted small">Página <b>@paginaActual</b> de @totalPaginas</div>
-        
-        <div class="page-item.active pagination-container p-1 bg-white border rounded-pill shadow-sm">
-            <button class="btn btn-sm rounded-circle @(paginaActual <= 1 ? "disabled" : "")" @onclick="() => IrPagina(paginaActual - 1)">
-                <i class="bi bi-chevron-left"></i>
-            </button>
-            
-            <span class="mx-3 fw-bold text-vinotinto">@paginaActual</span>
-            
-            <button class="btn btn-sm rounded-circle @(paginaActual >= totalPaginas ? "disabled" : "")" @onclick="() => IrPagina(paginaActual + 1)">
-                <i class="bi bi-chevron-right"></i>
-            </button>
+        @* SECCIÓN DE PAGINACIÓN *@
+        <div class="pagination-footer d-flex justify-content-between align-items-center p-3 border-top">
+            <div class="text-muted small">Página <b>@paginaActual</b> de @totalPaginas</div>
+
+            <div class="pagination-container p-1 bg-white border rounded-pill shadow-sm">
+                <button class="btn btn-sm rounded-circle @(paginaActual <= 1 ? "disabled" : "")" @onclick="() => IrPagina(paginaActual - 1)">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+
+                <span class="mx-3 fw-bold text-vinotinto">@paginaActual</span>
+
+                <button class="btn btn-sm rounded-circle @(paginaActual >= totalPaginas ? "disabled" : "")" @onclick="() => IrPagina(paginaActual + 1)">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
         </div>
     </div>
+
 </div>
 
 @code {
@@ -232,10 +235,8 @@
         else
         {
             listaEpsAlservidor = listaEpsOrigen.Where(e =>
-                e.Codigo.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ||
-                e.Nombre.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ||
-                e.Activo.ToString().Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)
-
+                (!string.IsNullOrEmpty(e.Codigo) && e.Codigo.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(e.Nombre) && e.Nombre.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase))
             ).ToList();
         }
     }
@@ -266,8 +267,8 @@
             await js.InvokeVoidAsync("Swal.fire", new
             {
                 icon = "error",
-                title = $"Error al consultar la seguridad social",
-                text = $"{erroresConcatenados}",
+                title = "Error al consultar la seguridad social",
+                html = erroresConcatenados,
                 confirmButtonColor = "#6c1d1d"
             });
         }
@@ -286,16 +287,19 @@
 
     private async Task CambiarCantidadPagina(ChangeEventArgs e)
     {
-        cantidadPorPagina = int.Parse(e.Value!.ToString()!);
-        paginaActual = 1;
+        if (int.TryParse(e.Value?.ToString(), out int nuevaCantidad))
+        {
+            cantidadPorPagina = nuevaCantidad;
+            paginaActual = 1;
 
-        if (string.IsNullOrWhiteSpace(_textoBusqueda))
-        {
-            await cargarAfiliaciones();
-        }
-        else
-        {
-            await BuscarEnServidor();
+            if (string.IsNullOrWhiteSpace(_textoBusqueda))
+            {
+                await cargarAfiliaciones();
+            }
+            else
+            {
+                await BuscarEnServidor();
+            }
         }
     }
 
@@ -306,6 +310,8 @@
             var total = string.IsNullOrWhiteSpace(_textoBusqueda)
                 ? totalRegistros
                 : listaEpsAlservidor.Count;
+
+            if (total == 0) return 1;
 
             return (int)Math.Ceiling((double)total / cantidadPorPagina);
         }
@@ -324,22 +330,9 @@
             await BuscarEnServidor();
     }
 
-    private void VerDetalle(int idempleado)
-    {
-        nav.NavigateTo($"/nomina/detalle/{idempleado}");
-    }
-
-    private void CrearEps(int idempleado)
-    {
-        
-        nav.NavigateTo("/api/Eps/CrearEps/");
-    }
-
+    private void VerDetalle(int epsId) => nav.NavigateTo($"/nomina/detalle/{epsId}");
     private void Volver() => nav.NavigateTo("administrar-entidadesSeguridadSocial");
-
-    private void IrACrearEps()
-    {
-        nav.NavigateTo("/api/Eps/CrearEps");
-    }
+    private void IrACrearEps() => nav.NavigateTo("/api/Eps/CrearEps");
+    private void EditarEps(int epsId) => nav.NavigateTo($"/editar/api/Eps/{epsId}");
 }
 

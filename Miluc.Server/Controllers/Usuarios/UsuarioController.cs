@@ -38,14 +38,14 @@ namespace Miluc.Server.Controllers.Usuarios
                 var claims = User.Claims
                     .Select(c => new {c.Type,c.Value}).ToList();
 
-                return Ok(new
-                {
+            return Ok(new
+            {
                     Usuario = User.Identity.Name,
                     Autenticado = true,
-                    EsAdmin = User.IsInRole("Admin"),
-                    TodosLosClaims = claims
-                });
-            }
+                EsAdmin = User.IsInRole("Admin"),
+                TodosLosClaims = claims
+            });
+        }
             catch (Exception ex)
             {
 
@@ -88,12 +88,12 @@ namespace Miluc.Server.Controllers.Usuarios
         [ProducesResponseType(typeof(ResponseAPI<List<UsuarioReadDto>>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ResponseAPI<List<UsuarioReadDto>>>> Get([FromQuery] string? buscar,
         [FromQuery] int? pagina = null,
-        [FromQuery] int? cantidad = null)
+            [FromQuery] int? cantidad = null)
         {
             try
             {
                 var usuarios = await _service.GetAllUsuariosAsync(buscar, pagina, cantidad);
-
+               
                 if (usuarios.Data == null && !usuarios.Data.Any())
                 {
                     return NotFound(new ResponseAPI<UsuarioReadDto>
@@ -125,12 +125,12 @@ namespace Miluc.Server.Controllers.Usuarios
             catch (Exception ex)
             {
                 await log.GuardarErrorAsync(
-                      message: ex.Message,
-                       StackTrace: ex.StackTrace,
-                       usuario: User.Identity?.Name ?? "Sistema",
+                         message: ex.Message,
+                          StackTrace: ex.StackTrace,
+                          usuario: User.Identity?.Name ?? "Sistema",
                        metodo: nameof(Get),
                        ruta: $"/api/Usuarios​",
-                       ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
+                          ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
                        origen: nameof(UsuarioController));
 
                 return StatusCode(500, new ResponseAPI<List<UsuarioReadDto>>
@@ -281,7 +281,7 @@ namespace Miluc.Server.Controllers.Usuarios
                     return NotFound(new ResponseAPI<UsuarioReadDto>
                     {
                         EsCorrecto = false,
-                        Mensaje = "Usuario no encontrado." 
+                        Mensaje = "Usuario no encontrado."
                     });
                 }
 
