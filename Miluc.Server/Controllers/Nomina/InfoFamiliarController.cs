@@ -250,7 +250,7 @@ namespace Miluc.Server.Controllers.Nomina
                 });
             }
 
-            
+            // 2. Validación de coincidencia de ID
             if (id != infoFamiliarDto.InformacionFamiliarId)
             {
                 return BadRequest(new ResponseAPI<InfoFamiliarReaderDto>
@@ -262,6 +262,7 @@ namespace Miluc.Server.Controllers.Nomina
                 });
             }
 
+            // 3. Validación de ModelState
             if (!ModelState.IsValid)
             {
                 var errores = ModelState
@@ -274,11 +275,12 @@ namespace Miluc.Server.Controllers.Nomina
                     EsCorrecto = false,
                     Valor = null,
                     Mensaje = "Datos inválidos.",
-                    Errores = errores, // Se asigna a la lista de errores nativa de tu ResponseAPI
+                    Errores = errores,
                     CantRegistros = 0
                 });
             }
 
+            // 4. Ejecución del Servicio y Captura de Excepciones de Negocio
             try
             {
                 // 4. Ejecución del servicio de aplicación
@@ -299,28 +301,19 @@ namespace Miluc.Server.Controllers.Nomina
                 {
                     EsCorrecto = true,
                     Valor = familiarActualizado,
-                    Mensaje = "Información familiar actualizada correctamente.",
+                    Mensaje = "Información familiar actualizada con éxito.",
                     CantRegistros = 1
                 });
             }
             catch (Exception ex)
             {
-                // 5. Registro de logs corregido con el contexto real del controlador
-                await _log.GuardarErrorAsync(
-                    message: ex.Message,
-                    StackTrace: ex.StackTrace,
-                    usuario: User.Identity?.Name ?? "Sistema",
-                    metodo: "HttpPut",
-                    ruta: $"/api/InfoFamiliar/{id}",
-                    ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
-                    origen: "InfoFamiliarController"
-                );
-
-                return StatusCode(500, new ResponseAPI<InfoFamiliarReaderDto>
+                //AQUÍ capturamos la excepción del servicio (como la validación de duplicados)
+             
+                return BadRequest(new ResponseAPI<InfoFamiliarReaderDto>
                 {
                     EsCorrecto = false,
                     Valor = null,
-                    Mensaje = "Ocurrió un error interno en el servidor al actualizar el familiar.",
+                    Mensaje = ex.Message, // Texto real: "Ya existe un familiar registrado..."
                     CantRegistros = 0
                 });
             }

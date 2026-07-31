@@ -8,7 +8,8 @@ namespace Miluc.Server.Controllers.Nomina
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AfiliacionSeguridadSocialController(IArlService arlService, ICajaCompensacionService cajaCompensacionService,
+
+    public class AfiliacionSeguridadSocialController( IArlService arlService, ICajaCompensacionService cajaCompensacionService,
         IAfiliacionSeguridadSocialService afiliacionSeguridadSocialService
         , ILogService _log) : Controller
     {
@@ -16,8 +17,11 @@ namespace Miluc.Server.Controllers.Nomina
         public async Task<ActionResult<ResponseAPI<List<AfiliacionSeguridadSocialreaderDto>>>> GetAfiliacionSeguridadSocialAsync([FromQuery] string? filtro = null,[FromQuery] int page = 1, [FromQuery] int cantidad = 10) 
         {
             try
-            {   
+            {
                 (List<AfiliacionSeguridadSocialreaderDto> afiliaciones, int totalRegistros) = await afiliacionSeguridadSocialService.GetAfiliacionSeguridadSocialAsync(filtro, page, cantidad);
+                
+               // (List<AfiliacionSeguridadSocialreaderDto> afiliaciones, int totalRegistros) =
+                    await afiliacionSeguridadSocialService.GetAfiliacionSeguridadSocialAsync(filtro, page, cantidad);
 
                 if (afiliaciones == null || afiliaciones.Count == 0)
                 {
@@ -29,6 +33,7 @@ namespace Miluc.Server.Controllers.Nomina
                         CantRegistros = 0,
                     });
                 }
+
                 // 2. Retornamos la respuesta con los tipos y conteos reales corregidos
                 return Ok(new ResponseAPI<List<AfiliacionSeguridadSocialreaderDto>>
                 {

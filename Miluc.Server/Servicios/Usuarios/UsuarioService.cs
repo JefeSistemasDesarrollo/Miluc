@@ -112,7 +112,7 @@ namespace Miluc.Server.Servicios.Usuarios
 
             if (user == null)     
                 throw new ArgumentNullException("", nameof(user));
-              
+
 
             // 2. Validar que el nuevo Email no lo tenga otro usuario
             var emailOcupado = await _context.Usuarios
@@ -281,7 +281,7 @@ namespace Miluc.Server.Servicios.Usuarios
                 {
                     cantidad = 10;
                 }
-               
+
                 //  int cantidadTop = cantidad ?? 20;
 
                 var queryBusqueda = _context.Usuarios.AsNoTracking().AsQueryable();

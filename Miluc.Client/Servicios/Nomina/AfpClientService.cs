@@ -1,6 +1,8 @@
 ﻿using Miluc.Client.Interfaces.Nomina.SeguridadSocial;
 using Miluc.Shared.DTOs.Nomina.Afp;
 using Miluc.Shared.DTOs.Nomina.Afp.Dto;
+using Miluc.Shared.DTOs.Nomina.AfpDto;
+using Miluc.Shared.DTOs.Nomina.EpsDto;
 using Miluc.Shared.Models.Response;
 using System.Net.Http.Json;
 
@@ -52,7 +54,7 @@ namespace Miluc.Client.Servicios.Nomina
                 // Codificar la cadena de búsqueda para manejo seguro de URL
                 var busquedaSegura = Uri.EscapeDataString(textoBusqueda ?? string.Empty);
 
-                
+
                 var url = $"/api/Afp/Afp?textoBusqueda={busquedaSegura}&paginaActual={paginaActual}&cantidadPorPagina={cantidadPorPagina}";
 
                 var responsePeticion = await httpClient.GetAsync(url);
@@ -100,5 +102,69 @@ namespace Miluc.Client.Servicios.Nomina
                 };
             }
         }
-    }
+
+        public async Task<ResponseAPI<AfpReaderDto>> GetByAfpAsync(int id)
+        {
+            try
+            {
+                var response = await httpClient.GetFromJsonAsync<ResponseAPI<AfpReaderDto>>($"/api/Afp/{id}");
+                return response ?? new ResponseAPI<AfpReaderDto>
+                {
+                    EsCorrecto = false,
+                    Mensaje = "No se encontró la AFp."
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseAPI<AfpReaderDto>
+                {
+                    Errores = new List<string> { $"Error: {ex.Message}" },
+                    Mensaje = ex.Message,
+                    EsCorrecto = false,
+                    CantRegistros = 0
+                };
+            }
+        }
+
+        public  async Task<ResponseAPI<AfpReaderDto>> UpdateAfpAsync(UpdateAfp updateAfp)
+        {
+            try
+            {
+                var response = await httpClient.PutAsJsonAsync($"api/Afp/{updateAfp.AfpId}", updateAfp);
+
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var rawContent = await response.Content.ReadAsStringAsync();
+
+                    var errorResponse = string.IsNullOrWhiteSpace(rawContent)
+                        ? null
+                        : System.Text.Json.JsonSerializer.Deserialize<ResponseAPI<AfpReaderDto>>(rawContent, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                    return errorResponse ?? new ResponseAPI<AfpReaderDto>
+                    {
+                        EsCorrecto = false,
+                        Mensaje = !string.IsNullOrWhiteSpace(rawContent) ? rawContent : "Error al actualizar la AFP."
+                    };
+                }
+
+                // Respuesta exitosa (200 OK)
+                var result = await response.Content.ReadFromJsonAsync<ResponseAPI<AfpReaderDto>>();
+
+                return result ?? new ResponseAPI<AfpReaderDto>
+                {
+                    EsCorrecto = false,
+                    Mensaje = "Respuesta vacía del servidor."
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseAPI<AfpReaderDto>
+                {
+                    EsCorrecto = false,
+                    Mensaje = ex.Message
+                };
+            }
+        }
+    } 
 }

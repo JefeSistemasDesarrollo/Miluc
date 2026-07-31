@@ -5,6 +5,7 @@ using Miluc.Server.Interfaces.Nomina;
 using Miluc.Server.Models.Nomina;
 using Miluc.Shared.DTOs.Nomina.EpsDto;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Linq.Expressions;
 
 namespace Miluc.Server.Servicios.Nomina
 {
@@ -40,7 +41,7 @@ namespace Miluc.Server.Servicios.Nomina
                     Nombre = EpsCreateDto.Nombre.Trim(),
                     Codigo = EpsCreateDto.Codigo?.Trim(),
                     FechaCreacion = DateTime.Now,
-                    Activo = EpsCreateDto.Activo,
+                    Activo = EpsCreateDto.Activo ,
                 };
 
                 _context.Eps.Add(nuevaEps);
@@ -63,6 +64,35 @@ namespace Miluc.Server.Servicios.Nomina
                 throw new Exception(ex.Message);
             }
         }
+
+        public async Task<EpsReaderDto> GetByEpsAsync(int id)
+        {
+            try
+            {
+                var epsId = await _context.Eps.AsNoTracking()
+                    .Where(e => e.EpsId == id)
+                    .Select(e => new EpsReaderDto
+                    {
+                        EpsId = e.EpsId,
+                        Nombre = e.Nombre,
+                        Codigo = e.Codigo,
+                        FechaActualizacion = DateTime.Now,
+                        FechaCreacion = DateTime.Now,
+                        Activo = e.Activo
+
+                    }).FirstOrDefaultAsync();
+                if (epsId == null) throw new Exception("Eps no encontrado.");
+
+                return epsId;
+
+
+            }
+            catch (Exception ex) 
+                {
+                throw new Exception($"Eps no encontrada:{ ex.Message}" ) ;
+                }   
+        }
+         
 
         public async Task<(List<EpsReaderDto> Data, int TotalRegistros)> GetEpsAsync(string? filtro = null, int page = 1, int? cantidad = null)
         {
@@ -107,6 +137,55 @@ namespace Miluc.Server.Servicios.Nomina
        
         }
 
-       
+        public async Task<EpsReaderDto> UpdateEpsAsync(UpdateEpsDto updateEps)
+        {
+            try
+            {
+               
+                var eps = await _context.Eps.FirstOrDefaultAsync(e => e.EpsId == updateEps.EpsId);
+
+                if (eps == null)
+                    throw new Exception("La EPS no existe.");
+
+               
+                var nombreFormateado = updateEps.Nombre?.Trim().ToUpper();
+                var codigoFormateado = updateEps.Codigo?.Trim().ToUpper();
+
+                
+                var existeEps = await _context.Eps.AnyAsync(e =>
+                    e.EpsId != updateEps.EpsId &&
+                    (e.Nombre.ToUpper() == nombreFormateado || e.Codigo.ToUpper() == codigoFormateado)
+                );
+
+                if (existeEps)
+                    throw new Exception("Ya existe otra EPS con el mismo nombre o código.");
+
+                
+                eps.Nombre = updateEps.Nombre;
+                eps.Codigo = updateEps.Codigo;
+                eps.FechaActualizacion = DateTime.Now;
+                eps.Activo = updateEps.Activo;
+
+               
+                await _context.SaveChangesAsync();
+
+                
+                return new EpsReaderDto
+                {
+                    EpsId = eps.EpsId,
+                    Nombre = eps.Nombre,
+                    Codigo = eps.Codigo,
+                    FechaActualizacion = eps.FechaActualizacion,
+                    Activo = eps.Activo 
+                };
+            
+    }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error al actualizar EPS: {ex.Message}");
+
+
+            }
+        }
     }
 }

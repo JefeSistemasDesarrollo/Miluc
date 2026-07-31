@@ -11,7 +11,7 @@ namespace Miluc.Server.Servicios.Nomina
 
         public async Task<bool> CreateFamiliarAsync(List<InfoFamiliarCreateDto> familiar)
         {
-            using var transaction = _context.Database.BeginTransaction();
+            using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
 
@@ -22,12 +22,12 @@ namespace Miluc.Server.Servicios.Nomina
                     {
                         EmpleadoId = fam.EmpleadoId,
                         Documento = fam.Documento,
-                        NombreCompleto = fam.NombreCompleto,
-                        ParentescoId = fam.ParentescoId.Value,
-                        FechaNacimiento = fam.FechaNacimiento.Value,
-                        ViveConEmpleado = fam.ViveConEmpleado.Value,
-                        DependeEconomicamente = fam.DependeEconomicamente.Value,
-                        PersonaaCargo = fam.PersonaaCargo.Value,
+                        NombreCompleto = fam.NombreCompleto?.ToUpper().Trim(),
+                        ParentescoId = fam.ParentescoId.GetValueOrDefault(),
+                        FechaNacimiento = fam.FechaNacimiento.GetValueOrDefault(),
+                        ViveConEmpleado = fam.ViveConEmpleado.GetValueOrDefault(),
+                        DependeEconomicamente = fam.DependeEconomicamente.GetValueOrDefault(),
+                        PersonaaCargo = fam.PersonaaCargo.GetValueOrDefault(),
                         Activo = true,
                         FechaCreacion = DateTime.Now,
                         FechaActualizacion = DateTime.Now
@@ -43,8 +43,7 @@ namespace Miluc.Server.Servicios.Nomina
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                throw new Exception($"Error al obtener nuevo empleado:{ex.Message}");
-
+                throw new Exception($"Error al crear información familiar: {ex.Message}");
             }
         }
 
@@ -52,12 +51,13 @@ namespace Miluc.Server.Servicios.Nomina
         {
             try
             {
-                var familiar = await _context.InformacionFamiliar.
-                    Where(f => f.InformacionFamiliarId == id).
-                    FirstOrDefaultAsync();
-                if (familiar == null) 
-                    
-                    throw new Exception("Familiar no encontrado");
+                var familiar = await _context.InformacionFamiliar
+                    .FirstOrDefaultAsync(f => f.InformacionFamiliarId == id);
+
+                if (familiar == null)
+                    throw new Exception("Familiar no encontrado.");
+
+                    //throw new Exception("Familiar no encontrado");
             else 
             {
                 _context.InformacionFamiliar.Remove(familiar);
@@ -70,6 +70,7 @@ namespace Miluc.Server.Servicios.Nomina
                 throw new Exception($"Error al eliminar el familiar: {ex.Message}");
             }
         }
+
         public async Task<List<InfoFamiliarReaderDto>> GetFamiliarByIdAsync(int id)
         {
             try
@@ -83,6 +84,7 @@ namespace Miluc.Server.Servicios.Nomina
                         Documento = f.Documento,
                         InformacionFamiliarId = f.InformacionFamiliarId,
                         EmpleadoId = f.EmpleadoId,
+                        //Documento = f.Documento,
                         NombreEmpleado = $"{f.Empleado.PrimerNombre} {f.Empleado.PrimerApellido}",
 
                         NombreCompleto = f.NombreCompleto,
@@ -93,7 +95,7 @@ namespace Miluc.Server.Servicios.Nomina
                         ViveConEmpleado = f.ViveConEmpleado,
                         DependeEconomicamente = f.DependeEconomicamente,
                         PersonaaCargo = f.PersonaaCargo,
-                        Activo = f.Activo,
+                        Activo = f.Activo
                     })
                     .ToListAsync();
                 if (infoFamiliar == null) throw new Exception("Informacion familiar no encontrada");
@@ -103,7 +105,7 @@ namespace Miluc.Server.Servicios.Nomina
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error al obtener nuevo empleado:{ex.Message}");
+                throw new Exception($"Error al obtener la información familiar: {ex.Message}");
             }
         }
 
@@ -120,9 +122,13 @@ namespace Miluc.Server.Servicios.Nomina
 
                 if (!string.IsNullOrEmpty(filtro))
                 {
-                    query = query.Where(x => x.Empleado.PrimerNombre.Contains(filtro) || x.Empleado.PrimerApellido.Contains(filtro));
+                    query = query.Where(x => x.Empleado.PrimerNombre.Contains(filtro) ||
+                                             x.Empleado.PrimerApellido.Contains(filtro) ||
+                                             x.NombreCompleto.Contains(filtro));
                 }
-                var totalRegistros = query.Count();
+                //var totalRegistros = query.Count();
+
+                var totalRegistros = await query.CountAsync();
 
                 var familiares = await query
                     .Include(f => f.Empleado)
@@ -134,13 +140,15 @@ namespace Miluc.Server.Servicios.Nomina
                         InformacionFamiliarId = f.InformacionFamiliarId,
                         NombreEmpleado = $"{f.Empleado.PrimerNombre} {f.Empleado.SegundoNombre} {f.Empleado.PrimerApellido} {f.Empleado.SegundoApellido}",
                         EmpleadoId = f.EmpleadoId,
+                        Documento = f.Documento,
                         NombreCompleto = f.NombreCompleto,
                         ParentescoId = f.ParentescoId,
                         Parentesco = f.Parentesco.NombreParentesco,
                         FechaNacimiento = f.FechaNacimiento,
                         ViveConEmpleado = f.ViveConEmpleado,
                         DependeEconomicamente = f.DependeEconomicamente,
-                        PersonaaCargo = f.PersonaaCargo
+                        PersonaaCargo = f.PersonaaCargo,
+                        Activo = f.Activo
                     })
                     .Skip((page - 1) * cantidadtop)
                     .Take(cantidadtop)
@@ -161,31 +169,46 @@ namespace Miluc.Server.Servicios.Nomina
         {
             try
             {
-                // 1. BUSCAR EL FAMILIAR ESPECÍFICO A EDITAR
+                // Buscar entidad existente
                 var familiar = await _context.InformacionFamiliar
                     .FirstOrDefaultAsync(f => f.InformacionFamiliarId == dto.InformacionFamiliarId);
 
                 if (familiar == null)
                     throw new Exception("El registro de información familiar no existe.");
 
-                // 2. VALIDAR QUE EL NOMBRE NO SE DUPLIQUE CON OTRO FAMILIAR DEL MISMO EMPLEADO
-                var existeFamiliar = await _context.InformacionFamiliar
-                    .AnyAsync(f => f.NombreCompleto.ToUpper() == dto.NombreCompleto.ToUpper()
-                                   && f.EmpleadoId == dto.EmpleadoId
-                                   && f.InformacionFamiliarId != dto.InformacionFamiliarId);
+               
 
-                if (existeFamiliar)
-                    throw new Exception("Ya existe un familiar registrado con ese nombre para este empleado.");
+                // Existe otro familiar del mismo empleado con ese mismo DOCUMENTO?
+                if (!string.IsNullOrWhiteSpace(dto.Documento))
+                {
+                    var existeDocumento = await _context.InformacionFamiliar
+                        .AnyAsync(f => f.Documento == dto.Documento
+                                    && f.EmpleadoId == dto.EmpleadoId
+                                    && f.InformacionFamiliarId != dto.InformacionFamiliarId);
 
-                // 3. ACTUALIZAR LOS CAMPOS EN LA ENTIDAD
-                familiar.NombreCompleto = dto.NombreCompleto.ToUpper();
+                    if (existeDocumento)
+                        throw new Exception("Ya existe un familiar registrado con este número de documento para este empleado.");
+                }
+
+                //  ¿Existe otro familiar del mismo empleado con ese mismo NOMBRE?
+                var existeNombre = await _context.InformacionFamiliar
+                    .AnyAsync(f => f.NombreCompleto.ToUpper() == dto.NombreCompleto.ToUpper().Trim()
+                                && f.EmpleadoId == dto.EmpleadoId
+                                && f.InformacionFamiliarId != dto.InformacionFamiliarId);
+
+                if (existeNombre)
+                    throw new Exception("Ya existe un familiar registrado con este nombre para este empleado.");
+
+                // 3. Mapeo y actualización
+                familiar.NombreCompleto = dto.NombreCompleto.ToUpper().Trim();
+                familiar.Documento = dto.Documento;
                 familiar.ParentescoId = dto.ParentescoId;
                 familiar.FechaNacimiento = dto.FechaNacimiento;
-                familiar.ViveConEmpleado = dto.ViveConEmpleado.Value;
-                familiar.DependeEconomicamente = dto.DependeEconomicamente.Value;
-                familiar.PersonaaCargo = dto.PersonaaCargo.Value;
+                familiar.ViveConEmpleado = dto.ViveConEmpleado.GetValueOrDefault();
+                familiar.DependeEconomicamente = dto.DependeEconomicamente.GetValueOrDefault();
+                familiar.PersonaaCargo = dto.PersonaaCargo.GetValueOrDefault();
                 familiar.Activo = dto.Activo;
-                familiar.FechaActualizacion = dto.FechaActualizacion;
+                familiar.FechaActualizacion = DateTime.Now;
 
                 // Guardamos los cambios del familiar editado en la Base de Datos
                 await _context.SaveChangesAsync();
@@ -194,7 +217,8 @@ namespace Miluc.Server.Servicios.Nomina
 
                 return new InfoFamiliarReaderDto
                 {
-                    InformacionFamiliarId =familiar.InformacionFamiliarId,
+                    InformacionFamiliarId = familiar.InformacionFamiliarId,
+                    EmpleadoId = familiar.EmpleadoId,
                     Documento = familiar.Documento,
                     NombreCompleto = familiar.NombreCompleto,
                     ParentescoId = familiar.ParentescoId,
@@ -202,24 +226,12 @@ namespace Miluc.Server.Servicios.Nomina
                     ViveConEmpleado = familiar.ViveConEmpleado,
                     DependeEconomicamente = familiar.DependeEconomicamente,
                     PersonaaCargo = familiar.PersonaaCargo,
-                    Activo = familiar.Activo,
-                    
-                    
-              
-
-
-
-
-
-
-
-
-
+                    Activo = familiar.Activo
                 };
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error al actualizar la información familiar: {ex.Message}");
+                throw new Exception(ex.Message);
             }
         }
     }

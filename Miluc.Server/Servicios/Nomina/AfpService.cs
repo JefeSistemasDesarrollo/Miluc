@@ -4,7 +4,10 @@ using Miluc.Server.Interfaces.Nomina;
 using Miluc.Server.Models.Nomina;
 using Miluc.Shared.DTOs.Nomina.Afp;
 using Miluc.Shared.DTOs.Nomina.Afp.Dto;
+using Miluc.Shared.DTOs.Nomina.AfpDto;
 using Miluc.Shared.DTOs.Nomina.Arl.Dto;
+using Miluc.Shared.DTOs.Nomina.EpsDto;
+using Miluc.Shared.Models.Response;
 
 namespace Miluc.Server.Servicios.Nomina
 {
@@ -12,13 +15,13 @@ namespace Miluc.Server.Servicios.Nomina
     {
         public async Task<AfpReaderDto> CreateAfpAsync(AfpCreateDto afpCreateDto)
         {
-           
+
             if (afpCreateDto == null)
                 throw new ArgumentException("La información de la AFP no puede ser nula.", nameof(afpCreateDto));
 
             try
             {
-                
+
                 var existeAfp = await _context.Afp.AnyAsync
                     (a => a.Nombre.ToLower().Trim() == afpCreateDto.Nombre.ToLower().Trim());
 
@@ -42,37 +45,37 @@ namespace Miluc.Server.Servicios.Nomina
                 {
                     Nombre = afpCreateDto.Nombre,
                     Codigo = afpCreateDto.Codigo,
-                   
+
                     FechaCreacion = DateTime.UtcNow,
-                    Activo = afpCreateDto.Activo 
+                    Activo = afpCreateDto.Activo
                 };
 
-              
+
                 _context.Afp.Add(nuevaAfp);
                 await _context.SaveChangesAsync();
 
-             
+
                 return new AfpReaderDto
                 {
                     AfpId = nuevaAfp.AfpId,
                     Nombre = nuevaAfp.Nombre,
-                    
+
                     FechaCreacion = nuevaAfp.FechaCreacion,
                     Activo = nuevaAfp.Activo
                 };
             }
             catch (Exception ex)
             {
-                
+
                 throw new Exception($"Error al crear la AFP: {ex.Message}");
             }
         }
 
-        public  async Task<(List<AfpReaderDto> Data, int TotalRegistros)> GetAfpAsync(string? filtro = null, int page = 1, int? cantidad = null)
+        public async Task<(List<AfpReaderDto> Data, int TotalRegistros)> GetAfpAsync(string? filtro = null, int page = 1, int? cantidad = null)
         {
             try
             {
-                
+
 
                 int CantidadTop = cantidad ?? 20;
                 var query = _context.Afp.AsNoTracking().AsQueryable();
@@ -90,7 +93,7 @@ namespace Miluc.Server.Servicios.Nomina
 
                     AfpId = a.AfpId,
                     Nombre = a.Nombre,
-                 
+
                     FechaCreacion = a.FechaCreacion,
                     FechaActualizacion = a.FechaActualizacion,
                     Activo = a.Activo,
@@ -107,7 +110,87 @@ namespace Miluc.Server.Servicios.Nomina
             }
         }
 
-        
-        }
-    }
+        public async Task<AfpReaderDto> GetByAfpAsync(int id)
+        {
+            try
+            {
+                var afpId = await _context.Afp.AsNoTracking()
+                    .Where(e => e.AfpId == id)
+                    .Select(e => new AfpReaderDto
+                    {
+                        AfpId = e.AfpId,
+                        Nombre = e.Nombre,
+                        Codigo = e.Codigo,
+                        FechaActualizacion = DateTime.Now,
+                        FechaCreacion = DateTime.Now,
+                        Activo = e.Activo
 
+                    }).FirstOrDefaultAsync();
+
+                if (afpId == null) throw new Exception("afp no encontrado.");
+
+                return afpId;
+
+
+
+
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Eps no encontrada:{ex.Message}");
+            }
+        }
+
+
+        public async Task<AfpReaderDto> UpdateAfpAsync(UpdateAfp updateAfp)
+        {
+            try
+            {
+
+                var afp = await _context.Afp.FirstOrDefaultAsync(a => a.AfpId == updateAfp.AfpId);
+                if (afp == null)
+                    throw new Exception("La Afp no existe.");
+
+
+                var nombreFormateado = updateAfp.Nombre?.Trim().ToUpper();
+                var codigoFormateado = updateAfp.Codigo?.Trim().ToUpper();
+
+
+                var existeAfp = await _context.Afp.AnyAsync(a =>
+                    a.AfpId != updateAfp.AfpId &&
+                    (a.Nombre.ToUpper() == nombreFormateado || a.Codigo.ToUpper() == codigoFormateado)
+                );
+
+                if (existeAfp)
+                    throw new Exception("Ya existe otra Afp con el mismo nombre o código.");
+
+                afp.AfpId = updateAfp.AfpId;
+                afp.Nombre = updateAfp.Nombre;
+                afp.Codigo = updateAfp.Codigo;
+                afp.FechaActualizacion = DateTime.Now;
+                afp.Activo = updateAfp.Activo;
+
+
+                await _context.SaveChangesAsync();
+
+
+                return new AfpReaderDto
+                {
+                    AfpId = afp.AfpId,
+                    Nombre = afp.Nombre,
+                    Codigo = afp.Codigo,
+                    FechaActualizacion = afp.FechaActualizacion,
+                    Activo = afp.Activo
+                };
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error al actualizar AFP: {ex.Message}");
+
+            }
+        }
+
+    }
+}

@@ -55,6 +55,8 @@ builder.Services.AddDbContext<NominaDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("nomina"));
 });
 
+
+
 // 2. Registro de tus servicios e interfacesbuilder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
@@ -101,7 +103,21 @@ builder.Services.AddScoped<INivelAcademicoService, NivelAcademicoService>();
 builder.Services.AddScoped<IMatrizSociodemograficaService, MatrizSociodemograficaService>();
 builder.Services.AddScoped<IEmpleadoService, EmpleadoService>();
 
+
+
+
 ////sap
+//builder.Services.AddScoped<IBusinessPartnerGroups, BusinessPartnerGroupsService>();
+//builder.Services.AddScoped<ISapOcrdService, SapOcrdService>();
+//builder.Services.AddScoped<ISapOslpService, SapOslpService>();
+//builder.Services.AddScoped<ISapOitmService, SapOitmService>();
+//builder.Services.AddScoped<ISapItm1Service, SapItm1Service>();
+//builder.Services.AddScoped<ISapOplnService, SapOplnService>();
+//builder.Services.AddScoped<ISapObppService, SapObppService>();
+//builder.Services.AddScoped<ISapOctgService, SapOctgService>();
+//builder.Services.AddScoped<ISapCiudadMMService, SapCiudadMMService>();
+//builder.Services.AddScoped<ISapOsppService, OsppService>();
+//builder.Services.AddScoped<ISapOitmService, SapOitmService>();
 builder.Services.AddScoped<IBusinessPartnerGroups, BusinessPartnerGroupsService>();
 builder.Services.AddScoped<ISapOcrdService, SapOcrdService>();
 builder.Services.AddScoped<ISapOslpService, SapOslpService>();
@@ -109,12 +125,14 @@ builder.Services.AddScoped<ISapOitmService, SapOitmService>();
 builder.Services.AddScoped<ISapItm1Service, SapItm1Service>();
 builder.Services.AddScoped<ISapOplnService, SapOplnService>();
 builder.Services.AddScoped<ISapObppService, SapObppService>();
+
 builder.Services.AddScoped<ISapCiudadMMService, SapCiudadMMService>();
 builder.Services.AddScoped<ISapOsppService, OsppService>();
 builder.Services.AddScoped<ISapOitmService, SapOitmService>();
 builder.Services.AddScoped<IConexionServiceLayer, SapConexionService>();
 builder.Services.AddScoped<ISapOrdrService, SapOrderService>();
 builder.Services.AddScoped<IEncryptionService, EncryptionService>();
+
 
 
 // 3. CONFIGURACIÓN DE COOKIES (Seguridad BFF)
@@ -160,6 +178,7 @@ builder.Services.AddAuthentication(options =>
             return Task.CompletedTask;
         }
     };
+
 })
 .AddJwtBearer(options =>
 {
@@ -186,10 +205,10 @@ builder.Services.AddCors(options =>
     options.AddPolicy("BlazorCors", policy =>
     {
      
-       policy.WithOrigins("https://localhost:7198")
-       .AllowAnyHeader()
-       .AllowAnyMethod()
-     .AllowCredentials(); // OBLIGATORIO para enviar cookies
+          policy.WithOrigins("https://localhost:7198")
+           .AllowAnyHeader()
+           .AllowAnyMethod()
+         .AllowCredentials(); // OBLIGATORIO para enviar cookies
     });
 });
 //builder.Services.AddControllers();

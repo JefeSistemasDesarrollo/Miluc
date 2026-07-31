@@ -25,12 +25,14 @@ namespace Miluc.Client.Servicios.UsuariosRolesPermisos
             catch (Exception ex)
             {
                 return new ResponseAPI<List<UsuarioReadDto>>
-                {
-                    EsCorrecto = false,
-                    Valor = new List<UsuarioReadDto>(),
-                    CantRegistros = 0,
+                    {
+                        EsCorrecto = false,
+                        Valor = new List<UsuarioReadDto>(),
+                        CantRegistros = 0,
                     Mensaje = $"Error al consultar Usuarios: {ex.Message}"
-                };
+                    };
+                // Error de conexión o serialización
+                //return (new List<UsuarioReadDto>(), 0, $"Error de red: {ex.Message}");
             }
         }
         public async Task<ResponseAPI<UsuarioReadDto>> GetUsuarioByIdAsync(int id)
