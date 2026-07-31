@@ -8,6 +8,7 @@
 @using Miluc.Shared.DTOs.Sap.Cliente
 @using Miluc.Shared.DTOs.Sap.Pedidos
 @using Miluc.Shared.DTOs.Sap.Vendedor
+@using System.Text.Json
 @inject ISapOcrdClientService _sapOcrdClientService
 @inject NavigationManager nav
 @inject ILogClientService _logClientService
@@ -24,10 +25,10 @@
         </h4>
         <div class="d-flex gap-2">
             <button type="button" class="btn btn-outline-secondary rounded-pill px-4" @onclick='() => nav.NavigateTo("/administrar-pedido/pedidos")'>
-                <i class="bi bi-arrow-left me-1"></i> Volver
+                Volver
             </button>
             <button type="submit" form="pedidoForm" class="btn btn-miluc rounded-pill px-4">
-                <i class="bi bi-check-circle me-1"></i> Editar Orden de venta
+                 Editar
             </button>
         </div>
     </div>
@@ -201,8 +202,7 @@
                                                          ValueChanged="@(v => OnCantidadChanged(Math.Round(v ?? 0,0,MidpointRounding.AwayFromZero), linea))"
                                                          ValueExpression="() => linea.Quantity"
                                                          class="form-control form-control-sm text-end"
-                                                         step="1"
-                                                         min="0" />
+                                                         step="1" min="0" readonly />
                                         }
                                     </td>
 
@@ -216,8 +216,8 @@
                                         {
                                             <!-- Cuando el artículo se vende por Kg, este campo solo muestra el valor -->
                                             <InputNumber TValue="decimal?"
-                                                         Value="linea.U_EquivalentedKg"
-                                                         ValueExpression="() => linea.U_EquivalentedKg"
+                                                         Value="linea.U_CantidadKg"
+                                                         ValueExpression="() => linea.U_CantidadKg"
                                                          class="form-control form-control-sm text-end"
                                                          step="any"
                                                          readonly />
@@ -226,9 +226,9 @@
                                         {
                                             <!-- Cuando el artículo se vende por unidades, este campo SI se puede editar -->
                                             <InputNumber TValue="decimal?"
-                                                         Value="linea.U_EquivalentedKg"
+                                                         Value="linea.U_CantidadKg"
                                                          ValueChanged="@(v => OnKgChanged(v, linea))"
-                                                         ValueExpression="() => linea.U_EquivalentedKg"
+                                                         ValueExpression="() => linea.U_CantidadKg"
                                                          class="form-control form-control-sm text-end"
                                                          step="any"
                                                          min="0" />
@@ -241,9 +241,9 @@
                                         {
                                             <!-- Cuando el artículo se vende por Kg, este campo SI se puede editar -->
                                             <InputNumber TValue="decimal?"
-                                                         Value="linea.U_EquivalenteUni"
+                                                         Value="linea.U_UnidadSal"
                                                          ValueChanged="@(v => OnUnidadesChanged(v, linea))"
-                                                         ValueExpression="() => linea.U_EquivalenteUni"
+                                                         ValueExpression="() => linea.U_UnidadSal"
                                                          class="form-control form-control-sm text-end"
                                                          step="1"
                                                          min="0" />
@@ -252,16 +252,16 @@
                                         {
                                             <!-- Cuando el artículo se vende por unidades, solo muestra el valor -->
                                             <InputNumber TValue="decimal?"
-                                                         Value="linea.U_EquivalenteUni"
-                                                         ValueExpression="() => linea.U_EquivalenteUni"
+                                                         Value="linea.U_UnidadSal"
+                                                         ValueExpression="() => linea.U_UnidadSal"
                                                          class="form-control form-control-sm text-end"
                                                          readonly />
                                         }
 
 
                                     </td>
-                                   
 
+                                   
                                     <!-- PRECIOS -->
                                     <td>
                                         <input type="number" readonly class="form-control form-control-sm text-end" @bind="linea.PriceAcobrar" @bind:event="oninput">
@@ -334,7 +334,6 @@
     </EditForm>
 </div>
 
-@* modal de articulos *@
 @* MODAL DE ARTICULOS *@
 <div class="modal fade @(mostrarModalArticulo ? "show d-block" : "")" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 1050;">
 
@@ -477,7 +476,7 @@
     private decimal Redondeo => TotalFinal - TotalSinRedondeo;
     //private decimal ValorRedondeo => TotalFinal - TotalSinRedondeo;
 
-    private int TotalPaginasArticulo=> (int)Math.Ceiling((double)CantidadDeArticulosEncontrados / CantidadRegistrosPorPaginaArticulo);
+    private int TotalPaginasArticulo => (int)Math.Ceiling((double)CantidadDeArticulosEncontrados / CantidadRegistrosPorPaginaArticulo);
 
     private async Task PaginaAnteriorArticulo()
     {
@@ -580,16 +579,15 @@
                         {
                             if (linea.BuyUnitMsr.ToUpper() == "KG")
                             {
-                                linea.U_EquivalentedKg = linea.Quantity;
-                                decimal pesoUnidades = Math.Round(Convert.ToDecimal(linea.U_EquivalentedKg / linea.SWeight1), 2);
-                                linea.U_EquivalenteUni = (int)Math.Round(pesoUnidades, MidpointRounding.AwayFromZero);
+                                linea.U_CantidadKg = linea.Quantity;
+                                decimal pesoUnidades = Math.Round(Convert.ToDecimal(linea.U_CantidadKg / linea.SWeight1), 2);
+                                linea.U_UnidadSal = (int)Math.Round(pesoUnidades, MidpointRounding.AwayFromZero);
                             }
                             else
                             {
-                                linea.U_EquivalenteUni = linea.Quantity;
-                                linea.U_EquivalentedKg = Math.Round(Convert.ToDecimal(linea.U_EquivalenteUni * linea.SWeight1), 2);
+                                linea.U_UnidadSal = linea.Quantity;
+                                linea.U_CantidadKg = Math.Round(Convert.ToDecimal(linea.U_UnidadSal * linea.SWeight1), 2);
                             }
-
                         }
                     }
                     linea.BaseSum = Math.Round(Convert.ToDecimal(linea.Quantity) * Convert.ToDecimal((linea.PriceAcobrar ?? 0)), 2);
@@ -648,7 +646,7 @@
     }
     //para manejar los valores de cantidad y
     // recalcular la fila cada vez que cambie la cantidad, teniendo en cuenta el tipo de unidad de medida
- 
+
     private void CerrarModalArticulo() => mostrarModalArticulo = false;
 
     private async Task HandleEnterArticulo(KeyboardEventArgs e)
@@ -702,7 +700,6 @@
                     await _jsRuntime.InvokeVoidAsync("Swal.fire", "Error", $"El artículo {artData.ItemCode} no tiene precio asignado para este cliente.", "error");
                     return;
                 }
-
                 // 4Lógica de Agregado o Actualización
                 var existente = lineasPedido.FirstOrDefault(x => x.ItemCode == artData.ItemCode);
 
@@ -716,8 +713,25 @@
                 {
                     // Si es nuevo, inicializamos cantidad y calculamos antes de añadir
                     artData.Quantity = 1;
+                    if (artData.SWeight1 > 0)
+                    {
+                        //calcular el equivalente en kg y unidades dependiendo de la unidad de medida de compra, teniendo en cuenta el peso del artículo
+                        if (!string.IsNullOrEmpty(artData.BuyUnitMsr))
+                        {
+                            if (artData.BuyUnitMsr.ToUpper() == "KG")
+                            {
+                                artData.U_CantidadKg = artData.Quantity;
+                                decimal pesoUnidades = Math.Round(Convert.ToDecimal(artData.U_CantidadKg / artData.SWeight1), 2);
+                                artData.U_UnidadSal = (int)Math.Round(pesoUnidades, MidpointRounding.AwayFromZero);
+                            }
+                            else
+                            {
+                                artData.U_UnidadSal = artData.Quantity;
+                                artData.U_CantidadKg = Math.Round(Convert.ToDecimal(artData.U_UnidadSal * artData.SWeight1), 2);
+                            }
+                        }
+                    }
                     CalcularTotales(artData);
-
                     lineasPedido.Add(new ArticuloPorListaDePreciosDto
                     {
                         ItemCode = artData.ItemCode,
@@ -733,8 +747,8 @@
                         BaseSum = Math.Round(Convert.ToDecimal(artData.BaseSum), 2),
                         Rate = Math.Round(Convert.ToDecimal(artData.Rate), 2),
                         TaxCode = artData.TaxCode,
-                        U_EquivalentedKg = Math.Round(Convert.ToDecimal(artData.U_EquivalentedKg), 2),
-                        U_EquivalenteUni = Math.Round(Convert.ToDecimal(artData.U_EquivalenteUni), 2),
+                        // U_EquivalentedKg = Math.Round(Convert.ToDecimal(artData.U_EquivalentedKg), 2),
+                        // U_EquivalenteUni = Math.Round(Convert.ToDecimal(artData.U_EquivalenteUni), 2),
                         TotalImpuesto = Math.Round(Convert.ToDecimal(artData.TotalImpuesto), 2)
                     });
                 }
@@ -753,52 +767,118 @@
 
     private async Task EditarOrdenVenta()
     {
-        if (string.IsNullOrEmpty(clienteSeleccionado?.CardCode)) return;
+        try
+        {
+            if (string.IsNullOrEmpty(clienteSeleccionado?.CardCode))
+            {
+                await _jsRuntime.InvokeVoidAsync("Swal.fire", "Error", $"El pedido no tiene cliente seleccionado", "error");
+                return;
+            }
+            var result = await _jsRuntime.InvokeAsync<JsonElement>
+             ("Swal.fire", new
+             {
+                 title = "¿Estás seguro?",
+                 text = $"¿Deseas Editar el pedido?",
+                 icon = "info",
+                 showCancelButton = true,
+                 confirmButtonColor = "#d33",
+                 cancelButtonColor = "#3085d6",
+                 confirmButtonText = "Sí, Editar",
+                 cancelButtonText = "Cancelar"
+             });
+            if (result.GetProperty("isConfirmed").GetBoolean())
+            {
+                // Mostrar el spinner
+                if (lineasPedido.Count == 0 || lineasPedido.Count <= 0)
+                {
+                    // await _jsRuntime.InvokeVoidAsync("cerrarEspera");
+                    await _jsRuntime.InvokeVoidAsync("Swal.fire", "Error", "El pedido no tiene detalle.", "error");
+                    return;
+                }
+                await _jsRuntime.InvokeVoidAsync("mostrarEspera", "Sincronizando SAP ONE", "Editar Orden de venta con SAP...<br><br><b>Espere un momento.</b>",  "info");
+                //en responsable le envio el usuario que hizo la orden de venta
+                foreach (var line in lineasPedido)
+                {
+                    RecalcularLinea(line);
+                }
+                if (lineasPedido.Count > 0)
+                {
+                    PedidoUpdateDto pedidoUpdateDto = new PedidoUpdateDto
+                    {
+                        DocEntry = DocEntry,
+                        CardCode = clienteSeleccionado.CardCode,
+                        DocDate = fechaContabilizacion,
+                        DocDueDate = fechaEntrega,
+                        Reference2 = "Generado por pagina web",
+                        Comments = comentarios,
+                        JournalMemo = "Pedido editado desde Miluc Web",
+                        SalesPersonCode = clienteSeleccionado.SlpCode,
+                        U_OrigenPedido = origenSeleccionado,
+                        U_Responsable = _authClientService.CurrentSession.UserName,
+                        DocumentLines = lineasPedido.Select(x => new PedidoCrearDetalleLineaDTO
+                        {
+                            ItemCode = x.ItemCode,
+                            Quantity = Convert.ToDecimal(x.Quantity),
+                            U_CantidadKg = Convert.ToDecimal(x.U_CantidadKg),
+                            U_UnidadSal = Convert.ToDecimal(x.U_UnidadSal)
 
-        if (lineasPedido != null)
+                        }).ToList()
+                    };
+
+                    if (TotalFinal > 0)
+                    {
+                        var response = await _sapOrdrService.UpdatePedidoAsync(pedidoUpdateDto);
+
+
+                        if (response.EsCorrecto == true)
+                        {
+                            await _jsRuntime.InvokeVoidAsync("cerrarEspera");
+
+                            await _jsRuntime.InvokeVoidAsync("Swal.fire",
+                                "Correcto",
+                                $"Pedido Editado correctamente. Número de documento: {response.Valor.DocNum}",
+                                "success");
+
+
+                            nav.NavigateTo("/administrar-pedido/pedidos", forceLoad: true);
+                            // await _jsRuntime.InvokeVoidAsync("Swal.fire",
+                            //     "Correcto",
+                            //     $"Pedido Editados correctamente. Número de documento: {response.Valor.DocNum}",
+                            //     "success");
+                            // nav.NavigateTo("/administrar-pedido/pedidos", forceLoad: true);
+                        }
+                        else
+                        {
+                            await _jsRuntime.InvokeVoidAsync("cerrarEspera");
+
+                            await _jsRuntime.InvokeVoidAsync("Swal.fire", "Error", $"No se pudo editar el pedido. Detalles: {response.Mensaje}", "error");
+                            // await _jsRuntime.InvokeVoidAsync("Swal.fire", "Error", $"No se pudo editar el  pedido. Detalles: {response.Mensaje}", "error");
+                        }
+
+                    }
+                    else
+                    {
+                        await _jsRuntime.InvokeVoidAsync("cerrarEspera");
+                        await _jsRuntime.InvokeVoidAsync("Swal.fire", "Error", $"El total del pedido tiene que ser mayor a 0", "error");
+                    }
+
+
+                 
+
+
+
+                }
+
+
+
+
+
+              
+            }
+        }
+        catch (Exception ex)
         {
 
-            PedidoUpdateDto pedidoUpdateDto = new PedidoUpdateDto
-            {
-                DocEntry = DocEntry,
-                CardCode = clienteSeleccionado.CardCode,
-                DocDate = fechaContabilizacion,
-                DocDueDate = fechaEntrega,
-                Reference2 = "Generado por pagina web",
-                Comments = comentarios,
-                JournalMemo = "Pedido editado desde Miluc Web",
-                SalesPersonCode = clienteSeleccionado.SlpCode,
-                U_OrigenPedido = origenSeleccionado,
-                U_Responsable = _authClientService.CurrentSession.UserName,
-                DocumentLines = lineasPedido.Select(x => new PedidoCrearDetalleLineaDTO
-                {
-                    ItemCode = x.ItemCode,
-                    Quantity = Convert.ToDecimal(x.Quantity),
-                    // PriceAcobrar = x.PriceAcobrar ?? 0,
-                    // PriceAsignado = x.PriceAsignado ?? 0,
-                    // PriceEspecial = x.PriceEspecial ?? 0,
-                    // TaxCode = x.TaxCode,
-                    // Rate = x.Rate ?? 0,
-                    // U_EquivalentedKg = x.U_EquivalentedKg ?? 0,
-                    // U_EquivalenteUni = x.U_EquivalenteUni ?? 0
-                }).ToList()
-            };
-
-            var response = await _sapOrdrService.UpdatePedidoAsync(pedidoUpdateDto);
-
-
-            if (response.EsCorrecto == true)
-            {
-                await _jsRuntime.InvokeVoidAsync("Swal.fire",
-                    "Correcto",
-                    $"Pedido creado correctamente. Número de documento: {response.Valor.DocNum}",
-                    "success");
-                nav.NavigateTo("/administrar-pedido/pedidos", forceLoad: true);
-            }
-            else
-            {
-                await _jsRuntime.InvokeVoidAsync("Swal.fire", "Error", $"No se pudo editar el  pedido. Detalles: {response.Mensaje}", "error");
-            }
         }
 
     }
@@ -815,16 +895,16 @@
         if (linea.BuyUnitMsr?.ToUpper() == "KG")
         {
             // Cantidad está en Kg
-            linea.U_EquivalentedKg = linea.Quantity;
+            linea.U_CantidadKg = linea.Quantity;
 
-            linea.U_EquivalenteUni = Math.Round(Convert.ToDecimal(linea.Quantity) / Convert.ToDecimal(linea.SWeight1), 0, MidpointRounding.AwayFromZero);
+            linea.U_UnidadSal = Math.Round(Convert.ToDecimal(linea.Quantity) / Convert.ToDecimal(linea.SWeight1), 0, MidpointRounding.AwayFromZero);
         }
         else
         {
             // Cantidad está en Unidades
-            linea.U_EquivalenteUni = linea.Quantity;
+            linea.U_UnidadSal = linea.Quantity;
 
-            linea.U_EquivalentedKg = Math.Round(Convert.ToDecimal(linea.Quantity) * Convert.ToDecimal(linea.SWeight1), 2);
+            linea.U_CantidadKg = Math.Round(Convert.ToDecimal(linea.Quantity) * Convert.ToDecimal(linea.SWeight1), 2);
         }
 
         CalcularTotales(linea);
@@ -832,7 +912,7 @@
 
     private void OnKgChanged(decimal? value, ArticuloPorListaDePreciosDto linea)
     {
-        linea.U_EquivalentedKg = value ?? 0;
+        linea.U_CantidadKg = value ?? 0;
 
         if (linea.SWeight1 <= 0)
         {
@@ -840,20 +920,20 @@
             return;
         }
 
-        linea.U_EquivalenteUni = Math.Round(
-           Convert.ToDecimal(linea.U_EquivalentedKg) / Convert.ToDecimal(linea.SWeight1),
-            0,
-            MidpointRounding.AwayFromZero);
+        linea.U_UnidadSal = Math.Round(
+        Convert.ToDecimal(linea.U_CantidadKg) / Convert.ToDecimal(linea.SWeight1),
+        0,
+        MidpointRounding.AwayFromZero);
 
         // Como el artículo es por unidades,
         // Quantity siempre representa unidades.
-        linea.Quantity = linea.U_EquivalenteUni;
+        linea.Quantity = linea.U_UnidadSal;
 
         CalcularTotales(linea);
     }
     private void OnUnidadesChanged(decimal? value, ArticuloPorListaDePreciosDto linea)
     {
-        linea.U_EquivalenteUni = Math.Round(value ?? 0, 0);
+        linea.U_UnidadSal = Math.Round(value ?? 0, 0);
 
         if (linea.SWeight1 <= 0)
         {
@@ -861,11 +941,11 @@
             return;
         }
 
-        linea.U_EquivalentedKg = Math.Round(Convert.ToDecimal(linea.U_EquivalenteUni) * Convert.ToDecimal(linea.SWeight1), 2);
+        linea.U_CantidadKg = Math.Round(Convert.ToDecimal(linea.U_UnidadSal) * Convert.ToDecimal(linea.SWeight1), 2);
 
         // Como el artículo es por Kg,
         // Quantity siempre representa Kg.
-        linea.Quantity = linea.U_EquivalentedKg;
+        linea.Quantity = linea.U_CantidadKg;
 
         CalcularTotales(linea);
     }
@@ -874,5 +954,29 @@
         linea.BaseSum = Math.Round((linea.Quantity ?? 0) * (linea.PriceAcobrar ?? 0), 2);
 
         linea.TotalImpuesto = Math.Round((linea.BaseSum * linea.Rate) / 100, 2);
+    }
+    private void RecalcularLinea(ArticuloPorListaDePreciosDto linea)
+    {
+        if (linea.SWeight1 <= 0)
+        {
+            CalcularTotales(linea);
+            return;
+        }
+
+        if (linea.BuyUnitMsr?.ToUpper() == "KG")
+        {
+            linea.U_CantidadKg = linea.Quantity;
+
+            linea.U_UnidadSal = Math.Round((Convert.ToDecimal(linea.Quantity)) / Convert.ToDecimal(linea.SWeight1),
+            0, MidpointRounding.AwayFromZero);
+        }
+        else
+        {
+            linea.U_UnidadSal = linea.Quantity;
+
+            linea.U_CantidadKg = Math.Round((Convert.ToDecimal(linea.Quantity)) * Convert.ToDecimal(linea.SWeight1), 2);
+        }
+
+        CalcularTotales(linea);
     }
 }

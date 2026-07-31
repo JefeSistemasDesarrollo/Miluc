@@ -94,7 +94,7 @@ namespace Miluc.Server.Servicios.SapService
             }
             catch (Exception ex)
             {
-                throw new Exception("Error al obtener los datos de municipios: " + ex.Message);
+                throw new Exception($"Error al listar los datos de municipios: {ex.Message}" );
             }
         }
         public async Task<List<RegimenTributarioDto>> GetAllRegimenTributarioAsync()

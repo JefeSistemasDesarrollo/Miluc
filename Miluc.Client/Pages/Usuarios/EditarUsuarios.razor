@@ -202,6 +202,8 @@
 
     protected override async Task OnParametersSetAsync()
     {
+
+
         if(!authClient.HasPermission("Usuario.Update"))
         {
             nav.NavigateTo("/no-autorizado");
@@ -211,17 +213,17 @@
         var lisRolesResponse = await _roleClienteService.GetAllRolesAsync();
         var listTpoResponse = await _tipoService.GetAllTipoUsuarioAsync();
 
-        if (listTpoResponse != null)
+        if (listTpoResponse.Valor != null)
         {
             listTipoUsuario = listTpoResponse.Valor;
         }
 
-        if (lisRolesResponse != null)
+        if (lisRolesResponse.Valor != null)
         {
             listRole = lisRolesResponse.Valor;
             rolesFiltrados = listRole;
         }
-        if (usuariosRes != null)
+        if (usuariosRes.Valor != null)
         {
             usuarioDto.Nombres = usuariosRes.Valor.Nombres;
             usuarioDto.IdUsuario = usuariosRes.Valor.IdUsuario;

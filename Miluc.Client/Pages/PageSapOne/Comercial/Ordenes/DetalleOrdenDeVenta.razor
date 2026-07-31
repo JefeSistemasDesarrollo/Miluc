@@ -173,10 +173,10 @@
                                     <span class="text-muted text-xs">Peso SAP:</span> <strong class="text-dark">@Convert.ToDecimal(linea.SWeight1).ToString("N2", new CultureInfo("es-CO")) Kg</strong>
                                 </div>
                                 <div class="col-6 col-md-12">
-                                    <span class="text-muted text-xs">Equiv. Uni:</span> <strong class="text-dark">@Convert.ToDecimal(linea.U_EquivalenteUni).ToString("N2", new CultureInfo("es-CO"))   </strong>
+                                    <span class="text-muted text-xs">Equiv. Uni:</span> <strong class="text-dark">@Convert.ToDecimal(linea.U_UnidadSal).ToString("N2", new CultureInfo("es-CO"))   </strong>
                                 </div>
                                 <div class="col-12">
-                                    <span class="text-muted text-xs">Equiv. Kg:</span> <strong class="text-dark">@Convert.ToDecimal(linea.U_EquivalentedKg).ToString("N2", new CultureInfo("es-CO"))</strong>
+                                    <span class="text-muted text-xs">Equiv. Kg:</span> <strong class="text-dark">@Convert.ToDecimal(linea.U_CantidadKg).ToString("N2", new CultureInfo("es-CO"))</strong>
                                 </div>
                             </div>
                         </div>
@@ -376,14 +376,14 @@
                         {
                             if (linea.BuyUnitMsr.ToUpper() == "KG")
                             {
-                                linea.U_EquivalentedKg = linea.Quantity;
-                                decimal pesoUnidades = Math.Round(Convert.ToDecimal(linea.U_EquivalentedKg / linea.SWeight1));
-                                linea.U_EquivalenteUni = (int)Math.Round(pesoUnidades, MidpointRounding.AwayFromZero);
+                                linea.U_CantidadKg = linea.Quantity;
+                                decimal pesoUnidades = Math.Round(Convert.ToDecimal(linea.U_CantidadKg / linea.SWeight1));
+                                linea.U_UnidadSal = (int)Math.Round(pesoUnidades, MidpointRounding.AwayFromZero);
                             }
                             else
                             {
-                                linea.U_EquivalenteUni = linea.Quantity;
-                                linea.U_EquivalentedKg = Math.Round(Convert.ToDecimal(linea.U_EquivalenteUni * linea.SWeight1));
+                                linea.U_UnidadSal = linea.Quantity;
+                                linea.U_CantidadKg = Math.Round(Convert.ToDecimal(linea.U_UnidadSal * linea.SWeight1));
                             }
                            
                         }

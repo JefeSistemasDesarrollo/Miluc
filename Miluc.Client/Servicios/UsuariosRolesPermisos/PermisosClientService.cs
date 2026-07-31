@@ -1,39 +1,31 @@
 ﻿using Miluc.Client.Interfaces.UsuariosRolesPermisos;
 using Miluc.Shared.DTOs.Permisos;
-using Miluc.Shared.DTOs.Usuarios;
 using Miluc.Shared.Models.Response;
-using System.ComponentModel.DataAnnotations;
 using System.Net.Http.Json;
 
 namespace Miluc.Client.Servicios.UsuariosRolesPermisos
 {
-    public class PermisosClientService : IPermisoClientService
+    public class PermisosClientService (HttpClient _http) : IPermisoClientService
     {
-        private readonly HttpClient _http;
-
-        public PermisosClientService(HttpClient http)
-        {
-            _http = http;
-        }
-
-        
-
-        public async Task<ResponseAPI<List<PermisosReadDto>>> GetPermisosAsync(string? busqueda = null, int pagina = 1, int? cantidad = null)
+        public async Task<ResponseAPI<List<PermisosReadDto>>> GetPermisosAsync(string? busqueda = null, int ? pagina=null, int? cantidad = null)
         {
             try
             {
-                var url =
-            $"api/permisos?busqueda={busqueda}&pagina={pagina}&cantidad={cantidad}";
-
+                var url =$"api/permisos?busqueda={busqueda}&pagina={pagina}&cantidad={cantidad}";
                 var response = await _http.GetFromJsonAsync<ResponseAPI<List<PermisosReadDto>>>(url);
-
-                return response!;
+                return response ?? new ResponseAPI<List<PermisosReadDto>> { Valor=null, Mensaje="Ocurrio un error ", EsCorrecto=false};
+            }
+            catch (HttpRequestException ex)
+            {
+                return new ResponseAPI<List<PermisosReadDto>>().ErroresResponse(false, "Error de conexión con la API.", new List<string> { ex.Message });
+            }
+            catch (TaskCanceledException ex)
+            {
+                return new ResponseAPI<List<PermisosReadDto>>().ErroresResponse(false, "Tiempo de espera agotado.", new List<string> { ex.Message });
             }
             catch (Exception ex)
             {
-                return new ResponseAPI<List<PermisosReadDto>>()
-                    .ErroresResponse(false, "Error al consumir API",
-                        new List<string> { ex.Message });
+                return new ResponseAPI<List<PermisosReadDto>>().ErroresResponse(false, "Ha ocurrido un error inesperado.", new List<string> { ex.Message });
             }
         }
         public async Task<ResponseAPI<PermisosReadDto>> GetByIdPermisoAsync(int idPermiso)
@@ -41,20 +33,29 @@ namespace Miluc.Client.Servicios.UsuariosRolesPermisos
             try
             {
                 var responsePermisos = await _http.GetFromJsonAsync<ResponseAPI<PermisosReadDto>>($"api/Permisos/{idPermiso}");
-
-
-                return responsePermisos!;
+                return responsePermisos ?? new ResponseAPI<PermisosReadDto>
+                {
+                    EsCorrecto=false,
+                    Mensaje = "Erro al consular los permisos",
+                    Errores =new List<string>(),
+                    Valor=null,
+                };
             }
-            catch (Exception ex) 
+            catch (HttpRequestException ex)
             {
-                return new
-                    ResponseAPI<PermisosReadDto>()
-                   .ErroresResponse(false, "Error al consumir API",
-                       new List<string> { ex.Message });
-
+                return new ResponseAPI<PermisosReadDto>().ErroresResponse(false, "Error de conexión con la API.",new List<string> { ex.Message });
             }
-        }
+            catch (TaskCanceledException ex)
+            {
+                return new ResponseAPI<PermisosReadDto>()
+                    .ErroresResponse(false, "Tiempo de espera agotado.",new List<string> { ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return new ResponseAPI<PermisosReadDto>().ErroresResponse(false, "Ha ocurrido un error inesperado.",new List<string> { ex.Message });
+            }
 
+        }
         public async Task<ResponseAPI<bool>> DeletePermisoAsync(int idPermiso)
         {
             try
@@ -62,16 +63,23 @@ namespace Miluc.Client.Servicios.UsuariosRolesPermisos
                 var response = await _http.DeleteAsync($"api/Permisos/{idPermiso}");
 
                 var result = await response.Content.ReadFromJsonAsync<ResponseAPI<bool>>();
-                return result ?? new ResponseAPI<bool> { EsCorrecto = false, Mensaje = "Error al eliminar" };
+
+                return result ?? new ResponseAPI<bool> { EsCorrecto = false, Mensaje = "Error al eliminar", Errores=new List<string>() };
+            }
+            catch (HttpRequestException ex)
+            {
+                return new ResponseAPI<bool>().ErroresResponse(false, "Error de conexión con la API.", new List<string> { ex.Message });
+            }
+            catch (TaskCanceledException ex)
+            {
+                return new ResponseAPI<bool>()
+                    .ErroresResponse(false, "Tiempo de espera agotado.", new List<string> { ex.Message });
             }
             catch (Exception ex)
             {
-                return new ResponseAPI<bool> { EsCorrecto = false, Mensaje = ex.Message };
-
+                return new ResponseAPI<bool>().ErroresResponse(false, "Ha ocurrido un error inesperado.", new List<string> { ex.Message });
             }
-
         }
-
         public async Task<ResponseAPI<bool>> CreatePermisoAsync(PermisosCreateDto createDto)
         {
             try
@@ -80,7 +88,7 @@ namespace Miluc.Client.Servicios.UsuariosRolesPermisos
 
                 var result = await response.Content.ReadFromJsonAsync<ResponseAPI<bool>>();
 
-                return result ?? new ResponseAPI<bool> {EsCorrecto=false, Mensaje =result.Mensaje };
+                return result ?? new ResponseAPI<bool> {EsCorrecto=false, Mensaje ="Ocurrio un error " };
 
 
             }

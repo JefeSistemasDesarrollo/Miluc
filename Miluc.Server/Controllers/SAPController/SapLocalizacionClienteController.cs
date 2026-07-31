@@ -141,7 +141,7 @@ namespace Miluc.Server.Controllers.SAPController
                     EsCorrecto = false,
                     Valor = new List<HbtMunicipiosDto>(), // Lo ideal es mantenerla inicializada
                     Mensaje = $"No se encontraron municipios disponibles en SAP. {ex}",
-                    Errores = new List<string> { ex.Message }
+                    Errores = [ex.Message]
                 });
             }
             catch (Exception ex)

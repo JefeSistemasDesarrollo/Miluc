@@ -10,8 +10,8 @@
         public decimal? PriceEspecial { get; set; }
         public decimal? PriceAsignado { get; set; }
         public string? BuyUnitMsr { get; set; }  //unidad de medida de compra
-        public decimal? U_EquivalentedKg { get; set; }  //cantidad de kg por unidad de medida de compra
-        public decimal? U_EquivalenteUni { get; set; } //equivalentes de unidades de medida de venta por unidad de medida de compra
+        public decimal? U_CantidadKg { get; set; }  //cantidad de kg por unidad de medida de compra
+        public decimal? U_UnidadSal { get; set; } //equivalentes de unidades de medida de venta por unidad de medida de compra
         public decimal  BaseSum { get; set; } //precio base del articulo en la lista de precios
         public decimal  Rate { get; set; }
         public string? TaxCode { get; set; }

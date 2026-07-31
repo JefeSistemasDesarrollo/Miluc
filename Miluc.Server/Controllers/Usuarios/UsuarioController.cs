@@ -1,77 +1,160 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Miluc.Server.Interfaces.Encriptacion;
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Usuarios;
 using Miluc.Server.Security;
 using Miluc.Shared.DTOs.Usuarios;
 using Miluc.Shared.Models.Response;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Miluc.Server.Controllers.Usuarios
 {
     [Authorize]
     [ApiController]
     [Route("api/[Controller]")]
+
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public class UsuarioController(IUsuarioService _service, ILogService log) : Controller
     {
+
         [HttpGet("quien-soy")]
         public IActionResult QuienSoy()
         {
-            var claims = User.Claims.Select(c => new { c.Type, c.Value }).ToList();
-            return Ok(new
+            try
             {
-                Usuario = User.Identity?.Name,
-                Autenticado = User.Identity?.IsAuthenticated,
-                EsAdmin = User.IsInRole("Admin"),
-                TodosLosClaims = claims
-            });
+                if (User?.Identity == null || !User.Identity.IsAuthenticated)
+                {
+                    return Unauthorized(new
+                    {
+                        Mensaje = "El usuario no se encuentra autenticado."
+                    });
+                }
+
+                var claims = User.Claims
+                    .Select(c => new {c.Type,c.Value}).ToList();
+
+                return Ok(new
+                {
+                    Usuario = User.Identity.Name,
+                    Autenticado = true,
+                    EsAdmin = User.IsInRole("Admin"),
+                    TodosLosClaims = claims
+                });
+            }
+            catch (Exception ex)
+            {
+
+                log.GuardarErrorAsync(
+                 message: ex.Message,
+                  StackTrace: ex.StackTrace,
+                  usuario: User.Identity?.Name ?? "Sistema",
+                  metodo: nameof(Get),
+                  ruta: $"/api/Usuarios​",
+                  ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
+                  origen: nameof(UsuarioController));
+
+
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    Mensaje = "Ocurrió un error interno al obtener la información del usuario."
+                });
+            }
         }
+
+        //[HttpGet("quien-soy")]
+        //public IActionResult QuienSoy()
+        //{
+        //    var claims = User.Claims.Select(c => new { c.Type, c.Value }).ToList();
+        //    return Ok(new
+        //    {
+        //        Usuario = User.Identity?.Name,
+        //        Autenticado = User.Identity?.IsAuthenticated,
+        //        EsAdmin = User.IsInRole("Admin"),
+        //        TodosLosClaims = claims
+        //    });
+        //}
 
         // GET: api/usuarios?buscar=ypirajan&pagina=1&cantidad=20
         [HttpGet]
         [PermissionAuthorize("Usuario.View")]
+        [ProducesResponseType(typeof(ResponseAPI<List<UsuarioReadDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ResponseAPI<List<UsuarioReadDto>>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseAPI<List<UsuarioReadDto>>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ResponseAPI<List<UsuarioReadDto>>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ResponseAPI<List<UsuarioReadDto>>>> Get([FromQuery] string? buscar,
-            [FromQuery] int pagina = 1,
-            [FromQuery] int? cantidad = null)
+        [FromQuery] int? pagina = null,
+        [FromQuery] int? cantidad = null)
         {
             try
             {
-                var response = await _service.GetAllUsuariosAsync(buscar, pagina, cantidad);
-               
+                var usuarios = await _service.GetAllUsuariosAsync(buscar, pagina, cantidad);
+
+                if (usuarios.Data == null && !usuarios.Data.Any())
+                {
+                    return NotFound(new ResponseAPI<UsuarioReadDto>
+                    {
+                        EsCorrecto = false,
+                        Mensaje = "No se encontraron usuarios",
+                        Valor = null,
+                    });
+                }
+
                 return Ok(new ResponseAPI<List<UsuarioReadDto>>
                 {
                     EsCorrecto = true,
                     Mensaje = "Lista de usuarios", // Total para el paginador de Blazor
-                    Valor = response.Data,
-                    CantRegistros = response.TotalRegistros,
+                    Valor = usuarios.Data,
+                    CantRegistros = usuarios.TotalRegistros,
+                });
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                return BadRequest(new ResponseAPI<List<UsuarioReadDto>>
+                {
+                    EsCorrecto = false,
+                    Valor = new List<UsuarioReadDto>(),
+                    Mensaje = $"No se encontraron usuarios Disponibles {ex.Message}",
+                    Errores = [ex.Message]
                 });
             }
             catch (Exception ex)
             {
                 await log.GuardarErrorAsync(
-                         message: ex.Message,
-                          StackTrace: ex.StackTrace,
-                          usuario: User.Identity?.Name ?? "Sistema",
-                          metodo: "HttpGet",
-                          ruta: $"/api/Usuario​",
-                          ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
-                          origen: $"UsuarioController");
+                      message: ex.Message,
+                       StackTrace: ex.StackTrace,
+                       usuario: User.Identity?.Name ?? "Sistema",
+                       metodo: nameof(Get),
+                       ruta: $"/api/Usuarios​",
+                       ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
+                       origen: nameof(UsuarioController));
+
                 return StatusCode(500, new ResponseAPI<List<UsuarioReadDto>>
                 {
                     EsCorrecto = false,
-                    Mensaje = ex.Message,
-                    Errores = new List<string> { ex.Message }
+                    Mensaje = $"Ocurrio un error al obtener los usuarios",
+                    Errores = [ex.Message]
                 });
             }
         }
         // GET: api/usuarios/5
         [HttpGet("{id}")]
         [PermissionAuthorize("Usuario.Detail")]
+        [ProducesResponseType(typeof(ResponseAPI<UsuarioReadDto>),StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ResponseAPI<UsuarioReadDto>),StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseAPI<UsuarioReadDto>),StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ResponseAPI<UsuarioReadDto>),StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ResponseAPI<UsuarioReadDto>>> GetById(int id)
         {
             try
             {
-                var user = await _service.GetByIdUsuarioAsync(id);
-                if (user == null)
+                var userId = await _service.GetByIdUsuarioAsync(id);
+
+                if (userId == null)
                 {
                     return NotFound(new ResponseAPI<UsuarioReadDto>
                     {
@@ -79,7 +162,18 @@ namespace Miluc.Server.Controllers.Usuarios
                         Mensaje = "Usuario no encontrado."
                     });
                 }
-                return Ok(new ResponseAPI<UsuarioReadDto> { EsCorrecto = true, Valor = user });
+                return Ok(new ResponseAPI<UsuarioReadDto> { EsCorrecto = true, Valor = userId });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new ResponseAPI<UsuarioReadDto>
+                {
+                    EsCorrecto = false,
+                    Valor=null,
+                    Mensaje = ex.Message,
+                    Errores = [ex.Message]
+                });
+
             }
             catch (Exception ex)
             {
@@ -87,10 +181,10 @@ namespace Miluc.Server.Controllers.Usuarios
                        message: ex.Message,
                           StackTrace: ex.StackTrace,
                         usuario: User.Identity?.Name ?? "Sistema",
-                        metodo: "HttpGet",
+                        metodo: nameof(GetById),
                         ruta: $"/api/Usuario/{id}",
                         ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
-                        origen: $"UsuarioController");
+                        origen: nameof(UsuarioController));
 
                 return StatusCode(500, new ResponseAPI<UsuarioReadDto>
                 {
@@ -102,6 +196,10 @@ namespace Miluc.Server.Controllers.Usuarios
         }
         [HttpPost]
         [PermissionAuthorize("Usuario.Create")]
+        [ProducesResponseType(typeof(ResponseAPI<UsuarioReadDto>), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ResponseAPI<UsuarioReadDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseAPI<UsuarioReadDto>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ResponseAPI<UsuarioReadDto>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ResponseAPI<UsuarioReadDto>>> CreateUsuario([FromBody] UsuarioCreateDto dto)
         {
             var response = new ResponseAPI<UsuarioReadDto>();
@@ -122,7 +220,34 @@ namespace Miluc.Server.Controllers.Usuarios
 
                 var resultado = await _service.CreateUsuarioAsync(dto);
 
+                if (resultado!=null)
+                {
+                    return NotFound(new ResponseAPI<UsuarioReadDto>
+                    {
+                        EsCorrecto=false,
+                        Valor=null, 
+                    });
+                }
+
                 return Ok(response.SuccessResponse(true, "Usuario creado exitosamente", resultado, 1));
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(new ResponseAPI<UsuarioReadDto>
+                {
+                    EsCorrecto = false,
+                    Mensaje= ex.Message,
+                    Valor= null
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new ResponseAPI<UsuarioReadDto>
+                {
+                    EsCorrecto = false,
+                    Mensaje= ex.Message,
+                    Valor= null
+                });
             }
             catch (Exception ex)
             {
@@ -130,17 +255,23 @@ namespace Miluc.Server.Controllers.Usuarios
                  message: ex.Message,
                           StackTrace: ex.StackTrace,
                  usuario: User.Identity?.Name ?? "Sistema",
-                 metodo: "HttpPost",
+                 metodo: nameof(CreateUsuario),
                  ruta: $"/api/Usuario",
                  ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
-                 origen: $"UsuarioController");
-                return BadRequest(response.ErroresResponse(false, ex.Message, new List<string> { ex.InnerException?.Message ?? "" }));
+                 origen: nameof(UsuarioController));
+
+                return StatusCode(500, response.ErroresResponse(false, ex.Message, new List<string> { ex.InnerException?.Message ?? "" }));
             }
         }
         // PUT: api/usuarios
         [HttpPut]
         [PermissionAuthorize("Usuario.Update")]
-        public async Task<ActionResult<ResponseAPI<UsuarioReadDto>>> Put([FromBody] UsuarioUpdateDto dto)
+       
+        [ProducesResponseType(typeof(ResponseAPI<UsuarioReadDto>), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ResponseAPI<UsuarioReadDto>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseAPI<UsuarioReadDto>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ResponseAPI<UsuarioReadDto>), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ResponseAPI<UsuarioReadDto>>> ActualizarUsuario([FromBody] UsuarioUpdateDto dto)
         {
             try
             {
@@ -150,14 +281,14 @@ namespace Miluc.Server.Controllers.Usuarios
                     return NotFound(new ResponseAPI<UsuarioReadDto>
                     {
                         EsCorrecto = false,
-                        Mensaje = "Usuario no encontrado."
+                        Mensaje = "Usuario no encontrado." 
                     });
                 }
 
                 return Ok(new ResponseAPI<UsuarioReadDto>
                 {
-                    EsCorrecto = true,
-                    Valor = result,
+                    EsCorrecto = true,//2026-07-28T21:28:13.460Z
+                    Valor = result, //2026-07-28T21:27:13.460Z
                     Mensaje = "Usuario actualizado correctamente."
                 });
             }
@@ -182,7 +313,7 @@ namespace Miluc.Server.Controllers.Usuarios
         // DELETE: api/usuarios/5
         [HttpDelete("{id}")]
         [PermissionAuthorize("Usuario.Delete")]
-        public async Task<ActionResult<ResponseAPI<bool>>> Delete(int id)
+        public async Task<ActionResult<ResponseAPI<bool>>> DeleteUsuario(int id)
         {
             try
             {
@@ -199,7 +330,7 @@ namespace Miluc.Server.Controllers.Usuarios
                 {
                     EsCorrecto = true,
                     Valor = true,
-                    Mensaje = "Usuario inactivado con éxito."
+                    Mensaje = "Usuario eliminado correctamente."
                 });
             }
             catch (Exception ex)
@@ -208,10 +339,10 @@ namespace Miluc.Server.Controllers.Usuarios
                        message: ex.Message,
                           StackTrace: ex.StackTrace,
                         usuario: User.Identity?.Name ?? "Sistema",
-                        metodo: "HttpDelete",
+                        metodo: nameof(DeleteUsuario),
                         ruta: $"/api/Usuario/{id}",
                         ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
-                        origen: $"UsuarioController");
+                        origen: nameof(UsuarioController));
 
                 return StatusCode(500, new ResponseAPI<bool>
                 {
@@ -224,3 +355,4 @@ namespace Miluc.Server.Controllers.Usuarios
 
     }
 }
+

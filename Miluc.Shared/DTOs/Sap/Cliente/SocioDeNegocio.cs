@@ -39,14 +39,14 @@ namespace Miluc.Shared.DTOs.Sap.Cliente
         public string FederalTaxID { get; set; }
         public string DigitoVerificacion { get; set; } 
 
-        [Required(ErrorMessage = "El teléfono es obligatorio.")]
-        [RegularExpression(@"^\d{7,10}$", ErrorMessage = "Ingrese un teléfono válido (7 a 10 dígitos).")]
+        //[Required(ErrorMessage = "El teléfono es obligatorio.")]
+        [RegularExpression(@"^\d{0,10}$", ErrorMessage = "Ingrese un teléfono válido (7 a 10 dígitos).")]
         public string Phone1 { get; set; }
         // public string Phone2 { get; set; }
         public string Currency { get; set; }
 
-        [Required(ErrorMessage = "El celular es obligatorio.")]
-        [RegularExpression(@"^3\d{9}$",ErrorMessage = "Ingrese un número celular colombiano válido.")]
+        //[Required(ErrorMessage = "El celular es obligatorio.")]
+        [RegularExpression(@"^0\d{9}$",ErrorMessage = "Ingrese un número celular colombiano válido.")]
         public string Cellular { get; set; }
 
         [Required(ErrorMessage = "El correo electrónico es obligatorio.")]
@@ -54,7 +54,7 @@ namespace Miluc.Shared.DTOs.Sap.Cliente
         [RegularExpression(@"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$",ErrorMessage = "Ingrese un correo electrónico válido.")]
         public string EmailAddress { get; set; }
 
-        [Required(ErrorMessage = "El nombre comercial es obligatorio.")]
+        //[Required(ErrorMessage = "El nombre comercial es obligatorio.")]
         [StringLength(100, MinimumLength = 3,ErrorMessage = "El nombre comercial debe tener entre 3 y 100 caracteres.")]
         public string CardForeignName { get; set; }
 
@@ -102,7 +102,7 @@ namespace Miluc.Shared.DTOs.Sap.Cliente
         public string U_HBT_Nacional { get; set; }
         // public string U_HBT_TipExt { get; set; }
 
-        [Required(ErrorMessage = "Por favor seleccione un regimen fiscal.")]
+       // [Required(ErrorMessage = "Por favor seleccione un regimen fiscal.")]
         public string U_HBT_RegFis { get; set; }
         //[Required(ErrorMessage = "Selccione una opcion")]
         [Required(ErrorMessage = "Por favor selecicone responsabilidad fiscal ")]

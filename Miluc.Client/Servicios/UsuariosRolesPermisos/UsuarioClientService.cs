@@ -12,67 +12,43 @@ namespace Miluc.Client.Servicios.UsuariosRolesPermisos
         {
             try
             {
-                ResponseAPI<List<UsuarioReadDto>> responseUsuarios= new ();
+
+
+
                 var url = $"api/Usuario?buscar={buscar}&pagina={pagina}&cantidad={cantidad}";
-                var response = await _httpclient.GetFromJsonAsync<ResponseAPI<List<UsuarioReadDto>>>(url);
+                var responseUsuario = await _httpclient.GetFromJsonAsync<ResponseAPI<List<UsuarioReadDto>>>(url);
 
-                if (response != null)
-                {
-                    // Devolvemos la lista, el total de registros (CantRegistros) y el mensaje
-                    responseUsuarios.Valor = response.Valor;
-                    responseUsuarios.EsCorrecto = response.EsCorrecto;
-                    responseUsuarios.Errores = response.Errores;
-                    responseUsuarios.CantRegistros=response.CantRegistros;
-                    ///return (response.Valor, response.CantRegistros, response.Mensaje);
-                    ///
-
-                    return responseUsuarios;
-                }
-
-                else
-                {
-                    return new ResponseAPI<List<UsuarioReadDto>>
-                    {
-                        EsCorrecto = false,
-                        Valor = new List<UsuarioReadDto>(),
-                        CantRegistros = 0,
-                        Mensaje = response?.Mensaje ?? "Error al obtener datos"
-                    };
-                }
-
-
-                //return (new List<UsuarioReadDto>(), 0, response?.Mensaje ?? "Error al obtener datos");
+                return responseUsuario ??
+                    new ResponseAPI<List<UsuarioReadDto>>
+                    { Valor = new List<UsuarioReadDto>(), Mensaje = responseUsuario?.Mensaje ?? "Error al obtener datos", Errores = responseUsuario?.Errores };
             }
             catch (Exception ex)
             {
                 return new ResponseAPI<List<UsuarioReadDto>>
-                    {
-                        EsCorrecto = false,
-                        Valor = new List<UsuarioReadDto>(),
-                        CantRegistros = 0,
-                        Mensaje = $"Error de red: {ex.Message}"
-                    };
-                // Error de conexión o serialización
-                //return (new List<UsuarioReadDto>(), 0, $"Error de red: {ex.Message}");
+                {
+                    EsCorrecto = false,
+                    Valor = new List<UsuarioReadDto>(),
+                    CantRegistros = 0,
+                    Mensaje = $"Error al consultar Usuarios: {ex.Message}"
+                };
             }
         }
-       
         public async Task<ResponseAPI<UsuarioReadDto>> GetUsuarioByIdAsync(int id)
         {
             try
             {
-                ResponseAPI<UsuarioReadDto> response=new ResponseAPI<UsuarioReadDto>();   
+                ResponseAPI<UsuarioReadDto> response = new ResponseAPI<UsuarioReadDto>();
 
                 var result = await _httpclient.GetFromJsonAsync<ResponseAPI<UsuarioReadDto>>($"api/Usuario/{id}");
 
-                if (result.Valor!=null)
+                if (result.Valor != null)
                 {
                     response.Valor = result.Valor;
                     response.EsCorrecto = result.EsCorrecto;
                     response.Mensaje = result.Mensaje;
                     response.CantRegistros = result.CantRegistros;
 
-                    return response.SuccessResponse(true, "Usuario obtenido con exito",response.Valor, response.CantRegistros);
+                    return response.SuccessResponse(true, "Usuario obtenido con exito", response.Valor, response.CantRegistros);
 
                 }
                 else
@@ -124,7 +100,7 @@ namespace Miluc.Client.Servicios.UsuariosRolesPermisos
             {
                 var response = await _httpclient.DeleteAsync($"api/Usuario/{id}");
                 var result = await response.Content.ReadFromJsonAsync<ResponseAPI<bool>>();
-                return result ?? new ResponseAPI<bool> { EsCorrecto = false, Mensaje = "Error al eliminar" };
+                return result ?? new ResponseAPI<bool> { EsCorrecto = result.EsCorrecto, Mensaje = $"Error al eliminar el usuario", Errores = result?.Errores };
             }
             catch (Exception ex)
             {

@@ -519,9 +519,9 @@ else
 
                     if (propiedad != null)
                     {
-                        char valor = (char)propiedad.GetValue(clienteDetalle);
+                        var valor = propiedad.GetValue(clienteDetalle);
 
-                        if (valor == 'Y')
+                        if (valor!=null && (char)valor=='Y')
                         {
                             listaPropiedades[i - 1].Activa = true;
                         }
