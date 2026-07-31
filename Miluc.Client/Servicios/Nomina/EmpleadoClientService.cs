@@ -52,7 +52,7 @@ namespace Miluc.Client.Servicios.Nomina
         }
         
 
-        }
+        
 
 
 

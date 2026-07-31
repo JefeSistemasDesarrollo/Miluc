@@ -57,7 +57,7 @@ namespace Miluc.Server.Servicios.Nomina
                 if (familiar == null)
                     throw new Exception("Familiar no encontrado.");
 
-                    throw new Exception("Familiar no encontrado");
+                    //throw new Exception("Familiar no encontrado");
             else 
             {
                 _context.InformacionFamiliar.Remove(familiar);
@@ -84,7 +84,7 @@ namespace Miluc.Server.Servicios.Nomina
                         Documento = f.Documento,
                         InformacionFamiliarId = f.InformacionFamiliarId,
                         EmpleadoId = f.EmpleadoId,
-                        Documento = f.Documento,
+                        //Documento = f.Documento,
                         NombreEmpleado = $"{f.Empleado.PrimerNombre} {f.Empleado.PrimerApellido}",
 
                         NombreCompleto = f.NombreCompleto,
@@ -126,7 +126,7 @@ namespace Miluc.Server.Servicios.Nomina
                                              x.Empleado.PrimerApellido.Contains(filtro) ||
                                              x.NombreCompleto.Contains(filtro));
                 }
-                var totalRegistros = query.Count();
+                //var totalRegistros = query.Count();
 
                 var totalRegistros = await query.CountAsync();
 

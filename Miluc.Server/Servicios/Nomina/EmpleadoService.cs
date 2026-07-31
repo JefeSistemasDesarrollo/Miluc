@@ -18,57 +18,62 @@ namespace Miluc.Server.Servicios.Nomina
 
             try
             {   // validacion Trim() para evitar espacios en blanco y posibles duplicados visuales.
-            string documentoLimpio = dto.Documento != null ? dto.Documento.Trim() : string.Empty;
+                string documentoLimpio = dto.Documento != null ? dto.Documento.Trim() : string.Empty;
 
-            // 1. Validar duplicado AFUERA del try-catch
-            var existe = await _context.Empleado.AnyAsync(e => e.Documento == documentoLimpio);
-            if (existe)
-            {
-                throw new Exception("El número de documento ya se encuentra registrado.");
-            }
-
-            try
-            {
-                var nuevoEmpleado = new Empleado
+                // 1. Validar duplicado AFUERA del try-catch
+                var existe = await _context.Empleado.AnyAsync(e => e.Documento == documentoLimpio);
+                if (existe)
                 {
-                    CodigoMunicipio = dto.CodigoMunicipio,
-                    TipoDocumentoId = dto.TipoDocumentoId ?? 0,
-                    Documento = documentoLimpio,
-                    FechaExpedicionDoc = dto.FechaExpedicionDoc.Value,
+                    throw new Exception("El número de documento ya se encuentra registrado.");
+                }
 
-                    PrimerNombre = dto.PrimerNombre.Trim(),
-                    SegundoNombre = dto.SegundoNombre?.Trim(),
-                    PrimerApellido = dto.PrimerApellido.Trim(),
-                    SegundoApellido = dto.SegundoApellido?.Trim(),
-                    FechaNacimiento = dto.FechaNacimiento.Value,
-                    EstadoCivilId = dto.EstadoCivilId ?? 0,
-                    Celular = dto.Celular,
-                    CelularAlterno = dto.CelularAlterno,
-                    CorreoElectronico = dto.CorreoElectronico.Trim(),
-
-                    Direccion = dto.Direccion.Trim(),
-                    Barrio = dto.Barrio.Trim(),
-                    FechaCreacion = DateTime.Now,
-                    FechaActualizacion = DateTime.Now,
-                    Activo = true
-                };
-
-                await _context.Empleado.AddAsync(nuevoEmpleado);
-                await _context.SaveChangesAsync();
-
-                return new EmpleadoReaderDto
+                try
                 {
-                    EmpleadoId = nuevoEmpleado.EmpleadoId,
-                    Documento = nuevoEmpleado.Documento,
-                    PrimerNombre = nuevoEmpleado.PrimerNombre,
-                    PrimerApellido = nuevoEmpleado.PrimerApellido,
-                    Activo = nuevoEmpleado.Activo,
-                    FechaCreacion = nuevoEmpleado.FechaCreacion
-                };
+                    var nuevoEmpleado = new Empleado
+                    {
+                        CodigoMunicipio = dto.CodigoMunicipio,
+                        TipoDocumentoId = dto.TipoDocumentoId ?? 0,
+                        Documento = documentoLimpio,
+                        FechaExpedicionDoc = dto.FechaExpedicionDoc.Value,
+
+                        PrimerNombre = dto.PrimerNombre.Trim(),
+                        SegundoNombre = dto.SegundoNombre?.Trim(),
+                        PrimerApellido = dto.PrimerApellido.Trim(),
+                        SegundoApellido = dto.SegundoApellido?.Trim(),
+                        FechaNacimiento = dto.FechaNacimiento.Value,
+                        EstadoCivilId = dto.EstadoCivilId ?? 0,
+                        Celular = dto.Celular,
+                        CelularAlterno = dto.CelularAlterno,
+                        CorreoElectronico = dto.CorreoElectronico.Trim(),
+
+                        Direccion = dto.Direccion.Trim(),
+                        Barrio = dto.Barrio.Trim(),
+                        FechaCreacion = DateTime.Now,
+                        FechaActualizacion = DateTime.Now,
+                        Activo = true
+                    };
+
+                    await _context.Empleado.AddAsync(nuevoEmpleado);
+                    await _context.SaveChangesAsync();
+
+                    return new EmpleadoReaderDto
+                    {
+                        EmpleadoId = nuevoEmpleado.EmpleadoId,
+                        Documento = nuevoEmpleado.Documento,
+                        PrimerNombre = nuevoEmpleado.PrimerNombre,
+                        PrimerApellido = nuevoEmpleado.PrimerApellido,
+                        Activo = nuevoEmpleado.Activo,
+                        FechaCreacion = nuevoEmpleado.FechaCreacion
+                    };
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception($"Error en base de datos al crear: {ex.Message}");
+                }
             }
-            catch (Exception ex)
+            finally
             {
-                throw new Exception($"Error en base de datos al crear: {ex.Message}");
+
             }
         }
 
