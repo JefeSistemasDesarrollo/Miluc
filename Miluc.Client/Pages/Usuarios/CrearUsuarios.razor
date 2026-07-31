@@ -185,8 +185,6 @@
         </div>
     </EditForm>
 </div>
-
-
 @code {
     private UsuarioCreateDto usuarioDto = new() { /* RolesIds = new(), TiposUsuarioIds = new()  */};
     private List<RolReadDto>? listRoles;
@@ -205,7 +203,7 @@
             var rRes = await _rolClientService.GetAllRolesAsync();
             var tRes = await _tipoUsuarioClientService.GetAllTipoUsuarioAsync();
 
-                if (rRes!=null) 
+                if (rRes.Valor!=null) 
                 { listRoles = rRes.Valor; 
                     rolesFiltrados = listRoles;
                 }
@@ -213,7 +211,6 @@
                 {
                     listTipos = tRes.Valor;
                 }
-
             }
         else
         {
@@ -231,11 +228,8 @@
                                   ruta: $"/Usuarios/Crear",
                                   origen: "Cliente blazor ",
                                   nivel: "error");
-        }
-
-           
+        }    
     }
-
     private async Task OnInputFileChange(InputFileChangeEventArgs e)
     {
         var file = e.File;
@@ -268,33 +262,26 @@
                                   ruta: $"/Usuarios/Crear",
                                   origen: "Cliente blazor ",
                                   nivel: "error");
-
-
-
                 await js.InvokeVoidAsync("Swal.fire", "Error", "No se pudo procesar la imagen: " + ex.Message, "error");
             }
         }
     }
-
     private void FiltrarRoles(ChangeEventArgs e)
     {
         var texto = e.Value?.ToString()?.ToLower() ?? "";
         rolesFiltrados = string.IsNullOrEmpty(texto) ? listRoles : listRoles?.Where(r => r.Nombre.ToLower().Contains(texto)).ToList();
     }
-
     private void SeleccionarRolCard(int id)
     {
         if (usuarioDto.RolesIds.Contains(id)) usuarioDto.RolesIds.Remove(id);
         else usuarioDto.RolesIds.Add(id);
     }
-
     private void ToggleTipoUsuario(int id, object? val)
     {
         bool isChecked = (bool)(val ?? false);
         if (isChecked) { if (!usuarioDto.TiposUsuarioIds.Contains(id)) usuarioDto.TiposUsuarioIds.Add(id); }
         else usuarioDto.TiposUsuarioIds.Remove(id);
     }
-
     private async Task EjecutarGuardado()
     {
         // Validaciones de negocio antes de enviar
@@ -303,7 +290,6 @@
             await js.InvokeVoidAsync("Swal.fire", "Faltan datos", "Debe seleccionar al menos un Tipo de Acceso y un Rol.", "warning");
             return;
         }
-
         procesando = true;
         try
         {

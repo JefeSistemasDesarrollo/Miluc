@@ -10,12 +10,19 @@ namespace Miluc.Server.Servicios.Usuarios
     {
         public async Task<UsuarioReadDto> CreateUsuarioAsync(UsuarioCreateDto dto)
         {
+
+            if(dto==null)
+                throw new ArgumentNullException("El objeto del usuario viene vacío",nameof(dto));
+         
             // 1. Validaciones de existencia (Username y Email)
             if (await _context.Usuarios.AnyAsync(u => u.UserName.ToLower() == dto.UserName.ToLower()))
-                throw new Exception("El nombre de usuario ya está registrado.");
+                throw new InvalidOperationException("El nombre de usuario ya está registrado.");
 
             if (await _context.Usuarios.AnyAsync(u => u.Email.ToLower() == dto.Email.ToLower()))
-                throw new Exception("El correo electrónico ya está en uso.");
+                throw new InvalidOperationException("El correo electrónico ya está en uso.");
+
+            if (string.IsNullOrWhiteSpace(dto.Password))
+                throw new InvalidOperationException("La contraseña es obligatoria");
 
             // 2. Iniciamos Transacción
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -27,7 +34,7 @@ namespace Miluc.Server.Servicios.Usuarios
                 var usuario = new Usuario
                 {
                     UserName = dto.UserName,
-                    Nombres = dto.Nombres,   // Asegúrate que en el DTO sea Nombres
+                    Nombres = dto.Nombres,  
                     Apellidos = dto.Apellidos,
                     Email = dto.Email,
                     Telefono = dto.Telefono,
@@ -40,8 +47,6 @@ namespace Miluc.Server.Servicios.Usuarios
                     FechaCreacion = DateTime.Now,
                     FechaActualizacion = DateTime.Now
                 };
-
-
                 await _context.Usuarios.AddAsync(usuario);
                 // Guardamos para generar el IdUsuario
                 await _context.SaveChangesAsync();
@@ -94,13 +99,20 @@ namespace Miluc.Server.Servicios.Usuarios
         }
         public async Task<UsuarioReadDto?> UpdateUsuarioAsync(UsuarioUpdateDto dto)
         {
+
+            if (dto == null)
+                throw new ArgumentNullException("El objeto del usuario viene vacío", nameof(dto));
+
+
             // 1. Validar que el usuario exista
             var user = await _context.Usuarios
                 .Include(u => u.UsuarioRoles)
                 .Include(u => u.UsuarioTipoUsuario)
                 .FirstOrDefaultAsync(u => u.IdUsuario == dto.IdUsuario);
 
-            if (user == null) return null;
+            if (user == null)     
+                throw new ArgumentNullException("", nameof(user));
+              
 
             // 2. Validar que el nuevo Email no lo tenga otro usuario
             var emailOcupado = await _context.Usuarios
@@ -187,34 +199,51 @@ namespace Miluc.Server.Servicios.Usuarios
         {
             try
             {
-                var user = await _context.Usuarios.FindAsync(id);
-                // Si es NULL, no existe, por lo tanto retornamos false
-                //validar si el usuario existe en la base de datos 
-                if (user == null)
+
+
+                //ACA VAMOS ELIMINAR EL USUARIO 
+                var deleteUser = await _context.Usuarios.Where(x=>x.IdUsuario==id).FirstOrDefaultAsync();
+
+                if (deleteUser==null)
+                {
                     return false;
+                }
 
-                user.Activo = false;
-                user.FechaActualizacion = DateTime.Now;
+                _context.Remove(deleteUser);
 
-                return await _context.SaveChangesAsync() > 0;
+                 return await _context.SaveChangesAsync()>0;
+                //var user = await _context.Usuarios.FindAsync(id);
+                //// Si es NULL, no existe, por lo tanto retornamos false
+                ////validar si el usuario existe en la base de datos 
+                //if (user == null)
+                //    return false;
+
+                //user.Activo = false;
+                //user.FechaActualizacion = DateTime.Now;
+
+               // return await _context.SaveChangesAsync() > 0;
             }
             catch (Exception ex) 
             {
-                return false;
-                throw new Exception($"Error al consultar Usuarios {ex.Message}");
+              
+                throw new Exception($"Error al eliminar el Usuario {ex.Message}");
+               
             }
         }
         public async Task<UsuarioReadDto?> GetByIdUsuarioAsync(int id)
         {
             try
             {
+                if (id <= 0)
+                    throw new ArgumentException("El id del usuario debe ser mayor a cero",nameof(id));
+
                 // Importante: Incluimos relaciones y proyectamos al DTO
                 var usuarioGetId = await _context.Usuarios
                       .AsNoTracking()
                       .Include(u => u.UsuarioRoles)
-                      .ThenInclude(ur => ur.Rol)
+                           .ThenInclude(ur => ur.Rol)
                       .Include(u => u.UsuarioTipoUsuario)
-                      .ThenInclude(u => u.TipoUsuario)
+                         .ThenInclude(u => u.TipoUsuario)
                       .Where(u => u.IdUsuario == id)
                       .Select(u => new UsuarioReadDto
                       {
@@ -243,18 +272,20 @@ namespace Miluc.Server.Servicios.Usuarios
 
             }
         }
-        public async Task<(List<UsuarioReadDto> Data, int TotalRegistros)> GetAllUsuariosAsync(string? buscar = null, int pagina = 1, int? cantidad = null)
+        public async Task<(List<UsuarioReadDto> Data, int TotalRegistros)> GetAllUsuariosAsync(string? buscar = null, int ? pagina = null, int? cantidad = null)
         {
             try
             {
-                int cantidadTop = cantidad ?? 20;
 
-                var queryBusqueda = _context.Usuarios
-                   .AsNoTracking()
-                   .Include(u => u.UsuarioRoles)
-                   .ThenInclude(r => r.Rol)
-                   .AsQueryable();
+                if (string.IsNullOrEmpty(cantidad?.ToString()))
+                {
+                    cantidad = 10;
+                }
+               
+                //  int cantidadTop = cantidad ?? 20;
 
+                var queryBusqueda = _context.Usuarios.AsNoTracking().AsQueryable();
+                //.Include(u => u.UsuarioRoles).ThenInclude(r => r.Rol)
                 if (!string.IsNullOrWhiteSpace(buscar))
                 {
                     // Usamos ToLower() o dejamos que el Collation de SQL decida (case-insensitive)
@@ -265,9 +296,22 @@ namespace Miluc.Server.Servicios.Usuarios
 
                 int totalEncontrados = await queryBusqueda.CountAsync();
 
-                var dataBusqueda= await queryBusqueda.OrderByDescending(x=>x.Nombres)
-                    .Skip((pagina - 1) * cantidadTop)
-                    .Take(cantidadTop)
+
+                if (pagina.HasValue && cantidad.HasValue)
+                {
+                    if (pagina.Value <= 0)
+                        throw new ArgumentOutOfRangeException(nameof(pagina), "El numero de la pagina no puede ser negativo");
+
+                    if (cantidad.Value <= 0)
+                        throw new ArgumentOutOfRangeException(nameof(cantidad), "La cantidad de registras debe ser mayor  a cero");
+                    
+                    queryBusqueda=queryBusqueda.OrderBy(u=>u.IdUsuario).Skip((pagina.Value-1)*cantidad.Value).Take(cantidad.Value);
+                }
+
+                var dataBusqueda= await queryBusqueda
+                    //.OrderByDescending(x=>x.Nombres)
+                    //.Skip((pagina - 1) * cantidadTop)
+                    //.Take(cantidadTop)
                     .Select(u => new UsuarioReadDto
                     {
                         IdUsuario = u.IdUsuario,

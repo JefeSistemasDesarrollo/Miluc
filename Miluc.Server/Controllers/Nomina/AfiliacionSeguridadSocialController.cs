@@ -8,7 +8,7 @@ namespace Miluc.Server.Controllers.Nomina
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AfiliacionSeguridadSocialController( IArlService arlService, ICajaCompensacionService cajaCompensacionService,
+    public class AfiliacionSeguridadSocialController(IArlService arlService, ICajaCompensacionService cajaCompensacionService,
         IAfiliacionSeguridadSocialService afiliacionSeguridadSocialService
         , ILogService _log) : Controller
     {
@@ -17,8 +17,7 @@ namespace Miluc.Server.Controllers.Nomina
         {
             try
             {   
-                (List<AfiliacionSeguridadSocialreaderDto> afiliaciones, int totalRegistros) =
-                    await afiliacionSeguridadSocialService.GetAfiliacionSeguridadSocialAsync(filtro, page, cantidad);
+                (List<AfiliacionSeguridadSocialreaderDto> afiliaciones, int totalRegistros) = await afiliacionSeguridadSocialService.GetAfiliacionSeguridadSocialAsync(filtro, page, cantidad);
 
                 if (afiliaciones == null || afiliaciones.Count == 0)
                 {

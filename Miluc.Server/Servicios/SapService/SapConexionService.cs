@@ -1,16 +1,54 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Miluc.Server.Data;
+using Miluc.Server.Interfaces.Encriptacion;
 using Miluc.Server.Interfaces.Sap.ConexionSap;
 using Miluc.Shared.DTOs.Sap.ConexionSapServiceLayer;
 using Miluc.Shared.Models.Response;
 using Newtonsoft.Json;
 using System.Text;
 
-
 namespace Miluc.Server.Servicios.SapService
 {
-    public class SapConexionService(MilucDbContext _contex) : IConexionServiceLayer
+    public class SapConexionService(MilucDbContext _contex, IEncryptionService _encryptionService) : IConexionServiceLayer
     {
+        public async Task<ResponseAPI<bool>> ActualizarConfiguracionSAPAsync(string password)
+        {
+            try
+            {
+                var configuracion = await _contex.SisConfiguracionesGenerales.FirstOrDefaultAsync(x => x.Modulo == "SAP");
+
+                if (configuracion == null)
+                {
+                    return new ResponseAPI<bool>
+                    {
+                        EsCorrecto = false,
+                        Mensaje = "No existe la configuración SAP.",
+                        Valor = false
+                    };
+                }
+                configuracion.PasswordServiceLayer = _encryptionService.Encrypt(password);
+
+                await _contex.SaveChangesAsync();
+
+                return new ResponseAPI<bool>
+                {
+                    EsCorrecto = true,
+                    Mensaje = "Contraseña Actualizada Correctamente",
+                    Valor = true
+                };
+
+            }
+            catch (Exception ex)
+            {
+                return new ResponseAPI<bool>
+                {
+                    EsCorrecto = false,
+                    Mensaje = ex.Message,
+                    Valor = false
+                };
+            }
+        }
+
         public async Task<ResponseAPI<ConexionSapServiceLayerDto>> ConexionSapService()
         {
             try
@@ -21,11 +59,10 @@ namespace Miluc.Server.Servicios.SapService
                     {
                         URLServiceLayer = x.UrlServiceLayer,
                         UserName = x.UserNameServiceLayer,
-                        Password = x.PasswordServiceLayer,
+                        Password = _encryptionService.Decrypt(x.PasswordServiceLayer),
                         CompanyDB = x.CompanyDB,
                         Language = x.LanguageServiceLayer
-                    })
-                    .FirstOrDefaultAsync();
+                    }).FirstOrDefaultAsync();
 
                 if (conexion == null)
                 {
@@ -36,7 +73,6 @@ namespace Miluc.Server.Servicios.SapService
                         Valor = null
                     };
                 }
-
                 // SOLO enviar datos requeridos por SAP
                 var loginRequest = new
                 {
@@ -44,7 +80,6 @@ namespace Miluc.Server.Servicios.SapService
                     UserName = conexion.UserName,
                     Password = conexion.Password
                 };
-
                 var json =  JsonConvert.SerializeObject(loginRequest);
 
                 var handler = new HttpClientHandler

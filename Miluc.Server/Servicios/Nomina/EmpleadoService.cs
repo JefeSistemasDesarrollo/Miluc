@@ -76,7 +76,6 @@ namespace Miluc.Server.Servicios.Nomina
 
                 if (delete == null)
                 {
-
                     return false;
                 }
                 else _context.Empleado.Remove(delete);

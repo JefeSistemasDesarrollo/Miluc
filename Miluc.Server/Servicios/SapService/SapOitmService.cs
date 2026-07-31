@@ -83,7 +83,7 @@ namespace Miluc.Server.Servicios.SapService
                         Rate = o.OITM.OSTC.Rate,
                         TaxCode = o.OITM.OSTC.Name,
                         
-                        // U_CantidadKg=(cantidad /o.OITM.SWeight1),
+                        //U_CantidadKg=(cantidad /o.OITM.SWeight1 ?? 0),
                         //U_UnidadSal= ( cantidad * o.OITM.SWeight1)
 
                     }).FirstOrDefaultAsync();

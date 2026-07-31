@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Miluc.Server.Data;
 using Miluc.Server.Interfaces.Autorizacion;
+using Miluc.Server.Interfaces.Encriptacion;
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Nomina;
 using Miluc.Server.Interfaces.Permisos;
@@ -26,6 +27,7 @@ using Miluc.Server.Interfaces.Usuarios;
 using Miluc.Server.Models.Nomina;
 using Miluc.Server.Models.Sap;
 using Miluc.Server.Security;
+using Miluc.Server.Servicios;
 using Miluc.Server.Servicios.Autorizacion;
 using Miluc.Server.Servicios.Autorizacion.Rol;
 using Miluc.Server.Servicios.LogService;
@@ -112,6 +114,8 @@ builder.Services.AddScoped<ISapOsppService, OsppService>();
 builder.Services.AddScoped<ISapOitmService, SapOitmService>();
 builder.Services.AddScoped<IConexionServiceLayer, SapConexionService>();
 builder.Services.AddScoped<ISapOrdrService, SapOrderService>();
+builder.Services.AddScoped<IEncryptionService, EncryptionService>();
+
 
 // 3. CONFIGURACIÓN DE COOKIES (Seguridad BFF)
 builder.Services.AddAuthentication(options =>
@@ -139,7 +143,9 @@ builder.Services.AddAuthentication(options =>
     // IMPORTANTE para cross-origin (puertos distintos)
     options.Cookie.SameSite = SameSiteMode.None;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-    options.ExpireTimeSpan = TimeSpan.FromHours(8);
+   // options.ExpireTimeSpan = TimeSpan.FromMinutes(builder.Configuration["Jwt:AccessTokenExpirationMinutes"]);
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(Convert.ToDouble(builder.Configuration["Jwt:AccessTokenExpirationMinutes"])
+);
     //options.Cookie.Domain = "avicolamiluc.ddns.net";
 
     //Nuevo 
@@ -179,11 +185,11 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("BlazorCors", policy =>
     {
-       //policy.WithOrigins("https://avicolamiluc.ddns.net:92")
-          policy.WithOrigins("https://localhost:7198")
-           .AllowAnyHeader()
-           .AllowAnyMethod()
-         .AllowCredentials(); // OBLIGATORIO para enviar cookies
+     
+       policy.WithOrigins("https://localhost:7198")
+       .AllowAnyHeader()
+       .AllowAnyMethod()
+     .AllowCredentials(); // OBLIGATORIO para enviar cookies
     });
 });
 //builder.Services.AddControllers();

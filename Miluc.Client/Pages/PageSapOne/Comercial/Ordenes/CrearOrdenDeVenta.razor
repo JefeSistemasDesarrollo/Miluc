@@ -199,8 +199,8 @@
                                         {
                                             <!-- Cuando el artículo se vende por Kg, este campo solo muestra el valor -->
                                             <InputNumber TValue="decimal?"
-                                                         Value="linea.U_EquivalentedKg"
-                                                         ValueExpression="() => linea.U_EquivalentedKg"
+                                                         Value="linea.U_CantidadKg"
+                                                         ValueExpression="() => linea.U_CantidadKg"
                                                          class="form-control form-control-sm text-end"
                                                          step="any"
                                                          readonly />
@@ -209,12 +209,12 @@
                                         {
                                             <!-- Cuando el artículo se vende por unidades, este campo SI se puede editar -->
                                             <InputNumber TValue="decimal?"
-                                                         Value="linea.U_EquivalentedKg"
+                                                         Value="linea.U_CantidadKg"
                                                          ValueChanged="@(v => OnKgChanged(v, linea))"
-                                                         ValueExpression="() => linea.U_EquivalentedKg"
+                                                         ValueExpression="() => linea.U_CantidadKg"
                                                          class="form-control form-control-sm text-end"
                                                          step="any"
-                                                         min="0" />
+                                                         min="0" readonly />
                                         }
                                     </td>
 
@@ -224,27 +224,22 @@
                                         {
                                             <!-- Cuando el artículo se vende por Kg, este campo SI se puede editar -->
                                             <InputNumber TValue="decimal?"
-                                                         Value="linea.U_EquivalenteUni"
-                                                         ValueChanged="@(v => OnUnidadesChanged(v, linea))"
-                                                         ValueExpression="() => linea.U_EquivalenteUni"
+                                                         Value="linea.U_UnidadSal" ValueChanged="@(v => OnUnidadesChanged(v, linea))"
+                                                         ValueExpression="() => linea.U_UnidadSal"
                                                          class="form-control form-control-sm text-end"
-                                                         step="1"
-                                                         min="0" />
+                                                         step="1" min="0" />
                                         }
                                         else
                                         {
                                             <!-- Cuando el artículo se vende por unidades, solo muestra el valor -->
                                             <InputNumber TValue="decimal?"
-                                                         Value="linea.U_EquivalenteUni"
-                                                         ValueExpression="() => linea.U_EquivalenteUni"
-                                                         class="form-control form-control-sm text-end"
-                                                         readonly />
+                                                         Value="linea.U_UnidadSal"
+                                                         ValueExpression="() => linea.U_UnidadSal"
+                                                         class="form-control form-control-sm text-end" readonly />
                                         }
-
-
                                     </td>
+
                                  
-                                    
                                     <!-- PRECIOS -->
                                     <td>
                                         <input type="number" readonly class="form-control form-control-sm text-end" @bind="linea.PriceAcobrar" @bind:event="oninput">
@@ -504,6 +499,7 @@
 @code {
 
     private bool Cargando = false;
+    private bool ProcesandoPedido = false;
     private string comentarios = "";
     // private decimal descuentoPorcentaje = 0;
     private SapClienteReaderDto? clienteSeleccionado = new();
@@ -577,19 +573,12 @@
             new OrigenPedidoDto{OrigenPedidoId=7,OrigenNombre="Puntos de venta"},
             new OrigenPedidoDto{OrigenPedidoId=8,OrigenNombre="Referidos"}
         };
-
         listVendedores = (await _sapOslpVendedorService.GetListVendedoresAsync()).Valor ?? new List<SapVendedorReaderDto>();
         listaArticulosApi = (await _sapOitmClientService.GetListOitmAsync("P", paginaActualArticulo, CantidadRegistrosPorPaginaArticulo)).Valor ?? new List<SapOitmDto>();
-
-
-
         await BuscarEnServidorCliente();
     }
-
-    private int TotalPaginasArticulo
-    => (int)Math.Ceiling((double)CantidadDeArticulosEncontrados / CantidadRegistrosPorPaginaArticulo);
-    private int TotalPaginasCliente
-    => (int)Math.Ceiling((double)CantidadDeClientesEncontrados / cantidadPorPaginaCliente);
+    private int TotalPaginasArticulo=> (int)Math.Ceiling((double)CantidadDeArticulosEncontrados / CantidadRegistrosPorPaginaArticulo);
+    private int TotalPaginasCliente=> (int)Math.Ceiling((double)CantidadDeClientesEncontrados / cantidadPorPaginaCliente);
 
     private void FiltrarClientes()
     {
@@ -623,7 +612,6 @@
             await BuscarEnServidorCliente(_textoBusquedaCliente, paginaActualCliente, cantidadPorPaginaCliente);
         }
     }
-
 
     private async Task IrPaginaCliente(int pagina)
     {
@@ -712,16 +700,16 @@
         if (linea.BuyUnitMsr?.ToUpper() == "KG")
         {
             // Cantidad está en Kg
-            linea.U_EquivalentedKg = linea.Quantity;
+            linea.U_CantidadKg = linea.Quantity;
 
-            linea.U_EquivalenteUni = Math.Round(Convert.ToDecimal(linea.Quantity) / Convert.ToDecimal(linea.SWeight1),0,MidpointRounding.AwayFromZero);
+            linea.U_UnidadSal = Math.Round(Convert.ToDecimal(linea.Quantity) / Convert.ToDecimal(linea.SWeight1), 0, MidpointRounding.AwayFromZero);
         }
         else
         {
             // Cantidad está en Unidades
-            linea.U_EquivalenteUni = linea.Quantity;
+            linea.U_UnidadSal = linea.Quantity;
 
-            linea.U_EquivalentedKg = Math.Round(Convert.ToDecimal(linea.Quantity) * Convert.ToDecimal(linea.SWeight1),2);
+            linea.U_CantidadKg = Math.Round(Convert.ToDecimal(linea.Quantity) * Convert.ToDecimal(linea.SWeight1), 2);
         }
 
         CalcularTotales(linea);
@@ -729,7 +717,7 @@
 
     private void OnKgChanged(decimal? value, ArticuloPorListaDePreciosDto linea)
     {
-        linea.U_EquivalentedKg = value ?? 0;
+        linea.U_CantidadKg = value ?? 0;
 
         if (linea.SWeight1 <= 0)
         {
@@ -737,20 +725,20 @@
             return;
         }
 
-        linea.U_EquivalenteUni = Math.Round(
-           Convert.ToDecimal(linea.U_EquivalentedKg) / Convert.ToDecimal(linea.SWeight1),
+        linea.U_UnidadSal = Math.Round(
+           Convert.ToDecimal(linea.U_CantidadKg) / Convert.ToDecimal(linea.SWeight1),
             0,
             MidpointRounding.AwayFromZero);
 
         // Como el artículo es por unidades,
         // Quantity siempre representa unidades.
-        linea.Quantity = linea.U_EquivalenteUni;
+        linea.Quantity = linea.U_UnidadSal;
 
         CalcularTotales(linea);
     }
     private void OnUnidadesChanged(decimal? value, ArticuloPorListaDePreciosDto linea)
     {
-        linea.U_EquivalenteUni = Math.Round(value ?? 0, 0);
+        linea.U_UnidadSal = Math.Round(value ?? 0, 0);
 
         if (linea.SWeight1 <= 0)
         {
@@ -758,22 +746,22 @@
             return;
         }
 
-        linea.U_EquivalentedKg = Math.Round(Convert.ToDecimal(linea.U_EquivalenteUni) * Convert.ToDecimal(linea.SWeight1), 2);
+        linea.U_CantidadKg = Math.Round(Convert.ToDecimal(linea.U_UnidadSal) * Convert.ToDecimal(linea.SWeight1), 2);
 
         // Como el artículo es por Kg,
         // Quantity siempre representa Kg.
-        linea.Quantity = linea.U_EquivalentedKg;
+        linea.Quantity = linea.U_CantidadKg;
 
         CalcularTotales(linea);
     }
     private void CalcularTotales(ArticuloPorListaDePreciosDto linea)
     {
-        linea.BaseSum = Math.Round((linea.Quantity ?? 0) * (linea.PriceAcobrar ?? 0),2);
+        linea.BaseSum = Math.Round((linea.Quantity ?? 0) * (linea.PriceAcobrar ?? 0), 2);
 
-        linea.TotalImpuesto = Math.Round((linea.BaseSum * linea.Rate) / 100,2);
+        linea.TotalImpuesto = Math.Round((linea.BaseSum * linea.Rate) / 100, 2);
     }
 
-  
+
     private void CalculaTotales(ArticuloPorListaDePreciosDto linea)
     {
         linea.BaseSum = Math.Round(Convert.ToDecimal(linea.Quantity) * Convert.ToDecimal((linea.PriceAcobrar ?? 0)), 2);
@@ -940,8 +928,29 @@
                 {
                     // Si es nuevo, inicializamos cantidad y calculamos antes de añadir
                     artData.Quantity = 1;
-                    CalcularTotales(artData);
 
+                    //calcular
+                    if (artData.SWeight1 > 0)
+                    {
+                        //calcular el equivalente en kg y unidades dependiendo de la unidad de medida de compra, teniendo en cuenta el peso del artículo
+                        if (!string.IsNullOrEmpty(artData.BuyUnitMsr))
+                        {
+                            if (artData.BuyUnitMsr.ToUpper() == "KG")
+                            {
+                                artData.U_CantidadKg = artData.Quantity;
+                                decimal pesoUnidades = Math.Round(Convert.ToDecimal(artData.U_CantidadKg / artData.SWeight1), 2);
+                                artData.U_UnidadSal = (int)Math.Round(pesoUnidades, MidpointRounding.AwayFromZero);
+                            }
+                            else
+                            {
+                                artData.U_UnidadSal = artData.Quantity;
+                                artData.U_CantidadKg = Math.Round(Convert.ToDecimal(artData.U_UnidadSal * artData.SWeight1), 2);
+                            }
+                        }
+                    }
+
+
+                    CalcularTotales(artData);
                     // Agregamos el objeto directamente (ya que es del mismo tipo)
                     lineasPedido.Add(new ArticuloPorListaDePreciosDto
                     {
@@ -959,8 +968,8 @@
                         Rate = Math.Round(Convert.ToDecimal(artData.Rate), 2),
                         CodeTaxcode = artData.CodeTaxcode,
                         TaxCode = artData.TaxCode,
-                        U_EquivalentedKg = Math.Round(Convert.ToDecimal(artData.U_EquivalentedKg), 2),
-                        U_EquivalenteUni = Math.Round(Convert.ToDecimal(artData.U_EquivalenteUni), 2),
+                        U_CantidadKg = artData.U_CantidadKg,
+                        U_UnidadSal = artData.U_UnidadSal,
                         TotalImpuesto = Math.Round(Convert.ToDecimal(artData.TotalImpuesto), 2)
                     });
                 }
@@ -979,33 +988,46 @@
 
     private async Task CrearPedido()
     {
-
-        if (string.IsNullOrEmpty(clienteSeleccionado?.CardCode))
+        try
         {
-            await _jsRuntime.InvokeVoidAsync("Swal.fire", "Error", $"El pedido no tiene cliente seleccionado", "error");
-            return;
-        }
-
-        var result = await _jsRuntime.InvokeAsync<JsonElement>
-           ("Swal.fire", new
-           {
-               title = "¿Estás seguro?",
-               text = $"¿Deseas crear el pedido?",
-               icon = "info",
-               showCancelButton = true,
-               confirmButtonColor = "#d33",
-               cancelButtonColor = "#3085d6",
-               confirmButtonText = "Sí, Crear",
-               cancelButtonText = "Cancelar"
-           });
-
-        if (result.GetProperty("isConfirmed").GetBoolean())
-        {
-
-
-            if (lineasPedido.Count > 0)
+            if (string.IsNullOrEmpty(clienteSeleccionado?.CardCode))
             {
+                await _jsRuntime.InvokeVoidAsync("Swal.fire", "Error", $"El pedido no tiene cliente seleccionado", "error");
+                return;
+            }
+            var result = await _jsRuntime.InvokeAsync<JsonElement>
+               ("Swal.fire", new
+               {
+                   title = "¿Estás seguro?",
+                   text = $"¿Deseas crear el pedido?",
+                   icon = "info",
+                   showCancelButton = true,
+                   confirmButtonColor = "#d33",
+                   cancelButtonColor = "#3085d6",
+                   confirmButtonText = "Sí, Crear",
+                   cancelButtonText = "Cancelar"
+               });
+
+            if (result.GetProperty("isConfirmed").GetBoolean())
+            {
+                if (lineasPedido.Count == 0 || lineasPedido.Count <= 0)
+                {
+                    // await _jsRuntime.InvokeVoidAsync("cerrarEspera");
+                    await _jsRuntime.InvokeVoidAsync("Swal.fire", "Error", "El pedido no tiene detalle.", "error");
+
+                    return;
+                }
+
+                await _jsRuntime.InvokeVoidAsync("mostrarEspera", "Sincronizando - SAP ONE", "Generando Orden de venta ...<br><br><b>No cierre esta ventana.</b>", "info");
                 //en responsable le envio el usuario que hizo la orden de venta
+
+
+                foreach (var line in lineasPedido)
+                {
+                    RecalcularLinea(line);
+
+                }
+
                 PedidoCreateDto pedidoCreateDto = new PedidoCreateDto
                 {
                     CardCode = clienteSeleccionado.CardCode,
@@ -1020,8 +1042,9 @@
                     DocumentLines = lineasPedido.Select(x => new PedidoCrearDetalleLineaDTO
                     {
                         ItemCode = x.ItemCode,
-                        Quantity = Convert.ToDecimal(x.Quantity)
-
+                        Quantity = Convert.ToDecimal(x.Quantity),
+                        U_CantidadKg = Convert.ToDecimal(x.U_CantidadKg),
+                        U_UnidadSal = Convert.ToDecimal(x.U_UnidadSal)
                     }).ToList()
                 };
 
@@ -1029,36 +1052,72 @@
                 if (TotalFinal > 0)
                 {
                     var response = await _sapOrdrService.CreatePedidoAsyc(pedidoCreateDto);
+                    // Cerrar ventana de espera
+                    // await _jsRuntime.InvokeVoidAsync("cerrarEspera");
 
                     if (response.EsCorrecto == true)
                     {
+
+                        await _jsRuntime.InvokeVoidAsync("cerrarEspera");
+
                         await _jsRuntime.InvokeVoidAsync("Swal.fire",
                             "Correcto",
-                            $"Pedido creado correctamente. Número de documento: {response.Valor.DocNum}",
-                            "success");
+                            $"Pedido creado correctamente. Número de documento: {response.Valor.DocNum}","success");
+
                         nav.NavigateTo("/administrar-pedido/pedidos", forceLoad: true);
                     }
                     else
                     {
+                        // Cerrar ventana de espera
+                        await _jsRuntime.InvokeVoidAsync("cerrarEspera");
+
                         await _jsRuntime.InvokeVoidAsync("Swal.fire", "Error", $"No se pudo crear el pedido. Detalles: {response.Mensaje}", "error");
                     }
                 }
                 else
                 {
+                    await _jsRuntime.InvokeVoidAsync("cerrarEspera");
                     await _jsRuntime.InvokeVoidAsync("Swal.fire", "Error", $"El total del pedido tiene que ser mayor a 0", "error");
                 }
 
             }
-            else
-            {
-                await _jsRuntime.InvokeVoidAsync("Swal.fire", "Error", $"El pedido no tiene detalle ", "error");
-            }
+        }
+        catch (Exception ex)
+        {
+            await _jsRuntime.InvokeVoidAsync("cerrarEspera");
 
+            await _logClientService.GuardarErrorAsync(ex.Message, ex.StackTrace, _authClientService.CurrentSession?.UserName ?? "No encontrado",
+                nameof(CrearPedido), "Crear Orden de venta", "Cliente Razor", "Error");
+
+            await _jsRuntime.InvokeVoidAsync("Swal.fire", "Error", ex.Message, "error");
+        }
+    }
+    private void RecalcularLinea(ArticuloPorListaDePreciosDto linea)
+    {
+        if (linea.SWeight1 <= 0)
+        {
+            CalcularTotales(linea);
+            return;
         }
 
-       
+        if (linea.BuyUnitMsr?.ToUpper() == "KG")
+        {
+            linea.U_CantidadKg = linea.Quantity;
 
+            linea.U_UnidadSal = Math.Round((Convert.ToDecimal(linea.Quantity)) / Convert.ToDecimal(linea.SWeight1),
+                0,MidpointRounding.AwayFromZero);
+        }
+        else
+        {
+            linea.U_UnidadSal = linea.Quantity;
+
+            linea.U_CantidadKg = Math.Round((Convert.ToDecimal(linea.Quantity)) * Convert.ToDecimal(linea.SWeight1),2);
+        }
+
+        CalcularTotales(linea);
     }
+
+
     private async Task CambiarCantidadPagina(ChangeEventArgs e)
     {
         if (int.TryParse(e.Value?.ToString(), out int nuevaCantidad))
