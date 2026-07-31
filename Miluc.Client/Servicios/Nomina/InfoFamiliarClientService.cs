@@ -163,8 +163,8 @@ namespace Miluc.Client.Servicios.Nomina
                 {
                     return result;
                 }
-                var result = await response.Content
-                    .ReadFromJsonAsync<ResponseAPI<InfoFamiliarReaderDto>>();
+                //var result = await response.Content
+                //    .ReadFromJsonAsync<ResponseAPI<InfoFamiliarReaderDto>>();
 
                 // Si la deserialización falla o viene nula
                 return new ResponseAPI<InfoFamiliarReaderDto>

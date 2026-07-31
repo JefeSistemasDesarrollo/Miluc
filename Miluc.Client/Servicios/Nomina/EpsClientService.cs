@@ -118,7 +118,7 @@ namespace Miluc.Client.Servicios.Nomina
                 return new ResponseAPI<EpsReaderDto>
                 {
                     Errores = new List<string> { $"Error: {ex.Message}" },
-                    Mensaje = ex.Message,
+                   
                     EsCorrecto = false,
                     Mensaje = $"Error al crear el eps: {ex.Message}",
                     Valor = null,

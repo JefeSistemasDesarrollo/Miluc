@@ -1,8 +1,6 @@
 ﻿using Miluc.Client.Interfaces.UsuariosRolesPermisos;
 using Miluc.Shared.DTOs.Permisos;
-using Miluc.Shared.DTOs.Usuarios;
 using Miluc.Shared.Models.Response;
-using System.ComponentModel.DataAnnotations;
 using System.Net.Http.Json;
 
 namespace Miluc.Client.Servicios.UsuariosRolesPermisos
@@ -87,9 +85,7 @@ namespace Miluc.Client.Servicios.UsuariosRolesPermisos
             {
                 return new ResponseAPI<bool>().ErroresResponse(false, "Ha ocurrido un error inesperado.", new List<string> { ex.Message });
             }
-
         }
-
         public async Task<ResponseAPI<bool>> CreatePermisoAsync(PermisosCreateDto createDto)
         {
             try

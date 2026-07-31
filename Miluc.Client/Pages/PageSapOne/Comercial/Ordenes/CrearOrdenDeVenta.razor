@@ -575,21 +575,12 @@
             new OrigenPedidoDto{OrigenPedidoId=7,OrigenNombre="Puntos de venta"},
             new OrigenPedidoDto{OrigenPedidoId=8,OrigenNombre="Referidos"}
         };
-
         listVendedores = (await _sapOslpVendedorService.GetListVendedoresAsync()).Valor ?? new List<SapVendedorReaderDto>();
         listaArticulosApi = (await _sapOitmClientService.GetListOitmAsync("P", paginaActualArticulo, CantidadRegistrosPorPaginaArticulo)).Valor ?? new List<SapOitmDto>();
-
-
-
         await BuscarEnServidorCliente();
     }
     private int TotalPaginasArticulo=> (int)Math.Ceiling((double)CantidadDeArticulosEncontrados / CantidadRegistrosPorPaginaArticulo);
     private int TotalPaginasCliente=> (int)Math.Ceiling((double)CantidadDeClientesEncontrados / cantidadPorPaginaCliente);
-
-    private int TotalPaginasArticulo
-    => (int)Math.Ceiling((double)CantidadDeArticulosEncontrados / CantidadRegistrosPorPaginaArticulo);
-    private int TotalPaginasCliente
-    => (int)Math.Ceiling((double)CantidadDeClientesEncontrados / cantidadPorPaginaCliente);
 
     private void FiltrarClientes()
     {
@@ -623,7 +614,6 @@
             await BuscarEnServidorCliente(_textoBusquedaCliente, paginaActualCliente, cantidadPorPaginaCliente);
         }
     }
-
 
     private async Task IrPaginaCliente(int pagina)
     {
@@ -773,7 +763,7 @@
         linea.TotalImpuesto = Math.Round((linea.BaseSum * linea.Rate) / 100, 2);
     }
 
-  
+
     private void CalculaTotales(ArticuloPorListaDePreciosDto linea)
     {
         linea.BaseSum = Math.Round(Convert.ToDecimal(linea.Quantity) * Convert.ToDecimal((linea.PriceAcobrar ?? 0)), 2);
@@ -963,7 +953,6 @@
 
 
                     CalcularTotales(artData);
-
                     // Agregamos el objeto directamente (ya que es del mismo tipo)
                     lineasPedido.Add(new ArticuloPorListaDePreciosDto
                     {

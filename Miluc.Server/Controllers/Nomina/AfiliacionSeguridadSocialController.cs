@@ -20,7 +20,7 @@ namespace Miluc.Server.Controllers.Nomina
             {
                 (List<AfiliacionSeguridadSocialreaderDto> afiliaciones, int totalRegistros) = await afiliacionSeguridadSocialService.GetAfiliacionSeguridadSocialAsync(filtro, page, cantidad);
                 
-                (List<AfiliacionSeguridadSocialreaderDto> afiliaciones, int totalRegistros) =
+               // (List<AfiliacionSeguridadSocialreaderDto> afiliaciones, int totalRegistros) =
                     await afiliacionSeguridadSocialService.GetAfiliacionSeguridadSocialAsync(filtro, page, cantidad);
 
                 if (afiliaciones == null || afiliaciones.Count == 0)

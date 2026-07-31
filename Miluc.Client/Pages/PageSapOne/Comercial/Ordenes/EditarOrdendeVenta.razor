@@ -260,8 +260,8 @@
 
 
                                     </td>
-                                   
 
+                                   
                                     <!-- PRECIOS -->
                                     <td>
                                         <input type="number" readonly class="form-control form-control-sm text-end" @bind="linea.PriceAcobrar" @bind:event="oninput">
@@ -334,7 +334,6 @@
     </EditForm>
 </div>
 
-@* modal de articulos *@
 @* MODAL DE ARTICULOS *@
 <div class="modal fade @(mostrarModalArticulo ? "show d-block" : "")" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 1050;">
 
@@ -589,7 +588,6 @@
                                 linea.U_UnidadSal = linea.Quantity;
                                 linea.U_CantidadKg = Math.Round(Convert.ToDecimal(linea.U_UnidadSal * linea.SWeight1), 2);
                             }
-
                         }
                     }
                     linea.BaseSum = Math.Round(Convert.ToDecimal(linea.Quantity) * Convert.ToDecimal((linea.PriceAcobrar ?? 0)), 2);
@@ -648,7 +646,7 @@
     }
     //para manejar los valores de cantidad y
     // recalcular la fila cada vez que cambie la cantidad, teniendo en cuenta el tipo de unidad de medida
- 
+
     private void CerrarModalArticulo() => mostrarModalArticulo = false;
 
     private async Task HandleEnterArticulo(KeyboardEventArgs e)
@@ -702,7 +700,6 @@
                     await _jsRuntime.InvokeVoidAsync("Swal.fire", "Error", $"El artículo {artData.ItemCode} no tiene precio asignado para este cliente.", "error");
                     return;
                 }
-
                 // 4Lógica de Agregado o Actualización
                 var existente = lineasPedido.FirstOrDefault(x => x.ItemCode == artData.ItemCode);
 
@@ -735,7 +732,6 @@
                         }
                     }
                     CalcularTotales(artData);
-
                     lineasPedido.Add(new ArticuloPorListaDePreciosDto
                     {
                         ItemCode = artData.ItemCode,

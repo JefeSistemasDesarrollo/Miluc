@@ -12,22 +12,8 @@ namespace Miluc.Client.Servicios.UsuariosRolesPermisos
         {
             try
             {
-                ResponseAPI<List<UsuarioReadDto>> responseUsuarios= new ();
-                var url = $"api/Usuario?buscar={buscar}&pagina={pagina}&cantidad={cantidad}";
-                var response = await _httpclient.GetFromJsonAsync<ResponseAPI<List<UsuarioReadDto>>>(url);
 
-                if (response != null)
-                {
-                    // Devolvemos la lista, el total de registros (CantRegistros) y el mensaje
-                    responseUsuarios.Valor = response.Valor;
-                    responseUsuarios.EsCorrecto = response.EsCorrecto;
-                    responseUsuarios.Errores = response.Errores;
-                    responseUsuarios.CantRegistros=response.CantRegistros;
-                    ///return (response.Valor, response.CantRegistros, response.Mensaje);
-                    ///
 
-                    return responseUsuarios;
-                }
 
                 var url = $"api/Usuario?buscar={buscar}&pagina={pagina}&cantidad={cantidad}";
                 var responseUsuario = await _httpclient.GetFromJsonAsync<ResponseAPI<List<UsuarioReadDto>>>(url);
@@ -49,7 +35,6 @@ namespace Miluc.Client.Servicios.UsuariosRolesPermisos
                 //return (new List<UsuarioReadDto>(), 0, $"Error de red: {ex.Message}");
             }
         }
-       
         public async Task<ResponseAPI<UsuarioReadDto>> GetUsuarioByIdAsync(int id)
         {
             try

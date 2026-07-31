@@ -164,7 +164,6 @@
                                     <td class="text-center pe-4">
 
                                         @if (authService.HasPermission("Usuario.Detail"))
-
                                         {
                                             <div class="btn-group shadow-sm border rounded-pill bg-white overflow-hidden">
                                                 <button class=" btn-detail btn btn-dark btn-sm px-2 border-end " title="Ver Detalle" @onclick="() => VerDetalle(user.IdUsuario)">
@@ -262,7 +261,7 @@
             var response = await _usuarioClientService
                 .ListarUsuariosAsync("", paginaActual, cantidadPorPagina); //  SIN textoBusqueda
 
-            if (response != null)
+            if (response?.Valor.Count > 0 )
             {
                 listaOriginal = response.Valor;
                 listUsuariosApi = listaOriginal.ToList();
@@ -336,7 +335,7 @@
         var response = await _usuarioClientService
             .ListarUsuariosAsync(_textoBusqueda, paginaActual, cantidadPorPagina);
 
-        if (response != null)
+        if (response.Valor?.Count >0)
         {
             listaOriginal = response.Valor;
             listUsuariosApi = listaOriginal.ToList();
@@ -373,15 +372,11 @@
             await BuscarEnServidor();
     }
 
-
-
     protected override async Task OnInitializedAsync()
     {
         await CargarUsuarios();
     }
-
-    private void IrACrear() =>
-    Nav.NavigateTo("/Usuarios/Crear");
+    private void IrACrear() =>Nav.NavigateTo("/Usuarios/Crear");
 
     private async Task HandleEnter(KeyboardEventArgs e)
     {
@@ -391,7 +386,6 @@
             await BuscarEnServidor();
         }
     }
-
     private void EditarUsuario(int IdUsuario)
     {
         Nav.NavigateTo($"/Usuarios/Editar/{IdUsuario}");

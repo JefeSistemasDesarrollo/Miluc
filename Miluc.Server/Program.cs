@@ -134,6 +134,7 @@ builder.Services.AddScoped<ISapOrdrService, SapOrderService>();
 builder.Services.AddScoped<IEncryptionService, EncryptionService>();
 
 
+
 // 3. CONFIGURACIÓN DE COOKIES (Seguridad BFF)
 builder.Services.AddAuthentication(options =>
 {

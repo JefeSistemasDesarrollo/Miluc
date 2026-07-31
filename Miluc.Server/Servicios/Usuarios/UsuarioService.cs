@@ -47,8 +47,6 @@ namespace Miluc.Server.Servicios.Usuarios
                     FechaCreacion = DateTime.Now,
                     FechaActualizacion = DateTime.Now
                 };
-
-
                 await _context.Usuarios.AddAsync(usuario);
                 // Guardamos para generar el IdUsuario
                 await _context.SaveChangesAsync();
@@ -243,9 +241,9 @@ namespace Miluc.Server.Servicios.Usuarios
                 var usuarioGetId = await _context.Usuarios
                       .AsNoTracking()
                       .Include(u => u.UsuarioRoles)
-                      .ThenInclude(ur => ur.Rol)
+                           .ThenInclude(ur => ur.Rol)
                       .Include(u => u.UsuarioTipoUsuario)
-                      .ThenInclude(u => u.TipoUsuario)
+                         .ThenInclude(u => u.TipoUsuario)
                       .Where(u => u.IdUsuario == id)
                       .Select(u => new UsuarioReadDto
                       {

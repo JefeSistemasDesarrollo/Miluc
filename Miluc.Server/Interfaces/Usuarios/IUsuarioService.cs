@@ -6,7 +6,7 @@ namespace Miluc.Server.Interfaces.Usuarios
     {
 
         // Devuelve los datos y el total (para el paginador) en una tupla
-        Task<(List<UsuarioReadDto> Data, int TotalRegistros)> GetAllUsuariosAsync(string? buscar = null, int pagina = 1, int? cantidad = null);
+        Task<(List<UsuarioReadDto> Data, int TotalRegistros)> GetAllUsuariosAsync(string? buscar = null, int ? pagina = null, int? cantidad = null);
         //Task<List<UsuarioReadDto>> GetAllUsuariosAsync(); //
         Task<UsuarioReadDto?> GetByIdUsuarioAsync(int id);
         Task<UsuarioReadDto> CreateUsuarioAsync(UsuarioCreateDto dto);

@@ -16,7 +16,6 @@ namespace Miluc.Server.Controllers.SAPController
         [ProducesResponseType(typeof(ResponseAPI<List<SapClienteReaderDto>>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ResponseAPI<List<SapClienteReaderDto>>), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ResponseAPI<List<SapClienteReaderDto>>), StatusCodes.Status500InternalServerError)]
-
         public async Task<ActionResult<ResponseAPI<List<SapClienteReaderDto>>>> GetAllClientesAsync([FromQuery] string? buscar, [FromQuery] int pagina = 1, [FromQuery] int? cantidad = null)
         {
             try

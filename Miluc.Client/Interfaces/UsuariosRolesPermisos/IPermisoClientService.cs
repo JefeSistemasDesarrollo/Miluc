@@ -16,7 +16,5 @@ namespace Miluc.Client.Interfaces.UsuariosRolesPermisos
 
         Task<ResponseAPI<bool>> CreatePermisoAsync(PermisosCreateDto createDto);
         Task<ResponseAPI<bool>> ActualizarPemriso(PermisosUpdateDto updateDto);
-        
-
     }
 }

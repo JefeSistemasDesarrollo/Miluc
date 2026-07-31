@@ -281,7 +281,7 @@ namespace Miluc.Server.Controllers.Usuarios
                     return NotFound(new ResponseAPI<UsuarioReadDto>
                     {
                         EsCorrecto = false,
-                        Mensaje = "Usuario no encontrado."
+                        Mensaje = "Usuario no encontrado." 
                     });
                 }
 

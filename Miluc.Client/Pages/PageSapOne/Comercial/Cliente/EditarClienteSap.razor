@@ -134,8 +134,8 @@
                             <div class="col-12 col-md-4">
                                 <label class="form-label text-muted small fw-semibold">Nombres </label>
                                 <InputText @bind-Value="cliente.U_HBT_Nombres" class="form-control form-control-sm" disabled="@EsPersonaJuridica()" />
-                            
 
+                            
                             </div>
 
                             <div class="col-12 col-md-4">
@@ -439,14 +439,10 @@
                                         <tbody>
                                             @foreach (var prop in listaPropiedades)
                                             {
-
                                                 <tr>
                                                     <td class="text-center">
-
                                                         @* <input type="checkbox" class="form-check-input check-amarillo" @bind="prop.Activa" /> *@
-
                                                         <InputCheckbox @bind-Value="prop.Activa" class="form-check-input check-amarillo" />
-
                                                     </td>
                                                     <td class="text-dark small fw-medium">@prop.GroupName</td>
                                                 </tr>
@@ -455,7 +451,6 @@
                                     </table>
                                 </div>
                             </div>
-
                             <div class="col-12 col-lg-5">
                                 <label class="form-label text-muted small fw-semibold">Comentarios / Observaciones Internas</label>
                                 <InputTextArea @bind-Value="cliente.FreeText" class="form-control form-control-sm" rows="10" placeholder="Escribe aquí anotaciones relevantes para el despacho o condiciones especiales de entrega..." />
@@ -1018,7 +1013,6 @@
             Console.WriteLine($"Error al buscar actividad economica: {ex.Message}");
         }
     }
-
     private async Task BuscarEnServidorMunicipio(string? textoBusqueda = null, int? pagina = null, int? cantidadPorPagina = null)
     {
         try
@@ -1213,9 +1207,6 @@
             {
                 listretencionDtos = retencionesClientes.Valor;
             }
-
-
-
             var responseCodigoPostal = await _sapLocalizacionService.GetAllCodigosPostales("", 1, 10);
             if (responseCodigoPostal.Valor.data != null)
             {
