@@ -31,7 +31,7 @@
                     Gestión de seguridad social del Empleado: <strong>@nombreEmpleado</strong>. Los campos marcados con <span class="text-danger">*</span> son requeridos.
                 </p>
             </div>
-            <button class="btn btn-vinotinto btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
+            <button class="btn btn-rojo btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
                 <i class="bi bi-arrow-left me-2"></i> Volver al listado
             </button>
         </div>
@@ -116,21 +116,21 @@
 
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom">Estado</label>
-                                    <i class="bi bi-check-all"></i>
+                                    <i class="bi bg bi-check-all"></i>
                                     <div class="input-group-custom">
                                         <div class="card card-custom border-0 shadow-sm rounded-4 w-100">
                                             <div class="card-body input-custom py-2">
                                                 <div class="input-group-custom">
-                                                    <div class="form-check form-switch switch-lg d-flex align-items-center gap-2">
-                                                        <InputCheckbox class="form-check-input" @bind-Value="nuevaAfiliacion.Activo" id="switchActivo" />
+                                                    <div class="form-check  form-switch   switch-lg d-flex align-items-center gap-2">
+                                                        <InputCheckbox class="form-check-input"  @bind-Value="nuevaAfiliacion.Activo" id="  switchActivo" />
                                                         <label class="form-check-label m-0" for="switchActivo">
                                                             @if (nuevaAfiliacion.Activo)
                                                             {
-                                                                <span class="text-success fw-bold">Activo</span>
+                                                                <i class="bi  text-black bi-check2-circle"></i>
                                                             }
                                                             else
                                                             {
-                                                                <span class="text-danger fw-bold">Inactivo</span>
+                                                                <i class="bi text-rojo bi-x-circle"></i>
                                                             }
                                                         </label>
                                                     </div>
@@ -162,7 +162,7 @@
                                 Cancelar
                             </button>
         
-                            <button type="submit" class="btn btn-vinotinto btn-secondary rounded-pill px-4" disabled="@isProcessing">
+                            <button type="submit" class="btn btn-rojo btn-secondary rounded-pill px-4" disabled="@isProcessing">
                                 @if (isProcessing)
                                 {
                                     <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
@@ -170,8 +170,8 @@
                                 }
                                 else
                                 {
-                                    <i class="bi bi-cloud-upload-fill me-2"></i>
-                                    <span>Guardar Cambios</span>
+                                    
+                                    <span>Guardar </span>
                                 }
                             </button>
                         </div>

@@ -11,7 +11,7 @@
 
     <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
         <div>
-            <h2 class="fw-extrabold text-vinotinto m-0 tracking-tight">
+            <h2 class="fw-extrabold text-black m-0 tracking-tight">
                 <i class="bi bi-people-fill"></i>
                 Seguridad Social
             </h2>
@@ -20,7 +20,7 @@
             </p>
         </div>
             
-        <button class="btn btn-vinotinto btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
+        <button class="btn btn-rojo btn-nuevo rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
             <i class="bi bi-arrow-left me-2"></i> Volver
         </button>
     </div>
@@ -42,7 +42,7 @@
                            placeholder="Filtrar local o buscar en servidor..."
                            @bind="textoBusqueda" @bind:event="oninput" @onkeyup="HandleEnter" />
 
-                    <button class="btn btn-vinotinto rounded-end-pill px-4" @onclick="BuscarEnServidor">
+                    <button class="btn btn-rojo rounded-end-pill px-4" @onclick="BuscarEnServidor">
                         <i class="bi bi-search me-2"></i>
                     </button>
                 </div>
@@ -62,7 +62,7 @@
                         <option value="50">50</option>
                     </select>
                     
-                    <span class="badge bg-vinotinto rounded-pill ms-2 px-3 py-2">
+                    <span class="badge bg-rojo rounded-pill ms-2 px-3 py-2">
                         Total: @totalRegistros
                     </span>
                 </div>
@@ -75,16 +75,16 @@
 <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
     <div class="table-responsive">
         <table class="table table-striped table-hover mb-0">
-            <thead class="bg-vinotinto text-white">
+            <thead class="bg-rojo text-white">
                 <tr>
-                    <th class="ps-4 py-3 text-start">Empleado</th>
-                    <th class="ps-4 py-3 text-start">Documento</th>
-                    <th class="text-center">Eps</th>
-                    <th class="text-center">Arl</th>
-                    <th class="text-center">Afp</th>
-                    <th class="text-center">Caja compensación</th>
-                    <th class="text-center">Estado</th>
-                    <th class="text-center">Acciones</th>
+                    <th class="ps-4 py-3  text-rojo text-start">Empleado</th>
+                    <th class="ps-4 py-3 text-rojo text-start">Documento</th>
+                    <th class="text-center text-rojo">Eps</th>
+                    <th class="text-center text-rojo">Arl</th>
+                    <th class="text-center text-rojo">Afp</th>
+                    <th class="text-center text-rojo">Caja compensación</th>
+                    <th class="text-center text-rojo">Estado</th>
+                    <th class="text-center text-rojo">Acciones</th>
                 </tr>
             </thead>
             <tbody class="bg-white">
@@ -133,15 +133,15 @@
                             <td class="text-center">
                                 @if (em.Activo ?? false)
                                 {
-                                    <span class="badge bg-success px-3 py-2 rounded-pill">
-                                        <i class="bi bi-check-circle me-1"></i> Activo
-                                    </span>
+                                   
+                                     <i class="bi  text-black bi-check2-circle"></i>
+                                    
                                 }
                                 else
                                 {
-                                    <span class="badge bg-danger px-3 py-2 rounded-pill">
-                                        <i class="bi bi-x-circle me-1"></i> Inactivo
-                                    </span>
+                                    
+                                        <i class="bi text-rojo bi-x-circle"></i>
+                                  
                                 }
                             </td>
 
@@ -169,14 +169,14 @@
 
     @* SECCIÓN DE PAGINACIÓN (PIE DE TABLA) *@
     <div class="pagination-footer d-flex justify-content-between align-items-center mt-4 p-3">
-        <div class="page-link text-muted small">Página <b>@paginaActual</b> de @totalPaginas</div>
+        <div class=" text-amarillo small">Página <b>@paginaActual</b> de @totalPaginas</div>
         
         <div class="page-item.active pagination-container p-1 bg-white border rounded-pill shadow-sm">
             <button class="btn btn-sm rounded-circle @(paginaActual <= 1 ? "disabled" : "")" @onclick="() => IrPagina(paginaActual - 1)">
                 <i class="bi bi-chevron-left"></i>
             </button>
             
-            <span class="mx-3 fw-bold text-vinotinto">@paginaActual</span>
+            <span class="mx-3 fw-bold text-rojo">@paginaActual</span>
             
             <button class="btn btn-sm rounded-circle @(paginaActual >= totalPaginas ? "disabled" : "")" @onclick="() => IrPagina(paginaActual + 1)">
                 <i class="bi bi-chevron-right"></i>

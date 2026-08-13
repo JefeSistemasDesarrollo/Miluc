@@ -2,7 +2,7 @@
     background: linear-gradient(145deg, #ffffff, #f8f8f8);
     border-radius: 22px;
     border: none;
-    border-top: 6px solid #800020;
+    border-top: 6px solid #D62F46;
     padding: 2.5rem;
     display: flex;
     flex-direction: column;
@@ -94,7 +94,7 @@
 }
 
 .btn-rojo {
-    background: #800020;
+    background: #D62F46;
     /*background: linear-gradient(135deg, #D62F46, #800020);*/
     color: white;
     box-shadow: 0 5px 15px rgba(214, 47, 70, 0.1);
@@ -110,10 +110,10 @@
 /*color-amarillo*/
 
 .card-miluc-amarillo {
-    background: linear-gradient(145deg, #ffffff, #f8f8f8);
+    background: linear-gradient(145deg, #ffffff);
     border-radius: 22px;
     border: none;
-    border-top: 6px solid #d3980b;
+    border-top: 6px solid #FDC922;
     padding: 2.5rem;
     display: flex;
     flex-direction: column;
@@ -166,13 +166,13 @@
 /* HOVER */
 .card-miluc-amarillo:hover {
     transform: translateY(-12px) scale(1.02);
-    box-shadow: 0 20px 40px rgba(128, 0, 32, 0.25);
-    border-top-color: #d3980b;
+    box-shadow: 0 20px 40px #d3980b;
+    border-top-color: #FDC922;
 }
 
     .card-miluc-amarillo:hover .icono-wrapper {
         transform: rotate(10deg) scale(1.1);
-        background: rgba(214, 47, 70, 0.2);
+        background: #d3980b;
     }
 
 .btn-amarillo:hover {
@@ -192,15 +192,16 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    align-items: center;
     font-size: 2rem;
     margin-bottom: 1rem;
-    background: #800020;
-    color: #d3980b;
+    background: #FDC922;
+    color: #ffffff;
     transition: transform 0.3s ease, background 0.3s ease;
 }
 
 .btn-amarillo {
-    background: #d3980b;
+    background: #FDC922;
     /*background: linear-gradient(135deg, #D62F46, #800020);*/
     color: white;
     box-shadow: 0 5px 15px rgba(214, 47, 70, 0.1);
@@ -219,7 +220,3 @@
         transform: rotate(10deg) scale(1.1);
         background: rgba(214, 47, 70, 0.2);
     }
-.btn-vinotinto {
-    background: #800020;
-    color: white;
-}

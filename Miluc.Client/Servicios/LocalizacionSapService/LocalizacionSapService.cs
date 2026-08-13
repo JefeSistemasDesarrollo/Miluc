@@ -123,7 +123,7 @@ namespace Miluc.Client.Servicios.LocalizacionSapService
                 var resultado = await httpResponse.Content.ReadFromJsonAsync<ResponseAPI<List<RegimenTributarioDto>>>();
                 if (httpResponse.IsSuccessStatusCode && resultado != null && resultado.EsCorrecto)
                 {
-                    // Todo salió bienn 200 
+                    // Todo salió bien 200 
                     return resultado;
                 }
                 else

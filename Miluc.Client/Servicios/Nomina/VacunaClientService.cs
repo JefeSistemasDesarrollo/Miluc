@@ -1,23 +1,22 @@
 ﻿using Miluc.Client.Interfaces.Nomina;
-using Miluc.Shared.DTOs.Nomina.EsquemaVacunbacionDto;
-using Miluc.Shared.DTOs.Nomina.EstadoCivilDto;
+
+using Miluc.Shared.DTOs.Nomina.Vacunacion;
 using Miluc.Shared.Models.Response;
 using System.Net.Http.Json;
 
 namespace Miluc.Client.Servicios.Nomina
 {
-    public class EsquemaVacinacionClientService(HttpClient httpClient) : IEsquemaVacunacionClientService
+    public class VacunaClientService(HttpClient httpClient) : IVacunaClientService
     {
-        public async Task<ResponseAPI<List<EsquemaVacunacionReaderDto>>> GetEsquemaAsync(string textoBusqueda, int paginaActual, int cantidadPorPagina)
+        public async Task<ResponseAPI<List<VacunaReaderDto>>> GetVacunaAsync()
         {
             try
             //var request = new HttpRequestMessage(HttpMethod.Get, "https://localhost:7222/api/Vacunas/Esquemas");
             {
-                var response = await httpClient.GetAsync($"/api/Vacunas/Esquemas?filtro={textoBusqueda}&page={paginaActual}&cantidad={cantidadPorPagina}");
+                var response = await httpClient.GetAsync($"/api/Vacunas");
                 if (!response.IsSuccessStatusCode)
                 {
-                    return new ResponseAPI<List<EsquemaVacunacionReaderDto>>
-
+                    return new ResponseAPI<List<VacunaReaderDto>>       
                     {
                         EsCorrecto = false,
                         Mensaje = $"Error en la solicitud: {response.ReasonPhrase}",
@@ -26,13 +25,13 @@ namespace Miluc.Client.Servicios.Nomina
                     };
 
                 }
-                var resultado = await response.Content.ReadFromJsonAsync<ResponseAPI<List<EsquemaVacunacionReaderDto>>>();
+                var resultado = await response.Content.ReadFromJsonAsync<ResponseAPI<List<VacunaReaderDto>>>();
                 if (resultado == null)
                 {
-                    return new ResponseAPI<List<EsquemaVacunacionReaderDto>>
+                    return new ResponseAPI<List<VacunaReaderDto>>
                     {
                         EsCorrecto = false,
-                        Mensaje = $"Error al obtener Esquemas de vacunación : respuesta es nula",
+                        Mensaje = $"Error al obtener Vacunas : respuesta es nula",
                         Valor = null,
                         CantRegistros = 0
                     };
@@ -41,7 +40,7 @@ namespace Miluc.Client.Servicios.Nomina
             }
             catch (Exception ex)
             {
-                return new ResponseAPI<List<EsquemaVacunacionReaderDto>>
+                return new ResponseAPI<List<VacunaReaderDto>>
                 {
                     EsCorrecto = false,
                     Mensaje = $"Error al Obtener los esquemas de Vacunación{ex.Message}",

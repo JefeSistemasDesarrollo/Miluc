@@ -162,7 +162,7 @@ namespace Miluc.Server.Controllers.Nomina
             if (cajaUpdate == null)
                 return BadRequest(ErrorResponse("Se debe enviar la información de la EPS."));
 
-            if (id != cajaUpdate.cajaCompensacionId)
+            if (id != cajaUpdate.CajaCompensacionId)
                 return BadRequest(ErrorResponse("El ID enviado en la URL no coincide con la EPS."));
 
             if (!ModelState.IsValid)

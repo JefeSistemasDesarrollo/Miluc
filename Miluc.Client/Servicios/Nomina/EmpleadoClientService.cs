@@ -72,19 +72,8 @@ namespace Miluc.Client.Servicios.Nomina
                     responseAPI.Valor = response.Valor;
                     responseAPI.Mensaje = response.Mensaje;
                     responseAPI.EsCorrecto = response.EsCorrecto;
-
-
                 }
-
-
-
-
-
-
-
-
                 return responseAPI;
-
 
             }
             catch (Exception ex)
@@ -95,12 +84,8 @@ namespace Miluc.Client.Servicios.Nomina
                     Errores = new List<string> { $"Error {ex}" },
                     Mensaje = ex.Message,
                     EsCorrecto = false
-
-
                 };
-
             }
-
         }
 
         public async Task<ResponseAPI<EmpleadoReaderDto>> UpdateEmpleadosAsync(EmpleadoUpdateDto empleado)

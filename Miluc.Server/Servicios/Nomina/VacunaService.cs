@@ -8,7 +8,7 @@ namespace Miluc.Server.Servicios.Nomina
     public class VacunaService (NominaDbContext _dbContext) : IVacunaService
     {
       
-        public async Task<List<VacunaReaderDto>> GetVacunasAsync()
+        public async Task<List<VacunaReaderDto>> GetVacunaAsync()
         {
             try
             {
@@ -17,7 +17,7 @@ namespace Miluc.Server.Servicios.Nomina
                     new VacunaReaderDto 
                     { VacunaId = v.VacunaId,
                         VacunaName = v.VacunaName, 
-                        Activo = v.Activo })
+                        })
                     .ToListAsync();
              
 

@@ -1,10 +1,14 @@
-﻿.bg-vinotinto {
-    background-color: #800020;
+<<<<<<< HEAD
+﻿.bg-rojo {
+=======
+.bg-rojo {
+>>>>>>> e744222956c2cfa8269fb353154d7c23ee1fca0d
+    background-color: #D62F46;
     color: white;
 }
 
-.btn-vinotinto {
-    background-color: #800000;
+.btn-rojo {
+    background-color: #D62F46;
     color: white;
 }
 
@@ -12,8 +16,8 @@
     padding: 1rem;
 }
 
-.text-vinotinto {
-    color: #800020;
+.text-rojo {
+    color: #D62F46;
 }
 
 x-small {
@@ -178,8 +182,8 @@ x-small {
     border-top: 6px solid #D62F46;
 }
 
-.border-vinotinto {
-    border-top: 6px solid #800020;
+.border-rojo {
+    border-top: 6px solid #D62F46;
 }
 
 .border-amarillo {
@@ -246,8 +250,8 @@ x-small {
     color: white;
 }
 
-.btn-vinotinto {
-    background: #800020;
+.btn-rojo {
+    background: #D62F46;
     color: white;
 }
 

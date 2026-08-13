@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Miluc.Server.Interfaces.LogErrores;
+
 using Miluc.Server.Interfaces.Nomina;
-using Miluc.Shared.DTOs.Nomina.EsquemaVacunbacionDto;
+using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Shared.DTOs.Nomina.Vacunacion;
 using Miluc.Shared.Models.Response;
 
@@ -9,15 +9,15 @@ namespace Miluc.Server.Controllers.Nomina
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class VacunasController(IVacunaService _service, IEsquemaVacunacionService _esquemaService, ILogService log) : Controller
+    public class VacunasController(IVacunaService _service, IEsquemaVacunacionService _esquemaService, ILogService _log) : Controller
     {
         [HttpGet]
-        public async Task<ActionResult<ResponseAPI<List<VacunaReaderDto>>>> GetVacunas()
+        public async Task<ActionResult<ResponseAPI<List<VacunaReaderDto>>>> GetVacunaAsync()
         {
             //var response = new ResponseAPI<List<VacunaReaderDto>>();
             try
             {
-                var responseVacunas = await _service.GetVacunasAsync();
+                var responseVacunas = await _service.GetVacunaAsync();
 
 
                 if (responseVacunas == null || responseVacunas.Count == 0)
@@ -47,7 +47,7 @@ namespace Miluc.Server.Controllers.Nomina
             catch (Exception ex)
             {
 
-                await log.GuardarErrorAsync(
+                await _log.GuardarErrorAsync(
                         message: ex.Message,
                          StackTrace: ex.StackTrace,
                          usuario: User.Identity?.Name ?? "Sistema",
@@ -66,50 +66,59 @@ namespace Miluc.Server.Controllers.Nomina
 
             }
         }
-        // Aquí puedes agregar más método de esquema de vacunacion get 
-        [HttpGet("Esquemas")]
-        public async Task<ActionResult<ResponseAPI<List<EsquemaVacunacionReaderDto>>>> GetEsquemasVacunacion([FromBody]string? filtro = null,[FromQuery]int page = 1, [FromQuery] int? cantidad = 1)
-        {
-            try
-            {
-                var (esqueamas,totalRegitros) = await _esquemaService.GetEsquemasVacunacionAsync(filtro, page, cantidad);
-                if (esqueamas == null || esqueamas.Count == 0)
-                {
-                    return NotFound(new ResponseAPI<List<EsquemaVacunacionReaderDto>>
-                    {
-                        EsCorrecto = false,
-                        Valor = null,
-                        Mensaje = "No se encontraron esquemas de vacunación.",
-                        CantRegistros = 0
-                    });
-                }
-                return Ok(new ResponseAPI<List<EsquemaVacunacionReaderDto>>
-                {
-                    EsCorrecto = true,
-                    Valor = esqueamas,
-                    Mensaje = "Esquemas de vacunación obtenidos correctamente.",
-                    CantRegistros = esqueamas.Count
-                });
-            }
-            catch (Exception ex)
-            {
-                await log.GuardarErrorAsync(
-                        message: ex.Message,
-                         StackTrace: ex.StackTrace,
-                         usuario: User.Identity?.Name ?? "Sistema",
-                         metodo: "HttpGet",
-                         ruta: $"/api/Vacunas/Esquemas​",
-                         ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
-                         origen: $"VacunasController");
-                return StatusCode(500, new ResponseAPI<List<EsquemaVacunacionReaderDto>>
-                {
-                    EsCorrecto = false,
-                    Mensaje = ex.Message,
-                    Errores = new List<string> { ex.Message }
-                });
-            }
+            //[HttpGet("{id}")]
+            //public async Task<ActionResult<ResponseAPI<List<VacunaReaderDto>>>> GetVacunaByIdAsync(int id)
+            //{
 
+            //    try
+            //    {
+            //        var vacuna = await _service.GetVacunaByIdAsync(id);
+            //        if (vacuna == null)
+            //        {
+            //            return NotFound(new ResponseAPI<List<VacunaReaderDto>>
+            //            {
+            //                EsCorrecto = false,
+            //                Valor = null,
+            //                Mensaje = "No se encontraron registros de vacunas.",
+            //                CantRegistros = 0
+            //            });
+            //        }
+            //        return Ok(new ResponseAPI<List<VacunaReaderDto>>
+            //        {
+            //            EsCorrecto = true,
+            //            Valor = vacuna,
+            //            Mensaje = "Vacuna obtenida correctamente.",
+            //            CantRegistros = 1
+            //        });
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        await _log.GuardarErrorAsync(
+            //             message: ex.Message,
+            //             StackTrace: ex.StackTrace,
+            //             usuario: User.Identity?.Name ?? "Sistema",
+            //             metodo: "HttpGet",
+            //             ruta: $"/api/Vacunas",
+            //             ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
+            //             origen: "VacunasController");
+            //        return StatusCode(500, new ResponseAPI<List<VacunaReaderDto>>
+            //        {
+            //            EsCorrecto = false,
+            //            Valor = null,
+            //            Mensaje = $"Error al obtener la información de vacunas: {ex.Message}",
+            //            CantRegistros = 0
+            //        });
+
+
+            //    }
+
+            }
 
         }
-    }
-}
+
+    
+
+
+    
+    
+

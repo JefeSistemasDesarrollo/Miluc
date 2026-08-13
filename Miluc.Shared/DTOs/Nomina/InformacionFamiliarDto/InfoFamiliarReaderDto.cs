@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace Miluc.Shared.DTOs.Nomina.InformacionFamiliarDto
@@ -7,6 +8,9 @@ namespace Miluc.Shared.DTOs.Nomina.InformacionFamiliarDto
     public class InfoFamiliarReaderDto
     {
         public int InformacionFamiliarId { get; set; }
+        [RegularExpression(@"^[0-9]+$", ErrorMessage = "El documento solo puede contener números")]
+        [Required(ErrorMessage = " Campo documento es obligatorio")]
+
         public string Documento { get; set; }
         public int EmpleadoId { get; set; } // Foreign key de Empleado
         public string NombreEmpleado { get; set; }

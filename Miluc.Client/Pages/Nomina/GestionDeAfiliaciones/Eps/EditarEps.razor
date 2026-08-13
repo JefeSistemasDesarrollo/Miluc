@@ -23,7 +23,7 @@
                 </p>
             </div>
 
-            <button class="btn btn-vinotinto btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
+            <button class="btn btn-rojo btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
                 <i class="bi bi-arrow-left me-2"></i> Volver al listado
             </button>
         </div>
@@ -31,7 +31,7 @@
         @if (epsDto == null)
         {
             <div class="d-flex justify-content-center my-5">
-                <div class="spinner-border text-vinotinto" role="status">
+                <div class="spinner-border text-rojo" role="status">
                     <span class="visually-hidden">Cargando datos de la EPS...</span>
                 </div>
             </div>
@@ -42,76 +42,86 @@
             <EditForm Model="epsDto" OnValidSubmit="ActualizarEps">
                 <DataAnnotationsValidator />
 
-                <div class="col-12">
-                    <div class="card card-custom border-0 shadow-sm rounded-4">
-                        <div class="card-body p-4">
-                            <div class="section-title-container mb-4">
-                                <h5 class="fw-bold text-dark m-0">Datos de la EPS</h5>
+                <div class="card card-custom border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <div class="section-title-container mb-4">
+                            <h5 class="fw-bold text-dark m-0">Datos de la EPS</h5>
+                        </div>
+
+                        <div class="row g-4 mb-4">
+                            @* Nombre de la EPS *@
+                            <div class="col-md-4">
+                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-hospital"></i></span> Nombre de la EPS<span class="text-danger">*</span></label>
+                                <div class="input-group-custom">
+                                    <InputText class="form-control input-custom" @bind-Value="epsDto.Nombre" placeholder="Ej: Sura EPS" />
+                                </div>
+                                <ValidationMessage For="@(() => epsDto.Nombre)" TValue="string" class="text-danger small mt-1 d-block fw-medium" />
                             </div>
 
-                            <div class="row g-4">
-                                @* Nombre de la EPS *@
-                                <div class="col-md-4">
-                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-hospital"></i></span> Nombre de la EPS*</label>
-                                    <div class="input-group-custom">
-                                        <InputText class="form-control input-custom" @bind-Value="epsDto.Nombre" placeholder="Ej: Sura EPS" />
-                                    </div>
-                                    <ValidationMessage For="@(() => epsDto.Nombre)" class="text-danger small mt-1 d-block fw-medium" />
+                            @* Código de Entidad *@
+                            <div class="col-md-4">
+                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-barcode"></i></span> Código de Entidad<span class="text-danger">*</span></label>
+                                <div class="input-group-custom">
+                                    <InputText class="form-control input-custom" @bind-Value="epsDto.Codigo" placeholder="Ej: EPS001" />
                                 </div>
+                                <ValidationMessage For="@(() => epsDto.Codigo)" TValue="string" class="text-danger small mt-1 d-block fw-medium" />
+                            </div>
 
-                                @* Código de Entidad *@
-                                <div class="col-md-4">
-                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-barcode"></i></span> Código de Entidad*</label>
-                                    <div class="input-group-custom">
-                                        <InputText class="form-control input-custom" @bind-Value="epsDto.Codigo" placeholder="Ej: EPS001" />
-                                    </div>
-                                    <ValidationMessage For="@(() => epsDto.Codigo)" class="text-danger small mt-1 d-block fw-medium" />
-                                </div>
-
-                                @* Estado (Switch Activo/Inactivo) *@
-                                <div class="col-md-4">
-                                    <label class="form-label label-custom text-muted-custom">Estado</label>
-                                    <div class="card card-custom border-0 shadow-sm rounded-4">
-                                        <div class="card-body input-custom py-2">
-                                            <div class="form-check form-switch switch-lg d-flex align-items-center gap-2">
-                                                <InputCheckbox class="form-check-input mt-0" @bind-Value="epsDto.Activo" id="switchActivo" />
-                                                <label class="form-check-label fw-semibold" for="switchActivo">
-                                                    @if (epsDto.Activo)
-                                                    {
-                                                        <span class="text-success">Activo</span>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="text-danger">Inactivo</span>
-                                                    }
-                                                </label>
-                                            </div>
+                            @* Estado (Switch Activo/Inactivo) *@
+                            <div class="col-md-4">
+                                <label class="form-label label-custom text-muted-custom">Estado<span class="text-danger">*</span></label>
+                                <div class="card card-custom border-0 shadow-sm rounded-4">
+                                    <div class="card-body input-custom py-2 d-flex align-items-center">
+                                        <div class="form-check form-switch switch-lg d-flex align-items-center gap-2 m-0">
+                                            <InputCheckbox class="form-check-input mt-0" @bind-Value="epsDto.Activo" id="switchActivo" />
+                                            <label class="form-check-label fw-semibold" for="switchActivo">
+                                                @if (epsDto.Activo)
+                                                {
+                                                    <i class="bi  text-black bi-check2-circle"></i>
+                                                }
+                                                else
+                                                {
+                                                    <i class="bi text-rojo bi-x-circle"></i>
+                                                }
+                                            </label>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-
-                            @* --- BOTONES DE ACCIÓN --- *@
-                            <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-3">
-                                <button type="button" class="btn btn-light-custom rounded-pill px-4 py-2.5 fw-semibold" @onclick="Volver">
-                                    Cancelar
-                                </button>
-
-                                <button type="submit" class="btn btn-vinotinto btn-secondary rounded-pill px-4" disabled="@isProcessing">
-                                    @if (isProcessing)
-                                    {
-                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                        <span>Actualizando...</span>
-                                    }
-                                    else
-                                    {
-                                        <i class="bi bi-cloud-upload-fill me-2"></i>
-                                        <span>Guardar Cambios</span>
-                                    }
-                                </button>
-                            </div>
-
                         </div>
+
+                        @* Banner informativo *@
+                        <div class="card card-info-banner border-0 shadow-sm rounded-4 p-4 position-relative overflow-hidden">
+                            <div class="position-relative z-index-2 d-flex flex-column justify-content-center">
+                                <h5 class="fw-bold text-rojo mb-2">
+                                    <i class="bi bi-shield-lock-fill me-2"></i>Seguridad de las Entidades
+                                </h5>
+                                <p class="small mb-0 lh-lg">
+                                    Asegúrese de que el código asignado corresponda al código oficial registrado de la EPS ante el Ministerio de Salud y Protección Social para evitar inconsistencias en la planilla PILA o reportes de novedades.
+                                </p>
+                            </div>
+                            <div class="decorative-circle"></div>
+                        </div>
+                    </div>
+
+                    @* --- ACCIONES --- *@
+                    <div class="card-footer bg-light p-4 d-flex justify-content-end gap-3 rounded-bottom-4 border-0">
+                        <button type="button" class="btn btn-light-custom rounded-pill px-4 py-2.5 fw-semibold" @onclick="Volver">
+                            Cancelar
+                        </button>
+
+                        <button type="submit" class="btn btn-rojo rounded-pill px-4 py-2.5 fw-semibold" disabled="@isProcessing">
+                            @if (isProcessing)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                <span>Guardando...</span>
+                            }
+                            else
+                            {
+                            
+                                <span>Guardar</span>
+                            }
+                        </button>
                     </div>
                 </div>
             </EditForm>
@@ -119,8 +129,9 @@
     </div>
 </div>
 
+
 @code {
-    [Parameter] public int Epsid { get; set; }
+    [Parameter] public int epsid { get; set; }
 
     private UpdateEpsDto epsDto;
     private bool isProcessing = false;
@@ -132,7 +143,7 @@
 
     private async Task CargarEps()
     {
-        var resEps = await _epsService.GetByEpsAsync(Epsid);
+        var resEps = await _epsService.GetByEpsAsync(epsid);
 
         if (resEps != null && resEps.EsCorrecto && resEps.Valor != null)
         {
@@ -143,7 +154,7 @@
                 EpsId = epsObtenida.EpsId,
                 Nombre = epsObtenida.Nombre,
                 Codigo = epsObtenida.Codigo,
-                Activo = epsObtenida.Activo ?? false
+                Activo = epsObtenida.Activo 
             };
         }
         else

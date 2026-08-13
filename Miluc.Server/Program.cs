@@ -75,7 +75,7 @@ builder.Services.AddScoped<ISapOctgService, SapOctgService>();
 
 //nomina 
 builder.Services.AddScoped<IVacunaService, VacunaService>();
-builder.Services.AddScoped<IEsquemaVacunacionService, EsquemaVacunacionService>();
+builder.Services.AddScoped<IEsquemaVacunacionService, EsquemaDeVacunacionService>();
 builder.Services.AddScoped<IEstadoCivilService, EstadoCivilService>();
 builder.Services.AddScoped<IParentescoService, ParentescoService>();
 builder.Services.AddScoped<IInfoFamiliarService, InfoFamiliarService>();

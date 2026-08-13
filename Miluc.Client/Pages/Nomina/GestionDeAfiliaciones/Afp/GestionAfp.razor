@@ -22,12 +22,12 @@
             </p>
         </div>
 
-        <button class="btn btn-vinotinto btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
+        <button class="btn btn-rojo btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
             <i class="bi bi-arrow-left me-2"></i> Volver
         </button>
     </div>
 
-    <button class="btn btn-vinotinto btn-nuevo rounded-pill px-4 shadow-sm mb-4" @onclick="IrACrearAfp">
+    <button class="btn btn-rojo btn-nuevo rounded-pill px-4 shadow-sm mb-4" @onclick="IrACrearAfp">
         <i class="bi bi-plus-lg me-1"></i> Nueva AFP
     </button>
 
@@ -47,7 +47,7 @@
                                placeholder="Filtrar local o buscar en servidor..."
                                @bind="textoBusqueda" @bind:event="oninput" @onkeyup="HandleEnter" />
 
-                        <button class="btn btn-vinotinto rounded-end-pill px-4" @onclick="BuscarEnServidor">
+                        <button class="btn btn-rojo rounded-end-pill px-4" @onclick="BuscarEnServidor">
                             <i class="bi bi-search me-2"></i>
                         </button>
                     </div>
@@ -60,14 +60,13 @@
 
                         <select class="form-select form-select-sm rounded-pill border-0 bg-transparent fw-bold"
                                 style="width: 80px;"
-                                value="@cantidadPorPagina"
-                                @onchange="CambiarCantidadPagina">
+                                @bind="CantidadPorPagina">
                             <option value="10">10</option>
                             <option value="20">20</option>
                             <option value="50">50</option>
                         </select>
 
-                        <span class="badge bg-vinotinto rounded-pill ms-2 px-3 py-2">
+                        <span class="badge bg-rojo rounded-pill ms-2 px-3 py-2">
                             Total: @totalRegistros
                         </span>
                     </div>
@@ -80,7 +79,7 @@
     <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
         <div class="table-responsive">
             <table class="table table-striped table-hover mb-0">
-                <thead class="bg-vinotinto text-white">
+                <thead class="bg-rojo  text-white">
                     <tr>
                         <th class="ps-4 py-3 text-start">Nombre</th>
                         <th class="ps-4 py-3 text-start">Código</th>
@@ -98,7 +97,7 @@
                             </td>
                         </tr>
                     }
-                    else if (!listaAfpAlservidor.Any())
+                    else if (listaAfpAlservidor == null || !listaAfpAlservidor.Any())
                     {
                         <tr>
                             <td colspan="4" class="text-center py-5 text-muted">
@@ -112,23 +111,24 @@
                         {
                             <tr>
                                 <td class="ps-4 align-middle">
-                                    <div class="text-dark fw-semibold small text-uppercase">@em.Nombre</div>
+                                    <div class="text-dark fw-semibold small text-uppercase">
+                                        @(string.IsNullOrWhiteSpace(em.Nombre) ? "-" : em.Nombre)
+                                    </div>
                                 </td>
                                 <td class="ps-4 align-middle">
-                                    <div class="text-dark fw-semibold small text-uppercase">@em.Codigo</div>
+                                    <div class="text-dark fw-semibold small text-uppercase">
+                                        @(string.IsNullOrWhiteSpace(em.Codigo) ? "-" : em.Codigo)
+                                    </div>
                                 </td>
                                 <td class="text-center align-middle">
                                     @if (em.Activo)
                                     {
-                                        <span class="badge bg-success px-3 py-2 rounded-pill">
-                                            <i class="bi bi-check-circle me-1"></i> Activo
-                                        </span>
+                                        <i class="bi  text-black bi-check2-circle"></i>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-danger px-3 py-2 rounded-pill">
-                                            <i class="bi bi-x-circle me-1"></i> Inactivo
-                                        </span>
+
+                                        <i class="bi text-rojo bi-x-circle"></i>
                                     }
                                 </td>
 
@@ -153,7 +153,7 @@
 
     @* SECCIÓN DE PAGINACIÓN (PIE DE TABLA) *@
     <div class="pagination-footer d-flex justify-content-between align-items-center mt-4 p-3">
-        <div class="page-link text-muted small border-0 bg-transparent">
+        <div class="page-link text-muted  small border-0 bg-transparent">
             Página <b>@paginaActual</b> de @totalPaginas
         </div>
 
@@ -162,7 +162,7 @@
                 <i class="bi bi-chevron-left"></i>
             </button>
 
-            <span class="mx-3 fw-bold text-vinotinto">@paginaActual</span>
+            <span class="mx-3 fw-bold text-rojo">@paginaActual</span>
 
             <button class="btn btn-sm rounded-circle @(paginaActual >= totalPaginas ? "disabled" : "")" @onclick="() => IrPagina(paginaActual + 1)">
                 <i class="bi bi-chevron-right"></i>
@@ -187,7 +187,21 @@
         }
     }
 
-    private int cantidadPorPagina = 10;
+    private int _cantidadPorPagina = 10;
+    private int CantidadPorPagina
+    {
+        get => _cantidadPorPagina;
+        set
+        {
+            if (_cantidadPorPagina != value)
+            {
+                _cantidadPorPagina = value;
+                paginaActual = 1;
+                _ = cargarAfiliaciones();
+            }
+        }
+    }
+
     private int paginaActual = 1;
     private int totalRegistros = 0;
     private bool cargando = false;
@@ -197,7 +211,7 @@
         get
         {
             if (totalRegistros <= 0) return 1;
-            return (int)Math.Ceiling((double)totalRegistros / cantidadPorPagina);
+            return (int)Math.Ceiling((double)totalRegistros / _cantidadPorPagina);
         }
     }
 
@@ -209,8 +223,9 @@
     public async Task cargarAfiliaciones()
     {
         cargando = true;
+        StateHasChanged();
 
-        var respuesta = await _afpClientService.GetAfpAsyc(_textoBusqueda, paginaActual, cantidadPorPagina);
+        var respuesta = await _afpClientService.GetAfpAsyc(_textoBusqueda, paginaActual, _cantidadPorPagina);
 
         if (respuesta != null && respuesta.EsCorrecto)
         {
@@ -226,6 +241,7 @@
         FiltrarLocal();
 
         cargando = false;
+        StateHasChanged();
     }
 
     private void FiltrarLocal()
@@ -257,16 +273,6 @@
         }
     }
 
-    private async Task CambiarCantidadPagina(ChangeEventArgs e)
-    {
-        if (int.TryParse(e.Value?.ToString(), out int nuevaCantidad))
-        {
-            cantidadPorPagina = nuevaCantidad;
-            paginaActual = 1;
-            await cargarAfiliaciones();
-        }
-    }
-
     private async Task IrPagina(int nuevaPagina)
     {
         if (nuevaPagina < 1 || nuevaPagina > totalPaginas)
@@ -276,9 +282,9 @@
         await cargarAfiliaciones();
     }
 
-    private void VerDetalle(int idAfp)
+    private void VerDetalle(int id)
     {
-        nav.NavigateTo($"/nomina/detalle/{idAfp}");
+        nav.NavigateTo($"/api/Afp/{id}");
     }
 
     private void ModificarAfp(int afpid)

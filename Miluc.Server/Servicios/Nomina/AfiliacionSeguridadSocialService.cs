@@ -23,78 +23,61 @@ namespace Miluc.Server.Servicios.Nomina
             {
                 int cantidadtop = cantidad ?? 20;
 
-                
                 var query = _context.Empleado.AsNoTracking().AsQueryable();
 
-                
-                if (!string.IsNullOrEmpty(filtro))
-                {
-                    string filtroMinuscula = filtro.Trim().ToLower();
-                    query = query.Where(x => x.PrimerNombre.ToLower().Contains(filtroMinuscula)
-                                          || x.PrimerApellido.ToLower().Contains(filtroMinuscula)
-                                          || x.Documento.ToLower().Contains(filtroMinuscula));
-                }
+                query = AplicarFiltro(query, filtro);
 
-              
                 var totalRegistros = await query.CountAsync();
 
-                
+             
                 var datosIntermedios = await query
                     .Skip((page - 1) * cantidadtop)
                     .Take(cantidadtop)
                     .Select(x => new
                     {
-                        EmpleadoId = x.EmpleadoId,
-                        PrimerNombre = x.PrimerNombre,
-                        SegundoNombre = x.SegundoNombre,
-                        PrimerApellido = x.PrimerApellido,
-                        SegundoApellido = x.SegundoApellido,
-                        Documento = x.Documento,
+                        x.EmpleadoId,
+                        x.PrimerNombre,
+                        x.SegundoNombre,
+                        x.PrimerApellido,
+                        x.SegundoApellido,
+                        x.Documento,
 
 
+                        ActivoAfiliacion = (bool?)x.AfiliacionSeguridadSocial.Activo ?? false,
+                        AfiliacionId = (int?)x.AfiliacionSeguridadSocial.AfiliacionId ?? 0,
 
+                        EpsId = (int?)x.AfiliacionSeguridadSocial.EpsId,
+                        NombreEps = x.AfiliacionSeguridadSocial.Eps.Nombre,
 
-                        ActivoAfiliacion = x.AfiliacionSeguridadSocial != null ? x.AfiliacionSeguridadSocial.Activo : false,
+                        AfpId = (int?)x.AfiliacionSeguridadSocial.AfpId,
+                        NombreAfp = x.AfiliacionSeguridadSocial.Afp.Nombre,
 
-                       
-                        Afiliacion = x.AfiliacionSeguridadSocial != null ? new
-                        {
-                            x.AfiliacionSeguridadSocial.AfiliacionId,
-                            x.AfiliacionSeguridadSocial.EpsId,
-                            NombreEps = x.AfiliacionSeguridadSocial.Eps != null ? x.AfiliacionSeguridadSocial.Eps.Nombre : null,
+                        ArlId = (int?)x.AfiliacionSeguridadSocial.ArlId,
+                        NombreArl = x.AfiliacionSeguridadSocial.Arl.Nombre,
 
-                            x.AfiliacionSeguridadSocial.AfpId,
-                            NombreAfp = x.AfiliacionSeguridadSocial.Afp != null ? x.AfiliacionSeguridadSocial.Afp.Nombre : null,
-
-                            x.AfiliacionSeguridadSocial.ArlId,
-                            NombreArl = x.AfiliacionSeguridadSocial.Arl != null ? x.AfiliacionSeguridadSocial.Arl.Nombre : null,
-
-                            x.AfiliacionSeguridadSocial.CajaCompensacionId,
-                            NombreCajaCompensacion = x.AfiliacionSeguridadSocial.CajaCompensacion != null ? x.AfiliacionSeguridadSocial.CajaCompensacion.Nombre : null
-                        } : null
+                        CajaCompensacionId = (int?)x.AfiliacionSeguridadSocial.CajaCompensacionId,
+                        NombreCajaCompensacion = x.AfiliacionSeguridadSocial.CajaCompensacion.Nombre
                     })
                     .ToListAsync();
 
-
+                // 🔹 Mapeo final en memoria al DTO
                 var afiliaciones = datosIntermedios.Select(x => new AfiliacionSeguridadSocialreaderDto
                 {
-                    AfiliacionId = x.Afiliacion?.AfiliacionId ?? 0,
+                    AfiliacionId = x.AfiliacionId,
                     EmpleadoId = x.EmpleadoId,
                     NombreEmpleado = $"{x.PrimerNombre} {x.SegundoNombre} {x.PrimerApellido} {x.SegundoApellido}",
                     Documento = x.Documento,
 
-                    EpsId = x.Afiliacion?.EpsId,
-                    NombreEps = x.Afiliacion?.NombreEps ?? "Sin Asignar",
+                    EpsId = x.EpsId,
+                    NombreEps = x.NombreEps ?? "Sin Asignar",
 
-                    AfpId = x.Afiliacion?.AfpId,
-                    NombreAfp = x.Afiliacion?.NombreAfp ?? "Sin Asignar",
+                    AfpId = x.AfpId,
+                    NombreAfp = x.NombreAfp ?? "Sin Asignar",
 
-                    ArlId = x.Afiliacion?.ArlId,
-                    NombreArl = x.Afiliacion?.NombreArl ?? "Sin Asignar",
+                    ArlId = x.ArlId,
+                    NombreArl = x.NombreArl ?? "Sin Asignar",
 
-                    CajaCompensacionId = x.Afiliacion?.CajaCompensacionId,
-                    NombreCajaCompensacion = x.Afiliacion?.NombreCajaCompensacion ?? "Sin Asignar",
-
+                    NombreCajaCompensacion = x.NombreCajaCompensacion ?? "Sin Asignar",
 
                     Activo = x.ActivoAfiliacion
                 }).ToList();
@@ -103,9 +86,22 @@ namespace Miluc.Server.Servicios.Nomina
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR CRÍTICO GET AFILIACIONES]: {ex}");
-                throw new Exception($"Error al obtener Afiliaciones a seguridad social: {ex.Message}");
+                throw new InvalidOperationException($"Error al obtener Afiliaciones a seguridad social: {ex.Message}", ex);
             }
+        }
+
+       
+        private static IQueryable<Empleado> AplicarFiltro(IQueryable<Empleado> query, string? filtro)
+        {
+            if (string.IsNullOrEmpty(filtro))
+                return query;
+
+            
+
+            // Pasa el filtro directamente sin modificar la columna ni la variable
+            return query.Where(x => x.PrimerNombre.Contains(filtro)
+                                 || x.PrimerApellido.Contains(filtro)
+                                 || x.Documento.Contains(filtro));
         }
         public async Task<AfiliacionSeguridadSocialreaderDto> GetAfiliacionSeguridadSocialByIdAsync(int afiliacionId)
         {
@@ -121,7 +117,8 @@ namespace Miluc.Server.Servicios.Nomina
                     .Select(a => new AfiliacionSeguridadSocialreaderDto
                     {
                         AfiliacionId = a.AfiliacionId,
-                        NombreEmpleado = $"{a.Empleado.PrimerNombre} {a.Empleado.SegundoNombre ?? ""}".Trim() + $" {a.Empleado.PrimerApellido} {a.Empleado.SegundoApellido ?? ""}".Trim(),
+
+                        NombreEmpleado = $"{a.Empleado.PrimerNombre} {a.Empleado.SegundoNombre} {a.Empleado.PrimerApellido} {a.Empleado.SegundoApellido}".Replace("  ", " ").Trim(),
                         EmpleadoId = a.EmpleadoId,
                         EpsId = a.EpsId,
                         NombreEps = a.Eps != null ? a.Eps.Nombre : "Sin Asignar",
@@ -135,73 +132,66 @@ namespace Miluc.Server.Servicios.Nomina
                     }).FirstOrDefaultAsync();
 
 
-
-                if (afiliacion == null) throw new Exception($"No se encontró la afiliación con ID ");
-
-
-                return afiliacion;
-
+                //  Para registros no encontrados usas KeyNotFoundException
+                return afiliacion ?? throw new KeyNotFoundException("No se encontró la afiliación especificada.");
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error al obtener Afiliacion a seguridad social por ID: {ex.Message}");
+                //InvalidOperationException Indica que ocurrió una operación que no se pudo realizar correctamente.
+                throw new InvalidOperationException($"Error al obtener Afiliacion a seguridad social por ID: {ex.Message}", ex);
             }
         }
 
 
 
 
-
-        public Task<AfiliacionSeguridadSocialreaderDto> UpdateAfiliacionAsync(UpdateAFiliacionDto afiliacion)
-        {
-            throw new NotImplementedException();
-        }
 
         public async Task<bool> UpsertAfiliacionAsync(UpdateAFiliacionDto dto)
         {
             try
             {
-                
+                //  Buscar si ya existe por EmpleadoId o por AfiliacionId válido
                 var afiliacionExistente = await _context.AfiliacionSeguridadSocial
-                    .FirstOrDefaultAsync(x => x.AfiliacionId == (dto.AfiliacionId) || x.EmpleadoId == dto.EmpleadoId);
+                    .FirstOrDefaultAsync(x => x.EmpleadoId == dto.EmpleadoId || (dto.AfiliacionId > 0 && x.AfiliacionId == dto.AfiliacionId));
 
                 if (afiliacionExistente == null)
                 {
-                    //  El empleado NO tenía afiliaciones 
+                    // El empleado NO tenía afiliación -> Crear nuevo registro
                     var nuevaAfiliacion = new AfiliacionSeguridadSocial
                     {
                         EmpleadoId = dto.EmpleadoId,
-                        // 0 para convertir de int? a int de forma segura
                         EpsId = dto.EpsId ?? 0,
                         ArlId = dto.ArlId ?? 0,
                         AfpId = dto.AfpId ?? 0,
                         CajaCompensacionId = dto.CajaCompensacionId ?? 0,
                         Activo = dto.Activo
-                        
                     };
 
-                    _context.AfiliacionSeguridadSocial.Add(nuevaAfiliacion);
+                    await _context.AfiliacionSeguridadSocial.AddAsync(nuevaAfiliacion);
                 }
                 else
                 {
-                   
+                    // El empleado YA tenía afiliación - Actualizar propiedades
+                    
                     afiliacionExistente.EpsId = dto.EpsId ?? 0;
                     afiliacionExistente.ArlId = dto.ArlId ?? 0;
                     afiliacionExistente.AfpId = dto.AfpId ?? 0;
                     afiliacionExistente.CajaCompensacionId = dto.CajaCompensacionId ?? 0;
-                    afiliacionExistente.Activo = dto.Activo ;
-                    _context.AfiliacionSeguridadSocial.Update(afiliacionExistente);
+                    afiliacionExistente.Activo = dto.Activo;
                 }
 
-                // Guardamos los cambios en la base de datos
-                return await _context.SaveChangesAsync() > 0;
+                // 2. Guardar cambios
+                var filasAfectadas = await _context.SaveChangesAsync();
+
+                // Si es un UPDATE y no cambiaron valores, SaveChangesAsync devuelve 0, pero la operación fue correcta.
+                return filasAfectadas >= 0;
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error al procesar la afiliación a seguridad social: {ex.Message}");
+                throw new InvalidOperationException($"Error al procesar la afiliación a seguridad social: {ex.Message}", ex);
             }
         }
+    }
 
     }
-}
 

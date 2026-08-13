@@ -1,7 +1,6 @@
 ﻿using Miluc.Client.Interfaces.Nomina;
 using Miluc.Shared.DTOs.Nomina.AfiliacionSeguridadSocialDto;
-using Miluc.Shared.DTOs.Nomina.EmpleadoDto;
-using Miluc.Shared.DTOs.Nomina.InformacionFamiliarDto;
+
 using Miluc.Shared.Models.Response;
 using System.Net.Http.Json;
 
@@ -13,7 +12,6 @@ namespace Miluc.Client.Servicios.Nomina
         {
             try
             {
-                // var request = new HttpRequestMessage(HttpMethod.Get, "https://localhost:7222/api/AfiliacionSeguridadSocial/AfiliacionSeguridadSocial?filtro=&page=1&cantidad=");
                 var response = await _httpClient.GetAsync($"api/AfiliacionSeguridadSocial/AfiliacionSeguridadSocial?filtro={textoBusqueda}&page={paginaActual}&cantidad={cantidadPorPagina}");
                 if (!response.IsSuccessStatusCode)
                 { // Manejar el error de la solicitud
@@ -113,12 +111,6 @@ namespace Miluc.Client.Servicios.Nomina
 
 
                 }
-
-
-
-
-
-
 
 
                 return responseAPI;

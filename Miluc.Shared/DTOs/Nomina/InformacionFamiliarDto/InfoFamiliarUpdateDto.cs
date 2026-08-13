@@ -8,7 +8,9 @@ namespace Miluc.Shared.DTOs.Nomina.InformacionFamiliarDto
     public class InfoFamiliarUpdateDto
     {
         public int InformacionFamiliarId { get; set; }
-        [Required (ErrorMessage ="NUmero de Documento es obligatorio")]
+        [RegularExpression(@"^[0-9]+$", ErrorMessage = "El documento solo puede contener números")]
+        [Required(ErrorMessage = " Campo documento es obligatorio")]
+
         public string Documento { get; set; } = string.Empty;
         public int EmpleadoId { get; set; } // Foreign key de Empleado
         [Required(ErrorMessage =" Campo nombre Completo es Obliagatorio")]

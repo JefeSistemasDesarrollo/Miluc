@@ -1,0 +1,203 @@
+﻿@page "/api/EsquemaVacunacion/Esquemas/{idEmpleado:int}"
+
+@using Miluc.Client.Interfaces.Nomina
+@using Miluc.Shared.DTOs.Nomina.EmpleadoDto
+@using Miluc.Shared.DTOs.Nomina.EsquemaVacunacionDto
+
+@inject NavigationManager nav
+@inject IEsquemaVacunacionClienteService _esquemaVacunacionClientService
+@inject IEmpleadoClientService _empleadoService
+@inject IJSRuntime JS
+
+<div class="detalleAfiliacionesEmpleado-page p-4 animate__animated animate__fadeIn">
+    <div class="container-fluid max-width-container">
+
+        @* --- CABECERA DE LA PÁGINA --- *@
+        <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
+            <div>
+                <h2 class="fw-extrabold text-black m-0 tracking-tight">
+                    <i class="bi bi-shield-check text-vinotinto"></i>
+                    Detalle del Esquema de Vacunación
+                </h2>
+                <p class="text-muted mb-0 small mt-1">
+                    Visualización de vacunas registradas para:
+                    <strong>@(string.IsNullOrEmpty(nombreEmpleado) ? "Cargando..." : nombreEmpleado)</strong>
+                </p>
+            </div>
+
+            <button class="btn btn-rojo btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
+                <i class="bi bi-arrow-left me-2"></i> Volver al listado
+            </button>
+        </div>
+
+        @if (cargando)
+        {
+            <div class="d-flex justify-content-center my-5">
+                <div class="spinner-border text-vinotinto" role="status">
+                    <span class="visually-hidden">Cargando datos...</span>
+                </div>
+            </div>
+        }
+        else if (listaVacunas != null && listaVacunas.Any())
+        {
+            <div class="row g-4">
+
+                @* --- RESUMEN DEL EMPLEADO --- *@
+                <div class="col-12">
+                    <div class="card card-custom border-0 shadow-sm rounded-4">
+                        <div class="card-body p-4">
+                            <div class="section-title-container mb-3">
+                                <span class="badge bg-vinotinto-light text-black rounded-pill px-3 py-2 fw-bold text-uppercase tracking-wider">
+                                    Información General del Colaborador
+                                </span>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label label-custom fw-bold">Colaborador</label>
+                                    <input type="text" class="form-control input-custom-view" value="@nombreEmpleado" readonly />
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label label-custom fw-bold">Total de Vacunas Registradas</label>
+                                    <input type="text" class="form-control input-custom-view" value="@listaVacunas.Count" readonly />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* --- TABLA CON EL LISTADO DE VACUNAS --- *@
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                        <div class="card-header bg-white p-4 border-0 d-flex justify-content-between align-items-center">
+                            <h5 class="fw-bold m-0 text-black">
+                                <i class="bi bi-list-check me-2 text-vinotinto"></i>Vacunas Aplicadas
+                            </h5>
+                            <span class="badge bg-rojo rounded-pill px-3 py-2">
+                                @listaVacunas.Count Dosis / Registros
+                            </span>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="bg-light text-uppercase small text-muted">
+                                    <tr>
+                                        <th class="ps-4 py-3">#</th>
+                                        <th class="py-3">Vacuna</th>
+                                        <th class="text-center py-3">Fecha de Aplicación</th>
+                                        <th class="text-center py-3">Fecha de Registro</th>
+                                        <th class="text-center pe-4 py-3">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @for (int i = 0; i < listaVacunas.Count; i++)
+                                    {
+                                        var vacuna = listaVacunas[i];
+                                        <tr>
+                                            <td class="ps-4 fw-bold text-muted">@(i + 1)</td>
+                                            <td>
+                                                <span class="fw-semibold text-dark">@vacuna.NombreVacuna</span>
+                                            </td>
+                                            <td class="text-center text-muted">
+                                                <i class="bi bi-calendar-event me-1"></i>@vacuna.FechaVacuna
+                                            </td>
+                                            <td class="text-center text-muted">
+                                                <i class="bi bi-clock me-1"></i>@vacuna.FechaCreacion
+                                            </td>
+                                            <td class="text-center pe-4">
+                                                @if (vacuna.Activo ?? false)
+                                                    
+                                                    {
+                                                        <i class="bi  text-black bi-check2-circle"></i>
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="bi text-rojo bi-x-circle"></i>
+                                                    
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                @* --- INFORMACIÓN EXTRA DE SEGURIDAD --- *@
+                <div class="col-12">
+                    <div class="card card-info-banner border-0 shadow-sm rounded-4 p-4 position-relative overflow-hidden">
+                        <div class="position-relative z-index-2 d-flex flex-column justify-content-center">
+                            <h5 class="fw-bold text-rojo mb-2"><i class="bi bi-shield-lock-fill me-2"></i>Seguridad de los datos</h5>
+                            <p class="text-secondary small mb-0 lh-lg">
+                                Todos los datos registrados en esta plataforma son almacenados y procesados de manera segura.
+                                La organización garantiza la confidencialidad de la información del colaborador y limita su acceso
+                                exclusivamente a usuarios autorizados para fines administrativos, legales y de gestión humana.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int idEmpleado { get; set; }
+
+    private List<EsquemaVacunacionReaderDto> listaVacunas = new List<EsquemaVacunacionReaderDto>();
+    private string nombreEmpleado = string.Empty;
+    private bool cargando = true;
+
+    private void Volver() => nav.NavigateTo("/api/EsquemaVacunacion/Esquemas");
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if (idEmpleado <= 0)
+            {
+                await JS.InvokeVoidAsync("alert", "ID de empleado no válido.");
+                Volver();
+                return;
+            }
+
+            // 🔹 CAMBIO CLAVE: Cambiamos GetEsquemasVacunacionAsync por GetEsquemaVacunacionByIdAsync
+            var respuesta = await _esquemaVacunacionClientService.GetEsquemaVacunacionByIdAsync(idEmpleado);
+
+            if (respuesta != null && respuesta.EsCorrecto && respuesta.Valor != null)
+            {
+                // Asignamos directamente la lista del servidor (ya viene filtrada con activas e inactivas)
+                listaVacunas = respuesta.Valor;
+
+                if (listaVacunas.Any())
+                {
+                    nombreEmpleado = listaVacunas.First().NombreEmpleado ?? "Empleado";
+                }
+                else
+                {
+                    await JS.InvokeVoidAsync("alert", "El empleado no cuenta con un registro de esquema de vacunación.");
+                    Volver();
+                }
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("alert", "No se pudo obtener la información de esquema de vacunación.");
+                Volver();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al consultar: {ex.Message}");
+            await JS.InvokeVoidAsync("alert", "Error interno al recuperar el detalle.");
+            Volver();
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+}
