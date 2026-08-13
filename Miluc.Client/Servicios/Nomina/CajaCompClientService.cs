@@ -15,7 +15,7 @@ namespace Miluc.Client.Servicios.Nomina
         {
             try
             {
-                var response = await httpClient.PutAsJsonAsync($"api/Caja/{cajaUpdate.cajaCompensacionId}", cajaUpdate);
+                var response = await httpClient.PutAsJsonAsync($"/api/CajaCompensacion/{cajaUpdate.CajaCompensacionId}", cajaUpdate);
 
 
                 if (!response.IsSuccessStatusCode)
@@ -93,7 +93,7 @@ namespace Miluc.Client.Servicios.Nomina
         {
             try
             {
-                var response = await httpClient.GetFromJsonAsync<ResponseAPI<CajaCompensacionReaderDto>>($"/api/Caja/{id}");
+                var response = await httpClient.GetFromJsonAsync<ResponseAPI<CajaCompensacionReaderDto>>($"/api/CajaCompensacion/{id}");
                 return response ?? new ResponseAPI<CajaCompensacionReaderDto>
                 {
                     EsCorrecto = false,

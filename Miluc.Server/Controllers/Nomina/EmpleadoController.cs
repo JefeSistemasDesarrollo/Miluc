@@ -3,13 +3,16 @@ using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Nomina;
 using Miluc.Shared.DTOs.Nomina.EmpleadoDto;
 using Miluc.Shared.Models.Response;
+using System.Text;
 
 namespace Miluc.Server.Controllers.Nomina
 {
 
     [ApiController]
     [Route("api/[controller]")]
+#pragma warning disable S6961
     public class EmpleadoController(IEmpleadoService empleadoService, ILogService _log) : Controller
+
     {
 
         [HttpGet]
@@ -17,10 +20,10 @@ namespace Miluc.Server.Controllers.Nomina
         {
             try
             {
-                // The service returns a ResponseAPI<List<EmpleadoReaderDto>>; do not deconstruct it as a tuple
+            
                 var response = await empleadoService.GetEmpleadosAsync(filtro, page, cantidad);
                 var empleados = response?.Valor;
-                var totalRegistros = response?.CantRegistros ?? 0;
+            
 
                 if (empleados == null || empleados.Count == 0)
                 {
@@ -309,17 +312,21 @@ namespace Miluc.Server.Controllers.Nomina
             }
         }
 
-        
+
         private static string ObtenerMensajeDetallado(Exception ex)
         {
-            var mensaje = ex.Message;
-            while (ex.InnerException != null)
+            var sb = new StringBuilder(ex.Message);
+            var actual = ex.InnerException;
+
+            while (actual != null)
             {
-                ex = ex.InnerException;
-                mensaje += $" | InnerException: {ex.Message}";
+                sb.Append(" | InnerException: ").Append(actual.Message);
+                actual = actual.InnerException;
             }
-            return mensaje;
+
+            return sb.ToString();
         }
     }
-}
+    }
+
 

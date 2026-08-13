@@ -93,6 +93,7 @@ namespace Miluc.Server.Servicios.Nomina
 
                     AfpId = a.AfpId,
                     Nombre = a.Nombre,
+                    Codigo = a.Codigo,
 
                     FechaCreacion = a.FechaCreacion,
                     FechaActualizacion = a.FechaActualizacion,

@@ -19,7 +19,7 @@
         @* --- CABECERA DE LA PÁGINA --- *@
         <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
             <div>
-                <h2 class="fw-extrabold text-vinotinto m-0 tracking-tight">
+                <h2 class="fw-extrabold text-black m-0 tracking-tight">
                     <i class="bi bi-pen"></i>
                     Editar Empleado
                 </h2>
@@ -28,7 +28,7 @@
                 </p>
             </div>
 
-            <button class="btn btn-vinotinto btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
+            <button class="btn btn-rojo btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
                 <i class="bi bi-arrow-left me-2"></i> Volver al listado
             </button>
         </div>
@@ -44,7 +44,7 @@
                     <div class="card card-custom border-0 shadow-sm rounded-4">
                         <div class="card-body p-4">
                             <div class="section-title-container mb-4">
-                                <span class="badge bg-vinotinto-light text-vinotinto rounded-pill mb-2 px-3 py-2 fw-bold text-uppercase tracking-wider">Paso 1</span>
+                                <span class="badge bg-rojo-light text-vinotinto rounded-pill mb-2 px-3 py-2 fw-bold text-uppercase tracking-wider">Paso 1</span>
                                 <h5 class="fw-bold text-dark m-0">Datos de Identificación</h5>
                             </div>
 
@@ -235,16 +235,14 @@
                                                     <div class="form-check form-switch switch-lg ">
                                                         <InputCheckbox class=" form-check-input form-control " @bind-Value="editarEmpleado.Activo"> </InputCheckbox>
                                                         @if (editarEmpleado.Activo) {
-                                                            <span class="text-success ">
-                                                                        Activo
-                                                            </span>
+                                                           
+                                                                        
+                                                            <i class="bi  text-black bi-check2-circle"></i>
 
                                                         }
                                                         else
                                                         {
-                                                            <span class="text-danger">
-                                                                     Inactivo
-                                                            </span>
+                                                            <i class="bi text-rojo bi-x-circle"></i>
                                                         }
 
                                                     </div>
@@ -275,8 +273,8 @@
                         <div class="card-body p-4 d-flex flex-column justify-content-between">
                             <div>
                                 <div class="section-title-container mb-4">
-                                    <span class="badge bg-vinotinto-light text-vinotinto rounded-pill mb-2 px-3 py-2 fw-bold text-uppercase tracking-wider">Paso 2</span>
-                                    <h5 class="fw-bold text-dark m-0">Ubicación y Residencia</h5>
+                                    <span class="badge bg-rojo-light text-rojo rounded-pill mb-2 px-3 py-2 fw-bold text-uppercase tracking-wider">Paso 2</span>
+                                    <h5 class="fw-bold text-rojo m-0">Ubicación y Residencia</h5>
 
                                     @*munucipio*@
                                     <div class="mb-2">
@@ -320,7 +318,7 @@
                 <div class="col-12 col-lg-6 col-md-4 col-sm-12">
                         <div class="card card-info-banner border-0 shadow-sm rounded-4 h-100 p-4 position-relative overflow-hidden">
                             <div class="position-relative z-index-2 d-flex flex-column h-100 justify-content-center">
-                                <h5 class="fw-bold text-vinotinto mb-2"><i class="bi bi-shield-lock-fill me-2"></i>Seguridad de los datos</h5>
+                                <h5 class="fw-bold text-rojo mb-2"><i class="bi bi-shield-lock-fill me-2"></i>Seguridad de los datos</h5>
                                 <p class="text-secondary small mb-0 lh-lg">
                                     Al actualizar la información de un colaborador, confirme que el número de identificación y demás datos coincidan con los documentos oficiales. Esta verificación garantiza la correcta gestión de afiliaciones y trámites de seguridad social.
                                 </p>
@@ -340,10 +338,10 @@
 
             @* --- BARRA DE ACCIONES / BOTÓN GUARDAR --- *@
             <div class="mt-5 pt-3 border-top d-flex justify-content-end gap-3">
-                <button type="button" class="btn btn-light-custom rounded-pill px-4 py-2.5 fw-semibold transition-all" @onclick="Volver">
+                <button type="button" class="btn btn-rojo-custom rounded-pill px-4 py-2.5 fw-semibold transition-all" @onclick="Volver">
                     Cancelar
                 </button>
-                <button type="submit" class="btn btn-vinotinto btn-lg px-5 rounded-pill shadow-sm fw-bold transition-all d-flex align-items-center" disabled="@isProcessing">
+                <button type="submit" class="btn btn-rojo btn-lg px-5 rounded-pill shadow-sm fw-bold transition-all d-flex align-items-center" disabled="@isProcessing">
                     @if (isProcessing)
                     {
                         <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
@@ -351,8 +349,8 @@
                     }
                     else
                     {
-                        <i class="bi bi-check-circle-fill me-2"></i>
-                        <span>Actualizar Empleado</span>
+                        <i class="bi  bi-check-circle-fill me-2"></i>
+                        <span>Guardar</span>
                     }
                 </button>
             </div>

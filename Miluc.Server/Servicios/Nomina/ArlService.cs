@@ -65,7 +65,7 @@ namespace Miluc.Server.Servicios.Nomina
 
         public async Task<(List<ArlReaderDto> Data, int TotalRegistros)> GetArlAsync(string? filtro = null, int page = 1, int? cantidad = null)
         {
-            {
+            
                 try
                 {
                     int cantidadtop = cantidad ?? 20;
@@ -109,39 +109,41 @@ namespace Miluc.Server.Servicios.Nomina
 
 
 
-        }
+        
 
-        
-        
+
+
 
         public async Task<ArlReaderDto> GetByArlAsync(int id)
         {
             try
             {
-                var arlId = await _contex.Arl.AsNoTracking()
+                var arl = await _contex.Arl.AsNoTracking()
                     .Where(a => a.ArlId == id)
                     .Select(a => new ArlReaderDto
                     {
                         ArlId = a.ArlId,
                         Nombre = a.Nombre,
                         Codigo = a.Codigo,
-                        FechaActualizacion = DateTime.Now,
-                        FechaCreacion = DateTime.Now,
+                        FechaActualizacion = a.FechaActualizacion,
+                        FechaCreacion = a.FechaCreacion,
                         Activo = a.Activo
+                    })
+                    .FirstOrDefaultAsync();
 
-                    }).FirstOrDefaultAsync();
-                if (arlId == null) throw new Exception("Eps no encontrado.");
-
-                return arlId;
-
-
-
-
-
+                return arl ?? throw new KeyNotFoundException($"ARL con ID {id} no encontrada.");
+            }
+            catch (KeyNotFoundException)
+            {
+                // Si no se encontró el registro, relanzamos la excepción limpia  para que el controlador sepa que debe retornar un NotFound (404).
+                
+                throw;
             }
             catch (Exception ex)
             {
-                throw new Exception($"arl no encontrada:{ex.Message}");
+                //  Si ocurre un fallo de base de datos u otro error inesperado,  cumplimos con S112 usando una excepción específica y pasando 'ex' como InnerException.
+
+                throw new InvalidOperationException($"Error al consultar la ARL con ID {id}.", ex);
             }
         }
 

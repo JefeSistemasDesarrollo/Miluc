@@ -18,7 +18,7 @@ namespace Miluc.Server.Servicios.Nomina
 
                 foreach (var fam in familiar)
                 {
-                    var infoFamiliar = new InformacionFamiliar
+                    var infoFamiliar = new InfoFamiliarCreateDto
                     {
                         EmpleadoId = fam.EmpleadoId,
                         Documento = fam.Documento,

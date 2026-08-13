@@ -17,6 +17,6 @@ namespace Miluc.Shared.DTOs.Nomina.EpsDto
 
         public DateTime? FechaActualizacion { get; set; }
 
-        public bool? Activo { get; set; }
+        public bool Activo { get; set; }
     }
 }

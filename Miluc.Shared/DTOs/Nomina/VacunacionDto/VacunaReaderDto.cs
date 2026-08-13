@@ -6,7 +6,7 @@
 
         public int VacunaId { get; set; }
         public string VacunaName { get; set; }
-        public bool Activo { get; set; }
+   
 
 
     }

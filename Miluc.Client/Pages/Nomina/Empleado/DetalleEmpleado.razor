@@ -19,7 +19,7 @@
         @* --- CABECERA DE LA PÁGINA --- *@
         <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
             <div>
-                <h2 class="fw-extrabold text-vinotinto m-0 tracking-tight">
+                <h2 class="fw-extrabold text-black m-0 tracking-tight">
                     <i class="bi bi-eye"></i>
                     Detalle del Empleado
                 </h2>
@@ -28,7 +28,7 @@
                 </p>
             </div>
 
-            <button class="btn btn-vinotinto btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
+            <button class="btn btn-rojo btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
                 <i class="bi bi-arrow-left me-2"></i> Volver al listado
             </button>
         </div>
@@ -36,7 +36,7 @@
         @if (empleado == null)
         {
             <div class="d-flex justify-content-center my-5">
-                <div class="spinner-border text-vinotinto" role="status">
+                <div class="spinner-border text-rojo" role="status">
                     <span class="visually-hidden">Cargando datos...</span>
                 </div>
             </div>
@@ -120,11 +120,11 @@
                                     <div>
                                         @if (empleado.Activo)
                                         {
-                                            <span class="badge bg-success px-3 py-2 rounded-pill"><i class="bi bi-check-circle me-1"></i> Activo</span>
+                                            <i class="bi  text-black bi-check2-circle"></i>
                                         }
                                         else
                                         {
-                                            <span class="badge bg-danger px-3 py-2 rounded-pill"><i class="bi bi-x-circle me-1"></i> Inactivo</span>
+                                            <i class="bi text-rojo bi-x-circle"></i>
                                         }
                                     </div>
                                 </div>
@@ -138,7 +138,7 @@
                 <div class="col-12 col-md-6">
                     <div class="card card-custom border-0 shadow-sm rounded-4 h-100">
                         <div class="card-body p-4">
-                            <h5 class="fw-bold text-dark mb-3">Ubicación Laboral / Residencia</h5>
+                            <h5 class="fw-bold text-rojo mb-3">Ubicación Laboral / Residencia</h5>
                             <div class="mb-3">
                                 <label class="form-label label-custom">Municipio / Departamento</label>
                                 @* Mostramos el Nombre unificado que viene del JOIN en el backend *@
@@ -151,7 +151,7 @@
                 <div class="col-12 col-lg-6 col-md-4 col-sm-12">
                     <div class="card card-info-banner border-0 shadow-sm rounded-4 h-100 p-4 position-relative overflow-hidden">
                         <div class="position-relative z-index-2 d-flex flex-column h-100 justify-content-center">
-                            <h5 class="fw-bold text-vinotinto mb-2"><i class="bi bi-shield-lock-fill me-2"></i>Seguridad de los datos</h5>
+                            <h5 class="fw-bold text-rojo mb-2"><i class="bi bi-shield-lock-fill me-2"></i>Seguridad de los datos</h5>
                             <p class="text-secondary small mb-0 lh-lg">
                                 Todos los datos registrados en esta plataforma son almacenados y procesados de manera segura.
                                 La organización garantiza la confidencialidad de la información del colaborador y limita su acceso

@@ -1,19 +1,34 @@
-﻿.bg-vinotinto {
-    background-color: #800020;
+﻿.bg-rojo {
+    background-color: #D62F46;
     color: white;
 }
 
-.btn-vinotinto {
-    background-color: #800000;
+.btn-rojo {
+    background-color: #D62F46;
     color: white;
+}
+
+.bg-amarillo {
+    background-color: #FDC922;
+    color: amarillo;
+}
+
+.bg-amarillo {
+    background-color: D0CFCA;
+    color: gris;
+}
+
+.bg-rojo {
+    background-color: D0CFCA;
+    color: gris;
 }
 
 .empleado-page {
     padding: 1rem;
 }
 
-.text-vinotinto {
-    color: #800020;
+.text-rojo {
+    color: #D62F46;
 }
 
 x-small {
@@ -63,7 +78,7 @@ x-small {
         text-transform: uppercase;
         letter-spacing: 1px;
         padding: 1.2rem;
-        color: #800020;
+        color: #D62F46;
     }
 
 
@@ -91,17 +106,17 @@ x-small {
 
     /*sombrear a color-profile vinotinto*/
     .btn-detail:hover {
-        background: #800020;
+        background: #D62F46;
         color: white;
     }
 
 .edit:hover {
-    background: #800020;
+    background: #D62F46;
     color: white;
 }
 
 .delete:hover {
-    background: #800020;
+    background: #D62F46;
     color: white;
 }
 /* Paginador */
@@ -135,7 +150,7 @@ x-small {
 }
 
     .header-principal h1 {
-        color: #800020; /* Vinotinto Miluc */
+        color: #D62F46; /* Vinotinto Miluc */
         font-weight: 800;
         font-size: 2rem;
     }
@@ -178,8 +193,8 @@ x-small {
     border-top: 6px solid #D62F46;
 }
 
-.border-vinotinto {
-    border-top: 6px solid #800020;
+.border-rojo {
+    border-top: 6px solid #D62F46;
 }
 
 .border-amarillo {
@@ -246,8 +261,8 @@ x-small {
     color: white;
 }
 
-.btn-vinotinto {
-    background: #800020;
+.btn-rojo {
+    background: #D62F46;
     color: white;
 }
 

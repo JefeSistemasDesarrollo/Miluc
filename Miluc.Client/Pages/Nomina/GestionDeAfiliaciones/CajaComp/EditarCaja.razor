@@ -1,0 +1,205 @@
+﻿@page "/caja-compensacion/editar/{id:int}"
+
+@using System.Linq
+@using Miluc.Client.Interfaces.Nomina.SeguridadSocial
+@using Miluc.Shared.DTOs.Nomina.CajaCompensacionDto
+
+@inject NavigationManager nav
+@inject ICajaCompensacionClientService cajaCompensacion
+@inject IJSRuntime JS
+
+<div class="empleado-page p-4 animate__animated animate__fadeIn">
+    <div class="container-fluid max-width-container">
+
+        @* --- HEADER --- *@
+        <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
+            <div>
+                <h2 class="fw-extrabold text-black m-0 tracking-tight">
+                    <i class="bi bi-pencil-square me-2 header-icon"></i>
+                    Editar Caja
+                </h2>
+                <p class="text-muted mb-0 small mt-1">
+                    Modifique la información de la entidad Administradora De Riesgos Laborales. Los campos marcados con <span class="text-danger">*</span> son requeridos.
+                </p>
+            </div>
+
+            <button class="btn btn-rojo btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
+                <i class="bi bi-arrow-left me-2"></i> Volver al listado
+            </button>
+        </div>
+
+        @if (cajaUpdate == null)
+        {
+            <div class="d-flex justify-content-center my-5">
+                <div class="spinner-border text-vinotinto" role="status">
+                    <span class="visually-hidden">Cargando datos de la EPS...</span>
+                </div>
+            </div>
+        }
+        else
+        {
+            @* --- FORMULARIO DE EDICIÓN --- *@
+            <EditForm Model="cajaUpdate" OnValidSubmit="ActualizarCaja">
+                <DataAnnotationsValidator />
+
+                <div class="col-12">
+                    <div class="card card-custom border-0 shadow-sm rounded-4">
+                        <div class="card-body p-4">
+                            <div class="section-title-container mb-4">
+                                <h5 class="fw-bold text-dark m-0">Datos de la Caja</h5>
+                            </div>
+
+                            <div class="row g-4">
+                                @* Nombre de la Caja *@
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-hospital"></i></span> Nombre Caja<span class="text-danger">*</span></label>
+                                    <div class="input-group-custom">
+                                        <InputText class="form-control input-custom" @bind-Value="cajaUpdate.Nombre" placeholder="Ej: Sura Caja" />
+                                    </div>
+                                    <ValidationMessage For="@(() => cajaUpdate.Nombre)" class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
+
+                                @* Código de Entidad *@
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-barcode"></i></span> Código Caja<span class="text-danger">*</span></label>
+                                    <div class="input-group-custom">
+                                        <InputText class="form-control input-custom" @bind-Value="cajaUpdate.Codigo" placeholder="Ej: CJA001" />
+                                    </div>
+                                    <ValidationMessage For="@(() => cajaUpdate.Codigo)" class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
+
+                                @* Estado (Switch Activo/Inactivo) *@
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom text-muted-custom">Estado<span class="text-danger">*</span></label>
+                                    <div class="card card-custom border-0 shadow-sm rounded-4">
+                                        <div class="card-body input-custom py-2">
+                                            <div class="form-check form-switch switch-lg d-flex align-items-center gap-2">
+                                                <InputCheckbox class="form-check-input mt-0" @bind-Value="cajaUpdate.Activo" id="switchActivo" />
+                                                <label class="form-check-label fw-semibold" for="switchActivo">
+                                                    @if (cajaUpdate.Activo)
+                                                    {
+                                                        <i class="bi  text-black bi-check2-circle"></i>
+                                                    }
+                                                    else
+                                                    {
+                                                    <i class="bi text-rojo bi-x-circle"></i>
+                                                    
+                                                    }
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @* Banner Informativo *@
+                            <div class="card card-info-banner border-0 shadow-sm rounded-4 p-4 position-relative overflow-hidden">
+                                <div class="position-relative z-index-2 d-flex flex-column justify-content-center">
+                                    <h5 class="fw-bold text-rojo mb-2">
+                                        <i class="bi bi-shield-lock-fill me-2"></i>Seguridad de las Entidades
+                                    </h5>
+                                    <p class="small mb-0 lh-lg">
+                                        Seguridad de las Entidades
+                                        Asegúrese de que el código asignado corresponda al código oficial de la Caja de Compensación Familiar (ej: CCF03, CCF12) registrado ante la Superintendencia de Subsidio Familiar para evitar inconsistencias en la planilla PILA o reportes de novedades.
+                                    </p>
+                                </div>
+                                <div class="decorative-circle"></div>
+                            </div>
+                        </div>
+
+                            @* --- BOTONES DE ACCIÓN --- *@
+                            <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-3">
+                                <button type="button" class="btn btn-light-custom rounded-pill px-4 py-2.5 fw-semibold" @onclick="Volver">
+                                    Cancelar
+                                </button>
+
+                                <button type="submit" class="btn btn-rojo btn-secondary rounded-pill px-4" disabled="@isProcessing">
+                                    @if (isProcessing)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                        <span>Actualizando...</span>
+                                    }
+                                    else
+                                    {
+                                        
+                                        <span>Guardar </span>
+                                    }
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                
+            </EditForm>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+    private CajaUpdate cajaUpdate;
+    private bool isProcessing = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCaja();
+    }
+
+    private async Task CargarCaja()
+    {
+        // Se usa 'id' que viene de la URL
+        var resCaja = await cajaCompensacion.GetBycajaAsync(id);
+
+        if (resCaja != null && resCaja.EsCorrecto && resCaja.Valor != null)
+        {
+            var CajaObtenida = resCaja.Valor;
+
+            cajaUpdate = new CajaUpdate
+            {
+                CajaCompensacionId = CajaObtenida.CajaCompensacionId,
+                Nombre = CajaObtenida.Nombre,
+                Codigo = CajaObtenida.Codigo,
+                Activo = CajaObtenida.Activo,
+            };
+        }
+        else
+        {
+            var msj = resCaja?.Mensaje ?? "No se encontró la Caja solicitada.";
+            await JS.InvokeVoidAsync("Swal.fire", "Error", msj, "error");
+            Volver();
+        }
+    }
+
+    private async Task ActualizarCaja()
+    {
+        if (isProcessing) return;
+        isProcessing = true;
+
+        try
+        {
+            var respuesta = await cajaCompensacion.CajaUpdate(cajaUpdate);
+
+            if (!respuesta.EsCorrecto)
+            {
+                await JS.InvokeVoidAsync("Swal.fire", "Error", $"No se pudo actualizar: {respuesta.Mensaje}", "error");
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("Swal.fire", "Éxito", "La Caja ha sido actualizada correctamente.", "success");
+                Volver();
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("Swal.fire", "Fatal Error", $"Excepción interna: {ex.Message}", "error");
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    // Ruta corregida a la vista de usuario, no a la API
+    private void Volver() => nav.NavigateTo("/api/CajaCompensacion");
+}

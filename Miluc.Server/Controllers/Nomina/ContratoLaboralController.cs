@@ -2,6 +2,8 @@
 using Microsoft.Identity.Client;
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Nomina;
+using Miluc.Server.Servicios.Nomina;
+using Miluc.Shared.DTOs.Nomina.AfiliacionSeguridadSocialDto;
 using Miluc.Shared.DTOs.Nomina.ContratoLaboralDetalleDto;
 using Miluc.Shared.DTOs.Nomina.ContratoLaboralDto;
 using Miluc.Shared.DTOs.Nomina.EmpresaDto;
@@ -12,7 +14,12 @@ namespace Miluc.Server.Controllers.Nomina
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ContratoLaboralController(ITipoContratoService tipoContratoService, IEmpresaService empresaService, IContratoLaboralService contratoLaboralService, IContratoLaboralDetalleService contratoLaboralDetalleService, ILogService _log) : Controller
+    public class ContratoLaboralController(
+        ITipoContratoService tipoContratoService,
+        IEmpresaService empresaService,
+        IContratoLaboralService contratoLaboralService,
+        IContratoLaboralDetalleService contratoLaboralDetalleService,
+        ILogService _log) : ControllerBase
     {
         //TipoContrato
         [HttpGet("TipoContrato")]
@@ -110,44 +117,48 @@ namespace Miluc.Server.Controllers.Nomina
             }
         }
         [HttpGet("ContratoLaboral")]
-        public async Task<ActionResult<ResponseAPI<List<ContratoLabralreaderDto>>>> GetAllContratoLaboralAsync([FromQuery] string? filtro = null, [FromQuery] int page = 1, [FromQuery] int? cantidad = null)
+        public async Task<ActionResult<ResponseAPI<List<ContratoLabralreaderDto>>>> GetContratoLaboralAsync([FromQuery] string? filtro = null, [FromQuery] int page = 1, [FromQuery] int? cantidad = null)
         {
             try
             {
-                var (contratoLaboral, totalRegistros) = await contratoLaboralService.GetAllContratoLaboralAsync(filtro, page, cantidad);
+                var (contratoLaboral, totalRegistros) = await contratoLaboralService.GetContratoLaboralAsync(filtro, page, cantidad);
+
+                // Si la lista es nula o vacía, devolvemos OK con lista vacía y 0 registros (no 404)
                 if (contratoLaboral == null || contratoLaboral.Count == 0)
+              
                 {
-                    return NotFound(new ResponseAPI<List<ContratoLabralreaderDto>>
+                    return Ok(new ResponseAPI<List<ContratoLabralreaderDto>>
                     {
-                        EsCorrecto = false,
-                        Valor = null,
+                        EsCorrecto = true,
+                        Valor = [], // Sintaxis moderna de C# 12 para inicializar la lista vacía
                         Mensaje = "No se encontraron contratos laborales.",
                         CantRegistros = 0
                     });
                 }
+
                 return Ok(new ResponseAPI<List<ContratoLabralreaderDto>>
                 {
                     EsCorrecto = true,
                     Valor = contratoLaboral,
                     Mensaje = "Contratos laborales obtenidos correctamente.",
-                    CantRegistros = contratoLaboral.Count
+                    CantRegistros = totalRegistros
                 });
             }
             catch (Exception ex)
             {
                 await _log.GuardarErrorAsync(
-              message: ex.Message,
-              StackTrace: ex.StackTrace,
-              usuario: User.Identity?.Name ?? "Sistema",
-              metodo: nameof(GetAllEmpresasAsync),
-              ruta: HttpContext.Request.Path,
-              ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
-              origen: nameof(ContratoLaboralController));
+                    message: ex.Message,
+                    StackTrace: ex.StackTrace,
+                    usuario: User.Identity?.Name ?? "Sistema",
+                    metodo: nameof(GetContratoLaboralAsync),
+                    ruta: HttpContext.Request.Path,
+                    ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
+                    origen: nameof(ContratoLaboralController));
 
                 return StatusCode(500, new ResponseAPI<List<ContratoLabralreaderDto>>
                 {
                     EsCorrecto = false,
-                    Valor = null,
+                    Valor = [],
                     Mensaje = "Ocurrió un error al obtener los contratos laborales.",
                     CantRegistros = 0
                 });
@@ -183,7 +194,7 @@ namespace Miluc.Server.Controllers.Nomina
              message: ex.Message,
              StackTrace: ex.StackTrace,
              usuario: User.Identity?.Name ?? "Sistema",
-             metodo: nameof(GetAllEmpresasAsync),
+             metodo: nameof(GetContratoLaboralAsync),
              ruta: HttpContext.Request.Path,
              ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
              origen: nameof(ContratoLaboralController));
@@ -198,7 +209,7 @@ namespace Miluc.Server.Controllers.Nomina
         }
 
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<ResponseAPI<ContratoLabralreaderDto>>> GetContratoId(int id) // <-- CAMBIADO A 'id'
+        public async Task<ActionResult<ResponseAPI<ContratoLabralreaderDto>>> GetContratoId(int id) 
         {
             var response = new ResponseAPI<ContratoLabralreaderDto>();
 
@@ -232,7 +243,100 @@ namespace Miluc.Server.Controllers.Nomina
         }
 
 
+        [HttpPut("{id}")]
+        public async Task<ActionResult<ResponseAPI<ContratoLabralreaderDto>>> UpdateAfiliaUpsertContratoLaboralAsynccionAsync(int id, [FromBody] UpdateContratoLaboralDto updateContratoLaboralDto)
+        {
+            // Validar null
+            if (updateContratoLaboralDto == null)
+            {
+                return BadRequest(new ResponseAPI<ContratoLabralreaderDto>
+                {
+                    EsCorrecto = false,
+                    Valor = null,
+                    Mensaje = "Debe enviar la información del contrato laboral.",
+                    CantRegistros = 0
+                });
+            }
 
+            // Validar que el id de la URL coincida con el DTO
+            if (id != updateContratoLaboralDto.ContratoLaboralId)
+            {
+                return BadRequest(new ResponseAPI<ContratoLabralreaderDto>
+                {
+                    EsCorrecto = false,
+                    Valor = null,
+                    Mensaje = "El id enviado no coincide.",
+                    CantRegistros = 0
+                });
+            }
+
+            // Validar modelo
+            if (!ModelState.IsValid)
+            {
+                var errores = ModelState
+                    .Where(x => x.Value.Errors.Count > 0)
+                    .Select(x => new
+                    {
+                        Campo = x.Key,
+                        Errores = x.Value.Errors
+                            .Select(e => e.ErrorMessage)
+                            .ToList()
+                    });
+
+                return BadRequest(new ResponseAPI<object>
+                {
+                    EsCorrecto = false,
+                    Valor = errores,
+                    Mensaje = "Datos inválidos.",
+                    CantRegistros = 0
+                });
+            }
+
+            try
+            {
+                // Upsert devuelve bool -> no es un DTO
+                var resultado = await contratoLaboralService.UpsertContratoLaboralAsync(updateContratoLaboralDto);
+
+                if (!resultado)
+                {
+                    return NotFound(new ResponseAPI<ContratoLabralreaderDto>
+                    {
+                        EsCorrecto = false,
+                        Valor = null,
+                        Mensaje = "No se encontró o no se pudo actualizar el contrato laboral.",
+                        CantRegistros = 0
+                    });
+                }
+
+                return Ok(new ResponseAPI<ContratoLabralreaderDto>
+                {
+                    EsCorrecto = true,
+                    Valor = null, // El servicio solo retorna boolean, para devolver DTO se necesita consultar de nuevo
+                    Mensaje = "Contrato laboral actualizado correctamente.",
+                    CantRegistros = 1
+                });
+            }
+            catch (Exception ex)
+            {
+                await _log.GuardarErrorAsync(
+                    message: ex.Message,
+                    StackTrace: ex.StackTrace,
+                    usuario: User.Identity?.Name ?? "Sistema",
+                    metodo: "HttpPut",
+                    ruta: $"/api/ContratoLaboral/UpdateContratoLaboral/{id}",
+                    ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
+                    origen: "ContratoLaboralController"
+                );
+
+                return StatusCode(500, new ResponseAPI<ContratoLabralreaderDto>
+                {
+                    EsCorrecto = false,
+                    Valor = null,
+                    Mensaje = "Ocurrió un error al actualizar el contrato laboral.",
+                    CantRegistros = 0
+                });
+            }
+        }
     }
 
 }

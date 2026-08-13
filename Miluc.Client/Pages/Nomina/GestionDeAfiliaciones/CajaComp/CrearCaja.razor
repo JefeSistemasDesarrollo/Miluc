@@ -14,7 +14,7 @@
         @* --- CABECERA DE LA PÁGINA --- *@
         <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
             <div>
-                <h2 class="fw-extrabold text-vinotinto m-0 tracking-tight">
+                <h2 class="fw-extrabold text-black m-0 tracking-tight">
                     <i class="bi bi-hospital-fill me-2 header-icon"></i>
                     Registrar CCF
                 </h2>
@@ -23,7 +23,7 @@
                 </p>
             </div>
             
-            <button class="btn btn-vinotinto btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
+            <button class="btn btn-rojo btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
                 <i class="bi bi-arrow-left me-2"></i> Volver al listado
             </button>
            
@@ -48,7 +48,7 @@
                                 @* Nombre de la EPS *@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom">
-                                        <i class="bi bi-building me-1"></i> Nombre <span class="text-danger">*</span>
+                                        <i class="bi bi-building me-1"></i> Nombre Caja <span class="text-danger">*</span>
                                     </label>
                                     <div class="input-group-custom">
                                         <InputText class="form-control input-custom" @bind-Value="cajaCreate.Nombre" placeholder="Ej: Sanitas" />
@@ -59,7 +59,7 @@
                                 @* Código *@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom">
-                                        <i class="bi bi-card-heading me-1"></i> Código EPS
+                                        <i class="bi bi-card-heading me-1"></i> Código Caja<span class="text-danger">*</span>
                                     </label>
                                     <div class="input-group-custom">
                                         <InputText class="form-control input-custom" @bind-Value=" cajaCreate.Codigo" placeholder="Ej: AFP001" />
@@ -70,7 +70,7 @@
                                
                                 <div class="col-md-4 ">
 
-                                    <label class="form-label label-custom text-muted-custom">Estado</label>
+                                    <label class="form-label label-custom text-muted-custom">Estado<span class="text-danger">*</span></label>
 
 
 
@@ -83,16 +83,12 @@
                                                         <InputCheckbox class=" form-check-input form-control " @bind-Value="cajaCreate.Activo"> </InputCheckbox>
                                                         @if (cajaCreate.Activo)
                                                         {
-                                                            <span class="text-success ">
-                                                                Activo
-                                                            </span>
+                                                            <i class="bi  text-black bi-check2-circle"></i>
 
                                                         }
                                                         else
                                                         {
-                                                            <span class="text-bg-danger">
-                                                                Inactivo
-                                                            </span>
+                                                            <i class="bi text-rojo bi-x-circle"></i>
                                                         }
 
                                                     </div>
@@ -113,7 +109,7 @@
                 <div class="col-12">
                     <div class="card card-info-banner border-0 shadow-sm rounded-4 p-4 position-relative overflow-hidden">
                         <div class="position-relative z-index-2 d-flex flex-column justify-content-center">
-                            <h5 class="fw-bold text-vinotinto mb-2">
+                            <h5 class="fw-bold text-rojo mb-2">
                                 <i class="bi bi-shield-lock-fill me-2"></i>Seguridad de las Entidades
                             </h5>
                             <p class="text-secondary small mb-0 lh-lg">
@@ -133,7 +129,7 @@
                     Cancelar
                 </button>
         
-                <button type="submit" class="btn btn-vinotinto btn-secondary rounded-pill px-4" disabled="@isProcessing">
+                <button type="submit" class="btn btn-rojo btn-secondary rounded-pill px-4" disabled="@isProcessing">
                     @if (isProcessing)
                     {
                         <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
@@ -141,8 +137,8 @@
                     }
                     else
                     {
-                        <i class="bi bi-cloud-upload-fill me-2"></i>
-                        <span>Guardar Cambios</span>
+                       
+                        <span>Guardar </span>
                     }
                 </button>
             </div>
