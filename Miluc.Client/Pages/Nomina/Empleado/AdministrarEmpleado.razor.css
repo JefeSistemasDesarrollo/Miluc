@@ -1,10 +1,10 @@
-﻿.bg-vinotinto {
-    background-color: #800020;
+.bg-rojo {
+    background-color: #D62F46;
     color: white;
 }
 
-.btn-vinotinto {
-    background-color: #800000;
+.btn-rojo {
+    background-color: #D62F46;
     color: white;
 }
 
@@ -12,8 +12,11 @@
     padding: 1rem;
 }
 
-.text-vinotinto {
-    color: #800020;
+.text-rojo {
+    color: #D62F46;
+}
+.text-amarillo {
+    color: #FDC922
 }
 
 x-small {
@@ -63,7 +66,7 @@ x-small {
         text-transform: uppercase;
         letter-spacing: 1px;
         padding: 1.2rem;
-        color: #800020;
+        color: #D62F46;
     }
 
 
@@ -178,8 +181,8 @@ x-small {
     border-top: 6px solid #D62F46;
 }
 
-.border-vinotinto {
-    border-top: 6px solid #800020;
+.border-rojo {
+    border-top: 6px solid D62F46;
 }
 
 .border-amarillo {
