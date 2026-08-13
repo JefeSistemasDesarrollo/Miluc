@@ -1,5 +1,8 @@
 ﻿using Miluc.Client.Interfaces.Nomina;
+using Miluc.Client.Pages.Nomina.Empleado;
 using Miluc.Shared.DTOs.Nomina.EmpleadoDto;
+using Miluc.Shared.DTOs.Nomina.EpsDto;
+
 /*sing Miluc.Shared.DTOs.Nomina.PaginacionNomina;*/
 using Miluc.Shared.Models.Response;
 using System.Net.Http.Json;
@@ -17,19 +20,20 @@ namespace Miluc.Client.Servicios.Nomina
 
                 var responsePeticion = await httpClient.PostAsJsonAsync("api/Empleado/crearEmpleado", empleado);
 
-                if (responsePeticion == null)
-                {
-                    responsePeticion = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest);
-                }
-
-                // se deserealiza la respuesta de la petición HTTP a un objeto ResponseAPI<EmpleadoReaderDto>
+                // Deserializamos la respuesta que viene de la API
                 var resultado = await responsePeticion.Content.ReadFromJsonAsync<ResponseAPI<EmpleadoReaderDto>>();
 
+                // Si la deserialización fue exitosa, devolvemos la respuesta del servidor (sea éxito o error)
+                if (resultado != null)
+                {
+                    return resultado;
+                }
 
-                return resultado.Valor != null ? resultado : new ResponseAPI<EmpleadoReaderDto>
+                // Solo si la respuesta vino vacía/nula asignamos un error genérico
+                return new ResponseAPI<EmpleadoReaderDto>
                 {
                     EsCorrecto = false,
-                    Mensaje = "Error al crear el empleado",
+                    Mensaje = "No se recibió respuesta válida del servidor.",
                     Valor = null,
                     CantRegistros = 0
                 };
@@ -40,15 +44,15 @@ namespace Miluc.Client.Servicios.Nomina
                 return new ResponseAPI<EmpleadoReaderDto>
                 {
                     EsCorrecto = false,
-                    Mensaje = $"Error al crear el empleado: {ex.Message}",
+                    Mensaje = $"Error de comunicación: {ex.Message}",
                     Valor = null,
                     CantRegistros = 0
                 };
-
             }
-
-
         }
+        
+
+        
 
 
 
@@ -103,27 +107,13 @@ namespace Miluc.Client.Servicios.Nomina
         {
             try
             {
-                var response = await httpClient.PutAsJsonAsync(
-                    $"api/Empleado/{empleado.EmpleadoId}",
-                    empleado
-                );
+                var response = await httpClient.PutAsJsonAsync($"api/Empleado/{empleado.EmpleadoId}", empleado);
+                var resultado = await response.Content.ReadFromJsonAsync<ResponseAPI<EmpleadoReaderDto>>();
 
-                if (!response.IsSuccessStatusCode)
-                {
-                    return new ResponseAPI<EmpleadoReaderDto>
-                    {
-                        EsCorrecto = false,
-                        Mensaje = await response.Content.ReadAsStringAsync()
-                    };
-                }
-
-                var result = await response.Content
-                    .ReadFromJsonAsync<ResponseAPI<EmpleadoReaderDto>>();
-
-                return result ?? new ResponseAPI<EmpleadoReaderDto>
+                return resultado ?? new ResponseAPI<EmpleadoReaderDto>
                 {
                     EsCorrecto = false,
-                    Mensaje = "Respuesta vacía del servidor"
+                    Mensaje = "No se recibió respuesta del servidor."
                 };
             }
             catch (Exception ex)
@@ -131,10 +121,11 @@ namespace Miluc.Client.Servicios.Nomina
                 return new ResponseAPI<EmpleadoReaderDto>
                 {
                     EsCorrecto = false,
-                    Mensaje = ex.Message
+                    Mensaje = $"Error de red: {ex.Message}"
                 };
             }
         }
+
 
         public async Task<ResponseAPI<bool>> DeleteEmpleadosAsync(int id)
         {

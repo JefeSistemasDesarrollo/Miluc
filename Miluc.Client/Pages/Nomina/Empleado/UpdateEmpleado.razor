@@ -71,7 +71,7 @@
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom text-muted-custom">Primer Apellido</label>
+                                    <label class="form-label label-custom text-muted-custom">Primer Apellido<span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
                                         <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
                                         <InputText class="form-control input-custom" @bind-Value="editarEmpleado.PrimerApellido" placeholder="Primer Apellido" />
@@ -90,7 +90,7 @@
                                     </div>
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom text-muted-custom">Fecha nacimiento</label>
+                                    <label class="form-label label-custom text-muted-custom">Fecha nacimiento<span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
                                         <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
 
@@ -105,7 +105,7 @@
 
 
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom text-muted-custom">Tipo de documento</label>
+                                    <label class="form-label label-custom text-muted-custom">Tipo de documento<span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
                                         <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
 
@@ -132,7 +132,7 @@
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom text-muted-custom">Fecha Expedición Documento</label>
+                                    <label class="form-label label-custom text-muted-custom">Fecha Expedición Documento<span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
                                         <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
 
@@ -146,7 +146,7 @@
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom text-muted-custom">Estado Civil</label>
+                                    <label class="form-label label-custom text-muted-custom">Estado Civil<span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
                                         <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
 
@@ -191,7 +191,7 @@
                                     </div>
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom text-muted-custom">Correo</label>
+                                    <label class="form-label label-custom text-muted-custom">Correo<span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
                                         <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
 
@@ -452,12 +452,13 @@
             var respuesta = await _empleadoService.UpdateEmpleadosAsync(editarEmpleado);
             if (respuesta.EsCorrecto)
             {
-                await JS.InvokeVoidAsync("Swal.fire", "Exito", "La información De el empleado ha sido actualizada correctamente.", "success");
+                await JS.InvokeVoidAsync("Swal.fire", "¡Éxito!", "La información se actualizó correctamente.", "success");
                 Volver();
             }
             else
             {
-                await JS.InvokeVoidAsync("Swal.fire", "Error", $"No se pudo actualizar: {respuesta.Mensaje}", "error");
+                // Solo pasamos respuesta.Mensaje sin agregar "No se pudo actualizar:"
+                await JS.InvokeVoidAsync("Swal.fire", "Error", respuesta.Mensaje, "error");
             }
         }
         catch (Exception ex)

@@ -43,8 +43,10 @@ namespace Miluc.Server.Controllers.Nomina
             }
             catch (Exception ex)
             {
+                var errorReal = ObtenerMensajeDetallado(ex);
+
                 await _log.GuardarErrorAsync(
-                    message: ex.Message,
+                    message: errorReal,
                     StackTrace: ex.StackTrace,
                     usuario: User.Identity?.Name ?? "Sistema",
                     metodo: "HttpGet",
@@ -56,11 +58,12 @@ namespace Miluc.Server.Controllers.Nomina
                 {
                     EsCorrecto = false,
                     Valor = null,
-                    Mensaje = "",
+                    Mensaje = $"Ocurrió un error al consultar empleados: {errorReal}",
                     CantRegistros = 0
                 });
             }
         }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<ResponseAPI<EmpleadoReaderDto>>> GetEmpleadoByIdAsync(int id)
         {
@@ -77,6 +80,7 @@ namespace Miluc.Server.Controllers.Nomina
                         CantRegistros = 0,
                     });
                 }
+
                 return Ok(new ResponseAPI<EmpleadoReaderDto>
                 {
                     EsCorrecto = true,
@@ -87,20 +91,22 @@ namespace Miluc.Server.Controllers.Nomina
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR REAL EN GET]: {ex.Message} -> {ex.StackTrace}");
+                var errorReal = ObtenerMensajeDetallado(ex);
+
                 await _log.GuardarErrorAsync(
-                    message: ex.Message,
+                    message: errorReal,
                     StackTrace: ex.StackTrace,
                     usuario: User.Identity?.Name ?? "Sistema",
                     metodo: "HttpGet",
                     ruta: $"/api/Empleado/{id}",
                     ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
                     origen: "EmpleadoController");
+
                 return StatusCode(500, new ResponseAPI<EmpleadoReaderDto>
                 {
                     EsCorrecto = false,
                     Valor = null,
-                    Mensaje = "Ocurrió un error al obtener el empleado.",
+                    Mensaje = $"Ocurrió un error al obtener el empleado: {errorReal}",
                     CantRegistros = 0
                 });
             }
@@ -138,8 +144,10 @@ namespace Miluc.Server.Controllers.Nomina
             }
             catch (Exception ex)
             {
+                var errorReal = ObtenerMensajeDetallado(ex);
+
                 await _log.GuardarErrorAsync(
-                    message: ex.Message,
+                    message: errorReal,
                     StackTrace: ex.StackTrace,
                     usuario: User.Identity?.Name ?? "Sistema",
                     metodo: "HttpPost",
@@ -151,11 +159,12 @@ namespace Miluc.Server.Controllers.Nomina
                 {
                     EsCorrecto = false,
                     Valor = null,
-                    Mensaje = "Ocurrió un error al crear el empleado.",
+                    Mensaje = $"Ocurrió un error al crear el empleado: {errorReal}",
                     CantRegistros = 0
                 });
             }
         }
+
         [HttpPut("{id}")]
         public async Task<ActionResult<ResponseAPI<EmpleadoReaderDto>>> UpdateEmpleadosAsync(int id, [FromBody] EmpleadoUpdateDto empleadoUpdateDto)
         {
@@ -191,9 +200,7 @@ namespace Miluc.Server.Controllers.Nomina
                     .Select(x => new
                     {
                         Campo = x.Key,
-                        Errores = x.Value.Errors
-                            .Select(e => e.ErrorMessage)
-                            .ToList()
+                        Errores = x.Value.Errors.Select(e => e.ErrorMessage).ToList()
                     });
 
                 return BadRequest(new ResponseAPI<object>
@@ -207,8 +214,7 @@ namespace Miluc.Server.Controllers.Nomina
 
             try
             {
-                var empleadoActualizado =
-                    await empleadoService.UpdateEmpleadosAsync(empleadoUpdateDto);
+                var empleadoActualizado = await empleadoService.UpdateEmpleadosAsync(empleadoUpdateDto);
 
                 if (empleadoActualizado == null)
                 {
@@ -231,8 +237,10 @@ namespace Miluc.Server.Controllers.Nomina
             }
             catch (Exception ex)
             {
+                var errorReal = ObtenerMensajeDetallado(ex);
+
                 await _log.GuardarErrorAsync(
-                    message: ex.Message,
+                    message: errorReal,
                     StackTrace: ex.StackTrace,
                     usuario: User.Identity?.Name ?? "Sistema",
                     metodo: "HttpPut",
@@ -245,11 +253,12 @@ namespace Miluc.Server.Controllers.Nomina
                 {
                     EsCorrecto = false,
                     Valor = null,
-                    Mensaje = "Ocurrió un error al actualizar el empleado.",
+                    Mensaje = $"Ocurrió un error al actualizar el empleado: {errorReal}",
                     CantRegistros = 0
                 });
             }
         }
+
         [HttpDelete("{id}")]
         public async Task<ActionResult<ResponseAPI<bool>>> DeleteEmpleadosAsync(int id)
         {
@@ -278,8 +287,10 @@ namespace Miluc.Server.Controllers.Nomina
             }
             catch (Exception ex)
             {
+                var errorReal = ObtenerMensajeDetallado(ex);
+
                 await _log.GuardarErrorAsync(
-                    message: ex.Message,
+                    message: errorReal,
                     StackTrace: ex.StackTrace,
                     usuario: User.Identity?.Name ?? "Sistema",
                     metodo: "HttpDelete",
@@ -292,10 +303,22 @@ namespace Miluc.Server.Controllers.Nomina
                 {
                     EsCorrecto = false,
                     Valor = false,
-                    Mensaje = "Ocurrió un error al eliminar el empleado.",
+                    Mensaje = $"Ocurrió un error al eliminar el empleado: {errorReal}",
                     CantRegistros = 0
                 });
             }
+        }
+
+        
+        private static string ObtenerMensajeDetallado(Exception ex)
+        {
+            var mensaje = ex.Message;
+            while (ex.InnerException != null)
+            {
+                ex = ex.InnerException;
+                mensaje += $" | InnerException: {ex.Message}";
+            }
+            return mensaje;
         }
     }
 }

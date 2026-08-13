@@ -1,0 +1,265 @@
+﻿.bg-vinotinto {
+    background-color: #800020;
+    color: white;
+}
+
+.btn-vinotinto {
+    background-color: #800000;
+    color: white;
+}
+
+.empleado-page {
+    padding: 1rem;
+}
+
+.text-vinotinto {
+    color: #800020;
+}
+
+x-small {
+    font-size: 0.75rem;
+}
+
+
+.table-responsive {
+    overflow-x: auto;
+    width: 100%;
+}
+
+
+/* Botón Nuevo */
+.btn-nuevo {
+    background-color: #800000;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 24px;
+    font-weight: 700;
+}
+
+.x-small {
+    font-size: 0.75rem;
+}
+
+.search-group {
+    max-width: 450px;
+}
+
+/* Tabla */
+.card-container {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid #f0f0f0;
+}
+
+.table thead {
+    background: #fdfdfd;
+    border-bottom: 2px solid #f5f5f5;
+}
+
+    .table thead th {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 1.2rem;
+        color: #800020;
+    }
+
+
+
+.status-pill {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+
+
+/* Botón Detalle */
+.btn-detail {
+    border: 1px solid #eee;
+    background: #fff;
+    padding: 5px 12px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #800020;
+    transition: 0.2s;
+}
+
+    /*sombrear a color-profile vinotinto*/
+    .btn-detail:hover {
+        background: #800020;
+        color: white;
+    }
+
+.edit:hover {
+    background: #800020;
+    color: white;
+}
+
+.delete:hover {
+    background: #800020;
+    color: white;
+}
+/* Paginador */
+.pagination-footer {
+    padding: 1rem;
+    background: #f0f0f0;
+    border-top: 1px solid #eee;
+}
+
+.page-link {
+    border: none;
+    margin: 0 2px;
+    border-radius: 5px !important;
+    color: #666;
+}
+
+.page-item.active .page-link {
+    background: #D62F46 !important;
+    color: white;
+}
+/* CONTENEDOR PRINCIPAL */
+.seguridad-container {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.header-principal {
+    margin-bottom: 3rem;
+    text-align: left;
+}
+
+    .header-principal h1 {
+        color: #800020; /* Vinotinto Miluc */
+        font-weight: 800;
+        font-size: 2rem;
+    }
+
+/* GRID RESPONSIVO (El secreto para que no se descuadre) */
+.grid-cartas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+/* ESTILO DE LAS TARJETAS */
+.card-miluc {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    border: none;
+    position: relative;
+}
+
+    .card-miluc:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 35px rgba(128, 0, 32, 0.15);
+    }
+
+.card-cuerpo {
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    height: 100%;
+}
+
+/* BORDES DE COLOR SUPERIOR */
+.border-rojo {
+    border-top: 6px solid #D62F46;
+}
+
+.border-vinotinto {
+    border-top: 6px solid #800020;
+}
+
+.border-amarillo {
+    border-top: 6px solid #FDC922;
+}
+
+/* ICONOS CIRCULARES */
+.icono-wrapper {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.bg-rojo-suave {
+    background: rgba(214, 47, 70, 0.1);
+    color: #D62F46;
+}
+
+.bg-vinotinto-suave {
+    background: rgba(128, 0, 32, 0.1);
+    color: #800020;
+}
+
+.bg-amarillo-suave {
+    background: rgba(253, 201, 34, 0.2);
+    color: #856404;
+}
+
+/* TEXTOS */
+.card-cuerpo h3 {
+    font-weight: 800;
+    color: #333;
+    margin-bottom: 1rem;
+}
+
+.card-cuerpo p {
+    color: #666;
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+    flex-grow: 1; /* Esto hace que los botones siempre se alineen abajo */
+}
+
+/* BOTONES PERSONALIZADOS */
+.btn-miluc {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: 0.3s;
+}
+
+.btn-rojo {
+    background: #D62F46;
+    color: white;
+}
+
+.btn-vinotinto {
+    background: #800020;
+    color: white;
+}
+
+.btn-amarillo {
+    background: #FDC922;
+    color: #333;
+}
+
+.btn-miluc:hover {
+    filter: brightness(1.1);
+    color: white;
+}
+
+body {
+}

@@ -137,7 +137,7 @@
                                         <button class="btn btn-sm px-3" title="Ver Detalle" @onclick="() => VerDetalle(em.AfpId)">
                                             <i class="bi bi-eye text-dark"></i>
                                         </button>
-                                        <button class="btn btn-white btn-sm px-3" title="Modificar AFP" @onclick="() => ModificarSeguridadSocial(em.AfpId)">
+                                        <button class="btn btn-white btn-sm px-3" title="Modificar AFP" @onclick="() => ModificarAfp(em.AfpId)">
                                             <i class="bi bi-pencil-square text-primary"></i>
                                         </button>
                                     </div>
@@ -281,9 +281,9 @@
         nav.NavigateTo($"/nomina/detalle/{idAfp}");
     }
 
-    private void ModificarSeguridadSocial(int idAfp)
+    private void ModificarAfp(int afpid)
     {
-        nav.NavigateTo($"/nomina/seguridad-social/editar/{idAfp}");
+        nav.NavigateTo($"/editar/api/Afp/{afpid}");
     }
 
     private void Volver() => nav.NavigateTo("administrar-entidadesSeguridadSocial");

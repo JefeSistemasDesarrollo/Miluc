@@ -164,76 +164,76 @@
                                      
                                     <td>
                                         <input type="text" readonly class="form-control form-control-sm" @bind="linea.ItemName">
-                                    </td>
+                                        </td>
 
-                                    <!-- CANTIDAD -->
-                                    <td>
-                                        @if (linea.BuyUnitMsr?.ToUpper() == "KG")
-                                        {
-                                            <InputNumber TValue="decimal?"
-                                                         Value="linea.Quantity"
-                                                         ValueChanged="@(v => OnCantidadChanged(v, linea))"
-                                                         ValueExpression="() => linea.Quantity"
-                                                         class="form-control form-control-sm text-end"
-                                                         step="any"
-                                                         min="0" />
-                                        }
-                                        else
-                                        {
-                                            <InputNumber TValue="decimal?"
-                                                         Value="linea.Quantity"
-                                                         ValueChanged="@(v => OnCantidadChanged(Math.Round(v ?? 0,0,MidpointRounding.AwayFromZero), linea))"
-                                                         ValueExpression="() => linea.Quantity"
-                                                         class="form-control form-control-sm text-end"
-                                                         step="1"
-                                                         min="0" />
-                                        }
-                                    </td>
+                                        <!-- CANTIDAD -->
+                                        <td>
+                                            @if (linea.BuyUnitMsr?.ToUpper() == "KG")
+                                            {
+                                                <InputNumber TValue="decimal?"
+                                                             Value="linea.Quantity"
+                                                             ValueChanged="@(v => OnCantidadChanged(v, linea))"
+                                                             ValueExpression="() => linea.Quantity"
+                                                             class="form-control form-control-sm text-end"
+                                                             step="any"
+                                                             min="0" />
+                                            }
+                                            else
+                                            {
+                                                <InputNumber TValue="decimal?"
+                                                             Value="linea.Quantity"
+                                                             ValueChanged="@(v => OnCantidadChanged(Math.Round(v ?? 0,0,MidpointRounding.AwayFromZero), linea))"
+                                                             ValueExpression="() => linea.Quantity"
+                                                             class="form-control form-control-sm text-end"
+                                                             step="1"
+                                                             min="0" />
+                                            }
+                                        </td>
 
-                                    <td class="align-content-center">
-                                        @linea.BuyUnitMsr
-                                    </td>
+                                        <td class="align-content-center">
+                                            @linea.BuyUnitMsr
+                                        </td>
 
-                                    <!-- EQUIVALENTE KG -->
-                                    <td>
-                                        @if (linea.BuyUnitMsr?.ToUpper() == "KG")
-                                        {
-                                            <!-- Cuando el artículo se vende por Kg, este campo solo muestra el valor -->
-                                            <InputNumber TValue="decimal?"
+                                        <!-- EQUIVALENTE KG -->
+                                        <td>
+                                            @if (linea.BuyUnitMsr?.ToUpper() == "KG")
+                                            {
+                                                <!-- Cuando el artículo se vende por Kg, este campo solo muestra el valor -->
+                                                <InputNumber TValue="decimal?"
                                                          Value="linea.U_CantidadKg"
                                                          ValueExpression="() => linea.U_CantidadKg"
-                                                         class="form-control form-control-sm text-end"
-                                                         step="any"
-                                                         readonly />
-                                        }
-                                        else
-                                        {
-                                            <!-- Cuando el artículo se vende por unidades, este campo SI se puede editar -->
-                                            <InputNumber TValue="decimal?"
+                                                             class="form-control form-control-sm text-end"
+                                                             step="any"
+                                                             readonly />
+                                            }
+                                            else
+                                            {
+                                                <!-- Cuando el artículo se vende por unidades, este campo SI se puede editar -->
+                                                <InputNumber TValue="decimal?"
                                                          Value="linea.U_CantidadKg"
-                                                         ValueChanged="@(v => OnKgChanged(v, linea))"
+                                                             ValueChanged="@(v => OnKgChanged(v, linea))"
                                                          ValueExpression="() => linea.U_CantidadKg"
-                                                         class="form-control form-control-sm text-end"
-                                                         step="any"
+                                                             class="form-control form-control-sm text-end"
+                                                             step="any"
                                                          min="0" readonly />
-                                        }
-                                    </td>
+                                            }
+                                        </td>
 
-                                    <!-- EQUIVALENTE UNIDADES -->
-                                    <td>
-                                        @if (linea.BuyUnitMsr?.ToUpper() == "KG")
-                                        {
-                                            <!-- Cuando el artículo se vende por Kg, este campo SI se puede editar -->
-                                            <InputNumber TValue="decimal?"
+                                        <!-- EQUIVALENTE UNIDADES -->
+                                        <td>
+                                            @if (linea.BuyUnitMsr?.ToUpper() == "KG")
+                                            {
+                                                <!-- Cuando el artículo se vende por Kg, este campo SI se puede editar -->
+                                                <InputNumber TValue="decimal?"
                                                          Value="linea.U_UnidadSal" ValueChanged="@(v => OnUnidadesChanged(v, linea))"
                                                          ValueExpression="() => linea.U_UnidadSal"
-                                                         class="form-control form-control-sm text-end"
+                                                             class="form-control form-control-sm text-end"
                                                          step="1" min="0" />
-                                        }
-                                        else
-                                        {
-                                            <!-- Cuando el artículo se vende por unidades, solo muestra el valor -->
-                                            <InputNumber TValue="decimal?"
+                                            }
+                                            else
+                                            {
+                                                <!-- Cuando el artículo se vende por unidades, solo muestra el valor -->
+                                                <InputNumber TValue="decimal?"
                                                          Value="linea.U_UnidadSal"
                                                          ValueExpression="() => linea.U_UnidadSal"
                                                          class="form-control form-control-sm text-end" readonly />
@@ -346,65 +346,65 @@
                 <!-- LISTA -->
                 <div class="list-group" style="max-height: 350px; overflow-y: auto;">
 
-                    @if (listClientesApi.Any())
-                    {
-                        @foreach (var item in listClientesApi)
-                        {
-                            <button type="button" class="list-group-item list-group-item-action" @onclick="() => SeleccionarCliente(item)">
-                                <div class="d-flex flex-column">
-                                    <strong class="text-maroon">@item.CardCode</strong>
+                                                @if (listClientesApi.Any())
+                                                {
+                                                    @foreach (var item in listClientesApi)
+                                                    {
+                                                        <button type="button" class="list-group-item list-group-item-action" @onclick="() => SeleccionarCliente(item)">
+                                                            <div class="d-flex flex-column">
+                                                                <strong class="text-maroon">@item.CardCode</strong>
 
-                                    <small class="text-muted">@item.CardName</small>
+                                                                <small class="text-muted">@item.CardName</small>
+                                                            </div>
+                                                        </button>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <div class="text-center text-muted py-4">
+                                                        <i class="bi bi-search fs-3"></i>
+                                                        <div class="mt-2">
+                                                            No se encontraron cliente
+                                                        </div>
+                                                    </div>
+                                                }
+
+                                            </div>
+
+                                            <!-- PAGINADOR -->
+                                            @if (CantidadDeClientesEncontrados > 0)
+                                            {
+                                                <div class="d-flex justify-content-center mt-3">
+                                                    <div class="btn-group">
+                                                        <!-- ANTERIOR -->
+                                                        <button class="btn btn-outline-secondary btn-sm" disabled="@(paginaActualCliente == 1)" @onclick="PaginaAnteriorCliente">
+                                                            <i class="bi bi-chevron-left"></i>
+                                                        </button>
+
+                                                        <!-- PAGINAS -->
+                                                        @for (int i = Math.Max(1, paginaActualCliente - 2); i <= Math.Min(TotalPaginasCliente, paginaActualCliente + 2); i++)
+                                                        {
+                                                            var pagina = i;
+                                                            <button class="btn @(paginaActualCliente == pagina ? "btn-maroon text-white" : "btn-outline-secondary") btn-sm"
+                                                                    @onclick="() => IrPaginaCliente(pagina)">
+                                                                @pagina
+                                                            </button>
+                                                        }
+                                                        <!-- SIGUIENTE -->
+                                                        <button class="btn btn-outline-secondary btn-sm" disabled="@(paginaActualCliente == TotalPaginasCliente)"
+                                                                @onclick="SiguientePaginaCliente">
+                                                            <i class="bi bi-chevron-right"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
                                 </div>
-                            </button>
-                        }
-                    }
-                    else
-                    {
-                        <div class="text-center text-muted py-4">
-                            <i class="bi bi-search fs-3"></i>
-                            <div class="mt-2">
-                                No se encontraron cliente
                             </div>
-                        </div>
-                    }
 
-                </div>
-
-                <!-- PAGINADOR -->
-                @if (CantidadDeClientesEncontrados > 0)
-                {
-                    <div class="d-flex justify-content-center mt-3">
-                        <div class="btn-group">
-                            <!-- ANTERIOR -->
-                            <button class="btn btn-outline-secondary btn-sm" disabled="@(paginaActualCliente == 1)" @onclick="PaginaAnteriorCliente">
-                                <i class="bi bi-chevron-left"></i>
-                            </button>
-
-                            <!-- PAGINAS -->
-                            @for (int i = Math.Max(1, paginaActualCliente - 2); i <= Math.Min(TotalPaginasCliente, paginaActualCliente + 2); i++)
-                            {
-                                var pagina = i;
-                                <button class="btn @(paginaActualCliente == pagina ? "btn-maroon text-white" : "btn-outline-secondary") btn-sm"
-                                        @onclick="() => IrPaginaCliente(pagina)">
-                                    @pagina
-                                </button>
-                            }
-                            <!-- SIGUIENTE -->
-                            <button class="btn btn-outline-secondary btn-sm" disabled="@(paginaActualCliente == TotalPaginasCliente)"
-                                    @onclick="SiguientePaginaCliente">
-                                <i class="bi bi-chevron-right"></i>
-                            </button>
-                        </div>
-                    </div>
-                }
-            </div>
-        </div>
-    </div>
-</div>
-
-@* MODAL DE ARTICULOS *@
-<div class="modal fade @(mostrarModalArticulo ? "show d-block" : "")" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 1050;">
+                            @* MODAL DE ARTICULOS *@
+                            <div class="modal fade @(mostrarModalArticulo ? "show d-block" : "")" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 1050;">
 
     <!-- MODAL  PEQUEÑO -->
     <div class="modal-dialog modal-md modal-dialog-centered">
@@ -414,89 +414,89 @@
                 <h5 class="modal-title mb-0"><i class="bi bi-box-seam me-2"></i>Buscar Artículo</h5>
                 <button type="button" class="btn-close text-modal ms-auto" @onclick="CerrarModalArticulo"></button>
 
-            </div>
+                                        </div>
 
-            <!-- BODY -->
-            <div class="modal-body">
+                                        <!-- BODY -->
+                                        <div class="modal-body">
 
-                <!-- BUSCADOR -->
-                <div class="input-group mb-3">
+                                            <!-- BUSCADOR -->
+                                            <div class="input-group mb-3">
 
-                    <input type="text" class="form-control" placeholder="Buscar artículo..." @bind:event="oninput" @bind="textoBusquedaArticulo" @onkeyup="HandleEnterArticulo">
+                                                <input type="text" class="form-control" placeholder="Buscar artículo..." @bind:event="oninput" @bind="textoBusquedaArticulo" @onkeyup="HandleEnterArticulo">
 
-                    <button class="btn btn-maroon" @onclick="() => BuscarEnServidorArticulo()"><i class="bi bi-search"></i>Buscar</button>
-                </div>
-                <!-- INFORMACION -->
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <small class="text-muted">
-                        Registros encontrados:
-                        <strong>@CantidadDeArticulosEncontrados</strong>
-                    </small>
+                                                    <button class="btn btn-maroon" @onclick="() => BuscarEnServidorArticulo()"><i class="bi bi-search"></i>Buscar</button>
+                                                </div>
+                                                <!-- INFORMACION -->
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <small class="text-muted">
+                                                        Registros encontrados:
+                                                        <strong>@CantidadDeArticulosEncontrados</strong>
+                                                    </small>
 
-                    <small class="text-muted">
-                        Página @paginaActualArticulo de @TotalPaginasArticulo
-                    </small>
-                </div>
-                <!-- LISTA -->
-                <div class="list-group"
-                     style="max-height: 350px; overflow-y: auto;">
+                                                    <small class="text-muted">
+                                                        Página @paginaActualArticulo de @TotalPaginasArticulo
+                                                    </small>
+                                                </div>
+                                                <!-- LISTA -->
+                                                <div class="list-group"
+                                                     style="max-height: 350px; overflow-y: auto;">
 
-                    @if (listaArticulosApi.Any())
-                    {
-                        @foreach (var item in listaArticulosApi)
-                        {
-                            <button type="button" class="list-group-item list-group-item-action" @onclick="() => SeleccionarArticulo(item)">
-                                <div class="d-flex flex-column">
-                                    <strong class="text-maroon">
-                                        @item.ItemCode
-                                    </strong>
-                                    <small class="text-muted">
-                                        @item.ItemName
-                                    </small>
+                                                    @if (listaArticulosApi.Any())
+                                                    {
+                                                        @foreach (var item in listaArticulosApi)
+                                                        {
+                                                            <button type="button" class="list-group-item list-group-item-action" @onclick="() => SeleccionarArticulo(item)">
+                                                                <div class="d-flex flex-column">
+                                                                    <strong class="text-maroon">
+                                                                        @item.ItemCode
+                                                                    </strong>
+                                                                    <small class="text-muted">
+                                                                        @item.ItemName
+                                                                    </small>
+                                                                </div>
+                                                            </button>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="text-center text-muted py-4">
+                                                            <i class="bi bi-search fs-3"></i>
+                                                            <div class="mt-2">
+                                                                No se encontraron artículos
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                </div>
+                                                <!-- PAGINADOR -->
+                                                @if (CantidadDeArticulosEncontrados > 0)
+                                                {
+                                                    <div class="d-flex justify-content-center mt-3">
+
+                                                        <div class="btn-group">
+
+                                                            <!-- ANTERIOR -->
+                                                            <button class="btn btn-outline-secondary btn-sm" disabled="@(paginaActualArticulo == 1)" @onclick="PaginaAnteriorArticulo">
+                                                                <i class="bi bi-chevron-left"></i>
+                                                            </button>
+                                                            <!-- PAGINAS -->
+                                                            @for (int i = Math.Max(1, paginaActualArticulo - 2); i <= Math.Min(TotalPaginasArticulo, paginaActualArticulo + 2); i++)
+                                                            {
+                                                                var pagina = i;
+                                                                <button class="btn @(paginaActualArticulo == pagina ? "btn-maroon text-white" : "btn-outline-secondary") btn-sm" @onclick="() => IrPaginaArticulo(pagina)">
+                                                                    @pagina
+                                                                </button>
+                                                            }
+                                                            <!-- SIGUIENTE -->
+                                                            <button class="btn btn-outline-secondary btn-sm" disabled="@(paginaActualArticulo == TotalPaginasArticulo)" @onclick="SiguientePaginaArticulo">
+                                                                <i class="bi bi-chevron-right"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </button>
-                        }
-                    }
-                    else
-                    {
-                        <div class="text-center text-muted py-4">
-                            <i class="bi bi-search fs-3"></i>
-                            <div class="mt-2">
-                                No se encontraron artículos
-                            </div>
-                        </div>
-                    }
-                </div>
-                <!-- PAGINADOR -->
-                @if (CantidadDeArticulosEncontrados > 0)
-                {
-                    <div class="d-flex justify-content-center mt-3">
-
-                        <div class="btn-group">
-
-                            <!-- ANTERIOR -->
-                            <button class="btn btn-outline-secondary btn-sm" disabled="@(paginaActualArticulo == 1)" @onclick="PaginaAnteriorArticulo">
-                                <i class="bi bi-chevron-left"></i>
-                            </button>
-                            <!-- PAGINAS -->
-                            @for (int i = Math.Max(1, paginaActualArticulo - 2); i <= Math.Min(TotalPaginasArticulo, paginaActualArticulo + 2); i++)
-                            {
-                                var pagina = i;
-                                <button class="btn @(paginaActualArticulo == pagina ? "btn-maroon text-white" : "btn-outline-secondary") btn-sm" @onclick="() => IrPaginaArticulo(pagina)">
-                                    @pagina
-                                </button>
-                            }
-                            <!-- SIGUIENTE -->
-                            <button class="btn btn-outline-secondary btn-sm" disabled="@(paginaActualArticulo == TotalPaginasArticulo)" @onclick="SiguientePaginaArticulo">
-                                <i class="bi bi-chevron-right"></i>
-                            </button>
-                        </div>
-                    </div>
-                }
-            </div>
-        </div>
-    </div>
-</div>
 @code {
 
     private bool Cargando = false;
@@ -1033,26 +1033,27 @@
     {
         try
         {
-            if (string.IsNullOrEmpty(clienteSeleccionado?.CardCode))
-            {
-                await _jsRuntime.InvokeVoidAsync("Swal.fire", "Error", $"El pedido no tiene cliente seleccionado", "error");
-                return;
-            }
-            var result = await _jsRuntime.InvokeAsync<JsonElement>
-               ("Swal.fire", new
-               {
-                   title = "¿Estás seguro?",
-                   text = $"¿Deseas crear el pedido?",
-                   icon = "info",
-                   showCancelButton = true,
-                   confirmButtonColor = "#d33",
-                   cancelButtonColor = "#3085d6",
-                   confirmButtonText = "Sí, Crear",
-                   cancelButtonText = "Cancelar"
-               });
+        if (string.IsNullOrEmpty(clienteSeleccionado?.CardCode))
+        {
+            await _jsRuntime.InvokeVoidAsync("Swal.fire", "Error", $"El pedido no tiene cliente seleccionado", "error");
+            return;
+        }
 
-            if (result.GetProperty("isConfirmed").GetBoolean())
-            {
+        var result = await _jsRuntime.InvokeAsync<JsonElement>
+           ("Swal.fire", new
+           {
+               title = "¿Estás seguro?",
+               text = $"¿Deseas crear el pedido?",
+               icon = "info",
+               showCancelButton = true,
+               confirmButtonColor = "#d33",
+               cancelButtonColor = "#3085d6",
+               confirmButtonText = "Sí, Crear",
+               cancelButtonText = "Cancelar"
+           });
+
+        if (result.GetProperty("isConfirmed").GetBoolean())
+        {
                 if (lineasPedido.Count == 0 || lineasPedido.Count <= 0)
                 {
                     // await _jsRuntime.InvokeVoidAsync("cerrarEspera");
@@ -1066,7 +1067,7 @@
 
 
                 foreach (var line in lineasPedido)
-                {
+            {
                     RecalcularLinea(line);
 
                 }
@@ -1149,16 +1150,16 @@
 
             linea.U_UnidadSal = Math.Round((Convert.ToDecimal(linea.Quantity)) / Convert.ToDecimal(linea.SWeight1),
                 0,MidpointRounding.AwayFromZero);
-        }
-        else
-        {
+            }
+            else
+            {
             linea.U_UnidadSal = linea.Quantity;
 
             linea.U_CantidadKg = Math.Round((Convert.ToDecimal(linea.Quantity)) * Convert.ToDecimal(linea.SWeight1),2);
-        }
+            }
 
         CalcularTotales(linea);
-    }
+        }
 
 
     private async Task CambiarCantidadPagina(ChangeEventArgs e)

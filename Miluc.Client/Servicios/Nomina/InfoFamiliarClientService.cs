@@ -152,26 +152,25 @@ namespace Miluc.Client.Servicios.Nomina
             try
             {
                 var response = await httpClient.PutAsJsonAsync(
-                  $"api/InfoFamiliar/{infoFamiliar.InformacionFamiliarId}",
-                  infoFamiliar
-                  );
+                    $"api/InfoFamiliar/{infoFamiliar.InformacionFamiliarId}",
+                    infoFamiliar
+                );
 
-                if (!response.IsSuccessStatusCode)
+                
+                var result = await response.Content.ReadFromJsonAsync<ResponseAPI<InfoFamiliarReaderDto>>();
+
+                if (result != null)
                 {
-                    return new ResponseAPI<InfoFamiliarReaderDto>
-                    {
-                        EsCorrecto = false,
-                        Mensaje = await response.Content.ReadAsStringAsync()
-
-                    };
+                    return result;
                 }
-                var result = await response.Content
-                    .ReadFromJsonAsync<ResponseAPI<InfoFamiliarReaderDto>>();
+                //var result = await response.Content
+                //    .ReadFromJsonAsync<ResponseAPI<InfoFamiliarReaderDto>>();
 
-                return result ?? new ResponseAPI<InfoFamiliarReaderDto>
+                // Si la deserialización falla o viene nula
+                return new ResponseAPI<InfoFamiliarReaderDto>
                 {
                     EsCorrecto = false,
-                    Mensaje = "Respuesta vacia en el servidor"
+                    Mensaje = "Respuesta vacía o formato inválido del servidor."
                 };
             }
             catch (Exception ex)
@@ -186,5 +185,8 @@ namespace Miluc.Client.Servicios.Nomina
 
             }
         }
+
+
     }
-}
+        }
+  

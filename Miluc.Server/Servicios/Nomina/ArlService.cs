@@ -5,8 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using Miluc.Server.Data;
 using Miluc.Server.Interfaces.Nomina;
 using Miluc.Server.Models.Nomina;
+using Miluc.Shared.DTOs.Nomina.AfpDto;
 using Miluc.Shared.DTOs.Nomina.Arl.Dto;
+using Miluc.Shared.DTOs.Nomina.ArlDto;
 using Miluc.Shared.DTOs.Nomina.CajaCompensacionDto;
+using Miluc.Shared.DTOs.Nomina.EpsDto;
 
 namespace Miluc.Server.Servicios.Nomina
 {
@@ -107,5 +110,90 @@ namespace Miluc.Server.Servicios.Nomina
 
 
         }
+
+        
+        
+
+        public async Task<ArlReaderDto> GetByArlAsync(int id)
+        {
+            try
+            {
+                var arlId = await _contex.Arl.AsNoTracking()
+                    .Where(a => a.ArlId == id)
+                    .Select(a => new ArlReaderDto
+                    {
+                        ArlId = a.ArlId,
+                        Nombre = a.Nombre,
+                        Codigo = a.Codigo,
+                        FechaActualizacion = DateTime.Now,
+                        FechaCreacion = DateTime.Now,
+                        Activo = a.Activo
+
+                    }).FirstOrDefaultAsync();
+                if (arlId == null) throw new Exception("Eps no encontrado.");
+
+                return arlId;
+
+
+
+
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"arl no encontrada:{ex.Message}");
+            }
+        }
+
+        public async Task<ArlReaderDto> UpdateArlAsync(ArlUpdate arlUpdate)
+        {
+            try
+            {
+                var arl = await _contex.Arl.FirstOrDefaultAsync(a => a.ArlId == arlUpdate.ArlId);
+
+
+                if (arl == null) throw new Exception("Arl no existe");
+
+                var nombreformateado = arlUpdate.Nombre?.Trim().ToUpper();
+                var codigoFormateado = arlUpdate.Codigo?.Trim().ToUpper();
+                    var existeArl = await _contex.Arl.AnyAsync(a => 
+                          
+                    a.ArlId != arlUpdate.ArlId &&
+                    (a.Nombre.ToUpper() == nombreformateado || a.Codigo.ToUpper() == codigoFormateado)
+                );
+
+                if (existeArl)
+                    throw new Exception("Ya existe otra EPS con el mismo nombre o código.");
+
+
+                arl.Nombre = arlUpdate.Nombre;
+                arl.Codigo = arlUpdate.Codigo;
+                arl.FechaActualizacion = DateTime.Now;
+                arl.Activo = arlUpdate.Activo;
+
+
+                await _contex.SaveChangesAsync();
+
+
+                return new ArlReaderDto
+                {
+                     ArlId= arl.ArlId,
+                    Nombre = arl.Nombre,
+                    Codigo = arl.Codigo,
+                    FechaActualizacion = arl.FechaActualizacion,
+                    Activo = arl.Activo
+                };
+
+
+
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($":{ex.Message}");
+
+                    }
+            }
+        }
     }
-}
+

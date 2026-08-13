@@ -39,9 +39,9 @@ namespace Miluc.Server.Servicios.SapService
 
             }
             catch (Exception ex)
-            {
+{
                 return new ResponseAPI<bool>
-                {
+    {
                     EsCorrecto = false,
                     Mensaje = ex.Message,
                     Valor = false

@@ -21,6 +21,7 @@ using Miluc.Client.Servicios.LogService;
 using Miluc.Client.Servicios.Nomina;
 using Miluc.Client.Servicios.SapService;
 using Miluc.Client.Servicios.UsuariosRolesPermisos;
+using Miluc.Shared.DTOs.Nomina.AfiliacionSeguridadSocialDto;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -55,6 +56,9 @@ builder.Services.AddScoped<IRolClientService, RoleClientService>();
 builder.Services.AddScoped<IUsuarioClientService, UsuarioClientService>();
 builder.Services.AddScoped<IPermisoClientService, PermisosClientService>();
 builder.Services.AddScoped<ILogClientService, LogClientService>();
+//builder.Services.AddScoped<ISapOslpService, SapOslpService>();
+//builder.Services.AddScoped<ISapOcrdClientService, SapOcrdClientService>();
+//builder.Services.AddScoped<ISapOitmClientService, SapOitmClientService>();
 
 //sap 
 builder.Services.AddScoped<ISapOslpService, SapOslpService>();
@@ -65,6 +69,8 @@ builder.Services.AddScoped<ILocalizacionClientSap, LocalizacionSapService>();
 builder.Services.AddScoped<ISapObppClientService, SapObppClientService>();
 builder.Services.AddScoped<ISapOctgClientService, SapOctgClientService>();
 builder.Services.AddScoped<ISapOplnClientService, SapOplnClientService>();
+
+
 
 //Nomina
 builder.Services.AddScoped<IEmpleadoClientService, EmpleadoClientService>();
@@ -82,6 +88,10 @@ builder.Services.AddScoped<IArlClientService, ArlClientService>();
 builder.Services.AddScoped<IAfpClientService, AfpClientService>();
 builder.Services.AddScoped<ICajaCompensacionClientService, CajaCompClientService>();
 // Abre el Program.cs del proyecto Client y añade esta línea junto a tus otros servicios de nómina:
+
+
+
+
 
 //  INICIALIZACIÓN DE SESIÓN (ANTES DE MOSTRAR UI)
 var host = builder.Build();

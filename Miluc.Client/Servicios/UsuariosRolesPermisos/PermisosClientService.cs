@@ -5,15 +5,18 @@ using System.Net.Http.Json;
 
 namespace Miluc.Client.Servicios.UsuariosRolesPermisos
 {
-    public class PermisosClientService (HttpClient _http) : IPermisoClientService
+    public class PermisosClientService(HttpClient _http) : IPermisoClientService
     {
-        public async Task<ResponseAPI<List<PermisosReadDto>>> GetPermisosAsync(string? busqueda = null, int ? pagina=null, int? cantidad = null)
+      
+
+
+        public async Task<ResponseAPI<List<PermisosReadDto>>> GetPermisosAsync(string? busqueda = null, int pagina = 1, int? cantidad = null)
         {
             try
             {
-                var url =$"api/permisos?busqueda={busqueda}&pagina={pagina}&cantidad={cantidad}";
+                var url = $"api/permisos?busqueda={busqueda}&pagina={pagina}&cantidad={cantidad}";
                 var response = await _http.GetFromJsonAsync<ResponseAPI<List<PermisosReadDto>>>(url);
-                return response ?? new ResponseAPI<List<PermisosReadDto>> { Valor=null, Mensaje="Ocurrio un error ", EsCorrecto=false};
+                return response ?? new ResponseAPI<List<PermisosReadDto>> { Valor = null, Mensaje = "Ocurrio un error ", EsCorrecto = false };
             }
             catch (HttpRequestException ex)
             {
@@ -35,27 +38,30 @@ namespace Miluc.Client.Servicios.UsuariosRolesPermisos
                 var responsePermisos = await _http.GetFromJsonAsync<ResponseAPI<PermisosReadDto>>($"api/Permisos/{idPermiso}");
                 return responsePermisos ?? new ResponseAPI<PermisosReadDto>
                 {
-                    EsCorrecto=false,
+                    EsCorrecto = false,
                     Mensaje = "Erro al consular los permisos",
-                    Errores =new List<string>(),
-                    Valor=null,
+                    Errores = new List<string>(),
+                    Valor = null,
                 };
             }
             catch (HttpRequestException ex)
             {
-                return new ResponseAPI<PermisosReadDto>().ErroresResponse(false, "Error de conexión con la API.",new List<string> { ex.Message });
+                return new ResponseAPI<PermisosReadDto>().ErroresResponse(false, "Error de conexión con la API.", new List<string> { ex.Message });
             }
             catch (TaskCanceledException ex)
             {
                 return new ResponseAPI<PermisosReadDto>()
-                    .ErroresResponse(false, "Tiempo de espera agotado.",new List<string> { ex.Message });
+                    .ErroresResponse(false, "Tiempo de espera agotado.", new List<string> { ex.Message });
             }
             catch (Exception ex)
             {
-                return new ResponseAPI<PermisosReadDto>().ErroresResponse(false, "Ha ocurrido un error inesperado.",new List<string> { ex.Message });
+                return new ResponseAPI<PermisosReadDto>().ErroresResponse(false, "Ha ocurrido un error inesperado.", new List<string> { ex.Message });
             }
 
         }
+    
+
+
         public async Task<ResponseAPI<bool>> DeletePermisoAsync(int idPermiso)
         {
             try

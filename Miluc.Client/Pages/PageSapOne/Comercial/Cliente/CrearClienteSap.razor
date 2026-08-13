@@ -158,16 +158,16 @@
                             </div>
                             <div class="col-12 col-md-4">
                                 <label class="form-label text-muted small fw-semibold">Nombres</label>
-                                <InputText @bind-Value="cliente.U_HBT_Nombres" class="form-control form-control-sm" disabled="@EsPersonaJuridica()" />
+                                <InputText @bind-Value="cliente.U_HBT_Nombres" class="form-control form-control-sm" disabled="@EsPersonaJuridica()"/>
                             </div>
 
                             <div class="col-12 col-md-4">
                                 <label class="form-label text-muted small fw-semibold">Primer Apellido </label>
-                                <InputText @bind-Value="cliente.U_HBT_Apellido1" class="form-control form-control-sm" disabled="@EsPersonaJuridica()" />
+                                <InputText @bind-Value="cliente.U_HBT_Apellido1" class="form-control form-control-sm" disabled="@EsPersonaJuridica()"/>   
                             </div>
                             <div class="col-12 col-md-4">
                                 <label class="form-label text-muted small fw-semibold">Segundo Apellido </label>
-                                <InputText @bind-Value="cliente.U_HBT_Apellido2" class="form-control form-control-sm" disabled="@EsPersonaJuridica()" />
+                                <InputText @bind-Value="cliente.U_HBT_Apellido2" class="form-control form-control-sm" disabled="@EsPersonaJuridica()"/>
                             </div>
                             <div class="col-12 col-md-4">
                                 <label class="form-label text-muted small fw-semibold">Teléfono 1 *</label>
@@ -667,7 +667,7 @@
         </div>
     </div>
 </div>
-<div class="modal fade @(mostrarModalMunicipio ? "show d-block modal-backdrop-custom" : "")" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 1050;">
+<div class="modal fade @(mostrarModalMunicipio ? "show d-block" : "")" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 1050;">
     <div class="modal-dialog modal-md modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-header bg-marron-modal text-white">
