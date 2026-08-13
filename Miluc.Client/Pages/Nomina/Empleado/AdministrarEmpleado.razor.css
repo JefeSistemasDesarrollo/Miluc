@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-﻿.bg-rojo {
-=======
 .bg-rojo {
->>>>>>> e744222956c2cfa8269fb353154d7c23ee1fca0d
     background-color: #D62F46;
     color: white;
 }
@@ -18,9 +14,6 @@
 
 .text-rojo {
     color: #D62F46;
-}
-.text-amarillo {
-    color: #FDC922
 }
 
 x-small {
@@ -98,17 +91,17 @@ x-small {
 
     /*sombrear a color-profile vinotinto*/
     .btn-detail:hover {
-        background: #800020;
+        background: #D62F46;
         color: white;
     }
 
 .edit:hover {
-    background: #800020;
+    background: #D62F46;
     color: white;
 }
 
 .delete:hover {
-    background: #800020;
+    background: #D62F46;
     color: white;
 }
 /* Paginador */
@@ -142,7 +135,7 @@ x-small {
 }
 
     .header-principal h1 {
-        color: #800020; /* Vinotinto Miluc */
+        color: #D62F46; /* Vinotinto Miluc */
         font-weight: 800;
         font-size: 2rem;
     }
@@ -186,7 +179,7 @@ x-small {
 }
 
 .border-rojo {
-    border-top: 6px solid D62F46;
+    border-top: 6px solid #D62F46;
 }
 
 .border-amarillo {
@@ -253,8 +246,8 @@ x-small {
     color: white;
 }
 
-.btn-vinotinto {
-    background: #800020;
+.btn-rojo {
+    background: #D62F46;
     color: white;
 }
 
@@ -267,5 +260,6 @@ x-small {
     filter: brightness(1.1);
     color: white;
 }
+
 body {
 }
