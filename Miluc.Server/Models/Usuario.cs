@@ -24,8 +24,9 @@ namespace Miluc.Server.Models
 
         //public bool Usuarios {  get; set; }
         public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
-        public DateTime FechaActualizacion { get; set; }  
+        public DateTime FechaActualizacion { get; set; }
 
+        public int ? CodVendedorSAP { get; set; } = 0;
         // Navegación
         public ICollection<UsuarioRol> UsuarioRoles { get; set; } = [];
         public ICollection<RefreshToken> RefreshTokens { get; set; } = [];

@@ -1,6 +1,6 @@
 ﻿/*selector de cantidad */
-.bg-vinotinto {
-    background-color: #800020;
+.bg-rojo {
+    background-color: #D62F46;
     color: white;
 }
 
@@ -8,12 +8,12 @@
 .permisos-page {
     padding: 1rem;
 }
-.btn-vinotinto {
-    background-color: #800000;
+.btn-rojo {
+    background-color: #D62F46;
     color: white;
 }
-.text-vinotinto {
-    color: #800020;
+.text-rojo {
+    color: #D62F46;
 }
 
 x-small {
@@ -21,7 +21,7 @@ x-small {
 }
 /* Botón Nuevo */
 .btn-nuevo {
-    background-color: #800000;
+    background-color: #D62F46;
     color: white;
     border: none;
     border-radius: 12px;
@@ -54,12 +54,8 @@ x-small {
         text-transform: uppercase;
         letter-spacing: 1px;
         padding: 1.2rem;
-        color: #800020;
+        color: #D62F46;
     }
-
-
-
-
 .status-pill {
     padding: 5px 12px;
     border-radius: 20px;
@@ -77,23 +73,23 @@ x-small {
     border-radius: 8px;
     font-size: 0.8rem;
     font-weight: 600;
-    color: #800020;
+    color: #D62F46;
     transition: 0.2s;
 }
 
-    /*sombrear a color-profile vinotinto*/
+    /*sombrear a color-profile rojo*/
     .btn-detail:hover {
-        background: #800020;
+        background: #D62F46;
         color: white;
     }
 
 .edit:hover {
-    background: #800020;
+    background: #D62F46;
     color: white;
 }
 
 .delete:hover {
-    background: #800020;
+    background: #D62F46;
     color: white;
 }
 /* Paginador */

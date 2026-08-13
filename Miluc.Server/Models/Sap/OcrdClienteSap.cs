@@ -80,7 +80,7 @@ namespace Miluc.Server.Models.Sap
             get; set; 
         } //Vendedor asignado al cliente
         // Relaciones W¿ENTRE RUTA Y CLIENTE
-        public OBPP OBPP 
+        public OBPP  OBPP 
         { 
             get; set;
         }  //RUTAS DE ENTREGA

@@ -49,7 +49,6 @@ namespace Miluc.Server.Servicios.Autorizacion
                         Mensaje = "El usuario esta inactivo por favor comuniquese con el administrador del sistema"
                     };
                 }
-
                 if (usuario.DebeCambiarPassword)
                 {
                     return new ResponseAPI<UserSession?>
@@ -121,7 +120,6 @@ namespace Miluc.Server.Servicios.Autorizacion
             var jwtToken = tokenService.GenerarToken(usuario, roles, permisos);
 
             // REFRESH TOKEN
-
             //string refreshTokenPlano = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
 
             var randomBytes = RandomNumberGenerator.GetBytes(64);
@@ -155,6 +153,7 @@ namespace Miluc.Server.Servicios.Autorizacion
                 Roles = roles,
                 Permisos = permisos,
                 FechaExpiracion = fechaExpiracion,
+                CodVendedorSAP = usuario.CodVendedorSAP ?? -1,
                 Requiere2FA = false
             };
 
@@ -339,9 +338,6 @@ namespace Miluc.Server.Servicios.Autorizacion
             // Comparación bit a bit
             return hashCalculado.SequenceEqual(hashAlmacenado);
         }
-
-
-
         public async Task<ResponseAPI<bool>> CambiarPasswordAsync(CambiarPasswordRequest request)
         {
             try

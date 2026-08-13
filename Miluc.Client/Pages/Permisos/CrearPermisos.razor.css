@@ -1,17 +1,17 @@
-﻿.bg-vinotinto {
-    background-color: #6c1d1d;
+﻿.bg-rojo {
+    background-color: #D62F46;
     color: white;
     border: none;
     transition: 0.3s;
 }
-.btn-vinotinto {
-    background-color: #6c1d1d;
+.btn-rojo {
+    background-color: #D62F46;
     color: white;
     border: none;
     transition: 0.3s;
 }
 
-.text-vinotinto {
+.text-rojo {
     color: #6c1d1d;
 }
 
@@ -24,7 +24,7 @@
 }
 
     .role-card:hover {
-        border-color: #6c1d1d;
+        border-color: #D62F46;
     }
 
     .role-card.active {
@@ -38,7 +38,7 @@
 }
 
 .role-card.active .role-name {
-    color: #6c1d1d;
+    color: #D62F46;
 }
 
 .role-desc {

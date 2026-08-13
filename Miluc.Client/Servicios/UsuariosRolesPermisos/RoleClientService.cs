@@ -67,29 +67,40 @@ namespace Miluc.Client.Servicios.UsuariosRolesPermisos
             }
         }
 
-        public async Task<ResponseAPI<List<RolReadDto>>> GetAllRolesAsync()
+        public async Task<ResponseAPI<List<RolReadDto>>> GetAllRolesAsync(string? buscar = null, int? pagina = null, int? cantidad = null)
         {
             try
             {
-                var response = await _http.GetAsync("api/Roles");
-                var result=await response.Content.ReadFromJsonAsync<ResponseAPI<List<RolReadDto>>>();
-               
+                var url = $"api/Roles?buscar={buscar}&pagina={pagina}&cantidad={cantidad}";
 
-                if (result != null)
+                var response = await _http
+                    .GetFromJsonAsync<ResponseAPI<List<RolReadDto>>>(url);
+
+                if (response?.Valor != null)
                 {
-                    return result;
+                    return new ResponseAPI<List<RolReadDto>>
+                    {
+                        EsCorrecto=response.EsCorrecto,
+                        Valor = response.Valor,
+                        Mensaje = response.Mensaje,
+                        CantRegistros = response.CantRegistros
+                    };
                 }
-                else
-                {
-                    return new ResponseAPI<List<RolReadDto>>().SuccessResponse(false, "Fallo al obtener los roles", null, 0);
 
-                }
-
+                return new ResponseAPI<List<RolReadDto>>()
+                    .SuccessResponse(
+                        false,
+                        "Fallo al obtener los roles",
+                        null,
+                        0);
             }
             catch (Exception ex)
             {
-                return new ResponseAPI<List<RolReadDto>>().ErroresResponse(false, "Fallo al obtener los roles", new List<string> { ex.Message });
-
+                return new ResponseAPI<List<RolReadDto>>()
+                    .ErroresResponse(
+                        false,
+                        "Fallo al obtener los roles",
+                        new List<string> { ex.Message });
             }
         }
 

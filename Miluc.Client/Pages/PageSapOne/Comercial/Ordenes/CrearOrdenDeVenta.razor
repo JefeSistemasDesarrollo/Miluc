@@ -16,6 +16,7 @@
 @inject ISapOslpService _sapOslpVendedorService
 @inject ISapOitmClientService _sapOitmClientService
 @inject ISapOrdrService _sapOrdrService
+@inject IAuthClientService _authService
 @inject IJSRuntime _jsRuntime
 <div class="container-fluid py-3 bg-light min-vh-100">
     @* encabezado de los pedidos *@
@@ -317,13 +318,13 @@
     <div class="modal-dialog modal-md modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
             <!-- HEADER -->
-            <div class="modal-header bg-maroon text-white">
+            <div class="modal-header bg-maroon-modal text-modal ">
                 <h5 class="modal-title mb-0">
 
-                    <i class="bi bi-person-fill-add"></i>Buscar Clientes
+                    <i class="bi bi-person-fill-add"></i> Buscar Clientes
 
                 </h5>
-                <button type="button" class="btn-close btn-close-white ms-auto" @onclick="CerrarModalCliente"></button>
+                <button type="button" class="btn-close text-modal ms-auto" @onclick="CerrarModalCliente"></button>
             </div>
             <!-- BODY -->
             <div class="modal-body">
@@ -409,9 +410,9 @@
     <div class="modal-dialog modal-md modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
             <!-- HEADER -->
-            <div class="modal-header bg-maroon text-white">
+            <div class="modal-header bg-maroon-modal text-modal text-white">
                 <h5 class="modal-title mb-0"><i class="bi bi-box-seam me-2"></i>Buscar Artículo</h5>
-                <button type="button" class="btn-close btn-close-white ms-auto" @onclick="CerrarModalArticulo"></button>
+                <button type="button" class="btn-close text-modal ms-auto" @onclick="CerrarModalArticulo"></button>
 
             </div>
 
@@ -575,7 +576,14 @@
         };
         listVendedores = (await _sapOslpVendedorService.GetListVendedoresAsync()).Valor ?? new List<SapVendedorReaderDto>();
         listaArticulosApi = (await _sapOitmClientService.GetListOitmAsync("P", paginaActualArticulo, CantidadRegistrosPorPaginaArticulo)).Valor ?? new List<SapOitmDto>();
-        await BuscarEnServidorCliente();
+        int codVendedorSAP = -1;
+
+        if (_authClientService.CurrentSession.CodVendedorSAP != null)
+        {
+            codVendedorSAP = _authClientService.CurrentSession.CodVendedorSAP ?? -1;
+        }
+
+        await BuscarEnServidorCliente("", 1, cantidadPorPaginaCliente, codVendedorSAP);
     }
     private int TotalPaginasArticulo=> (int)Math.Ceiling((double)CantidadDeArticulosEncontrados / CantidadRegistrosPorPaginaArticulo);
     private int TotalPaginasCliente=> (int)Math.Ceiling((double)CantidadDeClientesEncontrados / cantidadPorPaginaCliente);
@@ -600,23 +608,45 @@
     {
         if (paginaActualCliente > 1)
         {
+            int codVendedorSAP = -1;
+
+            if (_authClientService.CurrentSession.CodVendedorSAP != null)
+            {
+                codVendedorSAP = _authClientService.CurrentSession.CodVendedorSAP ?? -1;
+            }
+
             paginaActualCliente--;
-            await BuscarEnServidorCliente(_textoBusquedaCliente, paginaActualCliente, cantidadPorPaginaCliente);
+            await BuscarEnServidorCliente(_textoBusquedaCliente, paginaActualCliente, cantidadPorPaginaCliente, codVendedorSAP);
         }
     }
     private async Task SiguientePaginaCliente()
     {
         if (paginaActualCliente < TotalPaginasCliente)
         {
+            int codVendedorSAP = -1;
+
+            if (_authClientService.CurrentSession.CodVendedorSAP != null)
+            {
+                codVendedorSAP = _authClientService.CurrentSession.CodVendedorSAP ?? -1;
+            }
             paginaActualCliente++;
-            await BuscarEnServidorCliente(_textoBusquedaCliente, paginaActualCliente, cantidadPorPaginaCliente);
+            await BuscarEnServidorCliente(_textoBusquedaCliente, paginaActualCliente, cantidadPorPaginaCliente, codVendedorSAP);
         }
     }
 
     private async Task IrPaginaCliente(int pagina)
     {
         paginaActualCliente = pagina;
-        await BuscarEnServidorCliente(_textoBusquedaCliente, paginaActualCliente, cantidadPorPaginaCliente);
+
+     
+        int codVendedorSAP = -1;
+
+        if (_authClientService.CurrentSession.CodVendedorSAP != null)
+        {
+            codVendedorSAP = _authClientService.CurrentSession.CodVendedorSAP ?? -1;
+        }
+
+        await BuscarEnServidorCliente(_textoBusquedaCliente, paginaActualCliente, cantidadPorPaginaCliente, codVendedorSAP);
     }
     private void FiltrarArticulos()
     {
@@ -772,9 +802,18 @@
     private async Task HandleEnterCliente(KeyboardEventArgs e)
     {
         if (e.Key == "Enter")
-            await BuscarEnServidorCliente(_textoBusquedaCliente, 1, cantidadPorPaginaCliente);
+        {
+            int codVendedorSAP = -1;
+
+            if (_authClientService.CurrentSession.CodVendedorSAP != null)
+            {
+                codVendedorSAP = _authClientService.CurrentSession.CodVendedorSAP ?? -1;
+            }
+            await BuscarEnServidorCliente(_textoBusquedaCliente, 1, cantidadPorPaginaCliente, codVendedorSAP);
+        }
+      
     }
-    private async Task BuscarEnServidorCliente(string? textoBusqueda = null, int? pagina = null, int? cantidadPorPagina = null)
+    private async Task BuscarEnServidorCliente(string? textoBusqueda = null, int? pagina = null, int? cantidadPorPagina = null, int? codVendedorSAP = null)
     {
         try
         {
@@ -792,7 +831,13 @@
             }
             Cargando = true;
 
-            var response = await _sapOcrdClientService.GetallClienteAsync(textoBusqueda.ToString().Trim(), Convert.ToInt32(pagina), Convert.ToInt32(cantidadPorPagina));
+          
+           if (_authClientService.CurrentSession.CodVendedorSAP.Value != null)
+            {
+               codVendedorSAP = _authClientService.CurrentSession.CodVendedorSAP ?? -1;
+            }
+
+            var response = await _sapOcrdClientService.GetallClienteAsync(textoBusqueda.ToString().Trim(), Convert.ToInt32(pagina), Convert.ToInt32(cantidadPorPagina), Convert.ToInt32(codVendedorSAP));
 
             if (response != null)
             {
@@ -948,8 +993,6 @@
                             }
                         }
                     }
-
-
                     CalcularTotales(artData);
                     // Agregamos el objeto directamente (ya que es del mismo tipo)
                     lineasPedido.Add(new ArticuloPorListaDePreciosDto

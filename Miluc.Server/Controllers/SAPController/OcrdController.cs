@@ -1,14 +1,17 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Sap.Ocrd;
+using Miluc.Server.Security;
 using Miluc.Shared.DTOs.Sap.Cliente;
-using Miluc.Shared.DTOs.Sap.Cliente.RegimeNTributario;
 using Miluc.Shared.Models.Response;
 
 namespace Miluc.Server.Controllers.SAPController
 {
     [ApiController]
     [Route("api/[Controller]")]
+    [Authorize]
+
     public class OcrdController(ISapOcrdService _sapClienteService, ILogService _log) : Controller
     {
         [HttpGet]
@@ -16,11 +19,14 @@ namespace Miluc.Server.Controllers.SAPController
         [ProducesResponseType(typeof(ResponseAPI<List<SapClienteReaderDto>>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ResponseAPI<List<SapClienteReaderDto>>), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ResponseAPI<List<SapClienteReaderDto>>), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ResponseAPI<List<SapClienteReaderDto>>>> GetAllClientesAsync([FromQuery] string? buscar, [FromQuery] int pagina = 1, [FromQuery] int? cantidad = null)
+       
+        [PermissionAuthorize("Cliente.View")]
+        public async Task<ActionResult<ResponseAPI<List<SapClienteReaderDto>>>> GetAllClientesAsync([FromQuery] string? buscar, [FromQuery] int? pagina = null, [FromQuery] int? cantidad = null,
+            [FromQuery] int? codVendedorSAP = null)
         {
             try
             {
-                var response = await _sapClienteService.GetallClienteAsync(buscar, pagina, cantidad);
+                var response = await _sapClienteService.GetallClienteAsync(buscar, pagina, cantidad, codVendedorSAP);
 
                 return Ok(new ResponseAPI<List<SapClienteReaderDto>>
                 {
@@ -42,7 +48,6 @@ namespace Miluc.Server.Controllers.SAPController
                               ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
                               origen: nameof(OcrdController));
 
-
                 return StatusCode(500, new ResponseAPI<List<SapClienteReaderDto>>
                 {
                     EsCorrecto = false,
@@ -54,6 +59,7 @@ namespace Miluc.Server.Controllers.SAPController
 
 
         [HttpGet("{cardcode}")]
+        [PermissionAuthorize("Cliente.Detail")]
         public async Task<ActionResult<ResponseAPI<SapClienteReaderDto>>> GetByIdClienteAsync(string cardcode)
         {
             try
@@ -93,6 +99,7 @@ namespace Miluc.Server.Controllers.SAPController
             }
         }
         [HttpPost]
+        [PermissionAuthorize("Cliente.Create")]
         public async Task<ActionResult<ResponseAPI<SapClienteReaderDto>>> CreateClienteAsync([FromBody] SapClienteCreateEditDto sapClienteCreateDto)
         {
             try
@@ -144,6 +151,7 @@ namespace Miluc.Server.Controllers.SAPController
             }
         }
         [HttpPut("{cardCode}")]
+        [PermissionAuthorize("Cliente.Update")]
         public async Task<ActionResult<ResponseAPI<SapClienteReaderDto>>> ActualizarClienteAsync(string cardCode, [FromBody] SapClienteCreateEditDto sapClienteCreateDto)
         {
             try
@@ -209,6 +217,7 @@ namespace Miluc.Server.Controllers.SAPController
             }
         }
         [HttpDelete("{cardCode}")]
+        [PermissionAuthorize("Cliente.Delete")]
         public async Task<ActionResult<ResponseAPI<bool>>> EliminarClienteAsync(string cardCode)
         {
             try
@@ -265,15 +274,11 @@ namespace Miluc.Server.Controllers.SAPController
                  ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
                  origen: nameof(OcrdController));
 
-
                 string mensaje = ex.Message;
-
                 if (mensaje.Contains("You cannot remove business partner", StringComparison.OrdinalIgnoreCase))
                 {
                     mensaje = "No es posible eliminar el cliente porque tiene documentos asociados (Pedidos de Venta, Facturas, Entregas, Pagos u otros documentos en SAP).";
                 }
-
-
                 return StatusCode(500, new ResponseAPI<bool>
                 {
                     EsCorrecto = false,

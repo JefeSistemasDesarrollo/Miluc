@@ -16,14 +16,14 @@
                 </ol>
             </nav>
             <h2 class="fw-bold text-dark m-0">
-                <i class="bi bi-shield-lock-fill text-vinotinto me-2"></i>Ficha de Permiso
+                <i class="bi bi-shield-lock-fill text-rojo me-2"></i>Ficha de Permiso
             </h2>
         </div>
         <div class="d-flex gap-2 mt-3 mt-md-0">
             <button class="btn btn-outline-secondary rounded-pill px-4" @onclick="Volver">
                 <i class="bi bi-arrow-left me-2"></i>Regresar
             </button>
-            <button class="btn btn-vinotinto rounded-pill px-4 shadow-sm" @onclick="IrAEditar">
+            <button class="btn btn-rojo rounded-pill px-4 shadow-sm" @onclick="IrAEditar">
                 <i class="bi bi-pencil-square me-2"></i>Editar Datos
             </button>
         </div>
@@ -32,7 +32,7 @@
     @if (Cargando)
     {
         <div class="d-flex flex-column align-items-center justify-content-center py-5">
-            <div class="spinner-grow text-vinotinto" role="status" style="width: 3rem; height: 3rem;"></div>
+            <div class="spinner-grow text-rojo" role="status" style="width: 3rem; height: 3rem;"></div>
             <p class="text-muted mt-3 fw-medium">Consultando servidor...</p>
         </div>
     }
@@ -56,7 +56,7 @@
             <div class="col-lg-8">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white py-3">
-                        <h5 class="mb-0 fw-bold text-vinotinto">
+                        <h5 class="mb-0 fw-bold text-rojo">
                             <i class="bi bi-card-text me-2"></i>Información General
                         </h5>
                     </div>
@@ -71,14 +71,14 @@
                             <div class="col-md-6">
                                 <label class="text-muted small fw-bold text-uppercase mb-1 d-block">Nombre del Permiso</label>
                                 <div class="p-3 bg-light rounded-3 border">
-                                    <span class="fs-5 fw-bold text-vinotinto">@permiso.Nombre</span>
+                                    <span class="fs-5 fw-bold text-rojo">@permiso.Nombre</span>
                                 </div>
                             </div>
 
                             <div class="col-md-12">
                                 <label class="text-muted small fw-bold text-uppercase mb-1 d-block">Descripción del Permiso</label>
                                 <div class="p-3 bg-light rounded-3 border">
-                                    <span class="fs-5 fw-bold text-vinotinto">@permiso.Descripcion</span>
+                                    <span class="fs-5 fw-bold text-rojo">@permiso.Descripcion</span>
                                 </div>
                             </div>
                             <div class="col-12">
@@ -88,7 +88,7 @@
                                     {
                                         @foreach (var rol in permiso.RolesNombre)
                                         {
-                                            <span class="badge bg-soft-vinotinto text-vinotinto border border-vinotinto px-3 py-2 fs-6">
+                                            <span class="badge bg-soft-rojo text-rojo border border-rojo px-3 py-2 fs-6">
                                                 <i class="bi bi-person-badge me-1"></i> @rol
                                             </span>
                                         }
@@ -105,7 +105,7 @@
             </div>
             @* Tarjeta Lateral: Estado/Metadata *@
             <div class="col-lg-4">
-                <div class="card border-0 shadow-sm bg-vinotinto text-white">
+                <div class="card border-0 shadow-sm bg-rojo text-white">
                     <div class="card-body p-4 text-center">
                         <div class="mb-3">
                             <i class="bi bi-shield-check display-4"></i>
@@ -133,7 +133,7 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        if (authClient.HasPermission("Permiso.Details"))
+        if (authClient.HasPermission("Permiso.Detail"))
         {
             await ObtenerPermisos();
         }

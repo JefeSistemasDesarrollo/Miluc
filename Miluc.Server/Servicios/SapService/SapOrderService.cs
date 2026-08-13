@@ -6,6 +6,7 @@ using Miluc.Server.Interfaces.Sap.Ordr;
 using Miluc.Shared.DTOs.Sap.Articulos;
 using Miluc.Shared.DTOs.Sap.Pedidos;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Text;
 
 namespace Miluc.Server.Servicios.SapService
@@ -55,9 +56,30 @@ namespace Miluc.Server.Servicios.SapService
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var result = JsonConvert.DeserializeObject<OrdersReaderDto>(contect);
 
-                    return result;
+//                    var result = JObject.Parse(contect);
+
+            var result = JsonConvert.DeserializeObject<OrdersReaderDto>(contect);
+                   
+                    if (result == null)
+                    {
+                        throw new Exception("No se pudo deserializar la respuesta de SAP.");
+                    }
+
+
+                    //return new OrdersReaderDto
+                    //{
+                    //    CardCode = result["CardCode"]?.ToString(),
+                    //    DocNum = result["DocNum"]?.ToString(),
+                    //    DocEntry = result["DocEntry"]?.Value<int>()
+                    //};
+
+                    return new OrdersReaderDto
+                    {
+                        CardCode = Convert.ToString(result?.CardCode) ?? "",
+                        DocNum = Convert.ToString(result?.DocNum) ?? "",
+                        DocEntry = Convert.ToInt32(result?.DocEntry)
+                    };
                 }
                 else
                 {
@@ -228,7 +250,7 @@ namespace Miluc.Server.Servicios.SapService
                         Comments = x.Comments ?? "",
                         U_Picking = x.U_Picking ?? 0,
                         U_PLACAS = x.piking != null && x.piking.Name != null ? x.piking.Name : "Sin placa",
-                        CANCELED = x.CANCELED,
+                        CANCELED = Convert.ToString(x.CANCELED),
                         // SlpCode = x.SlpCode,
                         SlpCode = x.OSLP.SlpCode,
                         SlpName = x.OSLP.SlpName,
@@ -287,10 +309,12 @@ namespace Miluc.Server.Servicios.SapService
             }
         }
         public async Task<(List<OrdersReaderDto> data, int TotalRegistros)> ListarPedidosAsync(string? buscar = null, int? pagina = null,
-        int? cantidad = null, DateTime? fechaInicio = null, DateTime? fechaFin = null)
+        int? cantidad = null, DateTime? fechaInicio = null, DateTime? fechaFin = null, int? codVendedorSAP = null,
+        char? DocStatus = null, char? CANCELED = null, char? Printed = null)
         {
             try
             {
+                // vamos a manejar la cantidad o por si esta abierta pry
                 int cantidadTop = cantidad ?? 12;
                 var query = _sapDbContex.ORDR.AsNoTracking().AsQueryable();
                 // 1. Filtro por texto (Buscador)
@@ -312,11 +336,29 @@ namespace Miluc.Server.Servicios.SapService
                     DateTime fin = fechaFin.Value.Date.AddDays(1).AddTicks(-1); // 23:59:59.999
                     query = query.Where(x => x.DocDate <= fin);
                 }
+               
+                if (DocStatus != null)
+                {
+                    query = query.Where(x => x.DocStatus == DocStatus);
+                }
+                if (CANCELED != null)
+                {
+                    query = query.Where(x => x.CANCELED == CANCELED);
+                }
+                if (Printed != null)
+                {
+                    query = query.Where(x => x.Printed == Printed);
+                }
+                if (codVendedorSAP >= 1)
+                {
+                    query = query.Where(x => x.SlpCode == codVendedorSAP);
+                }
+
                 // 3. Contar registros totales aplicando todos los filtros previos
                 int totalRegistros = await query.CountAsync();
                 // 4. Paginación, Proyección y Ejecución
                 var lista = await query.OrderByDescending(x => x.DocNum)
-                    .Include(x => x.piking)
+                    //.Include(x => x.piking)
                     .Skip(((pagina ?? 1) - 1) * cantidadTop)
                     .Take(cantidadTop)
                     .Select(x => new OrdersReaderDto
@@ -326,8 +368,8 @@ namespace Miluc.Server.Servicios.SapService
                         DocNum = x.DocNum.ToString(),
                         DocEntry = x.DocEntry,
                         DocDate = x.DocDate,
-                        DocStatus = x.DocStatus,
-                        CANCELED = x.CANCELED,
+                        DocStatus = Convert.ToString(x.DocStatus),
+                        CANCELED = Convert.ToString(x.CANCELED),
                         DocDueDate = x.DocDueDate,
                         DocRate = x.DocRate,
                         DocTotal = x.DocTotal,
@@ -338,6 +380,8 @@ namespace Miluc.Server.Servicios.SapService
                         Comments = x.Comments ?? "",
                         U_Picking = x.U_Picking ?? 0,
                         U_PLACAS = x.piking != null && x.piking.Name != null ? x.piking.Name : "Sin placa",
+                        Printed = Convert.ToString(x.Printed),
+                      
                     }).ToListAsync();
 
                 return (lista, totalRegistros);

@@ -8,13 +8,10 @@ namespace Miluc.Client.Servicios.UsuariosRolesPermisos
     public class UsuarioClientService(HttpClient _httpclient) : IUsuarioClientService
     {
 
-        public async Task<ResponseAPI<List<UsuarioReadDto>>> ListarUsuariosAsync(string? buscar, int pagina, int cantidad)
+        public async Task<ResponseAPI<List<UsuarioReadDto>>> ListarUsuariosAsync(string? buscar=null, int ?pagina=null, int? cantidad = null)
         {
             try
             {
-
-
-
                 var url = $"api/Usuario?buscar={buscar}&pagina={pagina}&cantidad={cantidad}";
                 var responseUsuario = await _httpclient.GetFromJsonAsync<ResponseAPI<List<UsuarioReadDto>>>(url);
 

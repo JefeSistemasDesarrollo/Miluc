@@ -2,6 +2,7 @@
 using Miluc.Server.Data;
 using Miluc.Server.Interfaces.Sap.ConexionSap;
 using Miluc.Server.Interfaces.Sap.Ocrd;
+using Miluc.Server.Models.Sap;
 using Miluc.Shared.DTOs.Sap.Cliente;
 using Miluc.Shared.DTOs.Sap.DireccionCliente;
 using Miluc.Shared.DTOs.Sap.Impuesto;
@@ -292,34 +293,50 @@ namespace Miluc.Server.Servicios.SapService
                 }
             }
         }
-
-        public async Task<(List<SapClienteReaderDto> Data, int TotalRegistros)> GetallClienteAsync(string? buscar = null, int pagina = 1, int? cantidad = null)
+        public async Task<(List<SapClienteReaderDto> Data, int TotalRegistros)> GetallClienteAsync(string? buscar = null, int ? pagina = null, int? cantidad = null, int ?codVendedorSAP = null)
         {
             try
             {
-                var queryBusqueda = _sapDbContext.OCRD.AsNoTracking().Include(c => c.OCRG)
-                    .Include(c => c.OCRG)
-                    .Include(c => c.OPLN)
-                    .Include(c => c.OCTG)
-                    .Include(c => c.OSLP)
-                    .Include(c => c.OBPP)
-                    .Include(c => c.Direcciones)
-                    //.Include(c => c.OSPPrecioEspecialSap)
-                    .Where(c => c.CardType == "C")
-                    .AsQueryable();
+                IQueryable<OcrdClienteSap> queryBusqueda = null;
+
+
+                if (!string.IsNullOrWhiteSpace(buscar))
+                {
+                    buscar = buscar.Trim();
+                }
+
+               
+
+               int pag =pagina ?? 1;
+               
+                int codiVendedor = codVendedorSAP ?? -1;
+
+
+                if (codiVendedor == -1)
+                {
+                 queryBusqueda = _sapDbContext.OCRD.AsNoTracking()
+                   .Include(c => c.OCRG)
+                   .Where(c => c.CardType == "C")
+                   .AsQueryable();
+                }
+                else if (codiVendedor != -1)
+                {
+                    queryBusqueda = _sapDbContext.OCRD.AsNoTracking()
+                   .Include(c => c.OCRG)
+                   .Where(c => c.CardType == "C" && c.OSLP.SlpCode == codiVendedor)
+                   .AsQueryable();
+                }
 
                 int cantidadTop = cantidad ?? 20;
 
                 if (!string.IsNullOrEmpty(buscar))
                 {
-                    queryBusqueda = queryBusqueda.Where(c => c.CardCode.Contains(buscar)
-                    || c.CardName.Contains(buscar)
-                    );
+                    queryBusqueda = queryBusqueda.Where(c => c.CardCode.Contains(buscar) || c.CardName.Contains(buscar));
                 }
                 int totalEncontrados = await queryBusqueda.CountAsync();
 
                 var dataBusqueda = await queryBusqueda.OrderByDescending(x => x.CardName)
-                    .Skip((pagina - 1) * cantidadTop)
+                    .Skip((pag - 1) * cantidadTop)
                     .Take(cantidadTop)
                     .Select(C => new SapClienteReaderDto
                     {
@@ -371,8 +388,10 @@ namespace Miluc.Server.Servicios.SapService
                         SlpName = C.OSLP.SlpName,
                         GroupNum = C.OCTG.GroupNum,
                         PymntGroup = C.OCTG.PymntGroup,
-                        PrioCode = C.OBPP.PrioCode,
-                        PrioDesc = C.OBPP.PrioDesc,
+                        PrioCode = C.OBPP != null ? C.OBPP.PrioCode : 0,
+                        PrioDesc = C.OBPP != null ? C.OBPP.PrioDesc : null,
+                        //PrioCode = C.OBPP.PrioCode,
+                        //PrioDesc = C.OBPP.PrioDesc,
                         Block = C.Block,
                         Free_Text = C.Free_Text,
                         // FreeText= C.FreeText,
@@ -401,7 +420,10 @@ namespace Miluc.Server.Servicios.SapService
             {
                 throw new Exception($"Error al listar los clientes: {ex.Message}");
             }
+
         }
+
+
         public async Task<SapClienteReaderDto> GetByIdClienteAsync(string? cardcode = null)
         {
             try
@@ -412,15 +434,15 @@ namespace Miluc.Server.Servicios.SapService
                 }
 
                 var Cliente = await _sapDbContext.OCRD.AsNoTracking()
-                    .Include(c => c.HBT_REGIMTRIB)
-                    .Include(c => c.HBT_TIPODOC)
-                    .Include(c => c.HBT_MUNICIPIO)
-                    .Include(c => c.HBT_TIPODOC)
-                    .Include(c => c.OBPP)
-                    .Include(c => c.HBT_ACTIVIDADECO)
-                    .Include(c => c.HBT_REGIMENFISCAL)
-                    .Include(c => c.HBT_RESPFISCAL)
-                    .Include(c => c.CRD4)
+                    //.Include(c => c.HBT_REGIMTRIB)
+                    //.Include(c => c.HBT_TIPODOC)
+                    //.Include(c => c.HBT_MUNICIPIO)
+                    //.Include(c => c.HBT_TIPODOC)
+                    //.Include(c => c.OBPP)
+                    //.Include(c => c.HBT_ACTIVIDADECO)
+                    //.Include(c => c.HBT_REGIMENFISCAL)
+                    //.Include(c => c.HBT_RESPFISCAL)
+                    //.Include(c => c.CRD4)
                     .Where(c => c.CardCode == cardcode)
                    .Select(C => new SapClienteReaderDto
                    {
@@ -497,9 +519,8 @@ namespace Miluc.Server.Servicios.SapService
                        SlpName = C.OSLP.SlpName,
                        GroupNum = C.OCTG.GroupNum,
                        PymntGroup = C.OCTG.PymntGroup,
-
-                       PrioCode = C.OBPP.PrioCode,
-                       PrioDesc = C.OBPP.PrioDesc,
+                       PrioCode = C.OBPP !=null ? C.OBPP.PrioCode : 0,
+                       PrioDesc = C.OBPP !=null ? C.OBPP.PrioDesc : null,
                        Block = C.Block,
                        Free_Text = C.Free_Text,
                        DireccionPrincipal = C.Direcciones.Select(d => new DireccionesCrd1ReaderDto
@@ -524,9 +545,6 @@ namespace Miluc.Server.Servicios.SapService
                    }).FirstOrDefaultAsync();
 
                 return Cliente;
-
-
-
 
             }
             catch (Exception ex)
