@@ -14,7 +14,7 @@ namespace Miluc.Server.Servicios.Nomina
             try
             {
 
-                var caja = await _context.CajaCompensacion.FirstOrDefaultAsync(e => e.CajaCompensacionId == cajaUpdate.cajaCompensacionId);
+                var caja = await _context.CajaCompensacion.FirstOrDefaultAsync(e => e.CajaCompensacionId == cajaUpdate.CajaCompensacionId);
 
                 if (caja == null)
                     throw new Exception("La EPS no existe.");

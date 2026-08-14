@@ -1,7 +1,9 @@
 ﻿@page "/Usuarios/Editar/{IdUsuario:int}"
 
+@using Miluc.Client.Interfaces.SapInterfaces.Oslp
 @using Miluc.Client.Interfaces.UsuariosRolesPermisos
 @using Miluc.Shared.DTOs.Roles
+@using Miluc.Shared.DTOs.Sap.Vendedor
 @using Miluc.Shared.DTOs.Usuarios
 @inject IUsuarioClientService _usuarioClientService
 @inject IRolClientService _roleClienteService
@@ -10,12 +12,14 @@
 @inject IJSRuntime js
 @inject IAuthClientService authClient
 @inject ILogClientService logClient
+@inject ISapOslpService _ospService
+@attribute [Authorize]
 
 <div class="usuarios-page animate__animated animate__fadeIn p-4">
     @* --- CABECERA --- *@
     <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-3">
         <div>
-            <h2 class="fw-bold text-vinotinto m-0"><i class="bi bi-person-plus-fill me-2"></i>Editar Usuario</h2>
+            <h2 class="fw-bold text-rojo m-0"><i class="bi bi-person-plus-fill me-2"></i>Editar Usuario</h2>
             <p class="text-muted mb-0 small">Complete los datos obligatorios marcados con (*).</p>
         </div>
         <button class="btn btn-outline-secondary btn-sm rounded-pill px-3" @onclick='() => nav.NavigateTo("/Usuarios")'>
@@ -24,7 +28,7 @@
     </div>
 
     <EditForm Model="usuarioDto" OnValidSubmit="EditarUsuario">
-        <DataAnnotationsValidator/>
+        <DataAnnotationsValidator />
 
         <div class="row g-4">
             @* --- COLUMNA IZQUIERDA: PERFIL Y CREDENCIALES --- *@
@@ -36,7 +40,7 @@
                             <div class="position-relative d-inline-block">
                                 <img src="@(string.IsNullOrEmpty(previewImage) ? "img/default-user.png" : previewImage)"
                                      class="rounded-circle shadow border-4 border-white" style="width: 130px; height: 130px; object-fit: cover;" />
-                                <label class="btn btn-vinotinto btn-sm position-absolute bottom-0 end-0 rounded-circle shadow p-2" style="cursor:pointer;">
+                                <label class="btn btn-rojo btn-sm position-absolute bottom-0 end-0 rounded-circle shadow p-2" style="cursor:pointer;">
                                     <i class="bi bi-camera-fill"></i>
                                     <InputFile OnChange="OnInputFileChange" class="d-none" accept=".jpg,.jpeg,.png" />
                                 </label>
@@ -44,7 +48,7 @@
                             <small class="d-block text-muted mt-2">Formatos: JPG, PNG (Máx 2MB)</small>
                         </div>
 
-                     @*    <div class="mb-3">
+                        @*    <div class="mb-3">
                             <label class="form-label fw-bold small text-secondary">Nombre de Usuario (Login)*</label>
                             <InputText class="form-control custom-input" @bind-Value="usuarioDto.UserName" placeholder="Nombre único para el ingreso" />
                             <ValidationMessage For="@(() => usuarioDto.UserName)" class="text-danger small" />
@@ -86,16 +90,33 @@
                                 <InputText type="password" class="form-control custom-input" @bind-Value="usuarioDto.ConfirmarPassword" />
                                 <ValidationMessage For="@(() => usuarioDto.ConfirmarPassword)" class="text-danger small" />
                             </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold small text-secondary">Lista vendedores</label>
+                                <InputSelect class="form-select form-select-sm" @bind-Value="usuarioDto.CodVendedorSAP">
+
+                                   
+                                    @if (listOspSap != null)
+                                    {
+                                        @foreach (var vendedor in listOspSap)
+                                        {
+                                            <option value="@vendedor.SlpCode">@vendedor.SlpName</option>
+                                        }
+
+                                    }
+
+                                </InputSelect>
+                            </div>
+
                         </div>
 
-                         <div class="mt-4 p-3 rounded-3 bg-light border-start border-4 border-warning shadow-sm">
+                        <div class="mt-4 p-3 rounded-3 bg-light border-start border-4 border-warning shadow-sm">
                             <div class="form-check form-switch m-0">
                                 <InputCheckbox class="form-check-input" id="chkPass" @bind-Value="usuarioDto.Activo" />
                                 <label class="form-check-label fw-bold small cursor-pointer" for="chkPass">Activo</label>
                             </div>
                         </div>
 
-                         <div class="mt-4 p-3 rounded-3 bg-light border-start border-4 border-warning shadow-sm">
+                        <div class="mt-4 p-3 rounded-3 bg-light border-start border-4 border-warning shadow-sm">
                             <div class="form-check form-switch m-0">
                                 <InputCheckbox class="form-check-input" id="chkPass" @bind-Value="usuarioDto.TwoFactorEnabled" />
                                 <label class="form-check-label fw-bold small cursor-pointer" for="chkPass">2FA – Two-Factor Authentication </label>
@@ -108,12 +129,15 @@
                                 <label class="form-check-label fw-bold small cursor-pointer" for="chkPass">Obligar cambio de clave al entrar</label>
                             </div>
                         </div>
+
+                       
+
                     </div>
                 </div>
 
                 @* --- TIPOS DE USUARIO --- *@
                 <div class="card shadow-sm border-0 rounded-4">
-                    <div class="card-header bg-white py-3 border-0"><h6 class="mb-0 fw-bold text-vinotinto">Tipos de Acceso*</h6></div>
+                    <div class="card-header bg-white py-3 border-0"><h6 class="mb-0 fw-bold text-rojo">Tipos de Acceso*</h6></div>
                     <div class="card-body pt-0">
                         @if (listTipoUsuario != null)
                         {
@@ -128,7 +152,7 @@
                                     </div>
                                 </div>
                             }
-                        } 
+                        }
                     </div>
                 </div>
             </div>
@@ -138,7 +162,7 @@
                 <div class="card shadow-sm border-0 rounded-4 h-100">
                     <div class="card-header bg-white py-3 border-0">
                         <div class="row align-items-center">
-                            <div class="col-md-6"><h6 class="mb-0 fw-bold text-vinotinto text-uppercase">Asignación de Roles*</h6></div>
+                            <div class="col-md-6"><h6 class="mb-0 fw-bold text-rojo text-uppercase">Asignación de Roles*</h6></div>
                             <div class="col-md-6">
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text bg-light border-end-0 rounded-start-pill"><i class="bi bi-search"></i></span>
@@ -170,10 +194,10 @@
                                     </div>
                                 }
                             }
-                        </div> 
+                        </div>
                     </div>
                     <div class="card-footer bg-white border-0 p-4 text-end">
-                        <button type="submit" class="btn btn-vinotinto btn-lg rounded-pill px-5 shadow-sm" disabled="@procesando">
+                        <button type="submit" class="btn btn-rojo btn-lg rounded-pill px-5 shadow-sm" disabled="@procesando">
                             @if (procesando)
                             {
                                 <span class="spinner-border spinner-border-sm me-2"></span> <span>Editando...</span>
@@ -199,12 +223,13 @@
     private string? previewImage;
     private bool procesando = false;
     private List<RolReadDto>? rolesFiltrados;
+    private List<SapVendedorReaderDto> listOspSap = new List<SapVendedorReaderDto>();
 
     protected override async Task OnParametersSetAsync()
     {
 
 
-        if(!authClient.HasPermission("Usuario.Update"))
+        if (!authClient.HasPermission("Usuario.Update"))
         {
             nav.NavigateTo("/no-autorizado");
             return;
@@ -212,6 +237,7 @@
         var usuariosRes = await _usuarioClientService.GetUsuarioByIdAsync(IdUsuario);
         var lisRolesResponse = await _roleClienteService.GetAllRolesAsync();
         var listTpoResponse = await _tipoService.GetAllTipoUsuarioAsync();
+        var listOspResponse = await _ospService.GetListVendedoresAsync();
 
         if (listTpoResponse.Valor != null)
         {
@@ -223,6 +249,12 @@
             listRole = lisRolesResponse.Valor;
             rolesFiltrados = listRole;
         }
+
+        if (listOspResponse.Valor != null)
+        {
+            listOspSap = listOspResponse.Valor;
+        }
+
         if (usuariosRes.Valor != null)
         {
             usuarioDto.Nombres = usuariosRes.Valor.Nombres;
@@ -235,13 +267,15 @@
             usuarioDto.Activo = usuariosRes.Valor.Activo;
             usuarioDto.TwoFactorEnabled = usuariosRes.Valor.TwoFactorEnabled;
             usuarioDto.DebeCambiarPassword = usuariosRes.Valor.DebeCambiarPassword;
-            //  AQUI ESTA LO IMPORTANTE PARA ASIGNAR LOS VALORES A LA NUEVA LISTA 
+            //  AQUI ESTA LO IMPORTANTE PARA ASIGNAR LOS VALORES A LA NUEVA LISTA
             usuarioDto.RolesIds = usuariosRes.Valor.RolesIds != null
                 ? new List<int>(usuariosRes.Valor.RolesIds)
                 : new List<int>();
             usuarioDto.TiposUsuarioIds = usuariosRes.Valor.TiposUsuarioIds != null
                 ? new List<int>(usuariosRes.Valor.TiposUsuarioIds)
                 : new List<int>();
+
+            usuarioDto.CodVendedorSAP = usuariosRes.Valor.CodVendedorSAP;
 
             // Imagen si existe
             if (usuariosRes.Valor.Foto != null && usuariosRes.Valor.Foto.Length > 0)
@@ -251,24 +285,24 @@
             // usuarioDto = usuariosRes.Valor;
         }
     }
-        private void FiltrarRoles(ChangeEventArgs e)
-            {
-                var texto = e.Value?.ToString()?.ToLower() ?? "";
-                if (string.IsNullOrWhiteSpace(texto))
-                {
-                    rolesFiltrados = listRole;
-                }
-                else
-                {
-                    rolesFiltrados = listRole.Where(r => 
-                        r.Nombre.ToLower().Contains(texto) || 
-                        (r.Descripcion?.ToLower().Contains(texto) ?? false)
-                    ).ToList();
-                }
-            }
+    private void FiltrarRoles(ChangeEventArgs e)
+    {
+        var texto = e.Value?.ToString()?.ToLower() ?? "";
+        if (string.IsNullOrWhiteSpace(texto))
+        {
+            rolesFiltrados = listRole;
+        }
+        else
+        {
+            rolesFiltrados = listRole.Where(r =>
+                r.Nombre.ToLower().Contains(texto) ||
+                (r.Descripcion?.ToLower().Contains(texto) ?? false)
+            ).ToList();
+        }
+    }
     private async Task EditarUsuario()
     {
-        try 
+        try
         {
             procesando = true;
             var response = await _usuarioClientService.ActualizarUsuarioAsync(usuarioDto);
@@ -285,14 +319,14 @@
         }
         catch (Exception ex)
         {
-             await logClient.GuardarErrorAsync(
-                    ex.Message,
-                    ex.StackTrace,
-                    usuario: authClient.CurrentSession?.UserName ?? "No encontrado",
-                    metodo: "EditarUsuario",
-                    ruta: $"/Usuarios/Editar",
-                    origen: "Cliente blazor ",
-                    nivel: "error"); 
+            await logClient.GuardarErrorAsync(
+                   ex.Message,
+                   ex.StackTrace,
+                   usuario: authClient.CurrentSession?.UserName ?? "No encontrado",
+                   metodo: "EditarUsuario",
+                   ruta: $"/Usuarios/Editar",
+                   origen: "Cliente blazor ",
+                   nivel: "error");
             await js.InvokeVoidAsync("Swal.fire", "Error crítico", ex.Message, "error");
         }
         finally
@@ -301,7 +335,7 @@
         }
     }
 
-     private async Task OnInputFileChange(InputFileChangeEventArgs e)
+    private async Task OnInputFileChange(InputFileChangeEventArgs e)
     {
         var file = e.File;
         if (file != null)
@@ -310,38 +344,38 @@
             {
                 // 1. Redimensionar para optimizar peso (400x400)
                 var resized = await file.RequestImageFileAsync("image/jpeg", 400, 400);
-                
+
                 // 2. Abrir stream con límite de 5MB (importante para que no falle el guardado)
-                using var stream = resized.OpenReadStream(1024 * 1024 * 5); 
-                
+                using var stream = resized.OpenReadStream(1024 * 1024 * 5);
+
                 var buffer = new byte[resized.Size];
                 await stream.ReadAsync(buffer);
-                
+
                 // 3. Asignar al DTO y generar vista previa
                 usuarioDto.Foto = buffer;
                 previewImage = $"data:image/jpeg;base64,{Convert.ToBase64String(buffer)}";
-                
+
                 StateHasChanged();
             }
             catch (Exception ex)
             {
-                  await logClient.GuardarErrorAsync(
-                    ex.Message,
-                    ex.StackTrace,
-                    usuario: authClient.CurrentSession?.UserName ?? "No encontrado",
-                    metodo: "OnInputFileChange",
-                    ruta: $"/Usuarios/Editar",
-                    origen: "Cliente blazor ",
-                    nivel: "error"); 
+                await logClient.GuardarErrorAsync(
+                  ex.Message,
+                  ex.StackTrace,
+                  usuario: authClient.CurrentSession?.UserName ?? "No encontrado",
+                  metodo: "OnInputFileChange",
+                  ruta: $"/Usuarios/Editar",
+                  origen: "Cliente blazor ",
+                  nivel: "error");
                 await js.InvokeVoidAsync("Swal.fire", "Error", "No se pudo procesar la imagen: " + ex.Message, "error");
             }
         }
     }
-   
 
+   
     private void SeleccionarRolCard(int id)
     {
-        if (usuarioDto.RolesIds.Contains(id)) 
+        if (usuarioDto.RolesIds.Contains(id))
             usuarioDto.RolesIds.Remove(id);
         else usuarioDto.RolesIds.Add(id);
     }

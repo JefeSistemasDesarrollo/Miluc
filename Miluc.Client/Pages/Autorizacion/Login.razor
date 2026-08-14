@@ -1,5 +1,4 @@
-﻿
-@page "/login"
+﻿@page "/login"
 @attribute [AllowAnonymous]
 @using Miluc.Client.Interfaces
 @using Miluc.Shared.DTOs.Autorizacion
@@ -12,9 +11,9 @@
         @* Encabezado con Identidad de Marca *@
         <div class="login-header">
             <div class="login-logo-circle">
-               <div class="login-logo-circle">
-        <img src="/img/logo-miluc.png" alt="Logo Miluc" style="width: 100%; height: auto;" />
-    </div>
+                <div class="login-logo-circle">
+                    <img src="/img/logo-miluc.png" alt="Logo Miluc" style="width: 100%; height: auto;" />
+                </div>
             </div>
             <h2 class="brand-name">AVICOLA MILUC</h2>
             <p class="brand-subtitle">Bienvenido Portal Web</p>
@@ -36,19 +35,19 @@
                 <div class="mb-4">
                     <label class="form-label fw-bold">Contraseña</label>
                     <div class="input-group custom-input">
-@* 
+                        @*
                         <span class="input-group-text bg-white">
                             <i class="bi bi-lock text-danger"></i>
                             </span> *@
-                             <span type="button" class="input-group-text bg-white"@onclick="TogglePassword">
+                        <span type="button" class="input-group-text bg-white" @onclick="TogglePassword">
 
-                              <i class="bi @(showPassword ? "bi bi-lock" : "bi bi-key")"></i>
+                            <i class="bi @(showPassword ? "bi bi-lock" : "bi bi-key") text-danger"></i>
 
-                             </span>
+                        </span>
 
-                        <InputText @bind-Value="loginModel.Password"   type="@PasswordInputType" class="form-control border-start-0" placeholder="********" />
+                        <InputText @bind-Value="loginModel.Password" type="@PasswordInputType" class="form-control border-start-0" placeholder="********" />
                     </div>
-                           
+
                     <ValidationMessage For="@(() => loginModel.Password)" class="text-danger small" />
                 </div>
 
@@ -83,77 +82,73 @@
 
     private bool showPassword = false;
 
-private string PasswordInputType => showPassword ? "text" : "password";
+    private string PasswordInputType => showPassword ? "text" : "password";
 
-private void TogglePassword()
-{
-    showPassword = !showPassword;
-}
+    private void TogglePassword()
+    {
+        showPassword = !showPassword;
+    }
 
 
     private async Task HandleLogin()
-{
-    isSubmitting = true;
-    errorMessage = null;
-
-    try
     {
-        var result = await AuthService.Login(loginModel);
+        isSubmitting = true;
+        errorMessage = null;
 
-        // 1️⃣ Validar respuesta general
-        if (!result.EsCorrecto || result.Valor == null)
+        try
         {
-            errorMessage = result.Mensaje;
+            var result = await AuthService.Login(loginModel);
+
+            // Validar respuesta general
+            if (!result.EsCorrecto || result.Valor == null)
+            {
+                errorMessage = result.Mensaje;
+
+                await js.InvokeVoidAsync("Swal.fire", new
+                {
+                    icon = "error",
+                    title = "Error de autenticación",
+                    text = result.Mensaje,
+                    confirmButtonColor = "#6c1d1d"
+                });
+
+                return;
+            }
+
+            var session = result.Valor;
+            //  Requiere 2FA
+            if (session.Requiere2FA)
+            {
+                Nav.NavigateTo($"/verify-otp/{session.IdUsuario}");
+                return;
+            }
+            //  Requiere cambio de contraseña
+            if (session.DebeCambiarPassword)
+            {
+                Nav.NavigateTo($"/cambiar-password/{session.IdUsuario}");
+                return;
+            }
+            // 4️ Login normal
+            await js.InvokeVoidAsync("Swal.fire", "¡Éxito!", "Login exitoso.", "success");
+
+            Nav.NavigateTo("/");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Error de conexión con el servidor.";
 
             await js.InvokeVoidAsync("Swal.fire", new
             {
                 icon = "error",
-                title = "Error de autenticación",
-                text = result.Mensaje,
+                title = "Error inesperado",
+                text = ex.Message,
                 confirmButtonColor = "#6c1d1d"
             });
-
-            return;
         }
-
-        var session = result.Valor;
-
-        //  Requiere 2FA
-        if (session.Requiere2FA)
+        finally
         {
-            Nav.NavigateTo($"/verify-otp/{session.IdUsuario}");
-            return;
+            isSubmitting = false;
         }
-
-        //  Requiere cambio de contraseña
-        if (session.DebeCambiarPassword)
-        {
-           
-            Nav.NavigateTo($"/cambiar-password/{session.IdUsuario}");
-            return;
-        }
-
-        // 4️⃣ Login normal
-        await js.InvokeVoidAsync("Swal.fire", "¡Éxito!", "Login exitoso.", "success");
-
-        Nav.NavigateTo("/");
     }
-    catch (Exception ex)
-    {
-        errorMessage = "Error de conexión con el servidor.";
 
-        await js.InvokeVoidAsync("Swal.fire", new
-        {
-            icon = "error",
-            title = "Error inesperado",
-            text = ex.Message,
-            confirmButtonColor = "#6c1d1d"
-        });
-    }
-    finally
-    {
-        isSubmitting = false;
-    }
-}
-  
 }

@@ -1,0 +1,154 @@
+﻿@page "/api/Eps/{id:int}"
+
+@using Miluc.Client.Interfaces.Nomina.SeguridadSocial
+@using Miluc.Shared.DTOs.Nomina.EpsDto
+
+@inject NavigationManager nav
+@inject IEpsClientService _epsService
+@inject IJSRuntime JS
+
+<div class="empleado-page p-4 animate__animated animate__fadeIn">
+    <div class="container-fluid max-width-container">
+
+        @* --- CABECERA DE LA PÁGINA --- *@
+        <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
+            <div>
+                <h2 class="fw-extrabold text-vinotinto m-0 tracking-tight">
+                    <i class="bi bi-eye me-2"></i>
+                    Detalle de la EPS
+                </h2>
+                <p class="text-muted mb-0 small mt-1">
+                    Visualización de los datos maestros de la Entidad Promotora de Salud.
+                </p>
+            </div>
+
+            <button class="btn btn-rojo btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
+                <i class="bi bi-arrow-left me-2"></i> Volver al listado
+            </button>
+        </div>
+
+        @if (epsDetalle == null)
+        {
+            <div class="d-flex justify-content-center my-5">
+                <div class="spinner-border text-vinotinto" role="status">
+                    <span class="visually-hidden">Cargando datos...</span>
+                </div>
+            </div>
+        }
+        else
+        {
+            @* --- VISTA DE DATOS (SOLO LECTURA) --- *@
+            <div class="row g-4">
+
+                @* --- BLOQUE 1: DATOS MAESTROS DE LA EPS --- *@
+                <div class="col-12">
+                    <div class="card card-custom border-0 shadow-sm rounded-4">
+                        <div class="card-body p-4">
+                            <div class="section-title-container mb-4">
+                                <span class="badge bg-vinotinto-light text-vinotinto rounded-pill mb-2 px-3 py-2 fw-bold text-uppercase tracking-wider">Información Entidad</span>
+                            </div>
+
+                            <div class="row g-4">
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">Nombre Eps</label>
+                                    <input type="text" class="form-control input-custom-view" value="@epsDetalle.Nombre" readonly />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">Código EPS</label>
+                                    <input type="text" class="form-control input-custom-view" value="@epsDetalle.Codigo" readonly />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">Estado</label>
+                                    <div>
+                                        @if (epsDetalle.Activo)
+                                          
+                                            {
+                                                <i class="bi  text-black bi-check2-circle"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="bi text-rojo bi-x-circle"></i>
+                                            }
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                @* --- BLOQUE 2: INFORMACIÓN DE AUDITORÍA Y REGISTRO --- *@
+                <div class="col-12 col-md-6">
+                    <div class="card card-custom border-0 shadow-sm rounded-4 h-100">
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold text-dark mb-3">Identificador del Sistema</h5>
+                            <div class="mb-3">
+                                <label class="form-label label-custom">ID de Registro Interno</label>
+                                <input type="text" class="form-control input-custom-view" value="@epsDetalle.EpsId" readonly />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* --- INFORMACIÓN EXTRA ILUSTRATIVA / COMPLEMENTARIA --- *@
+                <div class="col-12 col-lg-6 col-md-6 col-sm-12">
+                    <div class="card card-info-banner border-0 shadow-sm rounded-4 h-100 p-4 position-relative overflow-hidden">
+                        <div class="position-relative z-index-2 d-flex flex-column h-100 justify-content-center">
+                            <h5 class="fw-bold text-rojo mb-2"><i class="bi bi-shield-lock-fill me-2"></i>Seguridad de los datos</h5>
+                            <p class="text-secondary text-black small mb-0 lh-lg">
+                                Todos los datos de las Entidades Promotoras de Salud registrados en esta plataforma son almacenados y procesados de manera segura.
+                                La organización garantiza la confidencialidad de la información y limita su acceso exclusivamente a usuarios autorizados para fines administrativos y de gestión de nómina.
+                            </p>
+                        </div>
+                        <div class="decorative-circle"></div>
+                    </div>
+                </div>
+
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+    private EpsReaderDto? epsDetalle;
+    private bool cargando = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarEps();
+    }
+
+    private async Task CargarEps()
+    {
+        cargando = true;
+        try
+        {
+            var respuesta = await _epsService.GetByEpsAsync(id);
+
+            if (respuesta != null && respuesta.EsCorrecto && respuesta.Valor != null)
+            {
+                epsDetalle = respuesta.Valor;
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("Swal.fire", "Atención", respuesta?.Mensaje ?? "No se encontraron los detalles de la EPS.", "warning");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("Swal.fire", "Error", ex.Message, "error");
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private void Volver() => nav.NavigateTo("/api/Eps/Eps");
+    private void IrAEditar() => nav.NavigateTo($"/api/Eps/Editar/{id}");
+}

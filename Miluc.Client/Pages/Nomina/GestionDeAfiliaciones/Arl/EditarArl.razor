@@ -15,7 +15,7 @@
         @* --- HEADER --- *@
         <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
             <div>
-                <h2 class="fw-extrabold text-vinotinto m-0 tracking-tight">
+                <h2 class="fw-extrabold text-black m-0 tracking-tight">
                     <i class="bi bi-pencil-square me-2 header-icon"></i>
                     Editar Arl
                 </h2>
@@ -24,7 +24,7 @@
                 </p>
             </div>
 
-            <button class="btn btn-vinotinto btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
+            <button class="btn btn-rojo btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
                 <i class="bi bi-arrow-left me-2"></i> Volver al listado
             </button>
         </div>
@@ -47,13 +47,13 @@
                     <div class="card card-custom border-0 shadow-sm rounded-4">
                         <div class="card-body p-4">
                             <div class="section-title-container mb-4">
-                                <h5 class="fw-bold text-dark m-0">Datos de la EPS</h5>
+                                <h5 class="fw-bold text-dark m-0">Datos de la ARL</h5>
                             </div>
 
                             <div class="row g-4">
-                                @* Nombre de la EPS *@
+                                @* Nombre de la arl *@
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-hospital"></i></span> Nombre de la EPS*</label>
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-hospital"></i></span> Nombre ARL<span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
                                         <InputText class="form-control input-custom" @bind-Value="arlUpdate.Nombre" placeholder="Ej: Sura EPS" />
                                     </div>
@@ -62,7 +62,7 @@
 
                                 @* Código de Entidad *@
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-barcode"></i></span> Código de Entidad*</label>
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-barcode"></i></span> Código ARL<span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
                                         <InputText class="form-control input-custom" @bind-Value="arlUpdate.Codigo" placeholder="Ej: EPS001" />
                                     </div>
@@ -71,7 +71,7 @@
 
                                 @* Estado (Switch Activo/Inactivo) *@
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom text-muted-custom">Estado</label>
+                                    <label class="form-label label-custom text-muted-custom">Estado<span class="text-danger">*</span></label>
                                     <div class="card card-custom border-0 shadow-sm rounded-4">
                                         <div class="card-body input-custom py-2">
                                             <div class="form-check form-switch switch-lg d-flex align-items-center gap-2">
@@ -79,11 +79,11 @@
                                                 <label class="form-check-label fw-semibold" for="switchActivo">
                                                     @if (arlUpdate.Activo)
                                                     {
-                                                        <span class="text-success">Activo</span>
+                                                        <i class="bi  text-black bi-check2-circle"></i>
                                                     }
                                                     else
                                                     {
-                                                        <span class="text-danger">Inactivo</span>
+                                                        <i class="bi text-rojo bi-x-circle"></i>
                                                     }
                                                 </label>
                                             </div>
@@ -91,6 +91,20 @@
                                     </div>
                                 </div>
                             </div>
+                            @* Banner Informativo *@
+                            <div class="card card-info-banner border-0 shadow-sm rounded-4 p-4 position-relative overflow-hidden">
+                                <div class="position-relative z-index-2 d-flex flex-column justify-content-center">
+                                    <h5 class="fw-bold text-rojo mb-2">
+                                        <i class="bi bi-shield-lock-fill me-2"></i>Seguridad de las Entidades
+                                    </h5>
+                                    <p class="small mb-0 lh-lg">
+                                        Seguridad de las Entidades
+                                        Asegúrese de que el código asignado corresponda al código oficial de la ARL (con formato de 6 dígitos, ej: 14-28) registrado ante el Sistema General de Riesgos Laborales para evitar inconsistencias en la planilla PILA o reportes de novedades.
+                                    </p>
+                                </div>
+                                <div class="decorative-circle"></div>
+                            </div>
+                        </div>
 
                             @* --- BOTONES DE ACCIÓN --- *@
                             <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-3">
@@ -98,7 +112,7 @@
                                     Cancelar
                                 </button>
 
-                                <button type="submit" class="btn btn-vinotinto btn-secondary rounded-pill px-4" disabled="@isProcessing">
+                                <button type="submit" class="btn btn-rojo btn-secondary rounded-pill px-4" disabled="@isProcessing">
                                     @if (isProcessing)
                                     {
                                         <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
@@ -106,15 +120,15 @@
                                     }
                                     else
                                     {
-                                        <i class="bi bi-cloud-upload-fill me-2"></i>
-                                        <span>Guardar Cambios</span>
+                                        
+                                        <span>Guardar </span>
                                     }
                                 </button>
                             </div>
 
                         </div>
                     </div>
-                </div>
+                
             </EditForm>
         }
     </div>

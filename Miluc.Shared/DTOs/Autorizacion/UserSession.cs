@@ -10,6 +10,8 @@
         public bool Requiere2FA { get; set; }
         public DateTime FechaExpiracion { get; set; }
         public bool DebeCambiarPassword { get; set; }
+
+        public int? CodVendedorSAP { get; set; }
         public List<string> Roles { get; set; } = new();
         public List<string> Permisos { get; set; } = new();
     }

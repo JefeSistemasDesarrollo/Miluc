@@ -19,7 +19,7 @@
         
         <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
             <div>
-                <h2 class="fw-extrabold text-vinotinto m-0 tracking-tight">
+                <h2 class="fw-extrabold text-black m-0 tracking-tight">
                     <i class="bi bi-person-plus-fill me-2 header-icon"></i>
                     Información Familiar
                 </h2>
@@ -27,7 +27,7 @@
                     Ver información familiar de empleado
                 </p>
             </div>
-            <button class="btn btn-vinotinto btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
+            <button class="btn btn-rojo btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
                 <i class="bi bi-arrow-left me-2"></i> Volver al Empleado
             </button>
         </div>
@@ -40,7 +40,7 @@
                 {
                     <div class="col-12 col-md-6 col-xl-4">
                         <div class="card h-100 shadow-sm border-0 border-start border-4">
-                            <div class="card-body p-4 border-vinotinto rounded-4">
+                            <div class="card-body p-4 border-rojo rounded-4">
                                 <div class="d-flex align-items-center gap-2 mb-3 text-muted text-uppercase small fw-bold tracking-wider">
                                     <i class="bi bi-person-badge text-danger fs-5"></i> Datos Familiar
                                 </div>
@@ -75,15 +75,15 @@
 
                                         @if (familiar.Activo)
                                         {
-                                            <span class="badge bg-success px-3 py-2 rounded-pill">
-                                                <i class="bi bi-check-circle me-1"></i> Activo
-                                            </span>
+                                            
+                                            <i class="bi  text-black bi-check2-circle"></i>
+                                            
                                         }
                                         else
                                         {
-                                            <span class="badge bg-danger px-3 py-2 rounded-pill">
-                                                <i class="bi bi-x-circle me-1"></i> Inactivo
-                                            </span>
+
+                                                <i class="bi  text-rojo bi-x-circle me-1"></i> 
+                                            
                                         }
                                     </div>
                                 </div>
@@ -254,6 +254,6 @@
         nav.NavigateTo($"/nomina/editar/informacion-familiar/{IdEmpleado}/{idFamiliar}");
     }
 
-    private void EliminarInformacionFamiliar(int idFamiliar) => eliminarinfofamiliar(idFamiliar);
+    private Task EliminarInformacionFamiliar(int idFamiliar) => eliminarinfofamiliar(idFamiliar);
 
 }

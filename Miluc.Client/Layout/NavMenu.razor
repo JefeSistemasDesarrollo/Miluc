@@ -1,6 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Components.Authorization
 @using Miluc.Client.Pages
-@inject IAuthClientService authClient
+@inject IAuthClientService _authClientService
 @inject NavigationManager nav
 <div class="nav-scrollable">
     <nav class="nav flex-column">
@@ -16,38 +16,33 @@
         <AuthorizeView>
             <Authorized>
 
-
-
-                @*    @if (authClient.HasPermission("Usuarios.Ver"))
-                { *@
-                @*    <div class="nav-item px-1">
-                        <NavLink class="nav-link" href="usuarios">
+                @if(_authClientService.HasPermission("Modulo.Comercial"))
+                {
+                    <div class="nav-item px-1">
+                        <NavLink class="nav-link" href="/administrar-modulo-comercial">
                             <div class="nav-icon-wrapper">
-                                <i class="bi bi-people-fill"></i>
+                                <i class="bi bi-graph-up-arrow"></i>
                             </div>
-                            <span>Usuarios</span>
+                            <span>Comercial</span>
                         </NavLink>
-                    </div> *@
+                    </div>
+                }
+                @if (_authClientService.HasPermission("Modulo.Nomina"))
+                {
 
-                <div class="nav-item px-1">
-                    <NavLink class="nav-link" href="/administrar-modulo-comercial">
-                        <div class="nav-icon-wrapper">
-                            <i class="bi bi-graph-up-arrow"></i>
-                        </div>
-                        <span>Comercial</span>
-                    </NavLink>
-                </div>
-
-                <div class="nav-item px-2">
+                    <div class="nav-item px-2">
                     <NavLink class="nav-link" href="administrar-Nomina">
                         <div class="nav-icon-wrapper">
-                          <i class="bi bi-calculator"></i
+                          <i class="bi bi-calculator"></i>
                         </div>
                         <span class="nav-text">RRH</span>
                     </NavLink>
                 </div>
+                }
 
-                <div class="nav-item px-2">
+                @if (_authClientService.HasPermission("Modulo.Systems"))
+                {
+                        <div class="nav-item px-2">
                     <NavLink class="nav-link" href="Usuarios-Seguridad">
                         <div class="nav-icon-wrapper">
                             <i class="bi bi-shield-lock-fill"></i>
@@ -55,24 +50,8 @@
                         <span class="nav-text">Sistemas</span>
                     </NavLink>
                 </div>
-                @* } *@
-
-
-
-
-
-
-                @*      <div class="nav-item px-1">
-                    <NavLink class="nav-link" href="/administrar-pedido/pedidos">
-                        <div class="nav-icon-wrapper">
-                            <i class="bi bi-cart-check-fill"></i>
-                        </div>
-                        <span></span>
-                    </NavLink>
-                </div> *@
-         
-
-             
+                }
+            
 
                 <AuthorizeView Roles="Admin" Context="innerContext">
                     <div class="nav-item px-3">

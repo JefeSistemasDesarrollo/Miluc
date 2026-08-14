@@ -160,10 +160,7 @@ namespace Miluc.Server.Controllers.Nomina
             }
         }
             [HttpGet("{id}")]
-        [ProducesResponseType(typeof(ResponseAPI<AfiliacionSeguridadSocialreaderDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ResponseAPI<AfiliacionSeguridadSocialreaderDto>), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ResponseAPI<AfiliacionSeguridadSocialreaderDto>), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ResponseAPI<AfiliacionSeguridadSocialreaderDto>), StatusCodes.Status500InternalServerError)]    
+         
         public async Task<ActionResult<ResponseAPI<AfiliacionSeguridadSocialreaderDto>>> GetAfiliacionSeguridadSocialByIdAsync(int id)
             {
                 try
@@ -182,7 +179,7 @@ namespace Miluc.Server.Controllers.Nomina
                         });
                     }
 
-                    // 2. Retornamos la respuesta con los tipos y conteos reales corregidos
+                    
                     return Ok(new ResponseAPI<AfiliacionSeguridadSocialreaderDto>
                     {
                         EsCorrecto = true,

@@ -12,11 +12,11 @@
     @* --- CABECERA --- *@
     <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-3">
         <div>
-            <h2 class="fw-bold text-vinotinto m-0"><i class="bi bi-shield-lock me-2"></i>Crear Permiso</h2>
+            <h2 class="fw-bold text-negro m-0"><i class="bi bi-shield-lock me-2"></i>Editar</h2>
             <p class="text-muted mb-0 small">Complete los datos obligatorios marcados con (*).</p>
         </div>
-        <button class="btn btn-vinotinto btn-sm rounded-pill px-3" @onclick='() => nav.NavigateTo("/configuracion/permisos")'>
-            <i class="bi bi-arrow-left me-1"></i> Volver a la lista
+        <button class="btn btn-rojo btn-sm rounded-pill px-3" @onclick='() => nav.NavigateTo("/configuracion/permisos")'>
+            <i class="bi bi-arrow-left me-1"></i> Volver 
         </button>
     </div>
 
@@ -53,7 +53,7 @@
                  <div class="card shadow-sm border-0 rounded-4 h-100">
                  <div class="card-header bg-white py-3 border-0">
                         <div class="row align-items-center">
-                            <div class="col-md-6"><h6 class="mb-0 fw-bold text-vinotinto text-uppercase">Asignación de Roles*</h6></div>
+                            <div class="col-md-6"><h6 class="mb-0 fw-bold text-rojo text-uppercase">Asignación de Roles*</h6></div>
                             <div class="col-md-6">
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text bg-light border-end-0 rounded-start-pill"><i class="bi bi-search"></i></span>
@@ -65,10 +65,10 @@
                  <div class="card-body pt-0">
                                <div class="alert alert-warning py-2 small border-0 bg-opacity-10 mb-3 d-flex justify-content-between">
                             <span><i class="bi bi-shield-check me-2"></i>Seleccione los Roles</span>
-                            <span class="badge bg-vinotinto rounded-pill">@permisosUpdateDto.RolesIds.Count seleccionados</span>
+                            <span class="badge bg-rojo rounded-pill">@permisosUpdateDto.RolesIds.Count seleccionados</span>
                   </div>
                 <div class="card shadow-sm border-0 rounded-4">
-                    <div class="card-header bg-white py-3 border-0"><h6 class="mb-0 fw-bold text-vinotinto">Roles*</h6></div>
+                    <div class="card-header bg-white py-3 border-0"><h6 class="mb-0 fw-bold text-rojo">Roles*</h6></div>
 
                     <div class="row row-cols-1 row-cols-md-2 row-cols-xl-2 g-2 overflow-auto pe-1" style="max-height: 580px;">
                         @if (rolesFiltrados != null)
@@ -92,14 +92,14 @@
                 </div>
             </div>
                      <div class="card-footer bg-white border-0 p-4 text-end">
-                        <button type="submit" class="btn btn-vinotinto btn-lg rounded-pill px-5 shadow-sm" disabled="@procesando">
+                        <button type="submit" class="btn btn-rojo btn-lg rounded-pill px-5 shadow-sm" disabled="@procesando">
                             @if (procesando)
                             {
                                 <span class="spinner-border spinner-border-sm me-2"></span> <span>Guardando...</span>
                             }
                             else
                             {
-                                <span><i class="bi bi-shield-lock me-2"></i>Guardar Permiso</span>
+                                <span><i class="bi bi-shield-lock me-2"></i>Guardar</span>
                             }
                         </button>
                     </div> 
@@ -166,11 +166,11 @@
     private async Task GuardarPermiso()
     {
         // Validación manual adicional
-        if (permisosUpdateDto.RolesIds.Count == 0)
-        {
-            await js.InvokeVoidAsync("Swal.fire", "Atención", "Debe asignar este permiso a al menos un rol.", "warning");
-            return;
-        }
+        // if (permisosUpdateDto.RolesIds.Count == 0)
+        // {
+        //     await js.InvokeVoidAsync("Swal.fire", "Atención", "Debe asignar este permiso a al menos un rol.", "warning");
+        //     return;
+        // }
         procesando = true;
         try
         {

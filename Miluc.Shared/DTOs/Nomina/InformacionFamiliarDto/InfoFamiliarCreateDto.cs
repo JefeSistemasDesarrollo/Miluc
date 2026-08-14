@@ -40,5 +40,7 @@ namespace Miluc.Shared.DTOs.Nomina.InformacionFamiliarDto
 
         public bool Activo { get; set; }
         public DateTime? FechaCreacion { get; set; }
+        public DateTime? FechaActualizacion { get; set; }
+
     }
 }

@@ -75,7 +75,7 @@ builder.Services.AddScoped<ISapOctgService, SapOctgService>();
 
 //nomina 
 builder.Services.AddScoped<IVacunaService, VacunaService>();
-builder.Services.AddScoped<IEsquemaVacunacionService, EsquemaVacunacionService>();
+builder.Services.AddScoped<IEsquemaVacunacionService, EsquemaDeVacunacionService>();
 builder.Services.AddScoped<IEstadoCivilService, EstadoCivilService>();
 builder.Services.AddScoped<IParentescoService, ParentescoService>();
 builder.Services.AddScoped<IInfoFamiliarService, InfoFamiliarService>();
@@ -204,11 +204,12 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("BlazorCors", policy =>
     {
-     
-          policy.WithOrigins("https://localhost:7198")
-           .AllowAnyHeader()
-           .AllowAnyMethod()
-         .AllowCredentials(); // OBLIGATORIO para enviar cookies
+       
+        //policy.WithOrigins("https://avicolamiluc.ddns.net:92")
+        policy.WithOrigins("https://localhost:7198")
+       .AllowAnyHeader()
+       .AllowAnyMethod()
+     .AllowCredentials(); // OBLIGATORIO para enviar cookies
     });
 });
 //builder.Services.AddControllers();

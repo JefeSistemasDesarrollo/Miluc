@@ -16,19 +16,32 @@ namespace Miluc.Server.Controllers.Roles
 
         [HttpGet]
         [PermissionAuthorize("Rol.View")]
-        public async Task<ActionResult<ResponseAPI<List<RolReadDto>>>> GetRoles()
+        public async Task<ActionResult<ResponseAPI<List<RolReadDto>>>> GetRoles([FromQuery] string ? buscar=null,
+        [FromQuery] int? pagina = null,
+        [FromQuery] int? cantidad = null)
         {
-            var response = new ResponseAPI<List<RolReadDto>>();
+           // var response = new ResponseAPI<List<RolReadDto>>();
             try
             {
-                var listaroles = await _rolService.GetAllRolesAsync();
+                var listaroles = await _rolService.GetAllRolesAsync(buscar,pagina,cantidad);
 
-                if (listaroles == null || listaroles.Count == 0)
+                if (listaroles.data == null)
                 {
-                    return Ok(response.ErroresResponse(false, "No se encontraron roles", new List<string> { "La base de datos de roles está vacía." }));
+                  return NotFound(new ResponseAPI<List<RolReadDto>>
+                  {
+                      EsCorrecto=false, 
+                      Mensaje="No se encontraron roles",
+                      Valor=null
+                  });
                 }
 
-                return Ok(response.SuccessResponse(true, "Lista de roles obtenida", listaroles, listaroles.Count));
+                return Ok(new ResponseAPI<List<RolReadDto>>
+                {
+                    EsCorrecto=true,
+                    Mensaje="Roles Obtenidos Correstamente",
+                    Valor=listaroles.data,
+                    CantRegistros=listaroles.totalRegistros
+                });
             }
             catch (Exception ex)
             {
@@ -41,7 +54,12 @@ namespace Miluc.Server.Controllers.Roles
                         ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
                         origen: $"RolesController.GET");
 
-                return StatusCode(500, response.ErroresResponse(false, "Error interno", new List<string> { ex.Message }));
+                return StatusCode(500, new ResponseAPI<List<RolReadDto>>
+                {
+                    EsCorrecto=false,
+                    Mensaje=ex.Message,
+                    Errores = [ex.Message]
+                });
             }
         }
 

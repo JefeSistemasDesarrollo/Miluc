@@ -10,10 +10,7 @@ namespace Miluc.Client.Interfaces.UsuariosRolesPermisos
 
 
         Task<ResponseAPI<PermisosReadDto>> GetByIdPermisoAsync(int idPermiso);
-
         Task<ResponseAPI<bool>> DeletePermisoAsync(int idPermiso);
-
-
         Task<ResponseAPI<bool>> CreatePermisoAsync(PermisosCreateDto createDto);
         Task<ResponseAPI<bool>> ActualizarPemriso(PermisosUpdateDto updateDto);
     }

@@ -108,7 +108,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Origen del Pedido</label>
-                            <select class="form-select form-select-sm" @bind="origenSeleccionado" disabled>
+                            <select class="form-select form-select-sm" @bind="origenSeleccionado">
                                 @if (modelUpdateOrden != null)
                                 {
 
@@ -126,10 +126,7 @@
                                         <option value="@vendedor.SlpCode">@vendedor.SlpName</option>
                                     }
                                 }
-                                @*         @foreach (var origen in listOrigenPedidos)
-                                {
-                                    <option value="@origen.OrigenPedidoId">@origen.OrigenNombre</option>
-                                } *@
+
                             </select>
                         </div>
                     </div>
@@ -187,9 +184,7 @@
                                     <td>
                                         @if (linea.BuyUnitMsr?.ToUpper() == "KG")
                                         {
-                                            <InputNumber TValue="decimal?"
-                                                         Value="linea.Quantity"
-                                                         ValueChanged="@(v => OnCantidadChanged(v, linea))"
+                                            <InputNumber TValue="decimal?"Value="linea.Quantity"ValueChanged="@(v => OnCantidadChanged(v, linea))"
                                                          ValueExpression="() => linea.Quantity"
                                                          class="form-control form-control-sm text-end"
                                                          step="any"
@@ -197,9 +192,7 @@
                                         }
                                         else
                                         {
-                                            <InputNumber TValue="decimal?"
-                                                         Value="linea.Quantity"
-                                                         ValueChanged="@(v => OnCantidadChanged(Math.Round(v ?? 0,0,MidpointRounding.AwayFromZero), linea))"
+                                            <InputNumber TValue="decimal?"Value="linea.Quantity"ValueChanged="@(v => OnCantidadChanged(Math.Round(v ?? 0,0,MidpointRounding.AwayFromZero), linea))"
                                                          ValueExpression="() => linea.Quantity"
                                                          class="form-control form-control-sm text-end"
                                                          step="1" min="0" readonly />
@@ -215,9 +208,7 @@
                                         @if (linea.BuyUnitMsr?.ToUpper() == "KG")
                                         {
                                             <!-- Cuando el artículo se vende por Kg, este campo solo muestra el valor -->
-                                            <InputNumber TValue="decimal?"
-                                                         Value="linea.U_CantidadKg"
-                                                         ValueExpression="() => linea.U_CantidadKg"
+                                            <InputNumber TValue="decimal?"Value="linea.U_CantidadKg"ValueExpression="() => linea.U_CantidadKg"
                                                          class="form-control form-control-sm text-end"
                                                          step="any"
                                                          readonly />
@@ -225,9 +216,7 @@
                                         else
                                         {
                                             <!-- Cuando el artículo se vende por unidades, este campo SI se puede editar -->
-                                            <InputNumber TValue="decimal?"
-                                                         Value="linea.U_CantidadKg"
-                                                         ValueChanged="@(v => OnKgChanged(v, linea))"
+                                            <InputNumber TValue="decimal?"Value="linea.U_CantidadKg"ValueChanged="@(v => OnKgChanged(v, linea))"
                                                          ValueExpression="() => linea.U_CantidadKg"
                                                          class="form-control form-control-sm text-end"
                                                          step="any"
@@ -240,9 +229,7 @@
                                         @if (linea.BuyUnitMsr?.ToUpper() == "KG")
                                         {
                                             <!-- Cuando el artículo se vende por Kg, este campo SI se puede editar -->
-                                            <InputNumber TValue="decimal?"
-                                                         Value="linea.U_UnidadSal"
-                                                         ValueChanged="@(v => OnUnidadesChanged(v, linea))"
+                                            <InputNumber TValue="decimal?"Value="linea.U_UnidadSal"ValueChanged="@(v => OnUnidadesChanged(v, linea))"
                                                          ValueExpression="() => linea.U_UnidadSal"
                                                          class="form-control form-control-sm text-end"
                                                          step="1"
@@ -257,11 +244,7 @@
                                                          class="form-control form-control-sm text-end"
                                                          readonly />
                                         }
-
-
                                     </td>
-
-                                   
                                     <!-- PRECIOS -->
                                     <td>
                                         <input type="number" readonly class="form-control form-control-sm text-end" @bind="linea.PriceAcobrar" @bind:event="oninput">
@@ -341,9 +324,9 @@
     <div class="modal-dialog modal-md modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
             <!-- HEADER -->
-            <div class="modal-header bg-maroon text-white">
+            <div class="modal-header bg-maroon-modal text-modal">
                 <h5 class="modal-title mb-0"><i class="bi bi-box-seam me-2"></i>Buscar Artículo</h5>
-                <button type="button" class="btn-close btn-close-white ms-auto" @onclick="CerrarModalArticulo"></button>
+                <button type="button" class="btn-close text-modal ms-auto" @onclick="CerrarModalArticulo"></button>
 
             </div>
 
@@ -353,9 +336,9 @@
                 <!-- BUSCADOR -->
                 <div class="input-group mb-3">
 
-                    <input type="text" class="form-control" placeholder="Buscar artículo..." @bind="textoBusquedaArticulo" @onkeyup="HandleEnterArticulo">
+                    <input type="text" class="form-control text-modal" placeholder="Buscar artículo..." @bind="textoBusquedaArticulo" @onkeyup="HandleEnterArticulo">
 
-                    <button class="btn btn-maroon" @onclick="BuscarEnServidorArticulo"><i class="bi bi-search"></i>Buscar</button>
+                    <button class="btn btn-marron-modal" @onclick="BuscarEnServidorArticulo"><i class="bi bi-search"></i>Buscar</button>
                 </div>
                 <!-- INFORMACION -->
                 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -747,8 +730,8 @@
                         BaseSum = Math.Round(Convert.ToDecimal(artData.BaseSum), 2),
                         Rate = Math.Round(Convert.ToDecimal(artData.Rate), 2),
                         TaxCode = artData.TaxCode,
-                        // U_EquivalentedKg = Math.Round(Convert.ToDecimal(artData.U_EquivalentedKg), 2),
-                        // U_EquivalenteUni = Math.Round(Convert.ToDecimal(artData.U_EquivalenteUni), 2),
+                        U_CantidadKg=artData.U_CantidadKg,
+                        U_UnidadSal = artData.U_UnidadSal,
                         TotalImpuesto = Math.Round(Convert.ToDecimal(artData.TotalImpuesto), 2)
                     });
                 }
@@ -801,6 +784,7 @@
                 {
                     RecalcularLinea(line);
                 }
+
                 if (lineasPedido.Count > 0)
                 {
             PedidoUpdateDto pedidoUpdateDto = new PedidoUpdateDto

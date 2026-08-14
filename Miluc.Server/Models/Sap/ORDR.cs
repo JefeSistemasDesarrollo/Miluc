@@ -7,6 +7,7 @@
         public int DocNum { get; set; }
         public int DocEntry { get; set; } //ID del pedido en SAP
         public char? CANCELED { get; set; } //Indica si el pedido fue cancelado ('Y' o 'N')
+        public char ? Printed { get; set; }
         public char? DocStatus { get; set; }
         public DateTime DocDate { get; set; }
         public DateTime DocDueDate { get; set; }
@@ -21,7 +22,6 @@
         public string? Ref2 { get; set; }
         public string? Comments { get; set; }
         public string? TransId { get; set; }
-
         public int? SlpCode { get; set; } //FK OSLP - Vendedor asignado al cliente
         public DateTime CreateDate { get; set; }
         public int? U_Picking { get; set; }
@@ -29,11 +29,7 @@
         public Int16? U_OrigenPedido { get; set; } 
         public OK1_PICK_TPLACAS? piking { get; set; }
         public ICollection<RDR1>? RDR1 { get; set; } 
-
-
         public virtual OcrdClienteSap ? OcrdClienteSap { get; set; }
-       
-        
-      public virtual OSLP ? OSLP { get; set; }
+         public virtual OSLP ? OSLP { get; set; }
     }
 }

@@ -2,11 +2,19 @@
     padding: 1rem;
 }
 
-.text-vinotinto {
-    color: #800020;
+.text-negro {
+    color: #000000;
 }
-.btn-vinotinto {
-    background-color: #800000;
+.btn-rojo {
+    background-color: #D62F46;
     color: white;
 }
-
+/*.table thead {
+    color: #D62F46 !important;
+}*/
+.text-negro{
+    color:#000;
+}
+.text-rojo{
+    color: #D62F46;
+}

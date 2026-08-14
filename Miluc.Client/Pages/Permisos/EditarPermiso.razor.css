@@ -1,18 +1,21 @@
-﻿.bg-vinotinto {
-    background-color: #6c1d1d;
+﻿.bg-rojo {
+    background-color: #D62F46;
     color: white;
     border: none;
     transition: 0.3s;
 }
 
-.btn-vinotinto {
-    background-color: #6c1d1d;
+.btn-rojo {
+    background-color: #D62F46;
     color: white;
     border: none;
     transition: 0.3s;
 }
 
-.text-vinotinto {
+.text-negro {
+    color: #000000;
+}
+.text-rojo {
     color: #6c1d1d;
 }
 
@@ -25,12 +28,12 @@
 }
 
     .role-card:hover {
-        border-color: #6c1d1d;
+        border-color: #D62F46;
     }
 
     .role-card.active {
         background-color: white;
-        border-color: #6c1d1d;
+        border-color: #D62F46;
         box-shadow: 0 4px 10px rgba(108, 29, 29, 0.1);
     }
 
@@ -39,7 +42,7 @@
 }
 
 .role-card.active .role-name {
-    color: #6c1d1d;
+    color: #D62F46;
 }
 
 .role-desc {

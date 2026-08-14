@@ -8,7 +8,7 @@ using Miluc.Shared.Models.Response;
 
 namespace Miluc.Server.Controllers.SAPController
 {
-    [Authorize]
+   [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class OrdersController(ISapOrdrService _sapOrdrService, ILogService _log) : Controller
@@ -66,12 +66,11 @@ namespace Miluc.Server.Controllers.SAPController
 
         [HttpGet]
         [PermissionAuthorize("Orders.View")]
-        public async Task<ActionResult<ResponseAPI<List<OrdersReaderDto>>>> ListarPedidosAsync([FromQuery] string? buscar = null, [FromQuery] int? pagina = null, [FromQuery] int? cantidad = null, [FromQuery] DateTime? fechaInicio = null, [FromQuery] DateTime? fechaFin = null)
+        public async Task<ActionResult<ResponseAPI<List<OrdersReaderDto>>>> ListarPedidosAsync([FromQuery] string? buscar = null, [FromQuery] int? pagina = null, [FromQuery] int? cantidad = null, [FromQuery] DateTime? fechaInicio = null, [FromQuery] DateTime? fechaFin = null, [FromQuery] int? codVendedorSAP = null, [FromQuery] char? DocStatus = null, [FromQuery] char? CANCELED = null, [FromQuery] char? Printed = null)
         {
             try
             {
-                var response = await _sapOrdrService.ListarPedidosAsync(buscar, pagina, cantidad,fechaInicio, fechaFin);
-
+                var response = await _sapOrdrService.ListarPedidosAsync(buscar, pagina, cantidad,fechaInicio, fechaFin, codVendedorSAP, DocStatus, CANCELED, Printed);
 
                 if (response.data == null)
                 {
@@ -83,12 +82,7 @@ namespace Miluc.Server.Controllers.SAPController
                         Errores = new List<string> { "No se encontraron pedidos." },
                         Valor = (new List<OrdersReaderDto>(), 0)
                     });
-
                 }
-
-
-
-
                 return Ok(new ResponseAPI<List<OrdersReaderDto>>
                 {
                     EsCorrecto = true,
@@ -96,14 +90,8 @@ namespace Miluc.Server.Controllers.SAPController
                     Errores = new List<string>(),
                     Valor = response.data,
                     CantRegistros = response.TotalRegistros
-
-
-
                 });
-
-
             }
-
             catch (ArgumentException ex)
             {
                 return BadRequest(new ResponseAPI<OrdersReaderDto>
@@ -113,10 +101,8 @@ namespace Miluc.Server.Controllers.SAPController
                     Errores = new List<string> { ex.Message }
                 });
             }
-
             catch (Exception ex)
             {
-
                 await _log.GuardarErrorAsync(
                       message: ex.Message,
                        StackTrace: ex.StackTrace,
@@ -125,8 +111,6 @@ namespace Miluc.Server.Controllers.SAPController
                        ruta: $"/api/Orders​",
                        ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
                        origen: $"OrdersController");
-
-
                 return StatusCode(500, new ResponseAPI<(List<OrdersReaderDto> data, int TotalRegistros)>
                 {
                     EsCorrecto = false,
@@ -136,7 +120,6 @@ namespace Miluc.Server.Controllers.SAPController
                 });
             }
         }
-
         [HttpGet("{id}")]
         [PermissionAuthorize("Orders.Detail")]
         public async Task<ActionResult<ResponseAPI<OrdersReaderDto>>> GetOrderByIdAsync(int id)
@@ -189,7 +172,7 @@ namespace Miluc.Server.Controllers.SAPController
         }
 
         [HttpPatch("{docEntry:int}")]
-        [PermissionAuthorize("Orders.Update")]
+     [PermissionAuthorize("Orders.Update")]
         public async Task<ActionResult<ResponseAPI<OrdersReaderDto>>> UpdateOrderAsync(int docEntry, [FromBody] PedidoUpdateDto pedidoUpdateDto)
         {
             try
@@ -223,6 +206,16 @@ namespace Miluc.Server.Controllers.SAPController
                 // ACTUALIZAR
 
                 var response = await _sapOrdrService.UpdatePedidoAsync(pedidoUpdateDto);
+                if (response == null)
+                {
+                    return BadRequest(
+                        new ResponseAPI<OrdersReaderDto>
+                        {
+                            EsCorrecto = false,
+                            Mensaje = "Error al actualizar la orden de venta ",
+                            Errores = new List<string> { $"No se pudo actualizar el pedido{response}" }
+                        });
+                }
 
                 return Ok(new ResponseAPI<OrdersReaderDto>
                 {

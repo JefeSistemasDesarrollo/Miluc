@@ -9,394 +9,336 @@
 @inject ILogClientService _logClienteService
 @inject IJSRuntime _jsRuntime
 @inject NavigationManager _nav
-
+@inject IAuthClientService _authService
 <div class="container-fluid py-4 bg-light min-vh-100 animate__animated animate__fadeIn">
 
-<!-- HEADER DE LA PÁGINA -->
-<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
-<div class="d-flex align-items-center gap-3">
-<div class="p-3 bg-danger bg-opacity-10 text-danger rounded-4 fs-3 shadow-sm">
-<i class="bi bi-person-bounding-box"></i>
-</div>
-<div>
-    <h2 class="fw-bold text-dark m-0 fs-4">Maestro de Clientes (SAP B1)</h2>
-    <p class="m-0 text-muted small">Detalle y estado del socio de negocio: <strong class="text-secondary">@cardCode</strong></p>
-</div>
-</div>
-<div>
-    <button type="button" class="btn btn-white btn-outline-secondary rounded-pill px-4 shadow-sm fw-semibold transition-all"
-            @onclick='() => _nav.NavigateTo("/administrar-cliente/sap")'>
-        <i class="bi bi-arrow-left me-2"></i> Volver al listado
-    </button>
-</div>
-</div>
-@if (isLoading)
-{
-    <!-- Estado de Carga / Shimmer Effect -->
-    <div class="d-flex justify-content-center align-items-center py-5">
-        <div class="spinner-border text-danger" role="status">
-            <span class="visually-hidden">Cargando datos de SAP...</span>
+    <!-- HEADER DE LA PÁGINA -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <div class="p-3 bg-danger bg-opacity-10 text-danger rounded-4 fs-3 shadow-sm">
+                <i class="bi bi-person-bounding-box"></i>
+            </div>
+            <div>
+                <h2 class="fw-bold text-dark m-0 fs-4">Maestro de Clientes (SAP B1)</h2>
+                <p class="m-0 text-muted small">Detalle y estado del socio de negocio: <strong class="text-secondary">@cardCode</strong></p>
+            </div>
+        </div>
+        <div>
+            <button type="button" class="btn btn-white btn-outline-secondary rounded-pill px-4 shadow-sm fw-semibold transition-all"
+                    @onclick='() => _nav.NavigateTo("/administrar-cliente/sap")'>
+                <i class="bi bi-arrow-left me-2"></i> Volver al listado
+            </button>
         </div>
     </div>
-}
-else
-{
-    <!-- PESTAÑAS (TABS) DE NAVEGACIÓN -->
-    <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4">
-        <div class="card-header bg-white border-0 p-0">
-            <ul class="nav nav-tabs nav-justified border-bottom-0" id="sapTabs" role="tablist">
-                <li class="nav-item">
-                    <button class="nav-link py-3 fw-bold text-secondary border-0 rounded-0 @(activeTab == "general" ? "active border-bottom border-danger text-danger border-3 bg-light bg-opacity-10" : "")"
-                            @onclick='() => CambiarTab("general")' type="button">
-                        <i class="bi bi-info-circle-fill me-2"></i>Información General
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link py-3 fw-bold text-secondary border-0 rounded-0 @(activeTab == "fiscales" ? "active border-bottom border-danger text-danger border-3 bg-light bg-opacity-10" : "")"
-                            @onclick='() => CambiarTab("fiscales")' type="button">
-                        <i class="bi bi-file-earmark-gavel-fill me-2"></i>Datos Fiscales
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link py-3 fw-bold text-secondary border-0 rounded-0 @(activeTab == "propiedades" ? "active border-bottom border-danger text-danger border-3 bg-light bg-opacity-10" : "")"
-                            @onclick='() => CambiarTab("propiedades")' type="button">
-                        <i class="bi bi-tags-fill me-2"></i>Propiedades y Comentarios
-                    </button>
-                </li>
-            </ul>
+    @if (isLoading)
+    {
+        <!-- Estado de Carga / Shimmer Effect -->
+        <div class="d-flex justify-content-center align-items-center py-5">
+            <div class="spinner-border text-danger" role="status">
+                <span class="visually-hidden">Cargando datos de SAP...</span>
+            </div>
         </div>
-    </div>
-    <div class="tab-content">
-        <!-- TAB 1: GENERAL -->
-        <div class="tab-pane fade @(activeTab == "general" ? "show active" : "")">
-            <div class="row g-4">
+    }
+    else
+    {
+        <!-- PESTAÑAS (TABS) DE NAVEGACIÓN -->
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4">
+            <div class="card-header bg-white border-0 p-0">
+                <ul class="nav nav-tabs nav-justified border-bottom-0" id="sapTabs" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link py-3 fw-bold text-secondary border-0 rounded-0 @(activeTab == "general" ? "active border-bottom border-danger text-danger border-3 bg-light bg-opacity-10" : "")"
+                                @onclick='() => CambiarTab("general")' type="button">
+                            <i class="bi bi-info-circle-fill me-2"></i>Información General
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link py-3 fw-bold text-secondary border-0 rounded-0 @(activeTab == "fiscales" ? "active border-bottom border-danger text-danger border-3 bg-light bg-opacity-10" : "")"
+                                @onclick='() => CambiarTab("fiscales")' type="button">
+                            <i class="bi bi-file-earmark-gavel-fill me-2"></i>Datos Fiscales
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link py-3 fw-bold text-secondary border-0 rounded-0 @(activeTab == "propiedades" ? "active border-bottom border-danger text-danger border-3 bg-light bg-opacity-10" : "")"
+                                @onclick='() => CambiarTab("propiedades")' type="button">
+                            <i class="bi bi-tags-fill me-2"></i>Propiedades y Comentarios
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="tab-content">
+            <!-- TAB 1: GENERAL -->
+            <div class="tab-pane fade @(activeTab == "general" ? "show active" : "")">
+                <div class="row g-4">
 
-                <!-- Tarjeta: Identificación del Cliente -->
-                <div class="col-12 col-lg-8">
-                    <div class="card border-0 shadow-sm rounded-4 h-100">
-                        <div class="card-body p-4">
-                            <h5 class="fw-bold text-dark mb-4 pb-2 border-bottom">
-                                <i class="bi bi-person-vcard text-danger me-2"></i>Identificación Básica
-                            </h5>
+                    <!-- Tarjeta: Identificación del Cliente -->
+                    <div class="col-12 col-lg-8">
+                        <div class="card border-0 shadow-sm rounded-4 h-100">
+                            <div class="card-body p-4">
+                                <h5 class="fw-bold text-dark mb-4 pb-2 border-bottom">
+                                    <i class="bi bi-person-vcard text-danger me-2"></i>Identificación Básica
+                                </h5>
 
-                            <div class="row g-3">
-                                <div class="col-12 col-md-6">
-                                    <label class="form-label text-muted small fw-semibold m-0">Razón Social</label>
-                                    <div class="p-3 bg-light rounded-3 fw-bold text-dark">@clienteDetalle.CardName</div>
-                                </div>
-                                <div class="col-12 col-md-6">
-                                    <label class="form-label text-muted small fw-semibold m-0">Nombre Comercial / Sucursal</label>
-                                    <div class="p-3 bg-light rounded-3 fw-bold text-dark">@clienteDetalle.CardFName</div>
-                                </div>
-
-                                <div class="col-12 col-md-4">
-                                    <label class="form-label text-muted small fw-semibold m-0">Tipo de Documento</label>
-                                    <div class="p-2 bg-light rounded-3 text-secondary">@clienteDetalle.U_HBT_TipDocName</div>
-                                </div>
-                                <div class="col-12 col-md-4">
-                                    <label class="form-label text-muted small fw-semibold m-0">Número de Documento</label>
-                                    <div class="p-2 bg-light rounded-3 text-secondary">@clienteDetalle.LicTradNum</div>
-                                </div>
-                                <div class="col-12 col-md-4">
-                                    <label class="form-label text-muted small fw-semibold m-0">Estado en SAP</label>
-                                    <div class="p-2 text-center rounded-3 fw-bold @(clienteDetalle.validFor == 'Y' ? "bg-success bg-opacity-10 text-success" : "bg-danger bg-opacity-10 text-danger")">
-                                        @(clienteDetalle.validFor == 'Y' ? "Activo" : "Inactivo")
+                                <div class="row g-3">
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label text-muted small fw-semibold m-0">Razón Social</label>
+                                        <div class="p-3 bg-light rounded-3 fw-bold text-dark">@clienteDetalle.CardName</div>
                                     </div>
-                                </div>
-
-                                <div class="col-12 col-md-4">
-                                    <label class="form-label text-muted small fw-semibold m-0">Nombres</label>
-                                    <div class="p-2 bg-light rounded-3 text-secondary">@clienteDetalle.U_HBT_Nombres</div>
-                                </div>
-                                <div class="col-12 col-md-4">
-                                    <label class="form-label text-muted small fw-semibold m-0">Primer Apellido</label>
-                                    <div class="p-2 bg-light rounded-3 text-secondary">@clienteDetalle.U_HBT_Apellido1</div>
-                                </div>
-                                <div class="col-12 col-md-4">
-                                    <label class="form-label text-muted small fw-semibold m-0">Segundo Apellido</label>
-                                    <div class="p-2 bg-light rounded-3 text-secondary">@clienteDetalle.U_HBT_Apellido2</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Tarjeta: Información de Negocio / Comercial -->
-                <div class="col-12 col-lg-4">
-                    <div class="card border-0 shadow-sm rounded-4 h-100">
-                        <div class="card-body p-4">
-                            <h5 class="fw-bold text-dark mb-4 pb-2 border-bottom">
-                                <i class="bi bi-briefcase text-danger me-2"></i>Condiciones Comerciales
-                            </h5>
-
-                            <div class="d-flex flex-column gap-3">
-                                <div>
-                                    <span class="text-muted small fw-semibold d-block">Grupo de Cliente</span>
-                                    <span class="fs-6 fw-bold text-dark"><i class="bi bi-people me-2 text-muted"></i>@clienteDetalle.GroupName</span>
-                                </div>
-                                <div>
-                                    <span class="text-muted small fw-semibold d-block">Vendedor Asignado</span>
-                                    <span class="fs-6 fw-bold text-dark"><i class="bi bi-person-badge me-2 text-muted"></i>@clienteDetalle.SlpName</span>
-                                </div>
-                                <div>
-                                    <span class="text-muted small fw-semibold d-block">Condición de Pago</span>
-                                    <span class="fs-6 fw-bold text-dark"><i class="bi bi-credit-card-2-front me-2 text-muted"></i>@clienteDetalle.PymntGroup</span>
-                                </div>
-                                <div>
-                                    <span class="text-muted small fw-semibold d-block">Lista de Precios</span>
-                                    <span class="fs-6 fw-bold text-dark"><i class="bi bi-tags me-2 text-muted"></i>@clienteDetalle.ListName</span>
-                                </div>
-                                <div>
-                                    <span class="text-muted small fw-semibold d-block">Lista de Precios</span>
-                                    <span class="fs-6 fw-bold text-dark"><i class="bi bi-tags me-2 text-muted"></i>@clienteDetalle.PrioDesc</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tarjeta: Información de Contacto -->
-                <div class="col-12 col-md-6 col-lg-4">
-                    <div class="card border-0 shadow-sm rounded-4 h-100">
-                        <div class="card-body p-4">
-                            <h5 class="fw-bold text-dark mb-4 pb-2 border-bottom">
-                                <i class="bi bi-telephone text-danger me-2"></i>Canales de Contacto
-                            </h5>
-                            <div class="d-flex flex-column gap-3">
-                                <div class="d-flex align-items-center gap-3 p-2 bg-light rounded-3">
-                                    <div class="p-2 bg-white rounded-circle shadow-sm text-secondary"><i class="bi bi-telephone-fill"></i></div>
-                                    <div>
-                                        <small class="text-muted d-block">Teléfono Fijo</small>
-                                        <strong class="text-dark">@(string.IsNullOrEmpty(clienteDetalle.Phone1) ? "No registrado" : clienteDetalle.Phone1)</strong>
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label text-muted small fw-semibold m-0">Nombre Comercial / Sucursal</label>
+                                        <div class="p-3 bg-light rounded-3 fw-bold text-dark">@clienteDetalle.CardFName</div>
                                     </div>
-                                </div>
-                                <div class="d-flex align-items-center gap-3 p-2 bg-light rounded-3">
-                                    <div class="p-2 bg-white rounded-circle shadow-sm text-secondary"><i class="bi bi-phone-fill"></i></div>
-                                    <div>
-                                        <small class="text-muted d-block">Celular</small>
-                                        <strong class="text-dark">@(string.IsNullOrEmpty(clienteDetalle.Celular) ? "No registrado" : clienteDetalle.Celular)</strong>
+
+                                    <div class="col-12 col-md-4">
+                                        <label class="form-label text-muted small fw-semibold m-0">Tipo de Documento</label>
+                                        <div class="p-2 bg-light rounded-3 text-secondary">@clienteDetalle.U_HBT_TipDocName</div>
                                     </div>
-                                </div>
-                                <div class="d-flex align-items-center gap-3 p-2 bg-light rounded-3">
-                                    <div class="p-2 bg-white rounded-circle shadow-sm text-secondary"><i class="bi bi-envelope-fill"></i></div>
-                                    <div>
-                                        <small class="text-muted d-block">Correo Electrónico</small>
-                                        <strong class="text-dark text-break">@(string.IsNullOrEmpty(clienteDetalle.E_Mail) ? "No registrado" : clienteDetalle.E_Mail)</strong>
+                                    <div class="col-12 col-md-4">
+                                        <label class="form-label text-muted small fw-semibold m-0">Número de Documento</label>
+                                        <div class="p-2 bg-light rounded-3 text-secondary">@clienteDetalle.LicTradNum</div>
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <label class="form-label text-muted small fw-semibold m-0">Estado en SAP</label>
+                                        <div class="p-2 text-center rounded-3 fw-bold @(clienteDetalle.validFor == 'Y' ? "bg-success bg-opacity-10 text-success" : "bg-danger bg-opacity-10 text-danger")">
+                                            @(clienteDetalle.validFor == 'Y' ? "Activo" : "Inactivo")
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-md-4">
+                                        <label class="form-label text-muted small fw-semibold m-0">Nombres</label>
+                                        <div class="p-2 bg-light rounded-3 text-secondary">@clienteDetalle.U_HBT_Nombres</div>
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <label class="form-label text-muted small fw-semibold m-0">Primer Apellido</label>
+                                        <div class="p-2 bg-light rounded-3 text-secondary">@clienteDetalle.U_HBT_Apellido1</div>
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <label class="form-label text-muted small fw-semibold m-0">Segundo Apellido</label>
+                                        <div class="p-2 bg-light rounded-3 text-secondary">@clienteDetalle.U_HBT_Apellido2</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                    <!-- Tarjeta: Información de Negocio / Comercial -->
+                    <div class="col-12 col-lg-4">
+                        <div class="card border-0 shadow-sm rounded-4 h-100">
+                            <div class="card-body p-4">
+                                <h5 class="fw-bold text-dark mb-4 pb-2 border-bottom">
+                                    <i class="bi bi-briefcase text-danger me-2"></i>Condiciones Comerciales
+                                </h5>
 
-                <!-- Tarjeta de Direcciones Rediseñada -->
-                <div class="col-12 col-md-6 col-lg-8">
-                    <div class="card border-0 shadow-sm rounded-4 h-100">
-                        <div class="card-body p-4">
-                            <h5 class="fw-bold text-dark mb-4 pb-2 border-bottom d-flex justify-content-between align-items-center">
-                                <span><i class="bi bi-geo-alt-fill text-danger me-2"></i>Direcciones Registradas</span>
-                                <span class="badge bg-secondary bg-opacity-10 text-secondary fs-7">@(clienteDetalle.DireccionPrincipal?.Count ?? 0) total</span>
-                            </h5>
+                                <div class="d-flex flex-column gap-3">
+                                    <div>
+                                        <span class="text-muted small fw-semibold d-block">Grupo de Cliente</span>
+                                        <span class="fs-6 fw-bold text-dark"><i class="bi bi-people me-2 text-muted"></i>@clienteDetalle.GroupName</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-muted small fw-semibold d-block">Vendedor Asignado</span>
+                                        <span class="fs-6 fw-bold text-dark"><i class="bi bi-person-badge me-2 text-muted"></i>@clienteDetalle.SlpName</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-muted small fw-semibold d-block">Condición de Pago</span>
+                                        <span class="fs-6 fw-bold text-dark"><i class="bi bi-credit-card-2-front me-2 text-muted"></i>@clienteDetalle.PymntGroup</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-muted small fw-semibold d-block">Lista de Precios</span>
+                                        <span class="fs-6 fw-bold text-dark"><i class="bi bi-tags me-2 text-muted"></i>@clienteDetalle.ListName</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-muted small fw-semibold d-block">Ruta</span>
+                                        <span class="fs-6 fw-bold text-dark"><i class="bi bi-tags me-2 text-muted"></i>@clienteDetalle.PrioDesc</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                            <div class="row g-3">
-                                @if (clienteDetalle.DireccionPrincipal != null && clienteDetalle.DireccionPrincipal.Any())
-                                {
-                                    @foreach (var dir in clienteDetalle.DireccionPrincipal)
+                    <!-- Tarjeta: Información de Contacto -->
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card border-0 shadow-sm rounded-4 h-100">
+                            <div class="card-body p-4">
+                                <h5 class="fw-bold text-dark mb-4 pb-2 border-bottom">
+                                    <i class="bi bi-telephone text-danger me-2"></i>Canales de Contacto
+                                </h5>
+                                <div class="d-flex flex-column gap-3">
+                                    <div class="d-flex align-items-center gap-3 p-2 bg-light rounded-3">
+                                        <div class="p-2 bg-white rounded-circle shadow-sm text-secondary"><i class="bi bi-telephone-fill"></i></div>
+                                        <div>
+                                            <small class="text-muted d-block">Teléfono Fijo</small>
+                                            <strong class="text-dark">@(string.IsNullOrEmpty(clienteDetalle.Phone1) ? "No registrado" : clienteDetalle.Phone1)</strong>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-3 p-2 bg-light rounded-3">
+                                        <div class="p-2 bg-white rounded-circle shadow-sm text-secondary"><i class="bi bi-phone-fill"></i></div>
+                                        <div>
+                                            <small class="text-muted d-block">Celular</small>
+                                            <strong class="text-dark">@(string.IsNullOrEmpty(clienteDetalle.Celular) ? "No registrado" : clienteDetalle.Celular)</strong>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-3 p-2 bg-light rounded-3">
+                                        <div class="p-2 bg-white rounded-circle shadow-sm text-secondary"><i class="bi bi-envelope-fill"></i></div>
+                                        <div>
+                                            <small class="text-muted d-block">Correo Electrónico</small>
+                                            <strong class="text-dark text-break">@(string.IsNullOrEmpty(clienteDetalle.E_Mail) ? "No registrado" : clienteDetalle.E_Mail)</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta de Direcciones Rediseñada -->
+                    <div class="col-12 col-md-6 col-lg-8">
+                        <div class="card border-0 shadow-sm rounded-4 h-100">
+                            <div class="card-body p-4">
+                                <h5 class="fw-bold text-dark mb-4 pb-2 border-bottom d-flex justify-content-between align-items-center">
+                                    <span><i class="bi bi-geo-alt-fill text-danger me-2"></i>Direcciones Registradas</span>
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary fs-7">@(clienteDetalle.DireccionPrincipal?.Count ?? 0) total</span>
+                                </h5>
+
+                                <div class="row g-3">
+                                    @if (clienteDetalle.DireccionPrincipal != null && clienteDetalle.DireccionPrincipal.Any())
                                     {
-                                        <div class="col-12 col-md-6">
-                                            <div class="p-3 border rounded-4 bg-light bg-opacity-50 h-100 position-relative hover-shadow transition-all">
-                                                <span class="position-absolute top-0 end-0 m-3 badge @(dir.U_HBT_DirMM == 'Y' ? "bg-danger text-white" : "bg-dark text-white") rounded-pill px-2 py-1">
-                                                    <i class="bi @(dir.U_HBT_DirMM == 'Y' ? "bi-receipt" : "bi-truck") me-1"></i>
-                                                    @(dir.U_HBT_DirMM == 'Y' ? "Facturación" : "Despacho")
-                                                </span>
+                                        @foreach (var dir in clienteDetalle.DireccionPrincipal)
+                                        {
+                                            <div class="col-12 col-md-6">
+                                                <div class="p-3 border rounded-4 bg-light bg-opacity-50 h-100 position-relative hover-shadow transition-all">
+                                                    <span class="position-absolute top-0 end-0 m-3 badge @(dir.U_HBT_DirMM == 'Y' ? "bg-danger text-white" : "bg-dark text-white") rounded-pill px-2 py-1">
+                                                        <i class="bi @(dir.U_HBT_DirMM == 'Y' ? "bi-receipt" : "bi-truck") me-1"></i>
+                                                        @(dir.U_HBT_DirMM == 'Y' ? "Facturación" : "Despacho")
+                                                    </span>
 
-                                                <h6 class="fw-bold text-danger mb-2">
-                                                    <i class="bi bi-pin-map-fill me-1"></i> @dir.Address
-                                                </h6>
+                                                    <h6 class="fw-bold text-danger mb-2">
+                                                        <i class="bi bi-pin-map-fill me-1"></i> @dir.Address
+                                                    </h6>
 
-                                                <div class="small text-secondary d-flex flex-column gap-1 mt-3">
-                                                    <div><span class="fw-semibold text-dark">Calle/Av:</span> @dir.Street</div>
-                                                    <div><span class="fw-semibold text-dark">Barrio:</span> @dir.Block</div>
-                                                    <div><span class="fw-semibold text-dark">Ciudad/Mun:</span> @dir.City @(!string.IsNullOrEmpty(dir.ZipCode) ? $"({dir.ZipCode})" : "")</div>
-                                                    <div><span class="fw-semibold text-dark">Departamento:</span> @dir.County</div>
-                                                    <div><span class="fw-semibold text-dark">País:</span> @dir.Country</div>
+                                                    <div class="small text-secondary d-flex flex-column gap-1 mt-3">
+                                                        <div><span class="fw-semibold text-dark">Calle/Av:</span> @dir.Street</div>
+                                                        <div><span class="fw-semibold text-dark">Barrio:</span> @dir.Block</div>
+                                                        <div><span class="fw-semibold text-dark">Ciudad/Mun:</span> @dir.City @(!string.IsNullOrEmpty(dir.ZipCode) ? $"({dir.ZipCode})" : "")</div>
+                                                        <div><span class="fw-semibold text-dark">Departamento:</span> @dir.County</div>
+                                                        <div><span class="fw-semibold text-dark">País:</span> @dir.Country</div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    }
-                                }
-                                else
-                                {
-                                    <div class="col-12">
-                                        <div class="text-center py-5 text-muted">
-                                            <i class="bi bi-map fs-1 d-block mb-2 text-light-secondary"></i>
-                                            <span>No hay direcciones registradas para este cliente en SAP.</span>
-                                        </div>
-                                    </div>
-                                }
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
-        <!-- TAB 2: DATOS FISCALES -->
-        <div class="tab-pane fade @(activeTab == "fiscales" ? "show active" : "")">
-            <div class="row g-4">
-                <!-- COLUMNA: DATOS FISCALES -->
-                <div class="col-12 col-lg-8">
-                    <div class="card border-0 shadow-sm rounded-4 h-100">
-                        <div class="card-body p-4">
-                            <h5 class="fw-bold text-dark mb-4 pb-2 border-bottom">
-                                <i class="bi bi-building text-danger me-2"></i>Datos fiscales
-                            </h5>
-
-                            <!-- Primera fila: Régimen y Actividad -->
-                            <div class="row g-3 mb-3">
-                                <div class="col-12 col-md-6">
-                                    <label class="form-label text-muted small fw-semibold m-0">Régimen tributario</label>
-                                    <div class="p-3 bg-light rounded-3 fw-bold text-dark">
-                                        @(string.IsNullOrEmpty(clienteDetalle.U_HBT_RegTribName) ? "No registrado" : clienteDetalle.U_HBT_RegTribName)
-                                    </div>
-                                </div>
-                                <div class="col-12 col-md-6">
-                                    <label class="form-label text-muted small fw-semibold m-0">Actividad Económica</label>
-                                    <div class="p-3 bg-light rounded-3 fw-bold text-dark">
-                                        @(string.IsNullOrEmpty(clienteDetalle.U_HBT_ActEcoName) ? "No registrado" : clienteDetalle.U_HBT_ActEcoName)
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row g-3">
-                                <div class="col-12 col-md-6">
-                                    <label class="form-label text-muted small fw-semibold m-0">Tipo entidad</label>
-                                    @if (clienteDetalle.U_HBT_TipEnt != null)
-                                    {
-                                        @if (clienteDetalle.U_HBT_TipEnt == "1")
-                                        {
-                                            <div class="p-3 bg-light rounded-3 fw-bold text-dark">Natural</div>
                                         }
-                                        else if (clienteDetalle.U_HBT_TipEnt == "2")
-                                        {
-                                            <div class="p-3 bg-light rounded-3 fw-bold text-dark">Jurídica</div>
-                                        }
-                                        else
-                                        {
-                                            <div class="p-3 bg-light rounded-3 fw-bold text-dark">No asignado</div>
-                                        }
-                                    }
-                                </div>
-
-                                <div class="col-12 col-md-6">
-                                    <label class="form-label text-muted small fw-semibold m-0">Nacionalidad</label>
-                                    <div class="p-3 bg-light rounded-3 fw-bold text-dark">@nacionalidad</div>
-                                </div>
-
-                                <div class="col-12 col-md-6">
-                                    <label class="form-label text-muted small fw-semibold m-0">Régimen Fiscal (Código/Nombre)</label>
-                                    <div class="p-3 bg-light rounded-3 fw-bold text-dark">@clienteDetalle.U_HBT_regFisCode - @clienteDetalle.U_HBT_regFisName</div>
-                                </div>
-
-                                <div class="col-12 col-md-6">
-                                    <label class="form-label text-muted small fw-semibold m-0">Medio de pago</label>
-                                    <div class="p-3 bg-light rounded-3 fw-bold text-dark">@medioDepago</div>
-                                </div>
-
-                                <div class="col-12 col-md-6">
-                                    <label class="form-label text-muted small fw-semibold m-0">Residente</label>
-                                    <div class="p-3 bg-light rounded-3 fw-bold text-dark">@clienteDetalle.U_HBT_Residente</div>
-                                </div>
-
-                                <div class="col-12 col-md-6">
-                                    <label class="form-label text-muted small fw-semibold m-0">Información Tributaria</label>
-                                    <div class="p-3 bg-light rounded-3 fw-bold text-dark">@informacionTributaria</div>
-                                </div>
-
-                                <div class="col-12 col-md-6">
-                                    <label class="form-label text-muted small fw-semibold m-0">Responsabilidad Fiscal</label>
-                                    <div class="p-3 bg-light rounded-3 fw-bold text-dark">@clienteDetalle.U_HBT_ReSFisCode</div>
-                                </div>
-
-                                <div class="col-12 col-md-6">
-                                    <label class="form-label text-muted small fw-semibold m-0">Responsabilidad Fiscal (Adicional)</label>
-                                    <div class="p-3 bg-light rounded-3 fw-bold text-dark">@clienteDetalle.U_HBT_ReSFisCode</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- COLUMNA: IMPUESTOS -->
-                <div class="col-12 col-lg-4">
-                    <div class="card border-0 shadow-sm rounded-4 h-100">
-                        <div class="card-body p-4">
-                            <h5 class="fw-bold text-dark mb-4 pb-2 border-bottom">
-                                <i class="bi bi-cash-coin text-danger me-2"></i>Impuestos
-                            </h5>
-                            <div class="col-12">
-                                <label class="form-label text-muted small fw-semibold m-0">Impuestos</label>
-
-                                @foreach (var imp in clienteDetalle.BPWithholdingTaxCollection)
-                                {
-                                    <div class="p-3 bg-light rounded-3 fw-bold text-dark"> @imp.WTCode</div>
-                                }
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- TAB 3: PROPIEDADES -->
-        <div class="tab-pane fade @(activeTab == "propiedades" ? "show active" : "")">
-
-            <div class="row g-4">
-                <!-- COLUMNA: DATOS FISCALES -->
-                <div class="col-12 col-lg-8">
-                    <div class="card border-0 shadow-sm rounded-4 h-100">
-                        <div class="card-body p-4">
-                            <h5 class="fw-bold text-dark mb-4 pb-2 border-bottom">
-                                <i class="bi bi-che text-danger me-2"></i>Propiedades
-                            </h5>
-
-                            @foreach (var pro in listaPropiedades)
-                            {
-                                <div class="d-flex justify-content-between align-items-center p-3 mb-2 bg-white border rounded-3 shadow-sm">
-                                    <div>
-                                        <span class="fw-semibold text-dark">@pro.GroupName</span>
-                                    </div>
-                                    <div class="form-check form-switch m-0">
-                                        <InputCheckbox disabled @bind-Value="pro.Activa" class="form-check-input " />
-                                    </div>
-                                </div>
-                            }
-                        </div>
-                    </div>
-                </div>
-                <div class="col-12 col-lg-4">
-                    <div class="card border-0 shadow-sm rounded-4 h-100">
-                        <div class="card-body p-4">
-                            <h5 class="fw-bold text-dark mb-4 pb-2 border-bottom">
-                                <i class="bi bi-che text-danger me-2"></i>Propiedades
-                            </h5>
-                            <div class="card">
-                                <div class="card-body">
-                                    <InputTextArea class="form-control" disabled @bind-Value="clienteDetalle.Free_Text"> </InputTextArea>
-                                </div>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center p-3 mb-2 bg-white border rounded-3 shadow-sm">
-                                <div class="form-check form-switch m-0">
-                                    <label class="form-label text-muted small fw-semibold m-0">Bolsa mercantil</label>
-                                    @if (clienteDetalle.U_AplicaBolsaMercantil == "Y")
-                                    {
-                                        <div class="p-3 bg-light rounded-3 fw-bold text-dark">Aplica Bolsa Mercantil</div>
-                                    }
-                                    else if (clienteDetalle.U_AplicaBolsaMercantil == "N")
-                                    {
-                                        <div class="p-3 bg-light rounded-3 fw-bold text-dark">No aplica Bolsa Mercantil</div>
                                     }
                                     else
                                     {
-                                        <div class="p-3 bg-light rounded-3 fw-bold text-dark">No Definido</div>
+                                        <div class="col-12">
+                                            <div class="text-center py-5 text-muted">
+                                                <i class="bi bi-map fs-1 d-block mb-2 text-light-secondary"></i>
+                                                <span>No hay direcciones registradas para este cliente en SAP.</span>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- TAB 2: DATOS FISCALES -->
+            <div class="tab-pane fade @(activeTab == "fiscales" ? "show active" : "")">
+                <div class="row g-4">
+                    <!-- COLUMNA: DATOS FISCALES -->
+                    <div class="col-12 col-lg-8">
+                        <div class="card border-0 shadow-sm rounded-4 h-100">
+                            <div class="card-body p-4">
+                                <h5 class="fw-bold text-dark mb-4 pb-2 border-bottom">
+                                    <i class="bi bi-building text-danger me-2"></i>Datos fiscales
+                                </h5>
+
+                                <!-- Primera fila: Régimen y Actividad -->
+                                <div class="row g-3 mb-3">
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label text-muted small fw-semibold m-0">Régimen tributario</label>
+                                        <div class="p-3 bg-light rounded-3 fw-bold text-dark">
+                                            @(string.IsNullOrEmpty(clienteDetalle.U_HBT_RegTribName) ? "No registrado" : clienteDetalle.U_HBT_RegTribName)
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label text-muted small fw-semibold m-0">Actividad Económica</label>
+                                        <div class="p-3 bg-light rounded-3 fw-bold text-dark">
+                                            @(string.IsNullOrEmpty(clienteDetalle.U_HBT_ActEcoName) ? "No registrado" : clienteDetalle.U_HBT_ActEcoName)
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row g-3">
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label text-muted small fw-semibold m-0">Tipo entidad</label>
+                                        @if (clienteDetalle.U_HBT_TipEnt != null)
+                                        {
+                                            @if (clienteDetalle.U_HBT_TipEnt == "1")
+                                            {
+                                                <div class="p-3 bg-light rounded-3 fw-bold text-dark">Natural</div>
+                                            }
+                                            else if (clienteDetalle.U_HBT_TipEnt == "2")
+                                            {
+                                                <div class="p-3 bg-light rounded-3 fw-bold text-dark">Jurídica</div>
+                                            }
+                                            else
+                                            {
+                                                <div class="p-3 bg-light rounded-3 fw-bold text-dark">No asignado</div>
+                                            }
+                                        }
+                                    </div>
+
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label text-muted small fw-semibold m-0">Nacionalidad</label>
+                                        <div class="p-3 bg-light rounded-3 fw-bold text-dark">@nacionalidad</div>
+                                    </div>
+
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label text-muted small fw-semibold m-0">Régimen Fiscal (Código/Nombre)</label>
+                                        <div class="p-3 bg-light rounded-3 fw-bold text-dark">@clienteDetalle.U_HBT_regFisCode - @clienteDetalle.U_HBT_regFisName</div>
+                                    </div>
+
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label text-muted small fw-semibold m-0">Medio de pago</label>
+                                        <div class="p-3 bg-light rounded-3 fw-bold text-dark">@medioDepago</div>
+                                    </div>
+
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label text-muted small fw-semibold m-0">Residente</label>
+                                        <div class="p-3 bg-light rounded-3 fw-bold text-dark">@clienteDetalle.U_HBT_Residente</div>
+                                    </div>
+
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label text-muted small fw-semibold m-0">Información Tributaria</label>
+                                        <div class="p-3 bg-light rounded-3 fw-bold text-dark">@informacionTributaria</div>
+                                    </div>
+
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label text-muted small fw-semibold m-0">Responsabilidad Fiscal</label>
+                                        <div class="p-3 bg-light rounded-3 fw-bold text-dark">@clienteDetalle.U_HBT_ReSFisCode</div>
+                                    </div>
+
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label text-muted small fw-semibold m-0">Responsabilidad Fiscal (Adicional)</label>
+                                        <div class="p-3 bg-light rounded-3 fw-bold text-dark">@clienteDetalle.U_HBT_ReSFisCode</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- COLUMNA: IMPUESTOS -->
+                    <div class="col-12 col-lg-4">
+                        <div class="card border-0 shadow-sm rounded-4 h-100">
+                            <div class="card-body p-4">
+                                <h5 class="fw-bold text-dark mb-4 pb-2 border-bottom">
+                                    <i class="bi bi-cash-coin text-danger me-2"></i>Impuestos
+                                </h5>
+                                <div class="col-12">
+                                    <label class="form-label text-muted small fw-semibold m-0">Impuestos</label>
+
+                                    @foreach (var imp in clienteDetalle.BPWithholdingTaxCollection)
+                                    {
+                                        <div class="p-3 bg-light rounded-3 fw-bold text-dark"> @imp.WTCode</div>
                                     }
                                 </div>
                             </div>
@@ -404,9 +346,69 @@ else
                     </div>
                 </div>
             </div>
+            <!-- TAB 3: PROPIEDADES -->
+            <div class="tab-pane fade @(activeTab == "propiedades" ? "show active" : "")">
+
+                <div class="row g-4">
+                    <!-- COLUMNA: DATOS FISCALES -->
+                    <div class="col-12 col-lg-8">
+                        <div class="card border-0 shadow-sm rounded-4 h-100">
+                            <div class="card-body p-4">
+                                <h5 class="fw-bold text-dark mb-4 pb-2 border-bottom">
+                                    <i class="bi bi-che text-danger me-2"></i>Propiedades
+                                </h5>
+
+                                @foreach (var pro in listaPropiedades)
+                                {
+                                    <div class="d-flex justify-content-between align-items-center p-3 mb-2 bg-white border rounded-3 shadow-sm">
+                                        <div>
+                                            <span class="fw-semibold text-dark">@pro.GroupName</span>
+                                        </div>
+                                        <div class="form-check form-switch m-0">
+                                            <InputCheckbox disabled @bind-Value="pro.Activa" class="form-check-input " />
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <div class="card border-0 shadow-sm rounded-4 h-100">
+                            <div class="card-body p-4">
+                                <h5 class="fw-bold text-dark mb-4 pb-2 border-bottom">
+                                    <i class="bi bi-che text-danger me-2"></i>Comentarios
+                                </h5>
+                                <div class="card">
+                                    <label class="form-label text-muted small fw-semibold m-0">Comentario</label>
+
+                                    <div class="card-body">
+                                        <InputTextArea class="form-control" disabled @bind-Value="clienteDetalle.Free_Text"> </InputTextArea>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center p-3 mb-2 bg-white border rounded-3 shadow-sm">
+                                    <div class="form-check form-switch m-0">
+                                        <label class="form-label text-muted small fw-semibold m-0">Bolsa mercantil</label>
+                                        @if (clienteDetalle.U_AplicaBolsaMercantil == "Y")
+                                        {
+                                            <div class="p-3 bg-light rounded-3 fw-bold text-dark">Aplica Bolsa Mercantil</div>
+                                        }
+                                        else if (clienteDetalle.U_AplicaBolsaMercantil == "N")
+                                        {
+                                            <div class="p-3 bg-light rounded-3 fw-bold text-dark">No aplica Bolsa Mercantil</div>
+                                        }
+                                        else
+                                        {
+                                            <div class="p-3 bg-light rounded-3 fw-bold text-dark">No Definido</div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
-}
+    }
 
 </div>
 
@@ -433,6 +435,38 @@ else
     public string regimenFiscal = "";
     public string medioPago = "";
     public string informacionTributaria = "";
+
+    protected override async Task OnParametersSetAsync()
+    {
+
+        if (string.IsNullOrEmpty(cardCode))
+        {
+            await _jsRuntime.InvokeVoidAsync("Swal.fire", new
+            {
+                icon = "error",
+                title = "Error de Consulta",
+                text = $"No se proporcionó un código de cliente válido.",
+                confirmButtonColor = "#6c1d1d"
+            });
+            _nav.NavigateTo("/administrar-cliente/sap");
+        }
+
+        if (_authService.HasPermission("Cliente.Detail"))
+        {
+            if (!string.IsNullOrEmpty(cardCode))
+            {
+                await OnInitializedAsync();
+            }
+        }
+        else
+        {
+            _nav.NavigateTo("/no-autorizado");
+            return;
+        }
+    }
+
+
+
     protected async override Task OnInitializedAsync()
     {
         try
@@ -521,7 +555,7 @@ else
                     {
                         var valor = propiedad.GetValue(clienteDetalle);
 
-                        if (valor!=null && (char)valor=='Y')
+                        if (valor != null && (char)valor == 'Y')
                         {
                             listaPropiedades[i - 1].Activa = true;
                         }

@@ -49,7 +49,7 @@ namespace Miluc.Client.Servicios.Autorizacion
 
                 var result = await response.Content.ReadFromJsonAsync<ResponseAPI<UserSession>>();
 
-                if (result != null && result.EsCorrecto)
+                if (result.Valor != null && result.EsCorrecto)
                 {
                     CurrentSession = result.Valor;
 

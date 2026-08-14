@@ -15,8 +15,9 @@ namespace Miluc.Shared.DTOs.Sap.Pedidos
         public int ?SlpCode { get; set; } 
         public string SlpName { get; set; } = string.Empty;
         public int? DocEntry { get; set; } //ID del pedido en SAP
-        public char? CANCELED { get; set; } //Indica si el pedido fue cancelado ('Y' o 'N')
-        public char? DocStatus { get; set; }
+        public string CANCELED { get; set; } //Indica si el pedido fue cancelado ('Y' o 'N')
+        public string DocStatus { get; set; }
+        public string Printed { get; set; }
         public DateTime DocDate { get; set; }
         public DateTime DocDueDate { get; set; }
         public string? Address { get; set; }

@@ -16,8 +16,8 @@ namespace Miluc.Server.Servicios.Nomina
                 {
                     ContratoLaboralDetalleId = d.ContratoLaboralDetalleId,
                     ContratoLaboralId = d.ContratoLaboralId,
-                    FechaInicio = d.FechaInicio,
-                    FechaFinalizacion = d.FechaFinalizacion,
+                    FechaInicio = DateTime.Now,
+                    FechaFinalizacion = DateTime.Now,
                     Cargo = d.Cargo,
                     CentroCosto = d.CentroCosto,
                     Salario = d.Salario

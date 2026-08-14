@@ -6,7 +6,7 @@
     <div class="mb-5 text-center">
         <span class="text-uppercase small fw-bold text-muted tracking-wider d-block mb-1">Módulo comercial</span>
         <h1 class="fw-black text-dark m-0 d-flex align-items-center justify-content-center gap-3">
-            <i class="bi bi-shield-check text-vinotinto"></i>
+            <i class="bi bi-shield-check text-rojo"></i>
             Administrar Módulo comercial
         </h1>
         <p class="text-muted mt-2 mb-0 mx-auto col-12 col-md-8 p-0 small">
@@ -23,11 +23,6 @@
                         </div>
                         <span class="badge bg-rojo-suave text-dark border rounded-pill px-3 mb-2 small fw-bold">Clientes</span>
 
-
-                        @* <span class="badge bg-vinotinto-suave text-vinotinto border border-vinotinto-subtle rounded-pill px-3 mb-2 small fw-bold">Pedidos</span> *@
-
-
-
                         <h4 class="fw-bold text-dark mb-2 fs-5">Adminsitrar Socio de </h4>
                         <p class="text-muted small mb-0">
                             Creación, consulta y actualización de socios de negocio directamente vinculados al maestro de SAP.
@@ -42,19 +37,19 @@
         </div>
 
         <div class="col-12 col-sm-6 col-md-6 col-xl-4">
-            <div class="card h-100 shadow-sm border-0 border-top border-4 border-vinotinto text-center rounded-4 custom-hover-card" >
+            <div class="card h-100 shadow-sm border-0 border-top border-4 border-amarillo text-center rounded-4 custom-hover-card">
                 <div class="card-body p-4 d-flex flex-column align-items-center justify-content-between cursor-pointer" style="cursor: pointer;" @onclick='() => nav.NavigateTo("/administrar-pedido/pedidos")'>
                     <div class="w-100">
-                        <div class="p-3 bg-vinotinto-suave text-vinotinto fs-3 rounded-circle mx-auto mb-3 icon-box">
+                        <div class="p-3 bg-amarillo-suave text-amarillo fs-3 rounded-circle mx-auto mb-3 icon-box">
                             <i class="bi bi-cart-check-fill"></i>
                         </div>
-                        <span class="badge bg-vinotinto-suave text-vinotinto border border-vinotinto-subtle rounded-pill px-3 mb-2 small fw-bold">Pedidos</span>
+                        <span class="badge bg-amarillo-suave text-amarillo border border-amarillo-subtle rounded-pill px-3 mb-2 small fw-bold">Pedidos</span>
                         <h4 class="fw-bold text-dark mb-2 fs-5">Administrar Órdenes </h4>
                         <p class="text-muted small mb-0">
                             Creación y administración de pedidos de clientes en tiempo real.
                         </p>
                     </div>
-                    <button class="btn btn-vinotinto rounded-pill py-2 w-100 fw-semibold mt-4 shadow-sm"
+                    <button class="btn btn-amarillo rounded-pill py-2 w-100 fw-semibold mt-4 shadow-sm"
                             @onclick='() => nav.NavigateTo("/administrar-pedido/pedidos")'>
                         <span>Órdenes</span>
                     </button>

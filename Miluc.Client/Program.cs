@@ -36,8 +36,8 @@ builder.Services.AddScoped(sp =>
 
     return new HttpClient(handler)
     {
-        BaseAddress = new Uri("https://localhost:7222/")
-      //BaseAddress = new Uri("https://avicolamiluc.ddns.net:91/")
+      BaseAddress = new Uri("https://localhost:7222/")
+    // BaseAddress = new Uri("https://avicolamiluc.ddns.net:91/")
 
     };
 });
@@ -81,7 +81,8 @@ builder.Services.AddScoped<IMatrizSociodemograficaClientService, MatrizSociodemo
 builder.Services.AddScoped<IInfoFamiliarClientService, InfoFamiliarClientService>();
 builder.Services.AddScoped<IAfSeguridadSocialClientService, AfSeguridadSocialClientService>();
 builder.Services.AddScoped<IContratoLaboralClientService, ContratoLaboralClientService>();
-builder.Services.AddScoped<IEsquemaVacunacionClientService, EsquemaVacinacionClientService>();
+builder.Services.AddScoped<IVacunaClientService, VacunaClientService>();
+builder.Services.AddScoped<IEsquemaVacunacionClienteService, EsquemaVacunacionClienteService>();
 builder.Services.AddScoped<IParentescoClient, ParentescoClientService>();
 builder.Services.AddScoped<IEpsClientService, EpsClientService>();
 builder.Services.AddScoped<IArlClientService, ArlClientService>();

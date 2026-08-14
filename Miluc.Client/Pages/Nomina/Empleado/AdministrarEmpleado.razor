@@ -1,4 +1,4 @@
-﻿@page "/Administrar/Empleado"
+@page "/Administrar/Empleado"
 @using Miluc.Client.Interfaces.Nomina
 @using Miluc.Shared.DTOs.Nomina.EmpleadoDto
 @using Miluc.Shared.Models.Response
@@ -13,7 +13,7 @@
     @* ENCABEZADO DE LA PÁGINA: Título descriptivo con icono y botón para redireccionar a la creación de un nuevo empleado *@
     <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
         <div>
-            <h2 class="fw-bold text-vinotinto m-0 ">
+            <h2 class="fw-bold text-black m-0 ">
                 <i class="bi bi-person-badge-fill me-2"> Gestionar Empleados</i>
             </h2>
             <p class="m-0 text-muted">Administración de empleados</p>
@@ -21,11 +21,11 @@
         
         @* Botón que dispara el método para ir al formulario de creación *@
     
-        <button class="btn btn-vinotinto btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
+        <button class="btn btn-rojo btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
             <i class="bi bi-arrow-left me-2"></i> Volver
         </button>
     </div>
-    <button class="btn btn-vinotinto btn-nuevo rounded-pill px-4 shadow-sm" @onclick=IrACrearEmpleado>
+    <button class="btn btn-rojo btn-nuevo rounded-pill px-4 shadow-sm" @onclick=IrACrearEmpleado>
         <i class="bi bi-plus-lg me-1"></i> Nuevo empleado
     </button>
 </div>
@@ -48,7 +48,7 @@
                            @bind="textoBusqueda" @bind:event="oninput" @onkeyup="HandleEnter" />
 
                     @* Botón de lupa para ejecutar explícitamente la búsqueda remota en el servidor *@
-                    <button class="btn btn-vinotinto rounded-end-pill px-4" @onclick="() => BuscarEnServidor(false)">
+                    <button class="btn btn-rojo rounded-end-pill px-4" @onclick="() => BuscarEnServidor(false)">
                         <i class="bi bi-search me-2"></i>
                     </button>
                 </div>
@@ -70,7 +70,7 @@
                     </select>
                     
                     @* Insignia (badge) dinámica que expone la cantidad total de registros coincidentes *@
-                    <span class="badge bg-vinotinto rounded-pill ms-2 px-3 py-2">
+                    <span class="badge bg-rojo rounded-pill ms-2 px-3 py-2">
                         Total: @totalRegistros
                     </span>
                 </div>
@@ -83,7 +83,7 @@
 <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
     <div class="table-responsive">
         <table class="table table-striped table-hover mb-0">
-            <thead class="bg-vinotinto text-white">
+            <thead class="bg-rojo text-white">
                 <tr>
                     <th class="text-lg-center text-center">Documento</th>
                     <th class="ps-4 py-3 text-center">Nombre</th>
@@ -102,7 +102,7 @@
                 {
                     <tr>
                         <td colspan="8" class="text-center py-5">
-                            <div class="spinner-border text-vinotinto"></div>
+                            <div class="spinner-border text-rojo"></div>
                         </td>
                     </tr>
                 }
@@ -139,12 +139,19 @@
                             <td>
                                 <div class="text-muted x-small text-center">@em.Direccion</div>
                             </td>
-                            <td>
-                                @* Badge que altera su clase Bootstrap según el estado booleano de la propiedad Activo *@
-                                <span class="status-badge status-pill text-center @(em.Activo ? "Activo" : "Inactivo")">
-                                    @(em.Activo ? "Activo" : "Inactivo")
-                                </span>
-                            </td>
+                            <td class="text-center">
+                                @if (em.Activo)
+                                {
+                                    
+                                        <i class="bi bi-check2-circle text-dark"></i>
+                                    
+                                }
+                                else
+                                {
+                                    
+                                        <i class="bi bi-x-circle text-rojo"></i>
+                                }  
+                                    </td>
                             
                             <td class="text-center pe-4">
                                 @* Botonera de acciones CRUD para cada registro individual *@
@@ -161,7 +168,7 @@
                                     </button>
                                     
                                     @* Botón para accionar el flujo de eliminación *@
-                                    <button class="btn btn-white btn-sm px-2 delete" title="Eliminar" @onclick="() => EliminarEmpleado(em.EmpleadoId)">
+                                    <button class="btn btn-white btn-sm px-2 delete" title="Eliminar" @onclick="() => EliminarEmpleadoAsync(em.EmpleadoId)">
                                         <i class="bi bi-trash3 text-danger"></i>
                                     </button>
                                 </div>
@@ -176,15 +183,15 @@
 
 @* PIE DE PÁGINA CON EL PAGINADOR INTEGRADO *@
 <div class="pagination-footer d-flex justify-content-between align-items-center mt-4 p-3 bg-light rounded-4 border">
-    <div class="text-muted small">
-        Página <b>@paginaActual</b> de <b>@totalPaginas</b> (Total: @totalRegistros registros)
+    <div class="text-amarillo small">
+        Página <b> @paginaActual </b> de <b>@totalPaginas</b> 
     </div>
 
    
                     
     <div class="page-item.active pagination-container p-1 bg-white border rounded-pill shadow-sm">
         <button class="btn btn-sm rounded-circle @(paginaActual <= 1 ? "disabled" : "")" @onclick="() => IrPagina(paginaActual - 1)"><i class="bi bi-chevron-left"></i></button>
-        <span class="mx-3 fw-bold text-vinotinto">@paginaActual</span>
+        <span class="mx-3 fw-bold text-rojo">@paginaActual</span>
         <button class="btn btn-sm rounded-circle @(paginaActual >= totalPaginas ? "disabled" : "")" @onclick="() => IrPagina(paginaActual + 1)"><i class="bi bi-chevron-right"></i></button>
     </div>
    
@@ -454,5 +461,5 @@
     private void Volver() => nav.NavigateTo("/administrar-Nomina");
 
     // Redirige a la pantalla de confirmación de Eliminación pasando el ID por la URL
-    private void EliminarEmpleado(int id) => eliminarEmpleado(id);
+   private async Task EliminarEmpleadoAsync(int id) => await eliminarEmpleado(id);
     }

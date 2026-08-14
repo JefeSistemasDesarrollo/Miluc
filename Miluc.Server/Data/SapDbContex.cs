@@ -127,7 +127,7 @@ namespace Miluc.Server.Data
             // Relación: Grupo Clientes -> Cliente
             modelBuilder.Entity<OcrdClienteSap>().HasOne(c => c.OCRG).WithMany(g => g.OCRD).HasForeignKey(c => c.GroupCode);
             // Relación: Rutas -> Cliente
-            modelBuilder.Entity<OBPP>().HasMany(c => c.OCRD).WithOne(c => c.OBPP).HasForeignKey(c => c.Priority);
+            modelBuilder.Entity<OBPP>().HasMany(c => c.OCRD).WithOne(c => c.OBPP).HasForeignKey(c => c.Priority).IsRequired(false);
             // Relación: Condiciones de pago -> Cliente
             modelBuilder.Entity<OCTG>().HasMany(c => c.OCRD).WithOne(g => g.OCTG).HasForeignKey(c => c.groupNum);
             // Relación: Cliente -> Direcciones

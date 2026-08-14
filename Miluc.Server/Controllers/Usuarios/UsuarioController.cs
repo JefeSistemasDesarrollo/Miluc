@@ -1,13 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Miluc.Server.Interfaces.Encriptacion;
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Usuarios;
 using Miluc.Server.Security;
 using Miluc.Shared.DTOs.Usuarios;
 using Miluc.Shared.Models.Response;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace Miluc.Server.Controllers.Usuarios
 {
@@ -86,15 +83,15 @@ namespace Miluc.Server.Controllers.Usuarios
         [ProducesResponseType(typeof(ResponseAPI<List<UsuarioReadDto>>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ResponseAPI<List<UsuarioReadDto>>), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ResponseAPI<List<UsuarioReadDto>>), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ResponseAPI<List<UsuarioReadDto>>>> Get([FromQuery] string? buscar,
+        public async Task<ActionResult<ResponseAPI<List<UsuarioReadDto>>>> Get([FromQuery] string? buscar=null,
         [FromQuery] int? pagina = null,
             [FromQuery] int? cantidad = null)
         {
             try
             {
                 var usuarios = await _service.GetAllUsuariosAsync(buscar, pagina, cantidad);
-               
-                if (usuarios.Data == null && !usuarios.Data.Any())
+
+               if (usuarios.Data == null)
                 {
                     return NotFound(new ResponseAPI<UsuarioReadDto>
                     {
@@ -220,7 +217,7 @@ namespace Miluc.Server.Controllers.Usuarios
 
                 var resultado = await _service.CreateUsuarioAsync(dto);
 
-                if (resultado!=null)
+                if (resultado==null)
                 {
                     return NotFound(new ResponseAPI<UsuarioReadDto>
                     {

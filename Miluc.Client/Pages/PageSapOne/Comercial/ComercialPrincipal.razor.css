@@ -1,40 +1,30 @@
 ﻿:root {
-    --vinotinto: #800020;
-    --vinotinto-hover: #5d0017;
+    --amarillo: #FDC922;
+    --vinotinto-hover: #FDC922;
     --rojo: #dc3545;
     --rojo-hover: #bd2130;
-    --amarillo: #ffc107;
+    --amarillo: #FDC922;
     --amarillo-hover: #e0a800;
 }
 
 /* Clases de Identidad de Color */
-.text-vinotinto {
-    color: #800020 !important;
+.text-amarillo {
+    color: #FDC922 !important;
 }
 
-.border-vinotinto {
-    border-top-color: #800020 !important;
+.border-amarillo {
+    border-top-color: #FDC922 !important;
 }
 
-.bg-vinotinto-suave {
+.bg-amarillo-suave {
     background-color: rgba(128, 0, 32, 0.08) !important;
 }
 
-.bg-rojo-suave-text {
-    background-color: #800020;
+.bg-amarillo-suave-text {
+    background-color: #FDC922;
     color: white;
 }
 
-.btn-vinotinto {
-    background-color: #800020;
-    color: white;
-    border: none;
-}
-
-    .btn-vinotinto:hover {
-        background-color: #5d0017;
-        color: white;
-    }
 
 .text-rojo {
     color: #dc3545 !important;
@@ -72,14 +62,14 @@
 }
 
 .btn-amarillo {
-    background-color: #ffc107;
+    background-color: #FDC922;
     color: #212529;
     border: none;
 }
 
     .btn-amarillo:hover {
-        background-color: #e0a800;
-        color: #212529;
+        background-color: #ffc107;
+        color: white;
     }
 
 /* Estilizado e Iconos Centrados */

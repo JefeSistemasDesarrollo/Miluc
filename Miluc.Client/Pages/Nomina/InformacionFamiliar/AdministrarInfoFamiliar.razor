@@ -9,19 +9,11 @@
 <div class="empleados-page animate__animated animate__fadeIn p-4">
 
     @* ENCABEZADO DE LA PÁGINA: Título y Botón de Nuevo Empleado *@
-    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
-        <div>
-            <h2 class="fw-bold text-vinotinto m-0 ">
-                <i class="bi bi-person-badge-fill me-2"> Gestionar InformacionFamiliar</i>
-            </h2>
-            <p class="m-0 text-muted">Administración de Ir A Informacion familiar</p>
-        </div>
-    
-    </div>
+   
 
 <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
     <div>
-        <h2 class="fw-extrabold text-vinotinto m-0 tracking-tight">
+        <h2 class="fw-extrabold text-rojo m-0 tracking-tight">
                <i class=" bi bi-people-fill"></i> 
             Familiares 
         </h2>
@@ -30,7 +22,7 @@
         </p>
     </div>
             
-    <button class="btn btn-vinotinto btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
+    <button class="btn btn-rojo btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
         <i class="bi bi-arrow-left me-2"></i> Volver
     </button>
     </div>
@@ -59,7 +51,7 @@
                            @bind="textoBusqueda" @bind:event="oninput" @onkeyup="HandleEnter" />
 
                     @* Botón para forzar la búsqueda directamente en la Base de Datos del Servidor *@
-                    <button class="btn btn-vinotinto rounded-end-pill px-4" @onclick="BuscarEnServidor">
+                    <button class="btn btn-rojo rounded-end-pill px-4" @onclick="BuscarEnServidor">
                         <i class="bi bi-search me-2"></i>
                     </button>
                 </div>
@@ -81,7 +73,7 @@
                     </select>
                     
                     @* Muestra el total de registros encontrados *@
-                    <span class="badge bg-vinotinto rounded-pill ms-2 px-3 py-2">
+                    <span class="badge bg-rojo rounded-pill ms-2 px-3 py-2">
                         Total: @totalRegistros
                     </span>
                 </div>
@@ -164,7 +156,7 @@
 
     @* SECCIÓN DE PAGINACIÓN (PIE DE TABLA) *@
     <div class="pagination-footer d-flex justify-content-between align-items-center mt-4 p-3">
-        <div class="page-link text-muted small">Página <b>@paginaActual</b> de @totalPaginas</div>
+        <div class=" text-amarillo small">Página <b>@paginaActual</b> de @totalPaginas</div>
         
         <div class="page-item.active pagination-container p-1 bg-white border rounded-pill shadow-sm">
             @* Botón Anterior: Se deshabilita si estamos en la primera página *@
@@ -172,7 +164,7 @@
                 <i class="bi bi-chevron-left"></i>
             </button>
             
-            <span class="mx-3 fw-bold text-vinotinto">@paginaActual</span>
+            <span class="mx-3 fw-bold text-rojo">@paginaActual</span>
             
             @* Botón Siguiente: Se deshabilita si llegamos a la última página calculada *@
             <button class="btn btn-sm rounded-circle @(paginaActual >= totalPaginas ? "disabled" : "")" @onclick="() => IrPagina(paginaActual + 1)">

@@ -32,7 +32,7 @@ namespace Miluc.Client.Servicios.SapService
             }
         }
 
-        public async Task<ResponseAPI<List<OrdersReaderDto>>> ListarPedidosAsync(string? buscar = null, int? pagina = null, int? cantidad = null, DateTime? fechaInicio = null, DateTime? fechaFin = null)
+        public async Task<ResponseAPI<List<OrdersReaderDto>>> ListarPedidosAsync(string? buscar = null, int? pagina = null, int? cantidad = null, DateTime? fechaInicio = null, DateTime? fechaFin = null, int? codVendedorSAP = null, char? DocStatus = null, char? CANCELED = null, char? Printed = null)
         {
             try
             {
@@ -50,6 +50,22 @@ namespace Miluc.Client.Servicios.SapService
                 {
                     url += $"&fechaFin={fechaFin.Value:yyyy-MM-dd}";
 
+                }
+                if (codVendedorSAP.HasValue)
+                {
+                    url += $"&codVendedorSAP={codVendedorSAP.Value}";
+                }
+                if (DocStatus!=null)
+                {
+                    url +=$"&DocStatus={DocStatus}";
+                }
+                if (CANCELED!=null)
+                {
+                    url += $"&CANCELED={CANCELED}";
+                }
+                if (Printed!=null)
+                {
+                    url += $"&Printed={Printed}";
                 }
 
                 var response = await http.GetFromJsonAsync<ResponseAPI<List<OrdersReaderDto>>>(url);
