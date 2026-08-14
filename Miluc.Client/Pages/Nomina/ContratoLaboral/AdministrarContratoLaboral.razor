@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-﻿@page "/Administrar/contratoLaboral"
-=======
 @page "/Administrar/contratoLaboral"
->>>>>>> e744222956c2cfa8269fb353154d7c23ee1fca0d
 @using Miluc.Client.Interfaces.Nomina
 @using Miluc.Shared.DTOs.Nomina.EmpleadoDto
 @using Miluc.Shared.DTOs.Nomina.ContratoLaboralDto
@@ -17,10 +13,10 @@
         <div>
             <h2 class="fw-extrabold text-black m-0 tracking-tight">
                 <i class="bi bi-people-fill"></i>
-                Contraro Laboral
+                Seguridad Social
             </h2>
             <p class="text-muted mb-0 small mt-1">
-                Administración cotratos de  empleado.
+                Administración seguridad social del empleado.
             </p>
         </div>
 
@@ -342,9 +338,5 @@
         nav.NavigateTo($"/nomina/seguridad-social/editar/{idempleado}");
     }
 
-    private void Volver() => nav.NavigateTo("/administrar-Nomina/");
-<<<<<<< HEAD
+    private void Volver() => nav.NavigateTo("/Gestionar/Afiliaciones");
 }
-=======
-}
->>>>>>> e744222956c2cfa8269fb353154d7c23ee1fca0d

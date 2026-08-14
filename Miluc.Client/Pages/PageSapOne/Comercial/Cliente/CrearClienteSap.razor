@@ -1,26 +1,27 @@
 ﻿@page "/administrar-cliente/crear-socio"
+@using System.Text.Json
 @using Miluc.Client.Interfaces.SapInterfaces.Cliente
-@using Miluc.Shared.DTOs.Sap.Cliente
-@using Miluc.Shared.DTOs.Sap.GrupoDeVenta
 @using Miluc.Client.Interfaces.SapInterfaces.LocalizacionSap
-@using Shared.DTOs.Sap.RegimenFiscal
-@using Shared.DTOs.Sap.Retenciones
-@using Miluc.Client.Interfaces.SapInterfaces.Oslp
-@using Miluc.Shared.DTOs.Sap.Cliente.RegimeNTributario
-@using Shared.DTOs.Sap.Credito
-@using Shared.DTOs.Sap.Vendedor
-@using Shared.DTOs.Sap.Opln
-@using Miluc.Client.Interfaces.SapInterfaces.Rutas
 @using Miluc.Client.Interfaces.SapInterfaces.Octg
 @using Miluc.Client.Interfaces.SapInterfaces.Opln
-@using Shared.DTOs.Sap.Rutas
+@using Miluc.Client.Interfaces.SapInterfaces.Oslp
+@using Miluc.Client.Interfaces.SapInterfaces.Rutas
+@using Miluc.Shared.DTOs.Sap.Cliente
+@using Miluc.Shared.DTOs.Sap.Cliente.RegimeNTributario
+@using Miluc.Shared.DTOs.Sap.GrupoDeVenta
 @using Shared.DTOs.Sap.ActividadEconomica
 @using Shared.DTOs.Sap.Cliente.EntidadCliente
-@using Shared.DTOs.Sap.Cliente.MediosDePago
-@using Shared.DTOs.Sap.Cliente.InformacionTributaria
 @using Shared.DTOs.Sap.Cliente.HBT_RESPFISCAL
-@using Shared.DTOs.Sap.Impuesto
+@using Shared.DTOs.Sap.Cliente.InformacionTributaria
+@using Shared.DTOs.Sap.Cliente.MediosDePago
+@using Shared.DTOs.Sap.Credito
 @using Shared.DTOs.Sap.DireccionCliente
+@using Shared.DTOs.Sap.Impuesto
+@using Shared.DTOs.Sap.Opln
+@using Shared.DTOs.Sap.RegimenFiscal
+@using Shared.DTOs.Sap.Retenciones
+@using Shared.DTOs.Sap.Rutas
+@using Shared.DTOs.Sap.Vendedor
 @inject NavigationManager _nav
 @inject IJSRuntime _jsRuntime
 @inject ILocalizacionClientSap _sapLocalizacionService
@@ -29,6 +30,8 @@
 @inject ISapObppClientService _sapObppClienteService
 @inject ISapOctgClientService _sapoctgClienteService
 @inject ISapOplnClientService _sapOplnClientService
+@inject IAuthClientService _authClientService
+@inject ILogClientService _logClientService
 <div class="container-fluid py-4 bg-light-gradient min-vh-100 animate__animated animate__fadeIn">
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
         <div class="d-flex align-items-center gap-3">
@@ -45,7 +48,7 @@
                 <i class="bi bi-arrow-left me-2"></i> Volver
             </button>
 
-            <span class="badge bg-vinotinto-suave text-vinotinto border border-vinotinto-subtle rounded-pill px-3 py-2 fw-bold">
+            <span class="badge bg-rojo-suave text-rojo border border-rojo-subtle rounded-pill px-3 py-2 fw-bold">
                 <i class="bi bi-cloud-arrow-up-fill me-1"></i> Creación socio en SAP
             </span>
         </div>
@@ -57,19 +60,19 @@
             <div class="card-header bg-white border-0 p-0">
                 <ul class="nav nav-tabs nav-justified border-bottom-0" id="sapTabs" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active py-3 fw-semibold text-secondary @(activeTab == "general" ? "active-sap-tab text-vinotinto" : "")"
+                        <button class="nav-link active py-3 fw-semibold text-secondary @(activeTab == "general" ? "active-sap-tab text-rojo" : "")"
                                 @onclick='() => CambiarTab("general")' type="button">
                             <i class="bi bi-info-circle-fill me-2"></i>General
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link py-3 fw-semibold text-secondary @(activeTab == "fiscales" ? "active-sap-tab text-vinotinto" : "")"
+                        <button class="nav-link py-3 fw-semibold text-secondary @(activeTab == "fiscales" ? "active-sap-tab text-rojo" : "")"
                                 @onclick='() => CambiarTab("fiscales")' type="button">
                             <i class="bi bi-file-earmark-gavel me-2"></i>Datos Fiscales
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link py-3 fw-semibold text-secondary @(activeTab == "propiedades" ? "active-sap-tab text-vinotinto" : "")"
+                        <button class="nav-link py-3 fw-semibold text-secondary @(activeTab == "propiedades" ? "active-sap-tab text-rojo" : "")"
                                 @onclick='() => CambiarTab("propiedades")' type="button">
                             <i class="bi bi-tags-fill me-2"></i>Propiedades y Comentarios
                         </button>
@@ -84,7 +87,7 @@
                         <div class="row g-3">
                             <div class="col-12 col-md-4">
                                 <label class="form-label text-muted small fw-semibold">Tipo Documento *</label>
-                                <InputSelect @bind-Value="cliente.U_HBT_TipDoc" class="form-select form-select-sm">
+                                <InputSelect @bind-Value="cliente.U_HBT_TipDoc" class="form-select form-select-sm" e>
                                     <option value="@int.MinValue"> Seleccione Tipo Documento</option>
                                     @foreach (var tipo in listaTiposDocumento)
                                     {
@@ -93,24 +96,46 @@
                                 </InputSelect>
                                 <ValidationMessage For="@(() => cliente.U_HBT_TipDoc)" class="text-danger small" />
                             </div>
+
+
                             <div class="col-12 col-md-4">
+                                <label class="form-label text-muted small fw-semibold">Número Documento *</label>
+                                <div class="input-group input-group-sm">
+                                    <!-- NIT / Documento -->
+                                    <input type="text" class="form-control" @bind="cliente.FederalTaxID" @bind:event="oninput" />
+                                    <span class="input-group-text bg-light">:</span>
+                                    <!-- Sucursal -->
+                                    <InputNumber @bind-Value="cliente.SucursalGen" class="form-control" min="0" max="999" style="max-width:65px;" />
+                                    <span class="input-group-text bg-light">-</span>
+                                    <!-- Dígito de verificación -->
+                                    <input type="text" readonly class="form-control" value="@DigitoVerificacion" style="max-width:45px;" />
+                                </div>
+                                <ValidationMessage For="@(() => cliente.FederalTaxID)" class="text-danger small" />
+                                <ValidationMessage For="@(() => cliente.SucursalGen)" class="text-danger small" />
+                            </div>
+                            @*   <div class="col-12 col-md-4">
                                 <label class="form-label text-muted small fw-semibold">Número Documento *</label>
                                 <div class="input-group input-group-sm">
 
                                     <input type="text" class="form-control" @bind="cliente.FederalTaxID" @bind:event="oninput" />
+
+<span class="input-group-text bg-light">:</span>
+                                    <input value="cliente.SucursalGen" class="form-control" min="0" max="999" style="max-width:65px;" />
                                     <span class="input-group-text bg-light">-</span>
-                                    <input readonly class="form-control" value="@DigitoVerificacion" style="max-width:45px;" />
+                                    <input readonly class="form-control" value="@DigitoVerificacion" min="0" max="9" style="max-width:45px;" />
                                 </div>
                                 <ValidationMessage For="@(() => cliente.FederalTaxID)" class="text-danger small" />
-                            </div>
+                                 <ValidationMessage For="@(() => cliente.SucursalGen)" class="text-danger small" />
+
+                            </div> *@
                             <div class="col-12 col-md-4 d-flex align-items-end">
-                                <div class="form-check form-switch mb-2">
+                                <div class="form-check form-switch  check-rojo mb-2">
                                     <InputCheckbox @bind-Value="cliente.validFor" class="form-check-input check-rojo" id="chkActivo" />
                                     <label class="form-check-label fw-semibold text-dark small" for="chkActivo">Cliente Activo</label>
                                 </div>
                             </div>
                             <div class="col-12 col-md-6">
-                                <label class="form-label text-muted small fw-semibold">Razón Social *</label>
+                                <label class="form-label text-muted small fw-semibold">Razón Social </label>
                                 <InputText @bind-Value="cliente.CardName" class="form-control form-control-sm" placeholder="Nombre completo o Empresa" />
                                 <ValidationMessage For="@(() => cliente.CardName)" class="text-danger small" />
                             </div>
@@ -126,7 +151,7 @@
                                 <ValidationMessage For="@(() => cliente.GroupCode)" class="text-danger small" />
                             </div>
                             <div class="col-12 col-md-4">
-                                <label class="form-label text-muted small fw-semibold">Sucursal </label>
+                                <label class="form-label text-muted small fw-semibold">Sucursal* </label>
                                 <InputText @bind-Value="cliente.CardForeignName" class="form-control form-control-sm" />
                                 <ValidationMessage For="@(() => cliente.CardForeignName)" class="text-danger small" />
 
@@ -151,7 +176,7 @@
 
                             </div>
                             <div class="col-12 col-md-4">
-                                <label class="form-label text-muted small fw-semibold">Móvil</label>
+                                <label class="form-label text-muted small fw-semibold">Móvil*</label>
                                 <InputText @bind-Value="cliente.Cellular" class="form-control form-control-sm" />
                                 <ValidationMessage For="@(() => cliente.Cellular)" class="text-danger small" />
 
@@ -204,7 +229,7 @@
                             <div class="col-12 col-lg-6 mt-4">
                                 <div class="card bg-light border-0 rounded-3 p-3 h-100">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <h6 class="fw-bold text-vinotinto m-0 small"><i class="bi bi-geo-alt-fill me-1"></i> Dirección Factura</h6>
+                                        <h6 class="fw-bold text-rojo m-0 small"><i class="bi bi-geo-alt-fill me-1"></i> Dirección Factura</h6>
                                         <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill" @onclick="CopiarADespacho" style="font-size: 0.75rem;">
                                             Copiar a Despacho <i class="bi bi-arrow-right-short"></i>
                                         </button>
@@ -214,21 +239,23 @@
                                             <label class="form-label text-muted small fw-semibold">Código Postal *</label>
                                             <InputText class="form-control cursor-pointer" readonly @onclick="AbrirModalCodigoPostal" @bind-Value="cliente.ZipCode" />
                                             <ValidationMessage For="@(() => cliente.ZipCode)" class="text-danger small" />
+
                                         </div>
                                         <div class="col-12">
-                                            <label class="form-label text-muted xx-small mb-1">Calle / Número / Conjunto</label>
-                                            <InputText @bind-Value="direccionFactura.Street" class="form-control form-control-sm" />
-                                            <ValidationMessage For="@(() => direccionFactura.Street)" class="text-danger small" />
+                                            <label class="form-label text-muted xx-small mb-1">Calle / Número / Conjunto *</label>
+                                            <InputText @bind-Value="cliente.DirreccionFacturaStreet" class="form-control form-control-sm" />
+                                            <ValidationMessage For="@(() => cliente.DirreccionFacturaStreet)" class="text-danger small" />
+
                                         </div>
                                         <div class="col-6">
-                                            <label class="form-label text-muted xx-small mb-1">Barrio</label>
-                                            <InputText @bind-Value="direccionFactura.Block" class="form-control form-control-sm" />
-                                            <ValidationMessage For="@(() => direccionFactura.Block)" class="text-danger small" />
+                                            <label class="form-label text-muted xx-small mb-1">Barrio * </label>
+                                            <InputText @bind-Value="cliente.DirreccionFacturaBlock" class="form-control form-control-sm" />
+                                            <ValidationMessage For="@(() => cliente.DirreccionFacturaBlock)" class="text-danger small" />
                                         </div>
                                         <div class="col-6">
-                                            <label class="form-label text-muted xx-small mb-1">Departamento/Ciudad</label>
-                                            <InputText @bind-Value="direccionFactura.County" class="form-control form-control-sm" />
-                                            <ValidationMessage For="@(() => direccionFactura.County)" class="text-danger small" />
+                                            <label class="form-label text-muted xx-small mb-1">Departamento/Ciudad *</label>
+                                            <InputText @bind-Value="cliente.DireccionFacturaCounty" class="form-control form-control-sm" />
+                                            <ValidationMessage For="@(() => cliente.DireccionFacturaCounty)" class="text-danger small" />
                                         </div>
 
                                         <div class="col-12">
@@ -246,18 +273,18 @@
 
                                         <div class="col-12">
                                             <label class="form-label text-muted xx-small mb-1">Calle / Número / Conjunto</label>
-                                            <InputText @bind-Value="direccionDespacho.Street" class="form-control form-control-sm" />
-                                            <ValidationMessage For="@(() => direccionDespacho.Street)" class="text-danger small" />
+                                            <InputText @bind-Value="cliente.DirreccionDespachoStreet" class="form-control form-control-sm" />
+                                            <ValidationMessage For="@(() => cliente.DirreccionDespachoStreet)" class="text-danger small" />
                                         </div>
                                         <div class="col-6">
                                             <label class="form-label text-muted xx-small mb-1">Barrio</label>
-                                            <InputText @bind-Value="direccionDespacho.Block" class="form-control form-control-sm" />
-                                            <ValidationMessage For="@(() => direccionDespacho.Block)" class="text-danger small" />
+                                            <InputText @bind-Value="cliente.DirreccionDespachoBlock" class="form-control form-control-sm" />
+                                            <ValidationMessage For="@(() => cliente.DirreccionDespachoBlock)" class="text-danger small" />
                                         </div>
                                         <div class="col-6">
                                             <label class="form-label text-muted xx-small mb-1">Departamento/Ciudad</label>
-                                            <InputText @bind-Value="direccionDespacho.County" class="form-control form-control-sm" />
-                                            <ValidationMessage For="@(() => direccionDespacho.County)" class="text-danger small" />
+                                            <InputText @bind-Value="cliente.DireccionDespachoCounty" class="form-control form-control-sm" />
+                                            <ValidationMessage For="@(() => cliente.DireccionDespachoCounty)" class="text-danger small" />
                                         </div>
                                         <div class="col-12">
                                             <label class="form-label text-muted small fw-semibold">Ruta *</label>
@@ -408,7 +435,7 @@
                                             {
                                                 <tr>
                                                     <td class="text-center">
-                                                        <input type="checkbox" class="form-check-input check-vinotinto" @bind="retencion.Activa" />
+                                                        <input type="checkbox" class="form-check-input check-rojo" @bind="retencion.Activa" />
                                                     </td>
                                                     <td class="fw-semibold text-dark small">@retencion.WTCode - @retencion.WTName</td>
                                                     <td class="text-muted small">@retencion.WTName</td>
@@ -467,8 +494,8 @@
                 <button type="button" class="btn btn-sm btn-light border rounded-pill px-4" @onclick="Cancelar">
                     Cancelar
                 </button>
-                <button type="submit" class="btn btn-sm btn-vinotinto rounded-pill px-4 shadow-sm">
-                    <i class="bi bi-save2-fill me-1"></i> Crear 
+                <button type="submit" class="btn btn-sm btn-rojo rounded-pill px-4 shadow-sm">
+                    <i class="bi bi-save2-fill me-1"></i> Crear
                 </button>
             </div>
         </div>
@@ -477,20 +504,20 @@
 <div class="modal fade @(mostrarActividadEconomica ? "show d-block" : "")" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 1050;">
     <div class="modal-dialog modal-md modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header bg-maroon text-white">
+            <div class="modal-header bg-marron-modal text-modal">
                 <h5 class="modal-title mb-0">
                     <svg xmlns="http://w3.org" width="16" height="16" fill="currentColor" class="bi bi-geo-alt" viewBox="0 0 16 16">
                         Actividad Economica
                         <path d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.03A31.513 31.513 0 0 1 8 14.58a31.513 31.513 0 0 1-2.206-2.61c-.726-.91-1.436-1.968-1.96-3.03C3.366 7.42 3 5.99 3 4.58 3 2.58 4.63 1 6.63 1h2.74C11.37 1 13 2.63 13 4.58c0 1.41-.366 2.84-1.166 4.36zM8 16s6-5.686 6-10.5C14 2.7 12.314 1 10.5 1h-5C3.686 1 2 2.686 2 4.5S8 16 8 16z" />
                         <path d="M8 6a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
-                    </svg> Buscar Actividad Econmica
+                    </svg> Buscar Actividad Economica
                 </h5>
-                <button type="button" class="btn-close btn-close-white ms-auto" @onclick="CerrarModalActividadEconomica"></button>
+                <button type="button" class="btn-close text-modal ms-auto" @onclick="CerrarModalActividadEconomica"></button>
             </div>
             <div class="modal-body">
                 <div class="input-group mb-3">
                     <input type="text" class="form-control" @bind:event="oninput" placeholder="Buscar codigo..." @bind="textoBusquedaActividadEconomica" @onkeyup="HandleEnterActividadEconomica">
-                    <button class="btn btn-maroon" @onclick="() => BuscarEnServidorActividadEconomica()"><i class="bi bi-search"></i>Buscar</button>
+                    <button class="btn btn-marron-modal" @onclick="() => BuscarEnServidorActividadEconomica()"><i class="bi bi-search"></i>Buscar</button>
                 </div>
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <small class="text-muted">
@@ -528,10 +555,11 @@
                 <!-- PAGINADOR -->
                 @if (CantidadDeActividadEconomicaEncontrados > 0)
                 {
+                 
                     <div class="d-flex justify-content-center mt-3">
                         <div class="btn-group">
                             <!-- ANTERIOR -->
-                            <button class="btn btn-outline-secondary btn-sm" disabled="@(PaginaActualActividadEconomica == 1)" @onclick="PaginaAnteriorActividadEconomica">
+                            <button class="page-link border-0 rounded-circle mx-1 shadow-sm" disabled="@(PaginaActualActividadEconomica == 1)" @onclick="PaginaAnteriorActividadEconomica">
                                 <i class="bi bi-chevron-left"></i>
                             </button>
 
@@ -539,13 +567,13 @@
                             @for (int i = Math.Max(1, PaginaActualActividadEconomica - 2); i <= Math.Min(TotalPaginasActividadEconomica, PaginaActualActividadEconomica + 2); i++)
                             {
                                 var pagina = i;
-                                <button class="btn @(PaginaActualActividadEconomica == pagina ? "btn-maroon text-white" : "btn-outline-secondary") btn-sm"
+                                <button class="page-link border-0 rounded-circle mx-1 shadow-sm @(PaginaActualActividadEconomica == pagina ? "btn-marron text-negro" : "btn-outline-secondary") btn-sm"
                                         @onclick="() => IrPaginaActividadEconomica(pagina)">
                                     @pagina
                                 </button>
                             }
                             <!-- SIGUIENTE -->
-                            <button class="btn btn-outline-secondary btn-sm" disabled="@(PaginaActualActividadEconomica == TotalPaginasActividadEconomica)"
+                            <button class="page-link border-0 rounded-circle mx-1 shadow-sm" disabled="@(PaginaActualActividadEconomica == TotalPaginasActividadEconomica)"
                                     @onclick="PaginaSiguienteActividadEconomica">
                                 <i class="bi bi-chevron-right"></i>
                             </button>
@@ -559,7 +587,7 @@
 <div class="modal fade @(mostrarCodigoPostal ? "show d-block" : "")" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 1050;">
     <div class="modal-dialog modal-md modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header bg-maroon text-white">
+            <div class="modal-header bg-marron-modal text-white">
                 <h5 class="modal-title mb-0">
                     <svg xmlns="http://w3.org" width="16" height="16" fill="currentColor" class="bi bi-geo-alt" viewBox="0 0 16 16">
                         Codigo Postal
@@ -567,12 +595,13 @@
                         <path d="M8 6a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
                     </svg> Buscar Codigo Postal
                 </h5>
-                <button type="button" class="btn-close btn-close-white ms-auto" @onclick="CerrarModalCodigoPostal"></button>
+                <button type="button" class="btn-close text-modal ms-auto" @onclick="CerrarModalCodigoPostal"></button>
+
             </div>
             <div class="modal-body">
                 <div class="input-group mb-3">
                     <input type="text" class="form-control" @bind:event="oninput" placeholder="Buscar codigo..." @bind="textoBusquedaCodigo" @onkeyup="HandleEnterCodigoPostal">
-                    <button class="btn btn-maroon" @onclick="() => BuscarEnServidorCodigoPostal()"><i class="bi bi-search"></i>Buscar</button>
+                    <button class="btn btn-marron-modal" @onclick="() => BuscarEnServidorCodigoPostal()"><i class="bi bi-search"></i>Buscar</button>
                 </div>
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <small class="text-muted">
@@ -613,7 +642,7 @@
                     <div class="d-flex justify-content-center mt-3">
                         <div class="btn-group">
                             <!-- ANTERIOR -->
-                            <button class="btn btn-outline-secondary btn-sm" disabled="@(PaginaActualCodigo == 1)" @onclick="PaginaAnteriorCodigo">
+                            <button class="page-link border-0 rounded-circle mx-1 shadow-sm" disabled="@(PaginaActualCodigo == 1)" @onclick="PaginaAnteriorCodigo">
                                 <i class="bi bi-chevron-left"></i>
                             </button>
 
@@ -621,13 +650,13 @@
                             @for (int i = Math.Max(1, PaginaActualCodigo - 2); i <= Math.Min(TotalPaginasCodigo, PaginaActualCodigo + 2); i++)
                             {
                                 var pagina = i;
-                                <button class="btn @(PaginaActualCodigo == pagina ? "btn-maroon text-white" : "btn-outline-secondary") btn-sm"
+                                <button class="page-link border-0 rounded-circle mx-1 shadow-sm @(PaginaActualCodigo == pagina ? "btn-marron text-negro" : "btn-outline-secondary") btn-sm"
                                         @onclick="() => IrPaginaCodigo(pagina)">
                                     @pagina
                                 </button>
                             }
                             <!-- SIGUIENTE -->
-                            <button class="btn btn-outline-secondary btn-sm" disabled="@(PaginaActualCodigo == TotalPaginasCodigo)"
+                            <button class="page-link border-0 rounded-circle mx-1 shadow-sm" disabled="@(PaginaActualCodigo == TotalPaginasCodigo)"
                                     @onclick="PaginaSiguienteCodigo">
                                 <i class="bi bi-chevron-right"></i>
                             </button>
@@ -641,7 +670,7 @@
 <div class="modal fade @(mostrarModalMunicipio ? "show d-block" : "")" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 1050;">
     <div class="modal-dialog modal-md modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header bg-maroon text-white">
+            <div class="modal-header bg-marron-modal text-white">
                 <h5 class="modal-title mb-0">
                     <svg xmlns="http://w3.org" width="16" height="16" fill="currentColor" class="bi bi-geo-alt" viewBox="0 0 16 16">
                         Municipio
@@ -649,12 +678,18 @@
                         <path d="M8 6a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
                     </svg> Buscar Municipio
                 </h5>
-                <button type="button" class="btn-close btn-close-white ms-auto" @onclick="CerrarModalMunicipio"></button>
+                <button type="button" class="btn-close text-modal ms-auto" @onclick="CerrarModalMunicipio"></button>
             </div>
             <div class="modal-body">
                 <div class="input-group mb-3">
                     <input type="text" class="form-control" @bind:event="oninput" placeholder="Buscar Municipio..." @bind="textoBusquedaMunicipio" @onkeyup="HandleEnterMunicipio">
-                    <button class="btn btn-maroon" @onclick="() => BuscarEnServidorMunicipio()"><i class="bi bi-search"></i>Buscar</button>
+                    @*                     <button class="btn btn-maroon" @onclick="() => BuscarEnServidorMunicipio()"><i class="bi bi-search"></i>Buscar</button>
+ *@
+                    <button class="btn btn-marron-modal text-white" @onclick="() => BuscarEnServidorMunicipio()">
+                        <i class="bi bi-search me-1"></i>Buscar
+                    </button>
+
+
                 </div>
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <small class="text-muted">
@@ -695,7 +730,7 @@
                     <div class="d-flex justify-content-center mt-3">
                         <div class="btn-group">
                             <!-- ANTERIOR -->
-                            <button class="btn btn-outline-secondary btn-sm" disabled="@(PaginaActualMunicipio == 1)" @onclick="PaginaAnteriorMunicipio">
+                            <button class="page-link border-0 rounded-circle mx-1 shadow-sm" disabled="@(PaginaActualMunicipio == 1)" @onclick="PaginaAnteriorMunicipio">
                                 <i class="bi bi-chevron-left"></i>
                             </button>
 
@@ -703,13 +738,13 @@
                             @for (int i = Math.Max(1, PaginaActualMunicipio - 2); i <= Math.Min(TotalPaginasMunicipio, PaginaActualMunicipio + 2); i++)
                             {
                                 var pagina = i;
-                                <button class="btn @(PaginaActualMunicipio == pagina ? "btn-maroon text-white" : "btn-outline-secondary") btn-sm"
+                                <button class="page-link border-0 rounded-circle mx-1 shadow-sm @(PaginaActualMunicipio == pagina ? "btn-marron text-negro" : "btn-outline-secondary") btn-sm"
                                         @onclick="() => IrPaginaMunicipio(pagina)">
                                     @pagina
                                 </button>
                             }
                             <!-- SIGUIENTE -->
-                            <button class="btn btn-outline-secondary btn-sm" disabled="@(PaginaActualMunicipio == TotalPaginasMunicipio)"
+                            <button class="page-link border-0 rounded-circle mx-1 shadow-sm" disabled="@(PaginaActualMunicipio == TotalPaginasMunicipio)"
                                     @onclick="PaginaSiguienteMunicipio">
                                 <i class="bi bi-chevron-right"></i>
                             </button>
@@ -752,8 +787,8 @@
     public List<SapResponsabilidadFiscalDto> lisregimenfiscal1 = new();
     public List<RecidenteDto> listResidente = new();
     //codigo postal
-    public AddressClienteDto direccionFactura = new AddressClienteDto();
-    public AddressClienteDto direccionDespacho = new AddressClienteDto();
+    // public AddressClienteDto direccionFactura = new AddressClienteDto();
+    // public AddressClienteDto direccionDespacho = new AddressClienteDto();
     private bool mostrarCodigoPostal = false;
     private bool mostrarActividadEconomica = false;
     private bool mostrarModalMunicipio = false;
@@ -823,6 +858,7 @@
     private int TotalPaginasActividadEconomica => (int)Math.Ceiling((double)CantidadDeActividadEconomicaEncontrados / CantidadPorPaginaActividadEconomica);
     private int TotalPaginasMunicipio => (int)Math.Ceiling((double)CantidadDeMunicipiosEncontrados / CantidadPorPaginaMunicipio);
     private string DigitoVerificacion => string.IsNullOrWhiteSpace(cliente.FederalTaxID) ? "" : CalcularDV(cliente.FederalTaxID).ToString();
+
     private async Task PaginaAnteriorCodigo()
     {
         if (PaginaActualCodigo > 1)
@@ -1129,6 +1165,8 @@
     {
         try
         {
+            var sesion = _authClientService.CurrentSession;
+
             //aca vamos a validar
             var responseGrupoDeClientes = await _sapOcrdClientService.GetGrupoDeVentasAsync();
             if (responseGrupoDeClientes.Valor != null)
@@ -1156,15 +1194,55 @@
 
             if (resposeOctg.Valor != null)
             {
-                listDias = resposeOctg.Valor;
+             
+                if (!_authClientService.HasPermission("CondicionPagoSap.View"))
+                {
+                    listDias = resposeOctg.Valor.Where(x => x.PymntGroup.ToUpper() == "CONTADO" || x.PymntGroup.ToUpper() == "DOMICILIO").ToList();
+
+    
+                }else{
+                    listDias = resposeOctg.Valor;
+                }
             }
 
+
+            //aca la lista de precios y si es vendor cargo una lista generica de dos item de domicilio y de contado
+            //si es administrador cargo la lista de precios y si es vendor cargo una lista generica de dos item de domicilio y de contado
+
+        
             var responseOpln = await _sapOplnClientService.GetListOplnAsync();
 
             if (responseOpln.Valor != null)
             {
-                listOpln = responseOpln.Valor;
+
+                if (sesion != null)
+                {
+                    if (!_authClientService.HasPermission("ListaPreciosSap.View"))
+                    {
+                        listOpln = responseOpln.Valor.Where(x => x.ListName.ToUpper() == "DOMICILIO" || x.ListName.ToUpper() == "CONTADO").ToList();
+                        // listOpln = responseOpln.Valor.Where(x => x.Code == "Domicilio" || x.Code == "Contado").ToList();
+                    }
+                    else
+                    {
+                        listOpln = responseOpln.Valor;
+                    }
+                }
+                
+                
+
+                
             }
+
+            // if(sesion != null)
+            // {
+            //     listOpln = listOpln.Where(x => x.ListName == "Domicilio" || x.ListName == "Contado").ToList();
+            // }
+            // if (sesion != null && sesion.Roles == "Vendedor")
+            // {
+            //     listOpln = listOpln.Where(x => x.Code == "Domicilio" || x.Code == "Contado").ToList();
+            // }
+
+
             var responseRegimenfiscal = await _sapLocalizacionService.GetRegimenFiscal();
 
             if (responseRegimenfiscal != null)
@@ -1314,11 +1392,11 @@
         {
             new() { GroupCode=1,GroupName = "VENTA MASIVA", Propiedad="Properties1" , Activa = false },
             new() { GroupCode=2, GroupName = "RESTAURANTES", Propiedad="Properties2" ,Activa = false },
-            new() { GroupCode=3,GroupName = "DOMICILIOS MOSQUERA",Propiedad="Properties3", Activa = true },
+            new() { GroupCode=3,GroupName = "DOMICILIOS MOSQUERA",Propiedad="Properties3", Activa = false },
             new() { GroupCode=4,GroupName = "DOMICILIOS MADRID",Propiedad="Properties4", Activa = false },
             new() { GroupCode=5,GroupName = "DOMICILIOS FACA BOSQUE",Propiedad="Properties5", Activa = false },
             new() { GroupCode=6,GroupName = "DOMICILIOS FACA PLAZA",Propiedad="Properties6", Activa = false },
-            new() { GroupCode=7,GroupName = "DOMICILIOS AVICOLA MILUC", Propiedad="Properties7",Activa = true },
+            new() { GroupCode=7,GroupName = "DOMICILIOS AVICOLA MILUC", Propiedad="Properties7",Activa = false },
             new() { GroupCode=8,GroupName = "Socios de negocios propiedad 8",Propiedad="Properties8", Activa = false },
             new() { GroupCode=9,GroupName = "Socios de negocios propiedad 9", Propiedad="Properties9",Activa = false },
             new() { GroupCode=10,GroupName = "Socios de negocios propiedad 10",Propiedad="Properties10", Activa = false }
@@ -1347,9 +1425,9 @@
 
     private void CopiarADespacho()
     {
-        direccionDespacho.Street = direccionFactura.Street;
-        direccionDespacho.Block = direccionFactura.Block;
-        direccionDespacho.County = direccionFactura.County;
+        cliente.DirreccionDespachoStreet = cliente.DirreccionFacturaStreet;
+        cliente.DirreccionDespachoBlock = cliente.DirreccionFacturaBlock;
+        cliente.DireccionDespachoCounty = cliente.DireccionFacturaCounty;
     }
     private int CalcularDV(string nit)
     {
@@ -1374,155 +1452,206 @@
 
     private async Task GuardarClienteAsync()
     {
-        SapClienteCreateEditDto sapClienteCreateDto = new();
-        //vamos hacer el metodo para guardar todo
-
-        sapClienteCreateDto.U_HBT_TipDoc = cliente.U_HBT_TipDoc;
-        // sapClienteCreateDto.CardCode = cliente.FederalTaxID;
-        sapClienteCreateDto.CardCode = "C" + cliente.FederalTaxID;
-        sapClienteCreateDto.CardName = cliente.CardName;
-        sapClienteCreateDto.CardForeignName = cliente.CardForeignName;
-        sapClienteCreateDto.CardType = "cCustomer";
-        sapClienteCreateDto.GroupCode = cliente.GroupCode;
-        sapClienteCreateDto.FederalTaxID = cliente.FederalTaxID + "-" + DigitoVerificacion;
-        sapClienteCreateDto.U_HBT_Nombres = cliente.U_HBT_Nombres;
-        sapClienteCreateDto.U_HBT_Apellido1 = cliente.U_HBT_Apellido1;
-        sapClienteCreateDto.U_HBT_Apellido2 = cliente.U_HBT_Apellido2;
-        sapClienteCreateDto.Phone1 = cliente.Phone1;
-        sapClienteCreateDto.Cellular = cliente.Cellular;
-        sapClienteCreateDto.EmailAddress = cliente.EmailAddress;
-        sapClienteCreateDto.U_addInFaElectronica_email_contacto_FE = cliente.EmailAddress;
-        sapClienteCreateDto.SalesPersonCode = cliente.SalesPersonCode;
-        sapClienteCreateDto.PayTermsGrpCode = cliente.PayTermsGrpCode;
-        sapClienteCreateDto.PriceListNum = cliente.PriceListNum;
-        sapClienteCreateDto.Priority = cliente.Priority;
-        sapClienteCreateDto.Currency = "COP";
-        sapClienteCreateDto.U_HBT_RegTrib = cliente.U_HBT_RegTrib;
-        sapClienteCreateDto.U_HBT_RegFis = cliente.U_HBT_RegFis;
-        sapClienteCreateDto.U_HBT_ActEco = cliente.U_HBT_ActEco;
-        sapClienteCreateDto.U_HBT_MunMed = cliente.U_HBT_MunMed;
-        sapClienteCreateDto.U_HBT_MedPag = cliente.U_HBT_MedPag;
-        sapClienteCreateDto.U_HBT_TipEnt = cliente.U_HBT_TipEnt;
-        sapClienteCreateDto.U_HBT_Nacional = cliente.U_HBT_Nacional;
-        // clienteSeleccionado.U_HBT_TipExt = cliente.U_TipoEntidad;
-        sapClienteCreateDto.U_HBT_ResFis = cliente.U_HBT_ResFis;
-        sapClienteCreateDto.U_HBT_ResFis1 = cliente.U_HBT_ResFis1;
-        sapClienteCreateDto.U_HBT_ResFis2 = "";
-        sapClienteCreateDto.U_HBT_ResFis3 = "";
-        sapClienteCreateDto.U_HBT_Residente = cliente.U_HBT_Residente;
-        sapClienteCreateDto.U_HBT_InfoTrib = cliente.U_HBT_InfoTrib;
-        sapClienteCreateDto.U_HBT_MailRecep_FE = cliente.EmailAddress;
-        sapClienteCreateDto.ZipCode = cliente.ZipCode;
-
-
-        if (cliente.validFor == false)
+        try
         {
-            sapClienteCreateDto.Valid = "tNO";
-            sapClienteCreateDto.Frozen = "tYES";
-        }
-        else
-        {
-            sapClienteCreateDto.Valid = "tYES";
-            sapClienteCreateDto.Frozen = "tNO";
-        }
+            SapClienteCreateEditDto sapClienteCreateDto = new();
+            //vamos hacer el metodo para guardar todo
+            //poner todos los campos en mayusculas
 
-        sapClienteCreateDto.BPAddresses.Add(new AddressClienteDto
-        {
-            AddressName = "PRINCIPAL",
-            Street = direccionFactura.Street,
-            Block = direccionFactura.Block,
-            ZipCode = cliente.ZipCode,
-            City = "BOGOTA",
-            County = "BOGOTÁ (D.C)",
-            Country = "CO",
-            AddressType = "bo_BillTo",
-            U_HBT_MunMed = cliente.U_HBT_MunMed,
-            U_HBT_DirMM = "Y"
-        });
+            sapClienteCreateDto.U_HBT_TipDoc = cliente.U_HBT_TipDoc;
+            // sapClienteCreateDto.CardCode = cliente.FederalTaxID;
 
-        sapClienteCreateDto.BPAddresses.Add(new AddressClienteDto
-        {
-            AddressName = "PRINCIPAL",
-            Street = direccionDespacho.Street,
-            Block = direccionDespacho.Block,
-            ZipCode = cliente.ZipCode,
-            City = "BOGOTA",
-            County = "BOGOTÁ (D.C)",
-            Country = "CO",
-            AddressType = "bo_ShipTo",
-            U_HBT_MunMed = cliente.U_HBT_MunMed,
-            U_HBT_DirMM = "N"
-        });
-
-        if (cliente.U_AplicaBolsaMercantilcheck == false)
-        {
-            sapClienteCreateDto.U_AplicaBolsaMercantil = "N";
-        }
-        else
-        {
-            sapClienteCreateDto.U_AplicaBolsaMercantil = "Y";
-        }
-
-
-        var listtapropiedadesSelecionadas = listaPropiedades.Where(x => x.Activa == true).ToList();
-
-        foreach (var propiedad in listaPropiedades)
-        {
-            var info = sapClienteCreateDto.GetType().GetProperty(propiedad.Propiedad);
-
-            if (info != null && info.CanWrite)
+            if (cliente.SucursalGen > 0)
             {
-                info.SetValue(sapClienteCreateDto, propiedad.Activa ? "tYES" : "tNO");
+                sapClienteCreateDto.CardCode = "C" + cliente.FederalTaxID + ":" + cliente.SucursalGen;
             }
-        }
-        sapClienteCreateDto.FreeText = cliente.FreeText;
-
-        foreach (var impuestos in listretencionDtos)
-        {
-            if (impuestos.Activa == true)
+            else
             {
-
-                sapClienteCreateDto.BPWithholdingTaxCollection.Add(new SapBPWithholdingTaxDto
-                {
-                    WTCode = impuestos.WTCode,
-                    BPCode = sapClienteCreateDto.CardCode
-                });
+                sapClienteCreateDto.CardCode = "C" + cliente.FederalTaxID;
             }
-        }
-        var response = await _sapOcrdClientService.CreatePedido(sapClienteCreateDto);
-        if (response.EsCorrecto == true)
-        {
-            await _jsRuntime.InvokeVoidAsync("Swal.fire",
-                          "Correcto",
-                          $"El cliente se ha creado correctamente: {response.Valor.CardCode}",
-                          "success");
-            _nav.NavigateTo("/administrar-cliente/sap", forceLoad: true);
-        }
-        else
-        {
-            string errores = response.Errores != null && response.Errores.Any()
-            ? string.Join("<br>", response.Errores)
-            : "Ocurrió un error inesperado.";
+            sapClienteCreateDto.CardName = cliente.CardName.ToUpper();
+            sapClienteCreateDto.CardForeignName = cliente.CardForeignName.ToUpper();
+            sapClienteCreateDto.CardType = "cCustomer";
+            sapClienteCreateDto.GroupCode = cliente.GroupCode;
+            sapClienteCreateDto.FederalTaxID = cliente.FederalTaxID + "-" + DigitoVerificacion;
+            sapClienteCreateDto.U_HBT_Nombres = cliente.U_HBT_Nombres.ToUpper();
+            sapClienteCreateDto.U_HBT_Apellido1 = cliente.U_HBT_Apellido1.ToUpper();
+            sapClienteCreateDto.U_HBT_Apellido2 = cliente.U_HBT_Apellido2.ToUpper();
+            sapClienteCreateDto.Phone1 = cliente.Phone1;
+            sapClienteCreateDto.Cellular = cliente.Cellular;
+            sapClienteCreateDto.EmailAddress = cliente.EmailAddress.ToUpper();
+            sapClienteCreateDto.U_addInFaElectronica_email_contacto_FE = cliente.EmailAddress.ToUpper();
+            sapClienteCreateDto.SalesPersonCode = cliente.SalesPersonCode;
+            sapClienteCreateDto.PayTermsGrpCode = cliente.PayTermsGrpCode;
+            sapClienteCreateDto.PriceListNum = cliente.PriceListNum;
+            sapClienteCreateDto.Priority = cliente.Priority;
+            sapClienteCreateDto.Currency = "COP";
+            sapClienteCreateDto.U_HBT_RegTrib = cliente.U_HBT_RegTrib;
+            sapClienteCreateDto.U_HBT_RegFis = cliente.U_HBT_RegFis;
+            sapClienteCreateDto.U_HBT_ActEco = cliente.U_HBT_ActEco;
+            sapClienteCreateDto.U_HBT_MunMed = cliente.U_HBT_MunMed;
+            sapClienteCreateDto.U_HBT_MedPag = cliente.U_HBT_MedPag;
+            sapClienteCreateDto.U_HBT_TipEnt = cliente.U_HBT_TipEnt;
+            sapClienteCreateDto.U_HBT_Nacional = cliente.U_HBT_Nacional;
+            // clienteSeleccionado.U_HBT_TipExt = cliente.U_TipoEntidad;
+            sapClienteCreateDto.U_HBT_ResFis = cliente.U_HBT_ResFis;
+            sapClienteCreateDto.U_HBT_ResFis1 = cliente.U_HBT_ResFis1;
+            sapClienteCreateDto.U_HBT_ResFis2 = "";
+            sapClienteCreateDto.U_HBT_ResFis3 = "";
+            sapClienteCreateDto.U_HBT_Residente = cliente.U_HBT_Residente;
+            sapClienteCreateDto.U_HBT_InfoTrib = cliente.U_HBT_InfoTrib;
+            sapClienteCreateDto.U_HBT_MailRecep_FE = cliente.EmailAddress.ToUpper();
+            sapClienteCreateDto.ZipCode = cliente.ZipCode;
 
-            await _jsRuntime.InvokeVoidAsync("Swal.fire", new
+
+            if (cliente.validFor == false)
             {
-                icon = "error",
-                title = $"Error al consultar socio de negocio",
-                text = $"{errores}",
-                confirmButtonColor = "#6c1d1d"
+                sapClienteCreateDto.Valid = "tNO";
+                sapClienteCreateDto.Frozen = "tYES";
+            }
+            else
+            {
+                sapClienteCreateDto.Valid = "tYES";
+                sapClienteCreateDto.Frozen = "tNO";
+            }
+
+            sapClienteCreateDto.BPAddresses.Add(new AddressClienteDto
+            {
+                AddressName = "PRINCIPAL",
+                Street = cliente.DirreccionFacturaStreet.ToUpper(),
+                Block = cliente.DirreccionFacturaBlock.ToUpper(),
+                ZipCode = cliente.ZipCode,
+                City = "BOGOTA",
+                County = cliente.DireccionFacturaCounty.ToUpper(),
+                Country = "CO",
+                AddressType = "bo_BillTo",
+                U_HBT_MunMed = cliente.U_HBT_MunMed,
+                U_HBT_DirMM = "Y"
             });
+
+            sapClienteCreateDto.BPAddresses.Add(new AddressClienteDto
+            {
+                AddressName = "PRINCIPAL",
+                Street = cliente.DirreccionDespachoStreet.ToUpper(),
+                Block = cliente.DirreccionDespachoBlock.ToUpper(),
+                ZipCode = cliente.ZipCode,
+                City = "BOGOTA",
+                County = cliente.DirreccionDespachoStreet.ToUpper(),
+                Country = "CO",
+                AddressType = "bo_ShipTo",
+                U_HBT_MunMed = cliente.U_HBT_MunMed,
+                U_HBT_DirMM = "N"
+            });
+
+            if (cliente.U_AplicaBolsaMercantilcheck == false)
+            {
+                sapClienteCreateDto.U_AplicaBolsaMercantil = "N";
+            }
+            else
+            {
+                sapClienteCreateDto.U_AplicaBolsaMercantil = "Y";
+            }
+
+
+
+
+            var listtapropiedadesSelecionadas = listaPropiedades.Where(x => x.Activa == true).ToList();
+
+            foreach (var propiedad in listaPropiedades)
+            {
+                var info = sapClienteCreateDto.GetType().GetProperty(propiedad.Propiedad);
+
+                if (info != null && info.CanWrite)
+                {
+                    info.SetValue(sapClienteCreateDto, propiedad.Activa ? "tYES" : "tNO");
+                }
+            }
+            sapClienteCreateDto.FreeText = cliente.FreeText.ToUpper();
+
+            foreach (var impuestos in listretencionDtos)
+            {
+                if (impuestos.Activa == true)
+                {
+
+                    sapClienteCreateDto.BPWithholdingTaxCollection.Add(new SapBPWithholdingTaxDto
+                    {
+                        WTCode = impuestos.WTCode,
+                        BPCode = sapClienteCreateDto.CardCode
+                    });
+                }
+            }
+            var result = await _jsRuntime.InvokeAsync<JsonElement>
+              ("Swal.fire", new
+              {
+                  title = "¿Estás seguro?",
+                  text = $"¿Deseas Crear el Cliente?",
+                  icon = "info",
+                  showCancelButton = true,
+                  confirmButtonColor = "#d33",
+                  cancelButtonColor = "#3085d6",
+                  confirmButtonText = "Sí, Crear",
+                  cancelButtonText = "Cancelar"
+              });
+
+            if (result.GetProperty("isConfirmed").GetBoolean())
+            {
+
+                await _jsRuntime.InvokeVoidAsync("mostrarEspera", "Sincronizando - SAP ONE", "Creando Cliente ...<br><br><b>No cierre esta ventana.</b>", "info");
+
+                var response = await _sapOcrdClientService.CreatePedido(sapClienteCreateDto);
+
+                if (response.EsCorrecto == true)
+                {
+                    await _jsRuntime.InvokeVoidAsync("cerrarEspera");
+
+                    await _jsRuntime.InvokeVoidAsync("Swal.fire",
+                                  "Correcto",
+                                  $"El cliente se ha creado correctamente: {response.Valor.CardCode}",
+                                  "success");
+                    _nav.NavigateTo("/administrar-cliente/sap", forceLoad: true);
+
+                }
+                else
+                {
+                    await _jsRuntime.InvokeVoidAsync("cerrarEspera");
+
+                    string errores = response.Errores != null && response.Errores.Any()
+                    ? string.Join("<br>", response.Errores)
+                    : "Ocurrió un error inesperado.";
+
+                    await _jsRuntime.InvokeVoidAsync("Swal.fire", new
+                    {
+                        icon = "error",
+                        title = $"Error al consultar socio de negocio",
+                        text = $"{errores}",
+                        confirmButtonColor = "#6c1d1d"
+                    });
+                }
+            }
+            else
+            {
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            await _jsRuntime.InvokeVoidAsync("cerrarEspera");
+
+            await _logClientService.GuardarErrorAsync(ex.Message, ex.StackTrace, _authClientService.CurrentSession?.UserName ?? "No encontrado",
+                nameof(GuardarClienteAsync), "Crear cliente", "Cliente Razor", "Error");
+
+            await _jsRuntime.InvokeVoidAsync("Swal.fire", "Error", ex.Message, "error");
         }
     }
     public bool EsPersonaJuridica()
     {
-        bool exito=false;
-
-        if(cliente.U_HBT_TipEnt=="2"){
-
+        bool exito = false;
+        if (cliente.U_HBT_TipEnt == "2" || cliente.U_HBT_TipDoc == "31")
+        {
             exito = true;
             cliente.U_HBT_Nombres = string.Empty;
             cliente.U_HBT_Apellido1 = string.Empty;
-            cliente.U_HBT_Nombres = string.Empty;
+            cliente.U_HBT_Apellido2 = string.Empty;
         }
         return exito;
     }

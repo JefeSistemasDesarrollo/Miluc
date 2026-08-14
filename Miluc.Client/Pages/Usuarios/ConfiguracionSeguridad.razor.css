@@ -10,11 +10,11 @@
     text-align: left;
 }
 
-    .header-principal h1 {
-        color: #800020; /* Vinotinto Miluc */
+.header-principal h1 {
+        color: #000; /* Vinotinto Miluc */
         font-weight: 800;
         font-size: 2rem;
-    }
+}
 
 /* GRID RESPONSIVO (El secreto para que no se descuadre) */
 .grid-cartas {
@@ -54,10 +54,6 @@
     border-top: 6px solid #D62F46;
 }
 
-.border-vinotinto {
-    border-top: 6px solid #800020;
-}
-
 .border-amarillo {
     border-top: 6px solid #FDC922;
 }
@@ -79,10 +75,6 @@
     color: #D62F46;
 }
 
-.bg-vinotinto-suave {
-    background: rgba(128, 0, 32, 0.1);
-    color: #800020;
-}
 
 .bg-amarillo-suave {
     background: rgba(253, 201, 34, 0.2);
@@ -122,10 +114,7 @@
     color: white;
 }
 
-.btn-vinotinto {
-    background: #800020;
-    color: white;
-}
+
 
 .btn-amarillo {
     background: #FDC922;

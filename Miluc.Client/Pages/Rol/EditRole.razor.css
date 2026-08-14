@@ -1,16 +1,16 @@
-﻿.text-vinotinto {
-    color: #6c1d1d;
+﻿.text-rojo {
+    color: #D62F46;
 }
 
-.btn-vinotinto {
-    background-color: #6c1d1d;
+.btn-rojo {
+    background-color: #D62F46;
     color: white;
     border: none;
     transition: 0.3s;
 }
 
-    .btn-vinotinto:hover {
-        background-color: #551616;
+    .btn-rojo:hover {
+        background-color: #D62F46;
         transform: translateY(-2px);
         color: white;
     }

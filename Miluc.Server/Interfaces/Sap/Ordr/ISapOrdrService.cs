@@ -8,7 +8,10 @@ namespace Miluc.Server.Interfaces.Sap.Ordr
 
         Task<OrdersReaderDto> GetOrderByIdAsync(int id);
 
-        Task<(List<OrdersReaderDto> data, int TotalRegistros)> ListarPedidosAsync(string? buscar = null, int? pagina = null, int? cantidad = null, DateTime? fechaInicio = null, DateTime? fechaFin = null);
+        //Task<(List<OrdersReaderDto> data, int TotalRegistros)> ListarPedidosAsync(string? buscar = null, int? pagina = null, int? cantidad = null, DateTime? fechaInicio = null, DateTime? fechaFin = null);
+        Task<(List<OrdersReaderDto> data, int TotalRegistros)> ListarPedidosAsync(string? buscar = null, int? pagina = null,
+        int? cantidad = null, DateTime? fechaInicio = null, DateTime? fechaFin = null, int? codVendedorSAP = null, char? DocStatus = null, 
+        char? CANCELED = null, char? Printed = null);
 
         Task<OrdersReaderDto> UpdatePedidoAsync(PedidoUpdateDto pedidoUpdateDto);
         // Task<OrdersReaderDto> DeletePedidoByIdAsync(PedidoUpdateDto pedidoUpdateDto);

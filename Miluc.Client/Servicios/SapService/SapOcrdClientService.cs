@@ -91,12 +91,12 @@ namespace Miluc.Client.Servicios.SapService
                 };
             }
         }
-        public async Task<ResponseAPI<List<SapClienteReaderDto>>> GetallClienteAsync(string? buscar = null, int pagina = 1, int? cantidad = null)
+        public async Task<ResponseAPI<List<SapClienteReaderDto>>> GetallClienteAsync(string? buscar = null, int pagina = 1, int? cantidad = null, int? codVendedorSAP = null)
         {
             try
             {
                 ResponseAPI<List<SapClienteReaderDto>> responseClient = new();
-                var url = $"api/Ocrd?buscar={buscar}&pagina={pagina}&cantidad={cantidad}";
+                var url = $"api/Ocrd?buscar={buscar}&pagina={pagina}&cantidad={cantidad}&codVendedorSAP={codVendedorSAP}";
                 var response = await _httpclient.GetFromJsonAsync<ResponseAPI<List<SapClienteReaderDto>>>(url);
 
                 if (response != null)

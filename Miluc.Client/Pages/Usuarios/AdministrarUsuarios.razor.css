@@ -1,21 +1,31 @@
 ﻿
-.bg-vinotinto {
-    background-color: #800020;
+.bg-rojo {
+    background-color: #D62F46;
     color: white;
 }
+.text-rojo{
+    color:#D62F46;
+}
 
-.btn-vinotinto {
-    background-color: #800000;
+.text-negro {
+    color: #000000;
+}
+.btn-rojo {
+    background-color: #D62F46;
     color: white;
+}
+.text-gris {
+    color: #000000;
 }
 
 .usuarios-page {
     padding: 1rem;
 }
 
-.text-vinotinto {
-    color: #800020;
+.text-amarillo {
+    color: #FDC922;
 }
+
 
 x-small {
     font-size: 0.75rem;
@@ -30,7 +40,7 @@ x-small {
 
 /* Botón Nuevo */
 .btn-nuevo {
-    background-color: #800000;
+    background-color: #D62F46;
     color: white;
     border: none;
     border-radius: 12px;
@@ -64,7 +74,7 @@ x-small {
         text-transform: uppercase;
         letter-spacing: 1px;
         padding: 1.2rem;
-        color: #800020;
+        color: #D62F46;
     }
 
 
@@ -78,6 +88,7 @@ x-small {
 
 
 
+
 /* Botón Detalle */
 .btn-detail {
     border: 1px solid #eee;
@@ -86,25 +97,11 @@ x-small {
     border-radius: 8px;
     font-size: 0.8rem;
     font-weight: 600;
-    color: #800020;
+    color: #D62F46;
     transition: 0.2s;
 }
 
-/*sombrear a color-profile vinotinto*/
- .btn-detail:hover {
-        background: #800020;
-        color: white;
- }
 
-.edit:hover {
-    background: #800020;
-    color: white;
-}
-
-.delete:hover {
-    background: #800020;
-    color: white;
-}
 /* Paginador */
 .pagination-footer {
     padding: 1rem;
@@ -122,4 +119,11 @@ x-small {
 .page-item.active .page-link {
     background: #D62F46 !important;
     color: white;
+}
+
+.bg-amarillo{
+   background : #FDC922;
+}
+.bg-rojo {
+    background: #D62F46;
 }

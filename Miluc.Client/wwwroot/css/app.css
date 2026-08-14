@@ -1,7 +1,7 @@
 /* --- PALETA CORPORATIVA MILUC [.NET 10] --- */
 :root {
-    --miluc-vinotinto: #800020; /* Encabezados y profundidad */
-    --miluc-red: #800020; /* Rojo principal de la marca */
+    --miluc-vinotinto: #D62F46; /* Encabezados y profundidad */
+    --miluc-red: #D62F46; /* Rojo principal de la marca */
     --miluc-yellow: #FDC922; /* Amarillo de acento para resaltar */
     --miluc-white: #FFFFFF;
     --miluc-bg: #F4F7F6; /* Fondo gris neutro para descanso visual */
@@ -414,7 +414,7 @@ html, body {
 }
 
     .btn-miluc-login:hover {
-        background-color: var(--miluc-vinotinto);
+        background-color: #800020;
         transform: translateY(-2px);
         box-shadow: 0 6px 15px rgba(214, 47, 70, 0.4);
         color: white;
@@ -439,7 +439,7 @@ html, body {
 
 .welcome-header h1 {
     font-size: 2.2rem;
-    color: #800020; /* Vinotinto */
+    color: #000; /* Vinotinto */
 }
 
 .text-red {
@@ -483,7 +483,7 @@ html, body {
 
 .stat-link {
     text-decoration: none;
-    color: #800020;
+    color: #D62F46;
     font-size: 0.85rem;
     margin-top: 5px;
 }
@@ -624,7 +624,7 @@ code {
 
 /* --- SISTEMA DE LAYOUT MILUC 2024 --- */
 :root {
-    --miluc-red: #800020;
+    --miluc-red: #D62F46;
     --miluc-yellow: #FDC922;
     --sidebar-width: 260px;
     --topbar-height: 60px;

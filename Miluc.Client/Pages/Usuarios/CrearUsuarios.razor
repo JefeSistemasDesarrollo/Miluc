@@ -1,8 +1,10 @@
 ﻿@page "/Usuarios/Crear"
 @using Miluc.Client.Interfaces
+@using Miluc.Client.Interfaces.SapInterfaces.Oslp
 @using Miluc.Client.Interfaces.UsuariosRolesPermisos
-@using Miluc.Shared.DTOs.Usuarios
 @using Miluc.Shared.DTOs.Roles
+@using Miluc.Shared.DTOs.Sap.Vendedor
+@using Miluc.Shared.DTOs.Usuarios
 @using Miluc.Shared.Models.Response
 @inject IUsuarioClientService _usuarioClientService
 @inject IRolClientService _rolClientService
@@ -11,13 +13,14 @@
 @inject IJSRuntime js
 @inject IAuthClientService Auth
 @inject ILogClientService logClientService
+@inject ISapOslpService _sapOslpVendedorService
 @attribute [Authorize]
 
 <div class="usuarios-page animate__animated animate__fadeIn p-4">
     @* --- CABECERA --- *@
     <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-3">
         <div>
-            <h2 class="fw-bold text-vinotinto m-0"><i class="bi bi-person-plus-fill me-2"></i>Registrar Usuario</h2>
+            <h2 class="fw-bold text-negro m-0"><i class="bi bi-person-plus-fill me-2"></i>Registrar Usuario</h2>
             <p class="text-muted mb-0 small">Complete los datos obligatorios marcados con (*).</p>
         </div>
         <button class="btn btn-outline-secondary btn-sm rounded-pill px-3" @onclick='() => nav.NavigateTo("/Usuarios")'>
@@ -87,9 +90,25 @@
                                 <InputText type="password" class="form-control custom-input" @bind-Value="usuarioDto.ConfirmarPassword" />
                                 <ValidationMessage For="@(() => usuarioDto.ConfirmarPassword)" class="text-danger small" />
                             </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold small text-secondary">Lista vendedores</label>
+                                <InputSelect class="form-select form-select-sm" @bind-Value="usuarioDto.CodVendedorSAP">
+                                   
+
+                                    @if (listOspSap != null)
+                                    {
+                                        @foreach (var vendedor in listOspSap)
+                                        {
+                                            <option value="@vendedor.SlpCode">@vendedor.SlpName</option>
+                                        }
+
+                                    }
+                               
+                                </InputSelect>
+                            </div>
                         </div>
 
-                      @*    <div class="mt-4 p-3 rounded-3 bg-light border-start border-4 border-warning shadow-sm">
+                        @*    <div class="mt-4 p-3 rounded-3 bg-light border-start border-4 border-warning shadow-sm">
                             <div class="form-check form-switch m-0">
                                 <InputCheckbox class="form-check-input" id="chkPass" @bind-Value="usuarioDto.TwoFactorEnabled" />
                                 <label class="form-check-label fw-bold small cursor-pointer" for="chkPass">2FA – Two-Factor Authentication </label>
@@ -108,7 +127,7 @@
 
                 @* --- TIPOS DE USUARIO --- *@
                 <div class="card shadow-sm border-0 rounded-4">
-                    <div class="card-header bg-white py-3 border-0"><h6 class="mb-0 fw-bold text-vinotinto">Tipos de Acceso*</h6></div>
+                    <div class="card-header bg-white py-3 border-0"><h6 class="mb-0 fw-bold text-rojo">Tipos de Acceso*</h6></div>
                     <div class="card-body pt-0">
                         @if (listTipos != null)
                         {
@@ -133,7 +152,7 @@
                 <div class="card shadow-sm border-0 rounded-4 h-100">
                     <div class="card-header bg-white py-3 border-0">
                         <div class="row align-items-center">
-                            <div class="col-md-6"><h6 class="mb-0 fw-bold text-vinotinto text-uppercase">Asignación de Roles*</h6></div>
+                            <div class="col-md-6"><h6 class="mb-0 fw-bold text-rojo text-uppercase">Asignación de Roles*</h6></div>
                             <div class="col-md-6">
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text bg-light border-end-0 rounded-start-pill"><i class="bi bi-search"></i></span>
@@ -145,8 +164,8 @@
 
                     <div class="card-body pt-0">
                         <div class="alert alert-info py-2 small border-0 bg-opacity-10 mb-3 d-flex justify-content-between">
-                            <span><i class="bi bi-shield-check me-2"></i>Seleccione los permisos del sistema</span>
-                            <span class="badge bg-vinotinto rounded-pill">@usuarioDto.RolesIds.Count seleccionados</span>
+                            <span><i class="bi bi-shield-check me-2 text-negro "></i>Seleccione los permisos del sistema</span>
+                            <span class="badge bg-vinotinto rounded-pill text-negro">@usuarioDto.RolesIds.Count seleccionados</span>
                         </div>
 
                         <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 overflow-auto pe-1" style="max-height: 580px;">
@@ -169,7 +188,7 @@
                         </div>
                     </div>
                     <div class="card-footer bg-white border-0 p-4 text-end">
-                        <button type="submit" class="btn btn-vinotinto btn-lg rounded-pill px-5 shadow-sm" disabled="@procesando">
+                        <button type="submit" class="btn btn-rojo btn-lg rounded-pill px-5 shadow-sm" disabled="@procesando">
                             @if (procesando)
                             {
                                 <span class="spinner-border spinner-border-sm me-2"></span> <span>Guardando...</span>
@@ -190,6 +209,7 @@
     private List<RolReadDto>? listRoles;
     private List<RolReadDto>? rolesFiltrados;
     private List<TipoUsuarioReadDto>? listTipos;
+    private List<SapVendedorReaderDto>? listOspSap;
     private string? previewImage;
     private bool procesando = false;
 
@@ -197,38 +217,45 @@
     {
         try
         {
-             if (Auth.HasPermission("Usuario.Create"))
-             {
+            if (Auth.HasPermission("Usuario.Create"))
+            {
 
-            var rRes = await _rolClientService.GetAllRolesAsync();
-            var tRes = await _tipoUsuarioClientService.GetAllTipoUsuarioAsync();
-
-                if (rRes.Valor!=null) 
-                { listRoles = rRes.Valor; 
+                var rRes = await _rolClientService.GetAllRolesAsync();
+                var tRes = await _tipoUsuarioClientService.GetAllTipoUsuarioAsync();
+                var oslpSap = await _sapOslpVendedorService.GetListVendedoresAsync();
+                if (rRes.Valor != null)
+                {
+                    listRoles = rRes.Valor;
                     rolesFiltrados = listRoles;
                 }
-                if (tRes!=null)
+                if (tRes.Valor != null)
                 {
                     listTipos = tRes.Valor;
                 }
-            }
-        else
-        {
-            nav.NavigateTo("/no-autorizado");
-            return;
-        }
 
-        }catch(Exception ex)
+                if (oslpSap.Valor != null)
+                {
+                    listOspSap = oslpSap.Valor;
+                }
+            }
+            else
+            {
+                nav.NavigateTo("/no-autorizado");
+                return;
+            }
+
+        }
+        catch (Exception ex)
         {
-               await logClientService.GuardarErrorAsync(
-                                  ex.Message,
-                                  ex.StackTrace,
-                                  usuario: Auth.CurrentSession?.UserName ?? "No encontrado",
-                                  metodo: "OnInitializedAsync",
-                                  ruta: $"/Usuarios/Crear",
-                                  origen: "Cliente blazor ",
-                                  nivel: "error");
-        }    
+            await logClientService.GuardarErrorAsync(
+                               ex.Message,
+                               ex.StackTrace,
+                               usuario: Auth.CurrentSession?.UserName ?? "No encontrado",
+                               metodo: "OnInitializedAsync",
+                               ruta: $"/Usuarios/Crear",
+                               origen: "Cliente blazor ",
+                               nivel: "error");
+        }
     }
     private async Task OnInputFileChange(InputFileChangeEventArgs e)
     {
@@ -239,29 +266,29 @@
             {
                 // 1. Redimensionar para optimizar peso (400x400)
                 var resized = await file.RequestImageFileAsync("image/jpeg", 400, 400);
-                
+
                 // 2. Abrir stream con límite de 5MB (importante para que no falle el guardado)
-                using var stream = resized.OpenReadStream(1024 * 1024 * 5); 
-                
+                using var stream = resized.OpenReadStream(1024 * 1024 * 5);
+
                 var buffer = new byte[resized.Size];
                 await stream.ReadAsync(buffer);
-                
+
                 // 3. Asignar al DTO y generar vista previa
                 usuarioDto.Foto = buffer;
                 previewImage = $"data:image/jpeg;base64,{Convert.ToBase64String(buffer)}";
-                
+
                 StateHasChanged();
             }
             catch (Exception ex)
             {
-                 await logClientService.GuardarErrorAsync(
-                                  ex.Message,
-                                  ex.StackTrace,
-                                  usuario: Auth.CurrentSession?.UserName ?? "No encontrado",
-                                  metodo: "OnInputFileChange",
-                                  ruta: $"/Usuarios/Crear",
-                                  origen: "Cliente blazor ",
-                                  nivel: "error");
+                await logClientService.GuardarErrorAsync(
+                                 ex.Message,
+                                 ex.StackTrace,
+                                 usuario: Auth.CurrentSession?.UserName ?? "No encontrado",
+                                 metodo: "OnInputFileChange",
+                                 ruta: $"/Usuarios/Crear",
+                                 origen: "Cliente blazor ",
+                                 nivel: "error");
                 await js.InvokeVoidAsync("Swal.fire", "Error", "No se pudo procesar la imagen: " + ex.Message, "error");
             }
         }
@@ -309,14 +336,14 @@
         }
         catch (Exception ex)
         {
-             await logClientService.GuardarErrorAsync(
-                        ex.Message,
-                        ex.StackTrace,
-                        usuario: Auth.CurrentSession?.UserName ?? "No encontrado",
-                        metodo: "EjecutarGuardado",
-                        ruta: $"/Usuarios/Crear",
-                        origen: "Cliente blazor ",
-                        nivel: "error");
+            await logClientService.GuardarErrorAsync(
+                       ex.Message,
+                       ex.StackTrace,
+                       usuario: Auth.CurrentSession?.UserName ?? "No encontrado",
+                       metodo: "EjecutarGuardado",
+                       ruta: $"/Usuarios/Crear",
+                       origen: "Cliente blazor ",
+                       nivel: "error");
 
             await js.InvokeVoidAsync("Swal.fire", "Error de comunicación", "Hubo un problema al contactar al servidor: " + ex.Message, "error");
         }

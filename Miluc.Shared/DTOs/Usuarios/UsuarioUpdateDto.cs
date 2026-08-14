@@ -32,9 +32,10 @@ namespace Miluc.Shared.DTOs.Usuarios
 
         public bool DebeCambiarPassword { get; set; } // Cambiar contraseña en el próximo inicio de sesión
 
+        public int ? CodVendedorSAP { get; set; }
 
         // La contraseña es opcional en el Update
-        
+
         [OptionalStrongPassword]
         public string? Password { get; set; }
 

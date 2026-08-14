@@ -1,28 +1,28 @@
-﻿.text-vinotinto {
-    color: #800020 !important;
+﻿.text-rojo {
+    color: #D62F46 !important;
 }
 
-.bg-vinotinto {
-    background-color: #800020 !important;
+.bg-rojo {
+    background-color: #D62F46 !important;
 }
 
-.btn-vinotinto {
-    background-color: #800020;
+.btn-rojo {
+    background-color: #D62F46;
     color: white;
     transition: 0.3s;
 }
 
-    .btn-vinotinto:hover {
-        background-color: #600018;
+    .btn-rojo:hover {
+        background-color: #800020;
         color: white;
         transform: translateY(-2px);
     }
 
-.border-vinotinto {
-    border-color: #800020 !important;
+.border-rojo {
+    border-color: #D62F46 !important;
 }
 
-.bg-soft-vinotinto {
+.bg-soft-rojo {
     background-color: rgba(128, 0, 32, 0.1);
 }
 
@@ -31,5 +31,5 @@
 }
 
 .breadcrumb-item.active {
-    color: #800020;
+    color: #D62F46;
 }

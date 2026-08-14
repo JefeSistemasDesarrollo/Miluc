@@ -42,6 +42,7 @@ namespace Miluc.Server.Controllers.AuthController
                     IdUsuario = int.Parse(User.FindFirst("IdUsuario")?.Value ?? "0"),
                     UserName = User.Identity?.Name ?? "Desconocido",
                     Email = User.FindFirst(ClaimTypes.Email)?.Value ?? "",
+                    CodVendedorSAP = int.TryParse(User.FindFirst("CodVendedorSAP")?.Value, out int codVendedor) ? codVendedor : null,
                     Roles = User.FindAll(ClaimTypes.Role)
                                 .Select(c => c.Value)
                                 .ToList(),
@@ -216,7 +217,8 @@ namespace Miluc.Server.Controllers.AuthController
                 new(ClaimTypes.NameIdentifier, session.IdUsuario.ToString()),
                 new(ClaimTypes.Name, session.UserName),
                 new(ClaimTypes.Email, session.Email ?? ""),
-                new("IdUsuario", session.IdUsuario.ToString())
+                new("IdUsuario", session.IdUsuario.ToString()),
+                new("CodVendedorSAP", session.CodVendedorSAP?.ToString() ?? "-1")
             };
 
             session.Roles.ForEach(r => claims.Add(new Claim(ClaimTypes.Role, r)));

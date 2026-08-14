@@ -6,7 +6,7 @@ namespace Miluc.Client.Interfaces.SapInterfaces.Cliente
 {
     public interface ISapOcrdClientService
     {
-        Task<ResponseAPI<List<SapClienteReaderDto>>> GetallClienteAsync(string? buscar = null, int pagina = 1, int? cantidad = null);
+        Task<ResponseAPI<List<SapClienteReaderDto>>> GetallClienteAsync(string? buscar = null, int pagina = 1, int? cantidad = null, int? codVendedorSAP = null);
         Task<ResponseAPI<List<BusinessPartnerGroupsDto>>> GetGrupoDeVentasAsync();
         Task<ResponseAPI<SapClienteReaderDto>> CreatePedido(SapClienteCreateEditDto createDto);
         Task<ResponseAPI<SapClienteReaderDto>> GetClienteByIdAsync(string cardcode);

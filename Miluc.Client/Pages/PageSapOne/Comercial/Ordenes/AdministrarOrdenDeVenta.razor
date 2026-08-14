@@ -9,82 +9,162 @@
 @inject IJSRuntime _jsRuntime
 @inject ILogClientService _logserviceClient
 @inject IAuthClientService _authClientService
-
-
 <div class="pedidos-page animate__animated animate__fadeIn p-4">
     @* Header *@
 
     <div class="card border-0 bg-transparent mb-4">
         <div class="row g-4 align-items-center">
-
+            <!-- Titulo-->
             <div class="col-12 col-md-6 col-lg-4">
                 <div class="d-flex align-items-center gap-3">
-                    <div class="p-3  bg-opacity-10 rounded-3 text-vinotinto">
+                    <div class="p-3  bg-opacity-10 rounded-3 text-rojo">
                         <i class="bi bi-box-seam-fill fs-3"></i>
                     </div>
                     <div>
-                        <h2 class="fw-bold text-vinotinto m-0 fs-3 ">Órdenes de Venta</h2>
+                        <h2 class="fw-bold text-negro m-0 fs-3 ">Órdenes de Venta</h2>
                         <p class="m-0 text-muted text-dark small ">Explora y gestiona los pedidos de SAP</p>
                     </div>
                 </div>
             </div>
-            <div class="col-12 col-md-6 col-lg-5">
-                <div class="card shadow-sm border-0 rounded-3">
-                    <div class="card-body py-2 px-3">
-                        <div class="row g-2">
-                            <label class="form-label text-muted small fw-semibold mb-1">Filtrar con Fecha </label>
-                            <div class="input-group">
-                                <div class=" form-check form-switch  switch-lg mb-2 fw-bold m-1">
-                                    <InputCheckbox class="form-check-input " @bind-Value="checkFechas"></InputCheckbox>
+            <!-- FILTROS -->
+            <div class="col-12 col-lg-5">
+                <div class="card shadow-sm border-0 rounded-3 h-100">
 
-                                    @if (checkFechas)
-                                    {
-                                        <span class="text-success">Filtro Activo</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-danger">Filtro  Inactivo</span>
-                                    }
+                    <div class="card-body py-3 px-3">
 
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="bi bi-funnel-fill text-rojo me-2"></i>
+                            <span class="fw-bold text-negro">
+                                Filtros
+                            </span>
+                        </div>
+
+                        <div class="row g-3">
+                            <!-- FILTRO FECHA -->
+                            <div class="col-12 col-md-6">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label class="form-label text-muted small fw-semibold mb-0">
+                                        Fecha
+                                    </label>
+                                    <div class="form-check form-switch m-0">
+                                        <InputCheckbox class="form-check-input" @bind-Value="checkFechas" />
+                                    </div>
                                 </div>
+                                @if (checkFechas)
+                                {
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <label class="form-label text-muted small mb-1">
+                                                Contabilización
+                                            </label>
+
+                                            <div class="input-group input-group-sm">
+                                                <span class="input-group-text bg-white border-end-0 text-muted">
+                                                    <i class="bi bi-calendar-event"></i>
+                                                </span>
+                                                <InputDate class="form-control ps-0 border-start-0" @bind-Value="fechaContabilizacion" />
+                                            </div>
+                                        </div>
+
+                                        <div class="col-6">
+                                            <label class="form-label text-muted small mb-1">Entrega</label>
+                                            <div class="input-group input-group-sm">
+                                                <span class="input-group-text bg-white border-end-0 text-muted">
+                                                    <i class="bi bi-calendar-check"></i>
+                                                </span>
+                                                <InputDate class="form-control ps-0 border-start-0" @bind-Value="fechaEntrega" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
                             </div>
+                            <!-- FILTRO ESTADO -->
+                            <div class="col-12 col-md-6">
 
-                            <div class="col-6">
-                                <label class="form-label text-muted small fw-semibold mb-1">Fecha Contabilización </label>
-                                <div class="input-group input-group-sm">
-                                    <span class="input-group-text bg-white border-end-0 text-muted">
-                                        <i class="bi bi-calendar-event"></i>
-                                    </span>
-                                    <InputDate class="form-control ps-0 border-start-0" @bind-Value="fechaContabilizacion" />
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <label class="form-label text-muted small fw-semibold mb-0">
+                                        Estado
+                                    </label>
+
+                                    <div class="form-check form-switch m-0">
+                                        <InputCheckbox class="form-check-input" @bind-Value="checkEstado" />
+                                    </div>
                                 </div>
+
+                                @if (checkEstado)
+                                {
+                                    <select class="form-select form-select-sm mt-2"
+                                            @bind="estadoOrden">
+                                        <option value='T'>Todas</option>
+                                        <option value='O'>Abierta</option>
+                                        <option value='C'>Cerrada</option>
+                                    </select>
+                                }
                             </div>
-                            <div class="col-6">
-                                <label class="form-label text-muted small fw-semibold mb-1">Fecha Entrega</label>
-                                <div class="input-group input-group-sm">
-                                    <span class="input-group-text bg-white border-end-0 text-muted">
-                                        <i class="bi bi-calendar-check"></i>
-                                    </span>
-                                    <InputDate class="form-control ps-0 border-start-0" @bind-Value="fechaEntrega" />
+                            <!-- CANCELADAS -->
+                            <div class="col-12 col-md-6">
+
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <label class="form-label text-muted small fw-semibold mb-0">
+                                        Canceladas
+                                    </label>
+                                    <div class="form-check form-switch m-0">
+                                        <InputCheckbox class="form-check-input" @bind-Value="checkCanceladas" />
+                                    </div>
                                 </div>
+                                @if (checkCanceladas)
+                                {
+                                    <select class="form-select form-select-sm mt-2"
+                                            @bind="Canceladas">
+                                        <option value='T'>Todas</option>
+                                        <option value='Y'>Cancelada</option>
+                                        <option value='N'>No Cancelada</option>
+                                    </select>
+                                }
+                            </div>
+                            <!-- IMPRESAS -->
+                            <div class="col-12 col-md-6">
+
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <label class="form-label text-muted small fw-semibold mb-0">
+                                        Impresas
+                                    </label>
+
+                                    <div class="form-check form-switch m-0">
+                                        <InputCheckbox class="form-check-input" @bind-Value="checkImpresas" />
+                                    </div>
+                                </div>
+                                @if (checkImpresas)
+                                {
+                                    <select class="form-select form-select-sm mt-2"
+                                            @bind="Impresas">
+                                        <option value='T'>Todas</option>
+                                        <option value='Y'>Impresa</option>
+                                        <option value='N'>No Impresa</option>
+                                    </select>
+                                }
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-12 col-lg-3 text-start text-md-end text-lg-end">
-                @if (_authClientService.HasPermission("Orders.Create"))
-                {
 
-                     <button type="button" class="btn btn-outline-secondary btn-lg rounded-pill px-4 shadow-sm w-100 w-sm-auto fs-6 fw-semibold transition-all mb-lg-2 " style="top:10px" @onclick='() => Nav.NavigateTo("/administrar-modulo-comercial")'>
-                        <i class="bi bi-arrow-left me-2"></i> Volver
+            <!-- BOTONES -->
+            <div class="col-12 col-lg-3">
+                <div class="h-100 d-flex flex-column justify-content-center gap-2">
+                    <button type="button"
+                            class="btn btn-outline-secondary btn-lg rounded-pill px-4 shadow-sm w-100 fs-6 fw-semibold"
+                            @onclick='() => Nav.NavigateTo("/administrar-modulo-comercial")'>
+                        <i class="bi bi-arrow-left me-2"></i>Volver
                     </button>
 
-
-                    <button class="btn btn-vinotinto btn-lg rounded-pill px-4 shadow-sm w-100 w-sm-auto fs-6 fw-semibold transition-all"
-                            @onclick="IrACrear">
-                        <i class="bi bi-plus-lg me-2"></i> Nuevo
-                    </button>
-                }
+                    @if (_authClientService.HasPermission("Orders.Create"))
+                    {
+                        <button type="button" class="btn btn-vinotinto btn-lg rounded-pill px-4 shadow-sm w-100 fs-6 fw-semibold" @onclick="IrACrear">
+                            <i class="bi bi-plus-lg me-2"></i>Nueva Orden
+                        </button>
+                    }
+                </div>
             </div>
         </div>
     </div>
@@ -93,17 +173,22 @@
     <div class="row g-3 mb-4">
         <div class="col-md-8">
             <div class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden border">
-                <span class="input-group-text bg-white border-0 ps-4">
-                    <i class="bi bi-search text-muted"></i>
-                </span>
-                <input type="text" class="form-control border-0 shadow-none fs-6" placeholder="Cliente, documento o placa..." @bind="textoBusqueda" @bind:event="oninput" @onkeyup="HandleEnter" />
-                <button class="btn btn-vinotinto px-4" @onclick="BuscarEnServidor">Buscar</button>
+               
+                @if (_authClientService.HasPermission("Orders.Search"))
+                {
+                    <span class="input-group-text bg-white border-0 ps-4">
+                        <i class="bi bi-search text-muted"></i>
+                    </span>
+                    <input type="text" class="form-control border-0 shadow-none fs-6" placeholder="Cliente, documento o placa..." @bind="textoBusqueda" @bind:event="oninput" @onkeyup="HandleEnter" />
+                    <button class="btn btn-vinotinto px-4" @onclick="BuscarEnServidor">Buscar</button>
+                }
+
             </div>
         </div>
         <div class="col-md-4">
             <div class="d-flex align-items-center justify-content-md-end h-100">
                 <div class="badge bg-white text-dark border p-2 px-3 rounded-pill shadow-sm">
-                    Total: <span class="fw-bold text-vinotinto">@totalRegistros</span>
+                    Total: <span class="fw-bold text-rojo">@totalRegistros</span>
                 </div>
             </div>
         </div>
@@ -113,7 +198,7 @@
     @if (cargando)
     {
         <div class="text-center py-5">
-            <div class="spinner-grow text-vinotinto" role="status"></div>
+            <div class="spinner-grow text-rojo" role="status"></div>
             <p class="mt-2 text-muted">Sincronizando con SAP...</p>
         </div>
     }
@@ -134,16 +219,29 @@
                         <div class="card-body p-4">
                             @* Estado *@
                             <div class="status-badge">
-                                @if (pedido.CANCELED == 'Y')
+                               
+                                
+                                @if (pedido.CANCELED == "Y")
                                 {
                                     <span class="badge bg-danger rounded-pill">Cancelado</span>
                                 }
+                                @if (pedido.DocStatus == "C")
+                                {
+                                    <span class="badge bg-danger rounded-pill">Cerrado</span>
+                                }
                                 else
                                 {
-                                    <span class="badge @(pedido.DocStatus == 'C' ? "bg-success" : "bg-warning text-dark") rounded-pill">
-                                        @(pedido.DocStatus == 'C' ? "Cerrado" : "Abierto")
-                                    </span>
+                                    <span class="badge bg-warning rounded-pill">Abierto</span>
                                 }
+                                @if (pedido.Printed == "Y")
+                                {
+                                    <span class="badge bg-warning rounded-pill">Impresa</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger rounded-pill">No Impresa</span>
+                                }
+
                             </div>
 
                             @* Info Principal *@
@@ -171,7 +269,7 @@
                             <div class="d-flex justify-content-between align-items-end">
                                 <div>
                                     <small class="d-block text-muted x-small">Monto Total</small>
-                                    <h4 class="fw-bold text-vinotinto m-0">
+                                    <h4 class="fw-bold text-rojo m-0">
                                         $@pedido.DocTotal?.ToString("N2", new CultureInfo("es-ES"))
                                     </h4>
                                 </div>
@@ -179,23 +277,20 @@
 
                                     @if (_authClientService.HasPermission("Orders.Detail"))
                                     {
-                                        <button class="btn btn-outline-warning border-0 btn-sm" @onclick:stopPropagation="true" @onclick="() => VerDetalle(pedido.DocEntry ?? 0)">
+                                        <button class="btn btn-outline-secondary border-0 btn-sm" @onclick:stopPropagation="true" @onclick="() => VerDetalle(pedido.DocEntry ?? 0)">
                                             <i class="bi bi-eye"></i>
                                         </button>
-
                                     }
-
-                                    @if (pedido.DocStatus != 'C')
+                                    @if (pedido.DocStatus != "C")
                                     {
-
                                         @if (_authClientService.HasPermission("Orders.Update"))
                                         {
-                                            <button class="btn btn-outline-info border-0 btn-sm" @onclick:stopPropagation="true" @onclick="() => EditarPedido(pedido.DocEntry ?? 0)">
+                                            <button class="btn btn-outline-dark border-0 btn-sm" @onclick:stopPropagation="true" @onclick="() => EditarPedido(pedido.DocEntry ?? 0)">
                                                 <i class="bi bi-pencil-square"></i>
                                             </button>
                                         }
                                     }
-                                    @if (pedido.DocStatus != 'C')
+                                    @if (pedido.DocStatus != "C")
                                     {
                                         @*     @if (_authClientService.HasPermission("Orders.Cancelar"))
                                         { *@
@@ -226,7 +321,6 @@
             <option value="36">36 items</option>
             <option value="48">48 items</option>
         </select>
-
         <nav>
             <ul class="pagination mb-0">
                 <li class="page-item @(paginaActual <= 1 ? "disabled" : "")">
@@ -238,32 +332,14 @@
                     <span class="page-link border-0 rounded-circle mx-1 shadow-sm bg-vinotinto">@paginaActual</span>
                 </li>
                 <li class="page-item @(paginaActual >= totalPaginas ? "disabled" : "")">
-                    <button class="page-link border-0 rounded-circle mx-1 shadow-sm" disabled="@(paginaActual >= totalPaginas)"@onclick="() => IrPagina(paginaActual + 1)">
+                    <button class="page-link border-0 rounded-circle mx-1 shadow-sm" disabled="@(paginaActual >= totalPaginas)" @onclick="() => IrPagina(paginaActual + 1)">
                         <i class="bi bi-chevron-right"></i>
                     </button>
                 </li>
             </ul>
         </nav>
-     @*    <nav>
-            <ul class="pagination mb-0">
-                <li class="page-item @(paginaActual <= 1 ? "disabled" : "")">
-                    <button class="page-link border-0 rounded-circle mx-1 shadow-sm" @onclick="() => IrPagina(paginaActual - 1)">
-                        <i class="bi bi-chevron-left"></i>
-                    </button>
-                </li>
-                <li class="page-item active">
-                    <span class="page-link border-0 rounded-circle mx-1 shadow-sm bg-vinotinto">@paginaActual</span>
-                </li>
-                <li class="page-item @(paginaActual >= totalPaginas ? "disabled" : "")">
-                    <button class="page-link border-0 rounded-circle mx-1 shadow-sm" @onclick="() => IrPagina(paginaActual + 1)">
-                        <i class="bi bi-chevron-right"></i>
-                    </button>
-                </li>
-            </ul>
-        </nav> *@
     </div>
 </div>
-
 @code {
     private List<OrdersReaderDto> listaOriginal = new();
     private List<OrdersReaderDto> listPedidosApi = new();
@@ -276,38 +352,32 @@
         set { _textoBusqueda = value; FiltrarLocal(); }
     }
     private bool checkFechas { get; set; }
+    private bool checkEstado = false;
+    private bool checkCanceladas = false;
+    private bool checkImpresas = false;
+    // Estado de la orden: 'o' para abierta, 'C' para cerrada, null para todos
+    private char? estadoOrden = null;
+    private char? Canceladas = null;
+    private char? Impresas = null;
     private int cantidadPorPagina = 12;
     private int paginaActual = 1;
     private int totalRegistros = 0;
     private bool cargando = false;
-    // private int totalPaginas
-    // {
-    //     get
-    //     {
-    //         var total = string.IsNullOrWhiteSpace(_textoBusqueda)
-    //         ? totalRegistros : listPedidosApi.Count;
-
-    //         return (int)Math.Ceiling((double)total / cantidadPorPagina);
-    //     }
-
-    // }
-    // 1. Propiedad totalPaginas corregida (siempre usa totalRegistros devuelto por SAP)
-
     private int totalPaginas => totalRegistros == 0 ? 1 : (int)Math.Ceiling((double)totalRegistros / cantidadPorPagina);
-
-
 
     protected override async Task OnInitializedAsync()
     {
         fechaContabilizacion = DateTime.Now;
         fechaEntrega = DateTime.Now;
-
         paginaActual = 1;
 
+        //aca solo filtra por la ordenes del vendedor logueado, si es null trae todas las ordenes
+        // int CodVendedor = _authClientService.CurrentSession.CodVendedorSAP ?? -1;
         cargando = true;
         try
         {
-            await ObtenerPedidosDesdeApiAsync(_textoBusqueda, paginaActual,cantidadPorPagina);
+
+            await ObtenerPedidosDesdeApiAsync(_textoBusqueda, paginaActual, cantidadPorPagina, fechaContabilizacion, fechaEntrega, estadoOrden, Canceladas, Impresas);
         }
         catch (Exception ex)
         {
@@ -319,55 +389,126 @@
                 ex.StackTrace,
                 usuario: _authClientService.CurrentSession.UserName ?? "No encontrado",
                 metodo: nameof(ObtenerPedidosDesdeApiAsync),
-                ruta: "/administrar-pedido/pedidos",
+                ruta: "/administrar-Ordenes/pedidos",
                 origen: $"Orden Cliente Service Sap {ex.HelpLink}",
                 nivel: "error"
 
             );
-
             await _jsRuntime.InvokeVoidAsync("Swal.fire", new
             {
                 icon = "error",
                 title = "Error al cargar usuarios",
                 text = ex.Message
             });
-
-
         }
         fechaContabilizacion = DateTime.Now;
         fechaEntrega = DateTime.Now;
 
         cargando = false;
     }
-    private async Task ObtenerPedidosDesdeApiAsync(string ?textoBusqueda=null, int ?pagina=null,int ?cantidadPagina=null)
+    private async Task ObtenerPedidosDesdeApiAsync(string? textoBusqueda = null, int? pagina = null, int? cantidadPagina = null, DateTime? fechaInicio = null, DateTime? fechaFin = null,char? DocStatus = null, char? CANCELED = null, char? Printed = null)
     {
-
-        if (string.IsNullOrEmpty(textoBusqueda))
-        {
-            textoBusqueda=string.Empty;
-        }
-        if (Convert.ToInt32(pagina)<0)
-        {
-            pagina = 1;
-        }
-        if (Convert.ToInt32(cantidadPagina) < 0)
-        {
-            cantidadPagina = 12;
-        }
-        cargando = true;
         try
         {
-            ResponseAPI<List<OrdersReaderDto>> responseApi = new ();
-  
-            if (!checkFechas)
+            if (!_authClientService.HasPermission("Orders.View"))
             {
-                responseApi = await _pedidoService.ListarPedidosAsync(textoBusqueda, pagina, cantidadPagina);
+                await _jsRuntime.InvokeVoidAsync("Swal.fire", new
+                {
+                    icon = "error",
+                    title = "Acceso denegado",
+                    text = "No tienes permiso para Visualizar las órdenes.",
+                    confirmButtonColor = "#6c1d1d"
+                });
+
+                return; 
+            }
+
+            if (string.IsNullOrEmpty(textoBusqueda))
+            {
+                textoBusqueda = string.Empty;
+            }
+            if (Convert.ToInt32(pagina) < 0)
+            {
+                pagina = 1;
+            }
+            if (Convert.ToInt32(cantidadPagina) < 0)
+            {
+                cantidadPagina = 12;
+            }
+            if (checkFechas == true)
+            {
+                fechaInicio = fechaContabilizacion;
+                fechaFin = fechaEntrega;
             }
             else
             {
-                responseApi = await _pedidoService.ListarPedidosAsync(textoBusqueda, pagina, cantidadPagina, fechaContabilizacion, fechaEntrega);
+                fechaInicio = null;
+                fechaFin = null;
             }
-            // var peidos = await _pedidoService.ListarPedidosAsync(textoBusqueda, paginaActual, cantidadPorPagina);
+            if (checkEstado == true)
+            {
+                if (estadoOrden == 'O')
+                {
+                    DocStatus = 'O';
+                }
+                else if (estadoOrden == 'C')
+                {
+                    DocStatus = 'C';
+                }
+                else if (estadoOrden == 'T')
+                {
+                    DocStatus = null;
+                };
+            }
+            else
+            {
+                estadoOrden = null;
+            }
+
+            if (checkCanceladas == true)
+            {
+                if (Canceladas == 'Y')
+                {
+                    CANCELED = 'Y';
+                }
+                else if (Canceladas == 'N')
+                {
+                    CANCELED = 'N';
+                }
+                else if (Canceladas == 'T')
+                {
+                    CANCELED = null;
+                }   
+            }
+            else
+            {
+                Canceladas = null;
+            }
+            if (checkImpresas == true)
+            {
+                if (Impresas == 'Y')
+                {
+                    Printed = 'Y';
+                }
+                else if (Impresas == 'N')
+                {
+                    Printed = 'N';
+                }
+                else if (Impresas == 'T')
+                {
+                    Printed = null;
+                }  
+            }
+            else
+            {
+                Impresas = null;
+            }
+            cargando = true;
+            ResponseAPI<List<OrdersReaderDto>> responseApi = new();
+            int CodVendedor = _authClientService.CurrentSession.CodVendedorSAP ?? -1;
+
+            responseApi = await _pedidoService.ListarPedidosAsync(textoBusqueda, pagina, cantidadPagina, fechaInicio, fechaFin, CodVendedor, DocStatus, CANCELED, Printed);
+
             if (responseApi.Valor != null)
             {
                 listaOriginal = responseApi.Valor;
@@ -416,24 +557,31 @@
         {
             cargando = false;
         }
-
     }
-
     private async Task CambiarCantidadPagina(ChangeEventArgs e)
     {
+        if (_authClientService.HasPermission("Orders.View") == false)
+        {
+            await _jsRuntime.InvokeVoidAsync("Swal.fire", new
+            {
+                icon = "error",
+                title = "Acceso denegado",
+                text = "No tienes permiso para Visualizar las órdenes.",
+                confirmButtonColor = "#6c1d1d"
+            });
+            return;
+        }
+
         if (int.TryParse(e.Value?.ToString(), out int nuevaCantidad))
         {
             cantidadPorPagina = nuevaCantidad;
             paginaActual = 1;
-            await ObtenerPedidosDesdeApiAsync(_textoBusqueda, paginaActual,cantidadPorPagina);
-        }
-        // cantidadPorPagina = int.Parse(e.Value!.ToString()!);
-        // paginaActual = 1;
+            //pendientes cuando coloque los valores de los filtros, que se mantengan al cambiar la cantidad de pagina
 
-        // if (string.IsNullOrWhiteSpace(_textoBusqueda))
-        //     await ObtenerPedidosDesdeApiAsync();
-        // else
-        //     await BuscarEnServidor();
+            await ObtenerPedidosDesdeApiAsync(_textoBusqueda, paginaActual, cantidadPorPagina, fechaContabilizacion, fechaEntrega, estadoOrden, Canceladas, Impresas);
+            // await ObtenerPedidosDesdeApiAsync(_textoBusqueda, paginaActual, cantidadPorPagina);
+        }
+
     }
     private void FiltrarLocal()
     {
@@ -454,95 +602,100 @@
 
     private async Task IrPagina(int nuevaPagina)
     {
+        if (!_authClientService.HasPermission("Orders.View"))
+        {
+            await _jsRuntime.InvokeVoidAsync("Swal.fire", new
+            {
+                icon = "error",
+                title = "Acceso denegado",
+                text = "No tienes permiso para Visualizar las órdenes.",
+                confirmButtonColor = "#6c1d1d"
+            });
+            return;
+        }
+
         if (nuevaPagina < 1 || nuevaPagina > totalPaginas || nuevaPagina == paginaActual)
             return;
 
         paginaActual = nuevaPagina;
-        await ObtenerPedidosDesdeApiAsync(_textoBusqueda,nuevaPagina,cantidadPorPagina);
-        // if (nuevaPagina < 1)
-        //     return;
-
-        // paginaActual = nuevaPagina;
-
-        // if (string.IsNullOrWhiteSpace(_textoBusqueda))
-        //     await ObtenerPedidosDesdeApiAsync();
-        // else
-        //     await BuscarEnServidor();
+        await ObtenerPedidosDesdeApiAsync(_textoBusqueda, paginaActual, cantidadPorPagina, fechaContabilizacion, fechaEntrega, estadoOrden, Canceladas, Impresas);
     }
 
     private async Task BuscarEnServidor()
     {
-
+        if (!_authClientService.HasPermission("Orders.View"))
+        {
+            await _jsRuntime.InvokeVoidAsync("Swal.fire", new
+            {
+                icon = "error",
+                title = "Acceso denegado",
+                text = "No tienes permiso para Visualizar las órdenes.",
+                confirmButtonColor = "#6c1d1d"
+            });
+            return;
+        }
 
         paginaActual = 1;
-
-        await ObtenerPedidosDesdeApiAsync(_textoBusqueda,paginaActual,cantidadPorPagina);
-
-
-
-        // if (checkFechas == false)
-        // {
-        //     responseApi = await _pedidoService.ListarPedidosAsync(_textoBusqueda, paginaActual, cantidadPorPagina);
-
-        // }
-        // else
-        // {
-        //     responseApi = await _pedidoService.ListarPedidosAsync(_textoBusqueda, paginaActual, cantidadPorPagina, fechaContabilizacion, fechaEntrega);
-        // }
-
-
-        // //var response = await _pedidoService.ListarPedidosAsync(_textoBusqueda, paginaActual, cantidadPorPagina, fechaContabilizacion, fechaEntrega);
-
-        // if (responseApi != null)
-        // {
-        //     listaOriginal = responseApi.Valor;
-        //     listPedidosApi = listaOriginal.ToList();
-        //     totalRegistros = responseApi.CantRegistros;
-
-        // }
-        // else
-        // {
-        //     listPedidosApi = new List<OrdersReaderDto>();
-        //     string errores = responseApi.Errores != null && responseApi.Errores.Any() ? string.Join("<br>", responseApi.Errores) : "Ocurrio un error inesperado";
-
-        //     await _jsRuntime.InvokeVoidAsync("swal.fire", new
-        //     {
-        //         icon = "error",
-        //         title = $"Error al consultar usuarios {responseApi.Mensaje} ",
-        //         text = $"{errores}",
-        //         confirmButtonColor = "#6c1d1d"
-
-        //     });
-        // }
-
-
-
-
-
-        // cargando = false;
-
-    }
-
+        await ObtenerPedidosDesdeApiAsync(_textoBusqueda, paginaActual, cantidadPorPagina, fechaContabilizacion, fechaEntrega, estadoOrden, Canceladas, Impresas);
+        cargando = false;   
+    }   
     private async Task HandleEnter(KeyboardEventArgs e)
     {
+        if (!_authClientService.HasPermission("Orders.View"))
+        {
+            await _jsRuntime.InvokeVoidAsync("Swal.fire", new
+            {
+                icon = "error",
+                title = "Acceso denegado",
+                text = "No tienes permiso para Visualizar las órdenes.",
+                confirmButtonColor = "#6c1d1d"
+            });
+            return;
+        }
         if (e.Key == "Enter")
         {
-         
             await BuscarEnServidor();
         }
 
     }
 
-    private void IrACrear() => Nav.NavigateTo("/administrar-pedido/crear-pedido");
+    private void IrACrear()
+    {
+        if (!_authClientService.HasPermission("Orders.Create"))
+        {
+            Nav.NavigateTo("/no-autorizado");
+            return;
+        }
+
+        Nav.NavigateTo("/administrar-pedido/crear-pedido");
+    }
     private void VerDetalle(int id)
     {
+
+        //  
         if (_authClientService.HasPermission("Orders.Detail"))
         {
             Nav.NavigateTo($"/administrar-pedido/detalle/{id}");
         }
+        else
+        {
+            Nav.NavigateTo("/no-autorizado");
+            return;
+        }
 
     }
-    private void EditarPedido(int DocEntry) => Nav.NavigateTo($"/administrar-pedido/editar/{DocEntry}");
+    private void EditarPedido(int DocEntry)
+    {
+        if (_authClientService.HasPermission("Orders.Update"))
+        {
+            Nav.NavigateTo($"/administrar-pedido/editar/{DocEntry}");
+        }
+        else
+        {
+            Nav.NavigateTo("/no-autorizado");
+        }
+
+    }
     //cancela el pedido
 
     private async Task CancelarPedido(int docEntry)
@@ -561,16 +714,24 @@
                           text = $"¿Deseas Cancelar el pedido?",
                           icon = "info",
                           showCancelButton = true,
-                          confirmButtonColor = "#d33",
-                          cancelButtonColor = "#3085d6",
+                          confirmButtonColor = "#D0CFCA",
+                          cancelButtonColor = "#D62F46",
                           confirmButtonText = "Sí",
-                          cancelButtonText = "Cancelar"
+                          cancelButtonText = "NO"
                       });
             if (result.GetProperty("isConfirmed").GetBoolean())
             {
+
+                await _jsRuntime.InvokeVoidAsync("mostrarEspera", "Sincronizando - SAP ONE", "Cancelando Orden de venta ...<br><br><b>No cierre esta ventana.</b>", "info");
+
+
+
+
                 var resultado = await _pedidoService.CancelPedidoAsync(docEntry);
                 if (resultado.EsCorrecto)
                 {
+                    await _jsRuntime.InvokeVoidAsync("cerrarEspera");
+
                     await _jsRuntime.InvokeVoidAsync("Swal.fire", new
                     {
                         icon = "success",
@@ -583,12 +744,16 @@
                 }
                 else
                 {
+                    await _jsRuntime.InvokeVoidAsync("cerrarEspera");
                     await _jsRuntime.InvokeVoidAsync("Swal.fire", "Error", $"No se pudo cancelar el pedido", "error");
                 }
             }
         }
         catch (Exception ex)
         {
+
+            await _jsRuntime.InvokeVoidAsync("cerrarEspera");
+
             await _logserviceClient.GuardarErrorAsync
             (
                 ex.Message,
