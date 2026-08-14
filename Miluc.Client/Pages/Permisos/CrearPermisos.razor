@@ -8,7 +8,6 @@
 @inject IJSRuntime js
 @inject IAuthClientService authClient
 @inject ILogClientService LogService
-
 <div class="permisos-page animate__animated animate__fadeIn p-4">
     @* --- CABECERA --- *@
     <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-3">
@@ -20,10 +19,8 @@
             <i class="bi bi-arrow-left me-1"></i> Volver 
         </button>
     </div>
-
     <EditForm Model="permisosCreateDto" OnValidSubmit="GuardarPermiso">
         <DataAnnotationsValidator />
-
         <div class="row g-4">
             @* --- COLUMNA IZQUIERDA: PERFIL Y CREDENCIALES --- *@
             <div class="col-xl-12 col-lg-10 col-12 col-md-6 col-lg-4 col-xl-4">
@@ -34,8 +31,6 @@
                                 <InputText class="form-control custom-input" @bind-Value="permisosCreateDto.Nombre" placeholder="ejemplo Productos.view" />
                                 <ValidationMessage For="@(() => permisosCreateDto.Nombre)" class="text-danger small" />
                             </div>
-
-                        
                             <div class="mb-3">
                                 <label class="form-label fw-bold small text-secondary">Descripcion del permiso*</label>
                                 <InputText class="form-control custom-input" placeholder="Descripción Permiso" @bind-Value="permisosCreateDto.Descripcion" />
@@ -43,18 +38,10 @@
                             </div>
                     </div>
                  </div>
-
             </div>
-      
-         
-
                 @* --- TIPOS DE USUARIO --- *@
-
             <div class="col-xl-12 col-lg-10 col-12 col-md-6 col-lg-4 col-xl-4">
-
                  <div class="card shadow-sm border-0 rounded-4 h-100">
-
-
                  <div class="card-header bg-white py-3 border-0">
                         <div class="row align-items-center">
                             <div class="col-md-6"><h6 class="mb-0 fw-bold text-rojo text-uppercase">Asignación de Roles*</h6></div>
@@ -66,13 +53,11 @@
                             </div>
                         </div>
                  </div>
-
                  <div class="card-body pt-0">
                                <div class="alert alert-warning py-2 small border-0 bg-opacity-10 mb-3 d-flex justify-content-between">
                             <span><i class="bi bi-shield-check me-2"></i>Seleccione los Roles</span>
                             <span class="badge bg-rojo rounded-pill">@permisosCreateDto.RolesIds.Count seleccionados</span>
                   </div>
-
                 <div class="card shadow-sm border-0 rounded-4">
                     <div class="card-header bg-white py-3 border-0"><h6 class="mb-0 fw-bold text-rojo">Roles*</h6></div>
 
@@ -99,9 +84,6 @@
                     </div>
                 </div>
                 </div>
-
-
-
                      <div class="card-footer bg-white border-0 p-4 text-end">
                         <button type="submit" class="btn btn-rojo btn-lg rounded-pill px-5 shadow-sm" disabled="@procesando">
                             @if (procesando)
@@ -110,7 +92,6 @@
                             }
                             else
                             {
-                          
                                 <span><i class="bi bi-shield-lock me-2"></i>Guardar </span>
                             }
                         </button>
@@ -118,9 +99,6 @@
                 </div> 
            </div> 
        </div> 
-
-
-
     </EditForm>
 </div>
 
