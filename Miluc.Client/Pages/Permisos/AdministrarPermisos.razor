@@ -13,7 +13,7 @@
     @* --- HEADER --- *@
     <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
         <div>
-            <h2 class="fw-bold text-vinotinto m-0">
+            <h2 class="fw-bold text-rojo m-0">
                 <i class="bi bi-person-badge-fill me-2"></i> Gestión de Permisos
             </h2>
             <p class="m-0 text-muted">Administración de capacidades del sistema</p>
@@ -21,8 +21,8 @@
 
         @if (authClient.HasPermission("Permiso.Create"))
         {
-            <button class="btn btn-vinotinto btn-nuevo rounded-pill px-4 shadow-sm" @onclick="IrACrear">
-                <i class="bi bi-plus-lg me-1"></i> Nuevo Permiso
+            <button class="btn btn-rojo btn-nuevo rounded-pill px-4 shadow-sm" @onclick="IrACrear">
+                <i class="bi bi-plus-lg me-1"></i> Nuevo
             </button>
         }
       
@@ -40,7 +40,7 @@
                         <input type="text" class="form-control border-start-0 shadow-none fs-6"
                                placeholder="Filtrar local o Enter para buscar en servidor..."
                                @bind="textoBusqueda" @bind:event="oninput" @onkeyup="HandleEnter" />
-                        <button class="btn btn-vinotinto rounded-end-pill px-4" @onclick="BuscarEnServidor">
+                        <button class="btn btn-rojo rounded-end-pill px-4" @onclick="BuscarEnServidor">
                             Buscar
                         </button>
                     </div>
@@ -52,11 +52,11 @@
                                 style="width: 80px;"
                                 @onchange="CambiarCantidadPagina">
                             <option value="5">5</option>
-                            <option value="10">10</option>
-                            <option value="20" selected>20</option>
+                            <option value="10" selected>10</option>
+                            <option value="20" >20</option>
                             <option value="50">50</option>
                         </select>
-                        <span class="badge bg-vinotinto rounded-pill ms-2 px-3 py-2">
+                        <span class="badge bg-rojo rounded-pill ms-2 px-3 py-2">
                             Total: @totalRegistros
                         </span>
                     </div>
@@ -71,7 +71,7 @@
         {
             <div class="table-responsive">
                 <table class="table table-hover mb-0">
-                    <thead class="bg-vinotinto text-white">
+                    <thead class="bg-rojo text-white">
                         <tr>
                             <th class="ps-4 py-3">ID</th>
                             <th class="py-3">Nombre</th>
@@ -86,7 +86,7 @@
                         {
                             <tr>
                                 <td colspan="6" class="text-center py-5">
-                                    <div class="spinner-border text-vinotinto"></div>
+                                    <div class="spinner-border text-rojo"></div>
                                     <p class="mt-2 text-muted">Cargando permisos...</p>
                                 </td>
                             </tr>
@@ -108,11 +108,27 @@
                                     <td class="ps-4">@permiso.IdPermiso</td>
                                     <td><span class="fw-bold">@permiso.Nombre</span></td>
                                     <td class="small text-muted">@permiso.Descripcion</td>
+
+                                 
                                     <td class="text-center">
+                                        @if (permiso.Activo == true)
+                                        {
+                                            <span class="badge text-dark px-3 py-2 rounded-pill">
+                                                <i class="bi bi-check2-circle text-gris"></i>
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge text-danger px-3 py-2 rounded-pill">
+                                                <i class="bi bi-x-circle text-rojo"></i>
+                                            </span>
+                                        }
+                                    </td>
+                                   @*  <td class="text-center">
                                         <span class="badge @(permiso.Activo ? "bg-success" : "bg-secondary") rounded-pill">
                                             @(permiso.Activo ? "Activo" : "Inactivo")
                                         </span>
-                                    </td>
+                                    </td> *@
                                     <td class="text-center">
                                         <span class="badge bg-warning-subtle text-dark border border-warning-subtle rounded-pill me-1">
                                             @permiso.RolesNombre.Count
@@ -156,7 +172,7 @@
             <div class=" page-link text-muted small">Página <b>@paginaActual</b> de @totalPaginas</div>
             <div class="page-item.active pagination-container p-1 bg-white border rounded-pill shadow-sm">
                 <button class="btn btn-sm rounded-circle @(paginaActual <= 1 ? "disabled" : "")" @onclick="() => IrPagina(paginaActual - 1)"><i class="bi bi-chevron-left"></i></button>
-                <span class="mx-3 fw-bold text-vinotinto">@paginaActual</span>
+                <span class="mx-3 fw-bold text-rojo">@paginaActual</span>
                 <button class="btn btn-sm rounded-circle @(paginaActual >= totalPaginas ? "disabled" : "")" @onclick="() => IrPagina(paginaActual + 1)"><i class="bi bi-chevron-right"></i></button>
             </div>
         </div>  
@@ -178,7 +194,7 @@
         }
     }
 
-    private int cantidadPorPagina = 20;
+    private int cantidadPorPagina = 10;
     private int paginaActual = 1;
     private int totalRegistros = 0;
     private int totalPaginas => (int)Math.Ceiling((double)totalRegistros / cantidadPorPagina);

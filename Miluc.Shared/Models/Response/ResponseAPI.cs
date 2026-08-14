@@ -3,8 +3,6 @@
     public class ResponseAPI<T>
     {
         public bool EsCorrecto { get; set; }
-
-        public List<T> Tos { get; set; }
         public T? Valor { get; set; }
         public string? Mensaje { get; set; }
         public List<string>? Errores { get; set; }

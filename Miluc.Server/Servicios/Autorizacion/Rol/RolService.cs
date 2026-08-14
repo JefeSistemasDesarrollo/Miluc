@@ -3,80 +3,116 @@ using Miluc.Server.Data;
 using Miluc.Server.Interfaces.Roles;
 using Miluc.Server.Models;
 using Miluc.Shared.DTOs.Roles;
+using MimeKit.Cryptography;
 namespace Miluc.Server.Servicios.Autorizacion.Rol
 {
-    public class RolService(MilucDbContext _context, ILogger<RolService> _logger) : IRolService
+    public class RolService(MilucDbContext _context) : IRolService
     {
         public async Task<bool> CreateRolAsync(RolCreateDto dtoCreate)
         {
             // Validación de negocio: No permitir nombres duplicados Insensible a mayúsculas
             if (await _context.Roles.AnyAsync(r => r.Nombre.ToLower() == dtoCreate.Nombre.ToLower()))
             {
-                _logger.LogWarning("Intento de crear un rol duplicado: {Nombre}", dtoCreate.Nombre);
-              return false;
+                throw new Exception($"Intento crear un rol duplicado {dtoCreate.Nombre}");
+                //_logger.LogWarning("Intento de crear un rol duplicado: {Nombre}", dtoCreate.Nombre);
+           
             }
             try
             {
-               Roles rol = new Roles
+                Roles rol = new Roles
                 {
                     Nombre = dtoCreate.Nombre,
                     Descripcion = dtoCreate.Descripcion,
                     Activo = true,
                     FechaCreacion = DateTime.Now,
-                    FechaActualizacion = DateTime.Now  
-               };
+                    FechaActualizacion = DateTime.Now
+                };
                 await _context.Roles.AddAsync(rol);
-                return await _context.SaveChangesAsync()>0;
+                return await _context.SaveChangesAsync() > 0;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al crear un nuevo rol: {Nombre}", dtoCreate.Nombre);
-                throw;
+               // _logger.LogError(ex, "Error al crear un nuevo rol: {Nombre}", dtoCreate.Nombre);
+                throw new Exception($"Error al crear un nuevo rol: {dtoCreate.Nombre}");
             }
         }
         public async Task<bool> DeleteRolAsync(int idRole)
         {
             // Usamos transacción para asegurar que el borrado lógico sea atómico
-            using var transaction = await _context.Database.BeginTransactionAsync();
+            //using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                var rol = await _context.Roles.FindAsync(idRole);
-                if (rol == null) return false;
-                // Validación de integridad: No borrar roles con usuarios vinculados
-                bool tieneUsuarios = await _context.UsuarioRoles.AnyAsync(ur => ur.IdRol == idRole);
-                if (tieneUsuarios)
+
+                var rol = await _context.Roles.Where(x=>x.IdRol==idRole).FirstOrDefaultAsync();
+
+
+                if (rol==null)
                 {
-                    _logger.LogWarning("No se puede eliminar el rol ID: {idRole} porque tiene usuarios asignados", idRole);
                     return false;
-                }
-                // Borrado Lógico según tu sugerencia
-                rol.Activo = false;
-                rol.FechaActualizacion = DateTime.Now;
-                _context.Roles.Update(rol);
-                if (await _context.SaveChangesAsync() > 0)
-                {
-                    await transaction.CommitAsync();
-                    return true;
+                    
                 }
 
-                await transaction.RollbackAsync();
-                return false;
+                _context.Roles.Remove(rol);
+
+                return await _context.SaveChangesAsync()>0;
+                //var rol = await _context.Roles.FindAsync(idRole);
+                //if (rol == null) return false;
+                //// Validación de integridad: No borrar roles con usuarios vinculados
+                //bool tieneUsuarios = await _context.UsuarioRoles.AnyAsync(ur => ur.IdRol == idRole);
+                //if (tieneUsuarios)
+                //{
+
+                //    return false;
+                //}
+                //// Borrado Lógico según tu sugerencia
+                //rol.Activo = false;
+                //rol.FechaActualizacion = DateTime.Now;
+                //_context.Roles.Update(rol);
+                //if (await _context.SaveChangesAsync() > 0)
+                //{
+                //    await transaction.CommitAsync();
+                //    return true;
+                //}
+
+                //await transaction.RollbackAsync();
+                //return false;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al eliminar el rol con Id: {idRole}", idRole);
-                await transaction.RollbackAsync();
-                throw;
+                //  _logger.LogError(ex, "Error al eliminar el rol con Id: {idRole}", idRole);
+                //await transaction.RollbackAsync();
+                throw new Exception($"Error al eliminar el rol {ex.Message}");
+
             }
         }
-        public async Task<List<RolReadDto>> GetAllRolesAsync()
+        public async Task<(List<RolReadDto> data, int totalRegistros)> GetAllRolesAsync(string? buscar = null, int? pagina = null, int? cantidad = null)
         {
             try
             {
+                var queryBusqueda = _context.Roles.AsNoTracking().AsQueryable();
+
+
+
+                if (!string.IsNullOrEmpty(buscar))
+                {
+                    queryBusqueda = queryBusqueda.Where(r => r.Nombre.Contains(buscar) || (r.Descripcion.Contains(buscar)));
+                }
+                int totalRegistros = await queryBusqueda.CountAsync();
+
                 // AsNoTracking mejora el rendimiento en listas grandes
-                return await _context.Roles
-                    .AsNoTracking()
-                    .Select(r => new RolReadDto
+                if (pagina.HasValue && cantidad.HasValue)
+                {
+                    if (pagina.Value <= 0)
+                        throw new ArgumentOutOfRangeException(nameof(pagina), "El numero de la pagina no puede ser negativo");
+
+                    if (cantidad.Value <= 0)
+                        throw new ArgumentOutOfRangeException(nameof(cantidad), "La cantidad de registras debe ser mayor  a cero");
+
+                    queryBusqueda = queryBusqueda.OrderBy(u => u.IdRol).Skip((pagina.Value - 1) * cantidad.Value).Take(cantidad.Value);
+                }
+
+                var dataBusqueda = await queryBusqueda.Select(
+                    r => new RolReadDto
                     {
                         IdRol = r.IdRol,
                         Nombre = r.Nombre,
@@ -84,11 +120,15 @@ namespace Miluc.Server.Servicios.Autorizacion.Rol
                         Activo = r.Activo,
                         CantidadRoles = _context.UsuarioRoles.Count(ur => ur.IdRol == r.IdRol)
                     }).ToListAsync();
+
+
+                return (dataBusqueda, totalRegistros);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al obtener todos los roles");
-                throw;
+                throw new Exception($"Error al listar Usuarios: {ex.Message}");
+
+             
             }
         }
         //visualizar el detalle de los roles 
@@ -97,7 +137,7 @@ namespace Miluc.Server.Servicios.Autorizacion.Rol
             try
             {
 
-                var roles= await _context.Roles
+                var roles = await _context.Roles
                     .AsNoTracking()
                     .Where(r => r.IdRol == idRole)
                     .Select(r => new RolReadDto
@@ -109,14 +149,10 @@ namespace Miluc.Server.Servicios.Autorizacion.Rol
                         CantidadRoles = _context.UsuarioRoles.Count(ur => ur.IdRol == r.IdRol)
                     }).FirstOrDefaultAsync();
 
-              
-
-
                 return roles;
             }
             catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al obtener el rol con Id: {idRole}", idRole);
+            { 
                 throw new Exception($"{ex.Message}");
             }
         }
@@ -139,15 +175,12 @@ namespace Miluc.Server.Servicios.Autorizacion.Rol
                 rol.Descripcion = dtoUpdate.Descripcion.Trim();
                 rol.Activo = dtoUpdate.Activo;
                 rol.FechaActualizacion = DateTime.Now;
-
                 _context.Roles.Update(rol);
-                return await _context.SaveChangesAsync()>0 ;
-                 
+                return await _context.SaveChangesAsync() > 0;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al actualizar el rol con Id: {Id}", dtoUpdate.IdRol);
-                throw;
+                throw new Exception($"Error al actualizar el rol con Id:{ex.Message}");
             }
         }
 

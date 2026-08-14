@@ -44,6 +44,7 @@ namespace Miluc.Server.Servicios.Usuarios
                     PasswordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(dto.Password)),
                     Salt = hmac.Key,
                     Activo = true,
+                    CodVendedorSAP = dto.CodVendedorSAP ?? -1,
                     FechaCreacion = DateTime.Now,
                     FechaActualizacion = DateTime.Now
                 };
@@ -142,6 +143,7 @@ namespace Miluc.Server.Servicios.Usuarios
                 user.TwoFactorEnabled=dto.TwoFactorEnabled;
                 user.DebeCambiarPassword = dto.DebeCambiarPassword;
                 user.FechaActualizacion = DateTime.UtcNow;
+                user.CodVendedorSAP = dto.CodVendedorSAP ?? -1;
                 //  PASSWORD (solo si se envía) 
                 if (!string.IsNullOrWhiteSpace(dto.Password))
                 {
@@ -225,9 +227,7 @@ namespace Miluc.Server.Servicios.Usuarios
             }
             catch (Exception ex) 
             {
-              
-                throw new Exception($"Error al eliminar el Usuario {ex.Message}");
-               
+                throw new Exception($"Error al eliminar el Usuario {ex.Message}");  
             }
         }
         public async Task<UsuarioReadDto?> GetByIdUsuarioAsync(int id)
@@ -240,10 +240,10 @@ namespace Miluc.Server.Servicios.Usuarios
                 // Importante: Incluimos relaciones y proyectamos al DTO
                 var usuarioGetId = await _context.Usuarios
                       .AsNoTracking()
-                      .Include(u => u.UsuarioRoles)
-                           .ThenInclude(ur => ur.Rol)
-                      .Include(u => u.UsuarioTipoUsuario)
-                         .ThenInclude(u => u.TipoUsuario)
+                      //.Include(u => u.UsuarioRoles)
+                      //     .ThenInclude(ur => ur.Rol)
+                      //.Include(u => u.UsuarioTipoUsuario)
+                      //   .ThenInclude(u => u.TipoUsuario)
                       .Where(u => u.IdUsuario == id)
                       .Select(u => new UsuarioReadDto
                       {
@@ -256,6 +256,7 @@ namespace Miluc.Server.Servicios.Usuarios
                           TwoFactorEnabled= u.TwoFactorEnabled,
                           Email = u.Email,
                           Activo = u.Activo,
+                          CodVendedorSAP = u.CodVendedorSAP ?? -1,
                           NombresRoles = u.UsuarioRoles.Select(ur => ur.Rol.Nombre).ToList(),
                           NombresTiposUsuario = u.UsuarioTipoUsuario.Select(ut => ut.TipoUsuario.Nombre).ToList(),
                           RolesIds = u.UsuarioRoles.Select(ur => ur.Rol.IdRol).ToList(),
@@ -276,7 +277,6 @@ namespace Miluc.Server.Servicios.Usuarios
         {
             try
             {
-
                 if (string.IsNullOrEmpty(cantidad?.ToString()))
                 {
                     cantidad = 10;
@@ -290,8 +290,9 @@ namespace Miluc.Server.Servicios.Usuarios
                 {
                     // Usamos ToLower() o dejamos que el Collation de SQL decida (case-insensitive)
                     queryBusqueda = queryBusqueda.Where(r =>
-                        r.UserName.Contains(buscar) ||
-                        (r.Nombres != null && r.Apellidos.Contains(buscar)));
+                        (r.UserName.ToUpper().Contains(buscar) )||
+                        (r.Nombres.ToUpper().Contains(buscar) )  ||
+                        (r.Apellidos.ToUpper().Contains(buscar)));
                 }
 
                 int totalEncontrados = await queryBusqueda.CountAsync();
@@ -323,6 +324,7 @@ namespace Miluc.Server.Servicios.Usuarios
                         TwoFactorEnabled= u.TwoFactorEnabled,
                         Email = u.Email,
                         Activo = u.Activo,
+
                         NombresRoles = u.UsuarioRoles.Select(ur => ur.Rol.Nombre).ToList(),
                         NombresTiposUsuario = u.UsuarioTipoUsuario.Select(ut => ut.TipoUsuario.Nombre).ToList()
 

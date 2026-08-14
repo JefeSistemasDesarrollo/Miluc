@@ -1,20 +1,19 @@
 ﻿
 .text-maroon {
-    color: #800020;
+    color: #000000;
 }
 .border-maroon {
-    border-left: 5px solid #800020;
-    
+    border-left: 5px solid #D62F46;
 }
 .bg-marron {
-    background-color: #800020;
+    background-color: #D62F46;
 }
 .bg-maroon {
-    background-color: #800020;
+    background-color: #D62F46;
 }
 
 .text-blue {
-    color: #5d0017;
+    color: #D62F46;
 }
 
 .fw-black {
@@ -69,19 +68,19 @@
 }
 
 .border-start-maroon {
-    border-left: 5px solid #800020;
+    border-left: 5px solid #D62F46;
 }
 
 .border-start-blue {
-    border-left: 5px solid #5d0017;
+    border-left: 5px solid #D62F46;
 }
 
 .border-start-dark {
-    border-left: 5px solid #343a40;
+    border-left: 5px solid #D62F46;
 }
 
 .border-top-maroon {
-    border-top: 5px solid #800020;
+    border-top: 5px solid #D62F46;
 }
 
 .btn-white-modern { 

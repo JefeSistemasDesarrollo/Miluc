@@ -13,11 +13,11 @@
     @* Cabecera *@
     <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-2">
         <div>
-            <h2 class="fw-bold text-vinotinto m-0"><i class="bi bi-pencil-square me-2"></i> Role</h2>
+            <h2 class="fw-bold text-negro m-0"><i class="bi bi-pencil-square me-2"></i> Role</h2>
             <p class="text-muted mb-0 small">Complete los datos obligatorios marcados con (*).</p>
         </div>
 
-        <button class="btn btn-vinotinto btn-sm rounded-pill px-3" @onclick="Volver"><i class="bi bi-arrow-left me-1"> Volver Role</i> </button>
+        <button class="btn btn-rojo btn-sm rounded-pill px-3" @onclick="Volver"><i class="bi bi-arrow-left me-1"> Volver Role</i> </button>
     </div>
 
     <EditForm Model="roleUpdateDto" OnValidSubmit="EditarRole">
@@ -48,7 +48,7 @@
                         </div>
                     </div>
                    <div class="card-footer bg-white border-0 p-4 text-end">
-                        <button type="submit" class="btn btn-vinotinto btn-lg rounded-pill px-5 shadow-sm" disabled="@procesando">
+                        <button type="submit" class="btn btn-rojo btn-lg rounded-pill px-5 shadow-sm" disabled="@procesando">
                             @if (procesando)
                             {
                                 <span class="spinner-border spinner-border-sm me-2"></span> <span>Guardando...</span>
