@@ -64,42 +64,51 @@ namespace Miluc.Server.Servicios.Nomina
                 {
 
 
-                    ContratoLaboralId = c.ContratoLaboralId,
-                    EmpresaId = c.EmpresaId,
-                    NombreTipoContrato = c.TipoContrato.NombreContrato,
-                   
-                    FechaCreacion = c.FechaCreacion,
-                    //RELACION CON EL NOMBRE DE LA EMPRESA
-                    NombreEmpresa = c.Empresa.NombreEmpresa,
-                    //RELACION CON EL EMPLEADO
-                    EmpleadoId = c.EmpleadoId,
-                    //  Relacion Concatenar  los nombres del empleado para mostrar el nombre completo
-                    NombreEmpleado = $"{c.Empleado.PrimerNombre} {c.Empleado.SegundoNombre} {c.Empleado.PrimerApellido} {c.Empleado.SegundoApellido}",
-                    //Relacion con el nombre del tipo de contrato
-                    TipoContratoId = c.TipoContratoId,
+                var datosIntermedios = await query
+                    .Skip((page - 1) * cantidadtop)
+                    .Take(cantidadtop)
+                    .Select(x => new
+                    {
+                        x.EmpleadoId,
+                        x.PrimerNombre,
+                        x.SegundoNombre,
+                        x.PrimerApellido,
+                        x.SegundoApellido,
+                        x.Documento,
 
-                }).Skip((page - 1) * cantidadTop)
-                    .Take(cantidadTop)
+                        Contrato = x.ContratoLaboral
+                            .OrderByDescending(c => c.FechaCreacion)
+                            .Select(c => new
+                            {
+                                c.ContratoLaboralId,
+                                c.FechaCreacion,
+                                c.Activo, // Lee el bit directamente de la tabla ContratoLaboral
+                                c.EmpresaId,
+                                NombreEmpresa = c.Empresa != null ? c.Empresa.NombreEmpresa : null,
+                                Nit = c.Empresa != null ? c.Empresa.Nit : null,
+
+                                c.TipoContratoId,
+                                NombreTipoContrato = c.TipoContrato != null ? c.TipoContrato.NombreContrato : null,
+
+                                Detalle = c.ContratoLaboralDetalle
+                                    .OrderByDescending(d => d.FechaInicio)
+                                    .Select(d => new
+                                    {
+                                        d.ContratoLaboralDetalleId,
+                                        d.FechaInicio,
+                                        d.FechaFinalizacion,
+                                        d.Cargo,
+                                        d.CentroCosto,
+                                        d.Salario
+                                    })
+                                    .FirstOrDefault()
+                            })
+                            .FirstOrDefault()
+                    })
                     .ToListAsync();
-                return (contrato, totalRegistros);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error al obtener los contratos laborales: {ex.Message}");
-            }
-        }
 
-        public async Task<ContratoLabralreaderDto> GetContratoById(int idcontrato)
-        {
-            try
-            {
-                var contratoLabId = await _context.ContratoLaboral.AsNoTracking()
-                .Include(t => t.TipoContrato)
-                .Include(e => e.Empresa)
-                .Include(e => e.Empleado)
-                .Include(c => c.ContratoLaboralDetalle)
-                .Where(c => c.ContratoLaboralId == idcontrato)
-                .Select(c => new ContratoLabralreaderDto
+                var contratos = datosIntermedios.Select(x => new ContratoLabralreaderDto
+                
                 {
 
 

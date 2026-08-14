@@ -7,6 +7,11 @@ namespace Miluc.Shared.DTOs.Nomina.ContratoLaboralDto
 {
     public class ContratoLabralreaderDto
     {
+        public int EmpleadoId { get; set; }//fk de empleado
+        public string NombreEmpleado { get; set; }
+        public string Documento { get; set; } = string.Empty;
+
+
         public int ContratoLaboralId { get; set; }
         public int EmpresaId { get; set; } //fk de empresa
         public string NombreEmpresa { get; set; }= string.Empty;
