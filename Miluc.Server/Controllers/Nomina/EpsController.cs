@@ -55,9 +55,9 @@ namespace Miluc.Server.Controllers.Nomina
                     StackTrace: ex.StackTrace,
                     usuario: User.Identity?.Name ?? "Sistema",
                     metodo: "HttpGet",
-                    ruta: "/api/Empleado",
+                    ruta: "/api/Eps",
                     ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
-                    origen: "EmpleadoController");
+                    origen: "EpsController");
 
                 return StatusCode(500, new ResponseAPI<List<EpsReaderDto>>
                 {
@@ -106,54 +106,54 @@ namespace Miluc.Server.Controllers.Nomina
                     CantRegistros = 0
                 });
             }
-            
+
         }
         [HttpGet("{id}")]
         public async Task<ActionResult<ResponseAPI<EpsReaderDto>>> GetByEpsAsync(int id)
-        
-        
+
+
+        {
+            try
             {
-                try
+                var eps = await epsService.GetByEpsAsync(id);
+                if (eps == null)
                 {
-                    var eps = await epsService.GetByEpsAsync(id);
-                    if (eps == null)
-                    {
-                        return NotFound(new ResponseAPI<EpsReaderDto>
-                        {
-                            EsCorrecto = false,
-                            Valor = null,
-                            Mensaje = "eps no encontrado",
-                            CantRegistros = 0,
-                        });
-                    }
-                    return Ok(new ResponseAPI<EpsReaderDto>
-                    {
-                        EsCorrecto = true,
-                        Valor = eps,
-                        Mensaje = "eps obtenido correctamente",
-                        CantRegistros = 1,
-                    });
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[ERROR REAL EN GET]: {ex.Message} -> {ex.StackTrace}");
-                    await _log.GuardarErrorAsync(
-                        message: ex.Message,
-                        StackTrace: ex.StackTrace,
-                        usuario: User.Identity?.Name ?? "Sistema",
-                        metodo: "HttpGet",
-                        ruta: $"/api/Eps/{id}",
-                        ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
-                        origen: "EPSController");
-                    return StatusCode(500, new ResponseAPI<EpsReaderDto>
+                    return NotFound(new ResponseAPI<EpsReaderDto>
                     {
                         EsCorrecto = false,
                         Valor = null,
-                        Mensaje = "Ocurrió un error al obtener el eps.",
-                        CantRegistros = 0
+                        Mensaje = "eps no encontrado",
+                        CantRegistros = 0,
                     });
                 }
+                return Ok(new ResponseAPI<EpsReaderDto>
+                {
+                    EsCorrecto = true,
+                    Valor = eps,
+                    Mensaje = "eps obtenido correctamente",
+                    CantRegistros = 1,
+                });
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR REAL EN GET]: {ex.Message} -> {ex.StackTrace}");
+                await _log.GuardarErrorAsync(
+                    message: ex.Message,
+                    StackTrace: ex.StackTrace,
+                    usuario: User.Identity?.Name ?? "Sistema",
+                    metodo: "HttpGet",
+                    ruta: $"/api/Eps/{id}",
+                    ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
+                    origen: "EPSController");
+                return StatusCode(500, new ResponseAPI<EpsReaderDto>
+                {
+                    EsCorrecto = false,
+                    Valor = null,
+                    Mensaje = "Ocurrió un error al obtener el eps.",
+                    CantRegistros = 0
+                });
+            }
+        }
 
 
         [HttpPut("{id}")]
@@ -188,7 +188,7 @@ namespace Miluc.Server.Controllers.Nomina
             }
             catch (Exception ex)
             {
-                
+
                 await _log.GuardarErrorAsync(
                     message: ex.Message,
                     StackTrace: ex.StackTrace,
@@ -203,7 +203,7 @@ namespace Miluc.Server.Controllers.Nomina
             }
         }
 
-       
+
         private static ResponseAPI<EpsReaderDto> ErrorResponse(string mensaje, List<string>? errores = null) => new()
         {
             EsCorrecto = false,
@@ -212,6 +212,55 @@ namespace Miluc.Server.Controllers.Nomina
             Errores = errores,
             CantRegistros = 0
         };
+
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<ResponseAPI<bool>>> DeleteEpsAsync(int id)
+        {
+            try
+            {
+                var result = await epsService.DeleteEpsAsync(id);
+
+                if (!result)
+                {
+                    return NotFound(new ResponseAPI<bool>
+                    {
+                        EsCorrecto = false,
+                        Valor = false,
+                        Mensaje = "No se encontró el eps.",
+                        CantRegistros = 0
+                    });
+                }
+
+                return Ok(new ResponseAPI<bool>
+                {
+                    EsCorrecto = true,
+                    Valor = true,
+                    Mensaje = "Esp eliminado correctamente.",
+                    CantRegistros = 1
+                });
+            }
+            catch (Exception ex)
+            {
+                await _log.GuardarErrorAsync(
+                    message: ex.ToString(),
+                    StackTrace: ex.StackTrace,
+                    usuario: User.Identity?.Name ?? "Sistema",
+                    metodo: "DeleteEpsAsync", // Es recomendable poner el nombre real del método
+                    ruta: $"/api/Eps/{id}",
+                    ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
+                    origen: "EpsController"
+                );
+
+                return StatusCode(500, new ResponseAPI<bool>
+                {
+                    EsCorrecto = false,
+                    Valor = false,
+                    Mensaje = $" {ex.Message}",
+                    CantRegistros = 0
+                });
+            }
+        }
     }
 }
 

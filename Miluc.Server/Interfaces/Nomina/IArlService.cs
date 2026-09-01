@@ -12,6 +12,7 @@ namespace Miluc.Server.Interfaces.Nomina
         public Task<ArlReaderDto> CreateArlAsync(ArlCreateDto arlCreateDto);
         public Task<ArlReaderDto> GetByArlAsync(int id);
         public  Task<ArlReaderDto> UpdateArlAsync(ArlUpdate arlUpdate);
+        public  Task<bool> DeleteArlAsync(int id);
 
 
     }

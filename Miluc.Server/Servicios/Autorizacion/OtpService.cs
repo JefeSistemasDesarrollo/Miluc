@@ -52,7 +52,7 @@ namespace Miluc.Server.Servicios.Autorizacion
                 );
 
             }
-            catch (Exception ex)
+            catch (Exception )
             {
 
 

@@ -131,12 +131,15 @@
 
                                 <td class="text-center pe-4 align-middle">
                                     <div class="btn-group shadow-sm border rounded-pill bg-white overflow-hidden">
-                                        <button class="btn btn-sm px-3" title="Ver Detalle" @onclick="() => VerDetalle(em.ArlId)">
+                                        <button class="btn-detail btn btn-dark btn-sm px-2 border-end""Ver Detalle" @onclick="() => VerDetalle(em.ArlId)">
                                             <i class="bi bi-eye text-dark"></i>
                                         </button>
-                                        <button class="btn btn-white btn-sm px-3" title="Modificar ARL" @onclick="() => ModificarArl(em.ArlId)">
+                                        <button class="btn btn-white btn-sm px-2 border-end edit" title= "Modificar ARL" @onclick="() => ModificarArl(em.ArlId)">
                                             <i class="bi bi-pencil-square text-primary"></i>
                                         </button>
+                                         <button class="btn btn-white btn-sm px-2 delete" title="Eliminar Arl" @onclick="() => EliminarEps (em.ArlId)">
+                                            <i class="bi bi-trash3 text-danger"></i>
+                                        </button
                                     </div>
                                 </td>
                             </tr>
@@ -200,10 +203,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await cargarAfiliaciones();
+        await cargarArl();
     }
 
-    public async Task cargarAfiliaciones()
+    public async Task cargarArl()
     {
         cargando = true;
 
@@ -245,7 +248,7 @@
     public async Task BuscarEnServidor()
     {
         paginaActual = 1;
-        await cargarAfiliaciones();
+        await cargarArl();
     }
 
     private async Task HandleEnter(KeyboardEventArgs e)
@@ -262,7 +265,7 @@
         {
             cantidadPorPagina = nuevaCantidad;
             paginaActual = 1;
-            await cargarAfiliaciones();
+            await cargarArl();
         }
     }
 
@@ -272,11 +275,85 @@
             return;
 
         paginaActual = nuevaPagina;
-        await cargarAfiliaciones();
+        await cargarArl();
     }
+      private async Task eliminarArl(int id)
+    {
+        var resultadoSwal = await js.InvokeAsync<System.Text.Json.JsonElement>("Swal.fire", new
+
+        {
+            title = "¿Deseas eliminar esta eps?",
+            text = "Esta acción removerá el registro permanentemente si no cuenta con transacciones.",
+            icon = "warning",            
+            showCancelButton = true,
+            confirmButtonColor = "#D62F46",
+            cancelButtonColor = "#FDC922",
+            confirmButtonText = "Sí, eliminar",
+            cancelButtonText = "Cancelar"
+        });
+
+        // Extrae el valor booleano resultante del JSON devuelto por JavaScript para comprobar si se confirmó la acción
+        bool confirmado = false;
+        if (resultadoSwal.ValueKind == System.Text.Json.JsonValueKind.Object &&
+            resultadoSwal.TryGetProperty("isConfirmed", out var propiedadConfirmado))
+        {
+            confirmado = propiedadConfirmado.GetBoolean();
+        }
+
+        if (confirmado)
+        {
+            cargando = true;
+            StateHasChanged();
+
+            try
+            {
+                // Invocación al cliente HTTP para eliminar físicamente el id seleccionado
+                var respuesta = await _arlService.DeleteArlAsync(id);
+
+               if (respuesta != null && respuesta.EsCorrecto)
+            {
+                await js.InvokeVoidAsync("Swal.fire", new
+                {
+                    icon = "success",
+                    title = "¡Eliminado!",
+                 
+                    text = "La Arl ha sido removida con éxito.", 
+                    confirmButtonText = "Aceptar",
+                    confirmButtonColor = "#D62F46"
+                });
+
+                await cargarArl();
+            }
+                else
+                {
+                    string mensajeServidor = respuesta != null ? respuesta.Mensaje : "No se pudo procesar la solicitud.";
+
+                    await js.InvokeVoidAsync("Swal.fire", new
+                    {
+                        icon = "error",
+                        title = "No se puede eliminar",
+                        text = mensajeServidor,
+                        confirmButtonText = "Aceptar",
+                        confirmButtonColor = "#D62F46"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error durante el proceso de borrado: {ex.Message}");
+            }
+            finally
+            {
+                cargando = false;
+                StateHasChanged();
+            }
+        }
+    }
+
 
     private void VerDetalle(int id) => nav.NavigateTo($"/api/Arl/{id}");
     private void ModificarArl(int idArl) => nav.NavigateTo($"/editar/api/Arl/{idArl}");
     private void Volver() => nav.NavigateTo("administrar-entidadesSeguridadSocial");
     private void IrACrearArl() => nav.NavigateTo("/api/Arl/CrearArl");
+    private async Task EliminarEps(int id) => await eliminarArl(id);
 }

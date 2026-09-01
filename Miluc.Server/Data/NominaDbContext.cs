@@ -40,6 +40,8 @@ namespace Miluc.Server.Data
         public DbSet<ClaseVivienda> ClaseVivienda { get; set; }
         public DbSet<NivelAcademico> NivelAcademico { get; set; }
         public DbSet<MatrizSociodemografica> MatrizSociodemografica { get; set; }
+        public DbSet<Cargo> Cargos { get; set; }
+
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -110,6 +112,15 @@ namespace Miluc.Server.Data
             modelBuilder.Entity<ContratoLaboralDetalle>().ToTable("ContratoLaboralDetalle");
             modelBuilder.Entity<ContratoLaboralDetalle>().HasKey(c => c.ContratoLaboralDetalleId);
             modelBuilder.Entity<ContratoLaboralDetalle>().Property(x => x.Salario).HasPrecision(18, 2);
+
+            modelBuilder.Entity<Cargo>().ToTable("Cargos");
+            modelBuilder.Entity<Cargo>().HasKey(c => c.CargoId); // Coincide con la columna de tu imagen
+
+            modelBuilder.Entity<ContratoLaboralDetalle>()
+                .HasOne(d => d.Cargo)
+                .WithMany(c => c.ContratoLaboralDetalle)
+                .HasForeignKey(d => d.CargoId); // Asegúrate de que la FK en detalle apunte bien
+
 
             // Departamento
             modelBuilder.Entity<Departamento>().ToTable("Departamento");

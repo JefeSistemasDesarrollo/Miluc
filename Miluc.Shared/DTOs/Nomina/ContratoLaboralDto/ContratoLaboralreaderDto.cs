@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Miluc.Shared.DTOs.Nomina.ContratoLaboralDto
 {
-    public class ContratoLabralreaderDto
+    public class ContratoLaboralreaderDto
     {
         public int EmpleadoId { get; set; }//fk de empleado
         public string NombreEmpleado { get; set; }
@@ -19,7 +19,11 @@ namespace Miluc.Shared.DTOs.Nomina.ContratoLaboralDto
         public int ContratoLaboralDetalleId { get; set; }
         public DateTime? FechaInicio { get; set; }
         public DateTime? FechaFinalizacion { get; set; }
-        public string Cargo { get; set; } = string.Empty;
+        public DateTime? FechaTerminacion { get; set; }
+        public int CargoId { get; set; }
+        public string NombreCargo { get; set; }
+         public string Observacion {  get; set; }
+
         public string CentroCosto { get; set; } = string.Empty;
         public decimal Salario { get; set; }
 

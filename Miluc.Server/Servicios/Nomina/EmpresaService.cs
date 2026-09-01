@@ -7,7 +7,7 @@ namespace Miluc.Server.Servicios.Nomina
 {
     public class EmpresaService(NominaDbContext _context) : IEmpresaService
     {
-        public async Task<List<EmpresaReaderDto>> GetAllEmpresasAsync()
+        public async Task<List<EmpresaReaderDto>> GetEmpresasAsync()
         {
             try { 
                 var empresas =  await _context.Empresa.AsTracking()

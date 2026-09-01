@@ -22,6 +22,7 @@ using Miluc.Client.Servicios.Nomina;
 using Miluc.Client.Servicios.SapService;
 using Miluc.Client.Servicios.UsuariosRolesPermisos;
 using Miluc.Shared.DTOs.Nomina.AfiliacionSeguridadSocialDto;
+using TuProyecto.Client.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -88,6 +89,14 @@ builder.Services.AddScoped<IEpsClientService, EpsClientService>();
 builder.Services.AddScoped<IArlClientService, ArlClientService>();
 builder.Services.AddScoped<IAfpClientService, AfpClientService>();
 builder.Services.AddScoped<ICajaCompensacionClientService, CajaCompClientService>();
+builder.Services.AddScoped<ITipoContratoClientService, TipoContratoClientService>();
+builder.Services.AddScoped<IContratoLaboralDetalleClientService, ContratoLaboralDetalleClientService>();
+builder.Services.AddScoped<IEmpresaClientSevice, EmpresaClienteService>();
+builder.Services.AddScoped<ICargos, CargoServiceClient>();
+
+
+
+
 // Abre el Program.cs del proyecto Client y añade esta línea junto a tus otros servicios de nómina:
 
 

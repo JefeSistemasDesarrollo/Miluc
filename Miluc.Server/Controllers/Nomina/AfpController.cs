@@ -22,7 +22,7 @@ namespace Miluc.Server.Controllers.Nomina
             try
             {
                 var (afp, totalRegistros) = await afpService.GetAfpAsync(filtro, page, cantidad);
-                if (afp == null || !afp.Any())
+                if (afp == null || afp.Count == 0)
                 {
                     return NotFound(new ResponseAPI<List<AfpReaderDto>>
                     {
@@ -105,7 +105,7 @@ namespace Miluc.Server.Controllers.Nomina
                 {
                     EsCorrecto = false,
                     Valor = null,
-                    Mensaje = $"Ocurrió un error al crear la AFP: {ex.Message}",
+                    Mensaje = ex.Message,
                     CantRegistros = 0
                 });
             }
@@ -151,7 +151,7 @@ namespace Miluc.Server.Controllers.Nomina
                 {
                     EsCorrecto = false,
                     Valor = null,
-                    Mensaje = "Ocurrió un error al obtener el eps.",
+                    Mensaje = "Ocurrió un error al obtener la Afp.",
                     CantRegistros = 0
                 });
             }
@@ -163,10 +163,10 @@ namespace Miluc.Server.Controllers.Nomina
         {
             // 1. Validaciones previas en un solo bloque 
             if (updateAfp == null)
-                return BadRequest(ErrorResponse("Se debe enviar la información de la EPS."));
+                return BadRequest(ErrorResponse("Se debe enviar la información de la AFP."));
 
             if (id != updateAfp.AfpId)
-                return BadRequest(ErrorResponse("El ID enviado en la URL no coincide con la EPS."));
+                return BadRequest(ErrorResponse("El ID enviado en la URL no coincide con la AFP."));
 
             if (!ModelState.IsValid)
             {
@@ -214,6 +214,54 @@ namespace Miluc.Server.Controllers.Nomina
             Errores = errores,
             CantRegistros = 0
         };
+    
+     [HttpDelete("{id}")]
+        public async Task<ActionResult<ResponseAPI<bool>>> DeleteAfpAsync(int id)
+        {
+            try
+            {
+                var result = await afpService.DeleteAfpAsync(id);
+
+                if (!result)
+                {
+                    return NotFound(new ResponseAPI<bool>
+                    {
+                        EsCorrecto = false,
+                        Valor = false,
+                        Mensaje = "No se encontró la Afp.",
+                        CantRegistros = 0
+                    });
+                }
+
+                return Ok(new ResponseAPI<bool>
+                {
+                    EsCorrecto = true,
+                    Valor = true,
+                    Mensaje = "Afp eliminada correctamente.",
+                    CantRegistros = 1
+                });
+            }
+            catch (Exception ex)
+            {
+                await _log.GuardarErrorAsync(
+                    message: ex.ToString(),
+                    StackTrace: ex.StackTrace,
+                    usuario: User.Identity?.Name ?? "Sistema",
+                    metodo: "DeleteAfpAsync", // Es recomendable poner el nombre real del método
+                    ruta: $"/api/Afp/{id}",
+                    ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
+                    origen: "AfpController"
+                );
+
+                return StatusCode(500, new ResponseAPI<bool>
+                {
+                    EsCorrecto = false,
+                    Valor = false,
+                    Mensaje = ex.Message,
+                    CantRegistros = 0
+                });
+            }
+        }   
     }
 }
 

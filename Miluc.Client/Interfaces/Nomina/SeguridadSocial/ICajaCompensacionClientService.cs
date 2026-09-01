@@ -11,5 +11,6 @@ namespace Miluc.Client.Interfaces.Nomina.SeguridadSocial
          Task<ResponseAPI<CajaCompensacionReaderDto>> CreateCajaAsync(CajaCreateDto createdto);
         Task<ResponseAPI<CajaCompensacionReaderDto>> GetBycajaAsync(int id);
         Task<ResponseAPI<CajaCompensacionReaderDto>> CajaUpdate(CajaUpdate cajaUpdate);
+        Task<ResponseAPI<bool>> DeleteCajaAsync(int id);
     }
 }

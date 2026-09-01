@@ -6,6 +6,7 @@ using Miluc.Shared.DTOs.Nomina.Afp;
 using Miluc.Shared.DTOs.Nomina.Afp.Dto;
 using Miluc.Shared.DTOs.Nomina.AfpDto;
 using Miluc.Shared.DTOs.Nomina.Arl.Dto;
+using Miluc.Shared.DTOs.Nomina.ArlDto;
 using Miluc.Shared.DTOs.Nomina.EpsDto;
 using Miluc.Shared.Models.Response;
 
@@ -27,15 +28,14 @@ namespace Miluc.Server.Servicios.Nomina
 
                 if (existeAfp) throw new Exception("Ya existe una AFP con el mismo nombre.");
 
-                if (existeAfp) throw new Exception("Ya existe una ARL con el mismo nombre.");
-
+                
                 // Validar si el código ya existe (solo si se proporciona un código)
                 if (!string.IsNullOrEmpty(afpCreateDto.Codigo))
                 {
                     var existeCodigo = await _context
-                       .Arl.AnyAsync
+                       .Afp.AnyAsync
                         (a => a.Codigo.ToLower().Trim() == afpCreateDto.Codigo.ToLower().Trim());
-                    if (existeCodigo) throw new Exception("Ya existe una ARL con el mismo código.");
+                    if (existeCodigo) throw new Exception("Ya existe una AFP con el mismo código.");
                 }
 
 
@@ -64,18 +64,17 @@ namespace Miluc.Server.Servicios.Nomina
                     Activo = nuevaAfp.Activo
                 };
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
-                throw new Exception($"Error al crear la AFP: {ex.Message}");
+                throw;
             }
-        }
+        }        
 
         public async Task<(List<AfpReaderDto> Data, int TotalRegistros)> GetAfpAsync(string? filtro = null, int page = 1, int? cantidad = null)
         {
             try
             {
-
 
                 int CantidadTop = cantidad ?? 20;
                 var query = _context.Afp.AsNoTracking().AsQueryable();
@@ -126,20 +125,13 @@ namespace Miluc.Server.Servicios.Nomina
                         FechaCreacion = DateTime.Now,
                         Activo = e.Activo
 
-                    }).FirstOrDefaultAsync();
-
-                if (afpId == null) throw new Exception("afp no encontrado.");
-
+                    }).FirstOrDefaultAsync() ?? throw new Exception("Afp no encontrado.");
                 return afpId;
-
-
-
-
 
             }
             catch (Exception ex)
             {
-                throw new Exception($"Eps no encontrada:{ex.Message}");
+                throw new Exception($"Afp no encontrada:{ex.Message}");
             }
         }
 
@@ -150,46 +142,85 @@ namespace Miluc.Server.Servicios.Nomina
             {
 
                 var afp = await _context.Afp.FirstOrDefaultAsync(a => a.AfpId == updateAfp.AfpId);
-                if (afp == null)
-                    throw new Exception("La Afp no existe.");
-
-
-                var nombreFormateado = updateAfp.Nombre?.Trim().ToUpper();
-                var codigoFormateado = updateAfp.Codigo?.Trim().ToUpper();
-
-
-                var existeAfp = await _context.Afp.AnyAsync(a =>
-                    a.AfpId != updateAfp.AfpId &&
-                    (a.Nombre.ToUpper() == nombreFormateado || a.Codigo.ToUpper() == codigoFormateado)
-                );
-
-                if (existeAfp)
-                    throw new Exception("Ya existe otra Afp con el mismo nombre o código.");
-
-                afp.AfpId = updateAfp.AfpId;
-                afp.Nombre = updateAfp.Nombre;
-                afp.Codigo = updateAfp.Codigo;
-                afp.FechaActualizacion = DateTime.Now;
-                afp.Activo = updateAfp.Activo;
-
-
-                await _context.SaveChangesAsync();
-
-
-                return new AfpReaderDto
+                if (afp != null)
                 {
-                    AfpId = afp.AfpId,
-                    Nombre = afp.Nombre,
-                    Codigo = afp.Codigo,
-                    FechaActualizacion = afp.FechaActualizacion,
-                    Activo = afp.Activo
-                };
+                    if (afp.Activo && !updateAfp.Activo)
+                    {
+                        //Busca en tabla AfiliacionSeguridadSocial si hay empleados  afiliados a esrta afp
+                        bool tieneEmpleadosAfiliados = await _context.AfiliacionSeguridadSocial.AnyAsync(a => a.AfpId == updateAfp.AfpId);
+                        // si Tiene afiliaciones Lanza exepcion  ya que tiene afiliados
+                        if (tieneEmpleadosAfiliados)
+                        {
+                            throw new Exception("La afp no se puede inactivar porque tiene empleados afiliados.");
+                        }
+                    }
+
+
+                    var nombreFormateado = updateAfp.Nombre?.Trim().ToUpper();
+                    var codigoFormateado = updateAfp.Codigo?.Trim().ToUpper();
+
+
+                    var existeAfp = await _context.Afp.AnyAsync(a =>
+                        a.AfpId != updateAfp.AfpId &&
+                        (a.Nombre.ToUpper() == nombreFormateado || a.Codigo.ToUpper() == codigoFormateado)
+                    );
+
+                    if (existeAfp)
+                        throw new Exception("Ya existe otra Afp con el mismo nombre o código.");
+
+                    afp.AfpId = updateAfp.AfpId;
+                    afp.Nombre = updateAfp.Nombre;
+                    afp.Codigo = updateAfp.Codigo;
+                    afp.FechaActualizacion = DateTime.Now;
+                    afp.Activo = updateAfp.Activo;
+
+
+                    await _context.SaveChangesAsync();
+
+
+                    return new AfpReaderDto
+                    {
+                        AfpId = afp.AfpId,
+                        Nombre = afp.Nombre,
+                        Codigo = afp.Codigo,
+                        FechaActualizacion = afp.FechaActualizacion,
+                        Activo = afp.Activo
+                    };
+                }
+
+                throw new Exception("La Afp no existe.");
 
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error al actualizar AFP: {ex.Message}");
+                throw new Exception(ex.Message);
 
+            }
+        }
+        public async Task<bool> DeleteAfpAsync(int id)
+        {
+            try
+            {
+                var afp = await _context.Afp.FirstOrDefaultAsync(e => e.AfpId == id) ?? throw new Exception("La EPS no existe.");
+
+                // Validar si tiene afiliaciones activas o históricas vinculadas
+                bool tieneEmpleadosAfiliados = await _context.AfiliacionSeguridadSocial
+                    .AnyAsync(af => af.AfpId == id);
+
+                if (tieneEmpleadosAfiliados)
+                {
+                    throw new Exception("La Afp no se puede eliminar porque cuenta con registros o empleados vinculados en el sistema.");
+                }
+
+                // Si no tiene registros vinculados, procedemos con seguridad
+                _context.Afp.Remove(afp);
+                await _context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
             }
         }
 
