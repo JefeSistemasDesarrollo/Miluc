@@ -12,6 +12,7 @@ namespace Miluc.Server.Interfaces.Nomina
         public Task<AfpReaderDto> CreateAfpAsync(AfpCreateDto afpCreateDto);
         public Task<AfpReaderDto> GetByAfpAsync(int id);
         public Task<AfpReaderDto> UpdateAfpAsync(UpdateAfp updateAfp);
+        Task<bool> DeleteAfpAsync(int id);
     }
 }
 

@@ -1,7 +1,8 @@
 ﻿@page "/nomina/detalle/{idEmpleado:int}"
 @using Miluc.Client.Interfaces.Nomina
-@using Miluc.Shared.DTOs.Nomina.EmpleadoDto
+@using Miluc.Client.Interfaces.Nomina.SeguridadSocial
 @using Miluc.Shared.DTOs.Nomina.AfiliacionSeguridadSocialDto
+@using Miluc.Shared.DTOs.Nomina.EmpleadoDto
 
 @inject NavigationManager nav
 @inject IAfSeguridadSocialClientService _afSeguridadSocialClientService

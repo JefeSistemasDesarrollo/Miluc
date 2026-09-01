@@ -2,6 +2,7 @@
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Nomina;
 using Miluc.Server.Models.Nomina;
+using Miluc.Server.Servicios.Autorizacion;
 using Miluc.Server.Servicios.Nomina;
 using Miluc.Shared.DTOs.Nomina.CajaCompensacionDto;
 using Miluc.Shared.DTOs.Nomina.EpsDto;
@@ -17,7 +18,7 @@ namespace Miluc.Server.Controllers.Nomina
         {
             try
             {
-                
+
                 var (caja, totalRegistrosBD) = await cajaService.GetCajaCompensacionAsync(filtro, page, cantidad);
 
                 if (caja == null || !caja.Any())
@@ -36,12 +37,12 @@ namespace Miluc.Server.Controllers.Nomina
                     EsCorrecto = true,
                     Valor = caja,
                     Mensaje = "Caja Compensacion obtenidas exitosamente.",
-                    CantRegistros = totalRegistrosBD 
+                    CantRegistros = totalRegistrosBD
                 });
             }
             catch (Exception ex)
             {
-                
+
                 await _log.GuardarErrorAsync(
                     message: ex.Message,
                     StackTrace: ex.StackTrace,
@@ -52,7 +53,7 @@ namespace Miluc.Server.Controllers.Nomina
                     origen: "CajaCompensacion Controller"
                 );
 
-               
+
                 return StatusCode(500, new ResponseAPI<List<CajaCompensacionReaderDto>>
                 {
                     EsCorrecto = false,
@@ -98,8 +99,8 @@ namespace Miluc.Server.Controllers.Nomina
                 return StatusCode(500, new ResponseAPI<CajaCompensacionReaderDto>
                 {
                     EsCorrecto = false,
-                    Valor = null, 
-                    Mensaje =ex.Message,
+                    Valor = null,
+                    Mensaje = ex.Message,
                     CantRegistros = 0
                 });
 
@@ -129,7 +130,7 @@ namespace Miluc.Server.Controllers.Nomina
                 {
                     EsCorrecto = true,
                     Valor = caja,
-                    Mensaje = "eps obtenido correctamente",
+                    Mensaje = "Caja  obtenido correctamente",
                     CantRegistros = 1,
                 });
             }
@@ -160,10 +161,10 @@ namespace Miluc.Server.Controllers.Nomina
         {
             // 1. Validaciones previas en un solo bloque 
             if (cajaUpdate == null)
-                return BadRequest(ErrorResponse("Se debe enviar la información de la EPS."));
+                return BadRequest(ErrorResponse("Se debe enviar la información de la Caja."));
 
             if (id != cajaUpdate.CajaCompensacionId)
-                return BadRequest(ErrorResponse("El ID enviado en la URL no coincide con la EPS."));
+                return BadRequest(ErrorResponse("El ID enviado en la URL no coincide con la Caja."));
 
             if (!ModelState.IsValid)
             {
@@ -176,12 +177,12 @@ namespace Miluc.Server.Controllers.Nomina
                 var cajaActualizada = await cajaService.CajaUpdate(cajaUpdate);
 
                 return cajaActualizada is null
-                    ? NotFound(ErrorResponse("No se encontró la CAJA para actualizar."))
+                    ? NotFound(ErrorResponse("No se encontró la Caja para actualizar."))
                     : Ok(new ResponseAPI<CajaCompensacionReaderDto>
                     {
                         EsCorrecto = true,
                         Valor = cajaActualizada,
-                        Mensaje = "CAJA actualizada correctamente.",
+                        Mensaje = "Caja actualizada correctamente.",
                         CantRegistros = 1
                     });
             }
@@ -211,9 +212,56 @@ namespace Miluc.Server.Controllers.Nomina
             Errores = errores,
             CantRegistros = 0
         };
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<ResponseAPI<bool>>> DeleteCajaAsync(int id)
+        {
+            try
+            {
+                var result = await cajaService.DeleteCajaAsync(id);
+
+                if (!result)
+                {
+                    return NotFound(new ResponseAPI<bool>
+                    {
+                        EsCorrecto = false,
+                        Valor = false,
+                        Mensaje = "No se encontró el caja.",
+                        CantRegistros = 0
+                    });
+                }
+
+                return Ok(new ResponseAPI<bool>
+                {
+                    EsCorrecto = true,
+                    Valor = true,
+                    Mensaje = "caja eliminada correctamente.",
+                    CantRegistros = 1
+                });
+            }
+            catch (Exception ex)
+            {
+                await _log.GuardarErrorAsync(
+                    message: ex.ToString(),
+                    StackTrace: ex.StackTrace,
+                    usuario: User.Identity?.Name ?? "Sistema",
+                    metodo: "DeleteCajaAsync", // Es recomendable poner el nombre real del método
+                    ruta: $"/api/Caja/{id}",
+                    ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
+                    origen: "CajaController"
+                );
+
+                return StatusCode(500, new ResponseAPI<bool>
+                {
+                    EsCorrecto = false,
+                    Valor = false,
+                    Mensaje = $" {ex.Message}",
+                    CantRegistros = 0
+                });
+            }
+        } 
     }
 }
-
 
 
 

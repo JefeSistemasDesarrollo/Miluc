@@ -9,6 +9,7 @@ namespace Miluc.Server.Interfaces.Nomina
         public Task<EpsReaderDto> UpdateEpsAsync(UpdateEpsDto updateEps);
 
         public Task<EpsReaderDto> GetByEpsAsync(int id);
-        
+         Task<bool> DeleteEpsAsync(int id);
+
     }
 }

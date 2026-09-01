@@ -26,7 +26,8 @@
             </div>
 
             <button class="btn btn-rojo btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
-                <i class="bi bi-arrow-left me-2"></i> Volver al listado
+                <i class="bi bi-arrow-left me-2"></i> Volver
+
             </button>
         </div>
 
@@ -38,7 +39,7 @@
                 </div>
             </div>
         }
-        else if (listaVacunas != null && listaVacunas.Any())
+        else
         {
             <div class="row g-4">
 
@@ -60,7 +61,7 @@
 
                                 <div class="col-md-6">
                                     <label class="form-label label-custom fw-bold">Total de Vacunas Registradas</label>
-                                    <input type="text" class="form-control input-custom-view" value="@listaVacunas.Count" readonly />
+                                    <input type="text" class="form-control input-custom-view" value="@(listaVacunas != null ? listaVacunas.Count : 0)" readonly />
                                 </div>
                             </div>
                         </div>
@@ -75,7 +76,7 @@
                                 <i class="bi bi-list-check me-2 text-vinotinto"></i>Vacunas Aplicadas
                             </h5>
                             <span class="badge bg-rojo rounded-pill px-3 py-2">
-                                @listaVacunas.Count Dosis / Registros
+                                @(listaVacunas != null ? listaVacunas.Count : 0) Dosis / Registros
                             </span>
                         </div>
 
@@ -91,33 +92,42 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @for (int i = 0; i < listaVacunas.Count; i++)
+                                    @if (listaVacunas == null || !listaVacunas.Any())
                                     {
-                                        var vacuna = listaVacunas[i];
                                         <tr>
-                                            <td class="ps-4 fw-bold text-muted">@(i + 1)</td>
-                                            <td>
-                                                <span class="fw-semibold text-dark">@vacuna.NombreVacuna</span>
+                                            <td colspan="5" class="text-center py-4 text-muted">
+                                                Sin asignar
                                             </td>
-                                            <td class="text-center text-muted">
-                                                <i class="bi bi-calendar-event me-1"></i>@vacuna.FechaVacuna
-                                            </td>
-                                            <td class="text-center text-muted">
-                                                <i class="bi bi-clock me-1"></i>@vacuna.FechaCreacion
-                                            </td>
-                                            <td class="text-center pe-4">
-                                                @if (vacuna.Activo ?? false)
-                                                    
+                                        </tr>
+                                    }
+                                    else
+                                    {
+                                        @for (int i = 0; i < listaVacunas.Count; i++)
+                                        {
+                                            var vacuna = listaVacunas[i];
+                                            <tr>
+                                                <td class="ps-4 fw-bold text-muted">@(i + 1)</td>
+                                                <td>
+                                                    <span class="fw-semibold text-dark">@(string.IsNullOrEmpty(vacuna.NombreVacuna) ? "Sin asignar" : vacuna.NombreVacuna)</span>
+                                                </td>
+                                                <td class="text-center text-muted">
+                                                    <i class="bi bi-calendar-event me-1"></i>@(vacuna.FechaVacuna?.ToString("yyyy-MM-dd") ?? "Sin asignar")
+                                                </td>
+                                                <td class="text-center text-muted">
+                                                    <i class="bi bi-calendar-event me-1"></i>@(vacuna.FechaCreacion?.ToString("yyyy-MM-dd") ?? "Sin asignar")
+                                                </td>
+                                                <td class="text-center pe-4">
+                                                    @if (vacuna.Activo ?? false)
                                                     {
-                                                        <i class="bi  text-black bi-check2-circle"></i>
+                                                        <i class="bi text-black bi-check2-circle"></i>
                                                     }
                                                     else
                                                     {
                                                         <i class="bi text-rojo bi-x-circle"></i>
-                                                    
-                                                }
-                                            </td>
-                                        </tr>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
                                     }
                                 </tbody>
                             </table>
@@ -165,35 +175,36 @@
                 return;
             }
 
-            // 🔹 CAMBIO CLAVE: Cambiamos GetEsquemasVacunacionAsync por GetEsquemaVacunacionByIdAsync
+            // 1. Intentamos obtener la información de las vacunas
             var respuesta = await _esquemaVacunacionClientService.GetEsquemaVacunacionByIdAsync(idEmpleado);
 
-            if (respuesta != null && respuesta.EsCorrecto && respuesta.Valor != null)
+            if (respuesta != null && respuesta.EsCorrecto && respuesta.Valor != null && respuesta.Valor.Any())
             {
-                // Asignamos directamente la lista del servidor (ya viene filtrada con activas e inactivas)
                 listaVacunas = respuesta.Valor;
-
-                if (listaVacunas.Any())
-                {
-                    nombreEmpleado = listaVacunas.First().NombreEmpleado ?? "Empleado";
-                }
-                else
-                {
-                    await JS.InvokeVoidAsync("alert", "El empleado no cuenta con un registro de esquema de vacunación.");
-                    Volver();
-                }
+                nombreEmpleado = listaVacunas.First().NombreEmpleado ?? "Empleado";
             }
             else
             {
-                await JS.InvokeVoidAsync("alert", "No se pudo obtener la información de esquema de vacunación.");
-                Volver();
+                // 2. Si no tiene vacunas, consultamos los datos básicos del empleado para rescatar su nombre
+                listaVacunas = new List<EsquemaVacunacionReaderDto>();
+
+                var respEmpleado = await _empleadoService.GetEmpleadoByIdAsync(idEmpleado);
+                if (respEmpleado != null && respEmpleado.EsCorrecto && respEmpleado.Valor != null)
+                {
+                    // Ajusta "NombreCompleto" o "Nombre" según tu DTO de empleado
+                    nombreEmpleado = respEmpleado.Valor.PrimerNombre ?? "Colaborador sin nombre";
+                }
+                else
+                {
+                    nombreEmpleado = "Empleado #" + idEmpleado;
+                }
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error al consultar: {ex.Message}");
-            await JS.InvokeVoidAsync("alert", "Error interno al recuperar el detalle.");
-            Volver();
+            nombreEmpleado = "Empleado";
+            listaVacunas = new List<EsquemaVacunacionReaderDto>();
         }
         finally
         {

@@ -1,4 +1,4 @@
-﻿using Miluc.Client.Interfaces.Nomina;
+﻿using Miluc.Client.Interfaces.Nomina.SeguridadSocial;
 using Miluc.Shared.DTOs.Nomina.AfiliacionSeguridadSocialDto;
 
 using Miluc.Shared.Models.Response;

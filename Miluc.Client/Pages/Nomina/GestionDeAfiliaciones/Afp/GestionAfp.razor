@@ -79,7 +79,7 @@
     <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
         <div class="table-responsive">
             <table class="table table-striped table-hover mb-0">
-                <thead class="bg-rojo  text-white">
+                <thead class="bg-rojo text-white">
                     <tr>
                         <th class="ps-4 py-3 text-start">Nombre</th>
                         <th class="ps-4 py-3 text-start">Código</th>
@@ -123,22 +123,24 @@
                                 <td class="text-center align-middle">
                                     @if (em.Activo)
                                     {
-                                        <i class="bi  text-black bi-check2-circle"></i>
+                                        <i class="bi text-black bi-check2-circle"></i>
                                     }
                                     else
                                     {
-
                                         <i class="bi text-rojo bi-x-circle"></i>
                                     }
                                 </td>
 
                                 <td class="text-center pe-4 align-middle">
                                     <div class="btn-group shadow-sm border rounded-pill bg-white overflow-hidden">
-                                        <button class="btn btn-sm px-3" title="Ver Detalle" @onclick="() => VerDetalle(em.AfpId)">
+                                        <button class="btn-detail btn btn-dark btn-sm px-2 border-end" @onclick="() => VerDetalle(em.AfpId)">
                                             <i class="bi bi-eye text-dark"></i>
                                         </button>
-                                        <button class="btn btn-white btn-sm px-3" title="Modificar AFP" @onclick="() => ModificarAfp(em.AfpId)">
+                                        <button class="btn btn-white btn-sm px-2 border-end edit" title="Modificar AFP" @onclick="() => ModificarAfp(em.AfpId)">
                                             <i class="bi bi-pencil-square text-primary"></i>
+                                        </button>
+                                        <button class="btn btn-white btn-sm px-2 delete" title="Eliminar AFP" @onclick="() => EliminarAfp(em.AfpId)">
+                                            <i class="bi bi-trash3 text-danger"></i>
                                         </button>
                                     </div>
                                 </td>
@@ -153,7 +155,7 @@
 
     @* SECCIÓN DE PAGINACIÓN (PIE DE TABLA) *@
     <div class="pagination-footer d-flex justify-content-between align-items-center mt-4 p-3">
-        <div class="page-link text-muted  small border-0 bg-transparent">
+        <div class="page-link text-muted small border-0 bg-transparent">
             Página <b>@paginaActual</b> de @totalPaginas
         </div>
 
@@ -197,7 +199,7 @@
             {
                 _cantidadPorPagina = value;
                 paginaActual = 1;
-                _ = cargarAfiliaciones();
+                _ = cargarAfp();
             }
         }
     }
@@ -217,10 +219,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await cargarAfiliaciones();
+        await cargarAfp();
     }
 
-    public async Task cargarAfiliaciones()
+    public async Task cargarAfp()
     {
         cargando = true;
         StateHasChanged();
@@ -262,7 +264,7 @@
     public async Task BuscarEnServidor()
     {
         paginaActual = 1;
-        await cargarAfiliaciones();
+        await cargarAfp();
     }
 
     private async Task HandleEnter(KeyboardEventArgs e)
@@ -279,7 +281,7 @@
             return;
 
         paginaActual = nuevaPagina;
-        await cargarAfiliaciones();
+        await cargarAfp();
     }
 
     private void VerDetalle(int id)
@@ -290,6 +292,75 @@
     private void ModificarAfp(int afpid)
     {
         nav.NavigateTo($"/editar/api/Afp/{afpid}");
+    }
+
+    private async Task EliminarAfp(int id)
+    {
+        var resultadoSwal = await js.InvokeAsync<System.Text.Json.JsonElement>("Swal.fire", new
+        {
+            title = "¿Deseas eliminar esta AFP?",
+            text = "Esta acción removerá el registro permanentemente si no cuenta con transacciones.",
+            icon = "warning",
+            showCancelButton = true,
+            confirmButtonColor = "#D62F46",
+            cancelButtonColor = "#FDC922",
+            confirmButtonText = "Sí, eliminar",
+            cancelButtonText = "Cancelar"
+        });
+
+        bool confirmado = false;
+        if (resultadoSwal.ValueKind == System.Text.Json.JsonValueKind.Object &&
+            resultadoSwal.TryGetProperty("isConfirmed", out var propiedadConfirmado))
+        {
+            confirmado = propiedadConfirmado.GetBoolean();
+        }
+
+        if (confirmado)
+        {
+            cargando = true;
+            StateHasChanged();
+
+            try
+            {
+                var respuesta = await _afpClientService.DeleteAfpAsync(id);
+
+                if (respuesta != null && respuesta.EsCorrecto)
+                {
+                    await js.InvokeVoidAsync("Swal.fire", new
+                    {
+                        icon = "success",
+                        title = "¡Eliminado!",
+                        text = respuesta.Mensaje ?? "La AFP ha sido removida con éxito.",
+                        confirmButtonText = "Aceptar",
+                        confirmButtonColor = "#D62F46"
+                    });
+
+                    await cargarAfp();
+                }
+                else
+                {
+                    string mensajeServidor = respuesta != null ? respuesta.Mensaje : "No se pudo procesar la solicitud.";
+
+                    await js.InvokeVoidAsync("Swal.fire", new
+                    {
+                        icon = "error",
+                        title = "No se puede eliminar",
+                        text = mensajeServidor,
+                        confirmButtonText = "Aceptar",
+                        confirmButtonColor = "#D62F46"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error durante el proceso de borrado: {ex.Message}");
+            }
+            finally
+            {
+                cargando = false;
+                StateHasChanged();
+            }
+        }
     }
 
     private void Volver() => nav.NavigateTo("administrar-entidadesSeguridadSocial");

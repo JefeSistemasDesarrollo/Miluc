@@ -68,7 +68,7 @@ namespace Miluc.Server.Servicios.Nomina
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception($"Error en base de datos al crear: {ex.Message}");
+                    throw new Exception( ex.Message);
                 }
             }
             finally
@@ -233,7 +233,7 @@ namespace Miluc.Server.Servicios.Nomina
         {
             try
             {
-                // 1. VERIFICACIÓN DE EXISTENCIA
+                
                 // Busca el empleado en la base de datos por su ID de forma asíncrona.
                 var empleado = await _context.Empleado
                     .FirstOrDefaultAsync(e => e.EmpleadoId == dto.EmpleadoId);
@@ -305,7 +305,7 @@ namespace Miluc.Server.Servicios.Nomina
             }
             catch (Exception ex)
             {
-                // 7. CONTROL DE ERRORES
+               
                 // Captura cualquier fallo (de conexión, de base de datos, etc.) y lo encapsula en un mensaje claro.
                 throw new Exception($"Error al actualizar el empleado: {ex.Message}");
             }

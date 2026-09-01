@@ -52,7 +52,7 @@ namespace Miluc.Server.Controllers.Nomina
 
 
             }
-            return StatusCode(500, new ResponseAPI<List<ContratoLabralreaderDto>>
+            return StatusCode(500, new ResponseAPI<List<ContratoLaboralreaderDto>>
             {
                 EsCorrecto = false,
                 Valor = null,

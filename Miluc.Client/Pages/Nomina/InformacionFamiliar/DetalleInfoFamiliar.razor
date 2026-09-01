@@ -124,8 +124,8 @@
     private List<InfoFamiliarReaderDto> listaOrigen = new();
     private EmpleadoReaderDto listEmpleado = new();
     private bool cargando = false;
-    
 
+    
     private void Volver() => nav.NavigateTo("/Administrar/informacionFamiliar");
 
     protected override async Task OnInitializedAsync()
@@ -135,7 +135,6 @@
             var resultado = await _infoFamiliarService.GetFamiliarByIdAsync(IdEmpleado);
             var resultadoEmpleado = await _empleadoService.GetEmpleadoByIdAsync(IdEmpleado);
 
-            // Validación de las respuestas de los servicios
             if (resultado != null && resultado.EsCorrecto && resultado.Valor != null)
             {
                 listaOrigen = resultado.Valor;
@@ -180,80 +179,85 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task eliminarinfofamiliar(int id)
-    {
-       
-       
-
-        var result = await JS.InvokeAsync<JsonElement>
-           ("Swal.fire", new
-           {
-               title = "¿Estás seguro?",
-               text = $"¿Deseas Cancelar el pedido?",
-               icon = "info",
-               showCancelButton = true,
-               confirmButtonColor = "#d33",
-               cancelButtonColor = "#3085d6",
-               confirmButtonText = "Sí",
-               cancelButtonText = "Cancelar"
-           });
-       
-
-        if (result.GetProperty("isConfirmed").GetBoolean())
-            {
-             
-                try
-                {
-                    // Invocación al cliente HTTP para eliminar físicamente el id seleccionado
-                    var respuesta = await _infoFamiliarService.DeleteFamiliarAsync(id);
-
-                    if (respuesta.Valor==true)
-                    {
-                        await JS.InvokeVoidAsync("Swal.fire", new
-                        {
-                            icon = "success",
-                            title = "¡Eliminado!",
-                            text = respuesta.Mensaje ?? "El empleado ha sido removido con éxito.",
-                            confirmButtonText = "Aceptar"
-                        });
-
-                        // Refresca la lista desde el servidor para actualizar el grid de datos de forma limpia
-                        await cargarFamiliar();
-                    }
-                    else
-                    {
-                        string mensajeServidor = respuesta != null ? respuesta.Mensaje : "No se pudo procesar la solicitud.";
-                
-                        await JS.InvokeVoidAsync("Swal.fire", new
-                        {
-                            icon = "error",
-                            title = "No se puede eliminar",
-                            text = mensajeServidor,
-                            confirmButtonText = "Aceptar"
-                        });
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error durante el proceso de borrado: {ex.Message}");
-                }
-                finally
-                {
-                    cargando = false;
-                    StateHasChanged();
-                }
-            }
-        }
-
-    
-    
-    // Reemplaza tu método anterior por este:
     private void EditarInformacionFamiliar(int idFamiliar)
     {
-        // Pasamos de forma jerárquica: /EmpleadoId/FamiliarId
         nav.NavigateTo($"/nomina/editar/informacion-familiar/{IdEmpleado}/{idFamiliar}");
     }
 
-    private Task EliminarInformacionFamiliar(int idFamiliar) => eliminarinfofamiliar(idFamiliar);
+    private async Task EliminarInformacionFamiliar(int idFamiliar)
+    {
+        var resultadoSwal = await JS.InvokeAsync<System.Text.Json.JsonElement>("Swal.fire", new
+        {
+            title = "¿Deseas eliminar este familiar?",
+            text = "Esta acción removerá el registro permanentemente.",
+            icon = "warning",
+            showCancelButton = true,
+            confirmButtonColor = "#D62F46",
+            cancelButtonColor = "#FDC922",
+            confirmButtonText = "Sí, eliminar",
+            cancelButtonText = "Cancelar"
+        });
 
+        bool confirmado = false;
+        if (resultadoSwal.ValueKind == System.Text.Json.JsonValueKind.Object &&
+            resultadoSwal.TryGetProperty("isConfirmed", out var propiedadConfirmado))
+        {
+            confirmado = propiedadConfirmado.GetBoolean();
+        }
+
+        if (confirmado)
+        {
+            cargando = true;
+            StateHasChanged();
+
+            try
+            {
+                // Asegúrate de inyectar o utilizar tu servicio correspondiente para eliminar información familiar
+                var respuesta = await _infoFamiliarService.DeleteFamiliarAsync(idFamiliar);
+
+                if (respuesta != null && respuesta.EsCorrecto)
+                {
+                    await JS.InvokeVoidAsync("Swal.fire", new
+                    {
+                        icon = "success",
+                        title = "¡Eliminado!",
+                        text = respuesta.Mensaje ?? "El familiar ha sido removido con éxito.",
+                        confirmButtonText = "Aceptar",
+                        confirmButtonColor = "#D62F46"
+                    });
+
+                    await cargarFamiliar();
+                }
+                else
+                {
+                    string mensajeServidor = respuesta != null ? respuesta.Mensaje : "No se pudo procesar la solicitud.";
+
+                    await JS.InvokeVoidAsync("Swal.fire", new
+                    {
+                        icon = "error",
+                        title = "No se puede eliminar",
+                        text = mensajeServidor,
+                        confirmButtonText = "Aceptar",
+                        confirmButtonColor = "#D62F46"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                await JS.InvokeVoidAsync("Swal.fire", new
+                {
+                    icon = "error",
+                    title = "Error",
+                    text = $"Ocurrió un error inesperado: {ex.Message}",
+                    confirmButtonText = "Aceptar",
+                    confirmButtonColor = "#D62F46"
+                });
+            }
+            finally
+            {
+                cargando = false;
+                StateHasChanged();
+            }
+        }
+    }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Nomina;
+using Miluc.Server.Models.Nomina;
 using Miluc.Server.Servicios.Nomina;
 using Miluc.Shared.DTOs.Nomina.Arl.Dto;
 using Miluc.Shared.DTOs.Nomina.ArlDto;
@@ -9,8 +10,8 @@ using Miluc.Shared.Models.Response;
 
 namespace Miluc.Server.Controllers.Nomina
 {
-    [ApiController] 
-    [Route("api/[controller]")] 
+    [ApiController]
+    [Route("api/[controller]")]
     public class ArlController(IArlService arlService, ILogService _log) : Controller
     {
         [HttpGet("Arl")]
@@ -35,7 +36,7 @@ namespace Miluc.Server.Controllers.Nomina
                 {
                     EsCorrecto = true,
                     Mensaje = "ARL obtenidas exitosamente.",
-                    Valor = arl ,
+                    Valor = arl,
                     CantRegistros = totalRegistros
                 });
             }
@@ -55,7 +56,7 @@ namespace Miluc.Server.Controllers.Nomina
                 {
                     EsCorrecto = false,
                     Valor = null,
-                    Mensaje = "Ocurrió un error al obtener las ARL.",
+                    Mensaje = (ex.Message),
                     CantRegistros = 0
                 });
             }
@@ -107,100 +108,100 @@ namespace Miluc.Server.Controllers.Nomina
                 });
             }
         }
-            [HttpGet("{id}")]
-            public async Task<ActionResult<ResponseAPI<ArlReaderDto>>> GetByArlAsync(int id)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<ResponseAPI<ArlReaderDto>>> GetByArlAsync(int id)
 
 
+        {
+            try
             {
-                try
+                var arl = await arlService.GetByArlAsync(id);
+                if (arl == null)
                 {
-                    var arl = await arlService.GetByArlAsync(id);
-                    if (arl == null)
-                    {
-                        return NotFound(new ResponseAPI<ArlReaderDto>
-                        {
-                            EsCorrecto = false,
-                            Valor = null,
-                            Mensaje = "eps no encontrado",
-                            CantRegistros = 0,
-                        });
-                    }
-                    return Ok(new ResponseAPI<ArlReaderDto>
-                    {
-                        EsCorrecto = true,
-                        Valor = arl,
-                        Mensaje = "arl obtenido correctamente",
-                        CantRegistros = 1,
-                    });
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[ERROR REAL EN GET]: {ex.Message} -> {ex.StackTrace}");
-                    await _log.GuardarErrorAsync(
-                        message: ex.Message,
-                        StackTrace: ex.StackTrace,
-                        usuario: User.Identity?.Name ?? "Sistema",
-                        metodo: "HttpGet",
-                        ruta: $"/api/Arl/{id}",
-                        ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
-                        origen: "ArlController");
-                    return StatusCode(500, new ResponseAPI<ArlReaderDto>
+                    return NotFound(new ResponseAPI<ArlReaderDto>
                     {
                         EsCorrecto = false,
                         Valor = null,
-                        Mensaje = "Ocurrió un error al obtener el eps.",
-                        CantRegistros = 0
+                        Mensaje = "eps no encontrado",
+                        CantRegistros = 0,
                     });
                 }
+                return Ok(new ResponseAPI<ArlReaderDto>
+                {
+                    EsCorrecto = true,
+                    Valor = arl,
+                    Mensaje = "arl obtenido correctamente",
+                    CantRegistros = 1,
+                });
             }
-
-
-            [HttpPut("{id}")]
-            public async Task<ActionResult<ResponseAPI<ArlReaderDto>>> UpdateArlAsync(int id, [FromBody] ArlUpdate arlUpdate)
+            catch (Exception ex)
             {
-                // 1. Validaciones previas en un solo bloque 
-                if (arlUpdate == null)
-                    return BadRequest(ErrorResponse("Se debe enviar la información de la ARL."));
-
-                if (id != arlUpdate.ArlId)
-                    return BadRequest(ErrorResponse("El ID enviado en la URL no coincide con la ARL."));
-
-                if (!ModelState.IsValid)
+                Console.WriteLine($"[ERROR REAL EN GET]: {ex.Message} -> {ex.StackTrace}");
+                await _log.GuardarErrorAsync(
+                    message: ex.Message,
+                    StackTrace: ex.StackTrace,
+                    usuario: User.Identity?.Name ?? "Sistema",
+                    metodo: "HttpGet",
+                    ruta: $"/api/Arl/{id}",
+                    ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
+                    origen: "ArlController");
+                return StatusCode(500, new ResponseAPI<ArlReaderDto>
                 {
-                    var errores = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
-                    return BadRequest(ErrorResponse("Datos inválidos.", errores));
-                }
-
-                try
-                {
-                    var arlActualizada = await arlService.UpdateArlAsync(arlUpdate);
-
-                    return arlActualizada is null
-                        ? NotFound(ErrorResponse("No se encontró la EPS para actualizar."))
-                        : Ok(new ResponseAPI<ArlReaderDto>
-                        {
-                            EsCorrecto = true,
-                            Valor = arlActualizada,
-                            Mensaje = "EPS actualizada correctamente.",
-                            CantRegistros = 1
-                        });
-                }
-                catch (Exception ex)
-                {
-
-                    await _log.GuardarErrorAsync(
-                        message: ex.Message,
-                        StackTrace: ex.StackTrace,
-                        usuario: User.Identity?.Name ?? "Sistema",
-                        metodo: "HttpPut",
-                        ruta: $"/api/Arl/{id}",
-                        ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
-                        origen: nameof(ArlController)
-                    );
-
-                    return BadRequest(ErrorResponse(ex.Message));
-                }
+                    EsCorrecto = false,
+                    Valor = null,
+                    Mensaje = "Ocurrió un error al obtener el eps.",
+                    CantRegistros = 0
+                });
             }
+        }
+
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult<ResponseAPI<ArlReaderDto>>> UpdateArlAsync(int id, [FromBody] ArlUpdate arlUpdate)
+        {
+            // 1. Validaciones previas en un solo bloque 
+            if (arlUpdate == null)
+                return BadRequest(ErrorResponse("Se debe enviar la información de la ARL."));
+
+            if (id != arlUpdate.ArlId)
+                return BadRequest(ErrorResponse("El ID enviado en la URL no coincide con la ARL."));
+
+            if (!ModelState.IsValid)
+            {
+                var errores = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return BadRequest(ErrorResponse("Datos inválidos.", errores));
+            }
+
+            try
+            {
+                var arlActualizada = await arlService.UpdateArlAsync(arlUpdate);
+
+                return arlActualizada is null
+                    ? NotFound(ErrorResponse("No se encontró la EPS para actualizar."))
+                    : Ok(new ResponseAPI<ArlReaderDto>
+                    {
+                        EsCorrecto = true,
+                        Valor = arlActualizada,
+                        Mensaje = "EPS actualizada correctamente.",
+                        CantRegistros = 1
+                    });
+            }
+            catch (Exception ex)
+            {
+
+                await _log.GuardarErrorAsync(
+                    message: ex.Message,
+                    StackTrace: ex.StackTrace,
+                    usuario: User.Identity?.Name ?? "Sistema",
+                    metodo: "HttpPut",
+                    ruta: $"/api/Arl/{id}",
+                    ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
+                    origen: nameof(ArlController)
+                );
+
+                return BadRequest(ErrorResponse(ex.Message));
+            }
+        }
 
 
 
@@ -213,5 +214,53 @@ namespace Miluc.Server.Controllers.Nomina
             CantRegistros = 0
         };
 
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<ResponseAPI<bool>>> DeleteArlAsync(int id)
+        {
+            try
+            {
+                var result = await arlService.DeleteArlAsync(id);
+
+                if (!result)
+                {
+                    return NotFound(new ResponseAPI<bool>
+                    {
+                        EsCorrecto = false,
+                        Valor = false,
+                        Mensaje = "No se encontró el arl.",
+                        CantRegistros = 0
+                    });
+                }
+
+                return Ok(new ResponseAPI<bool>
+                {
+                    EsCorrecto = true,
+                    Valor = true,
+                    Mensaje = "arl eliminado correctamente.",
+                    CantRegistros = 1
+                });
+            }
+            catch (Exception ex)
+            {
+                await _log.GuardarErrorAsync(
+                    message: ex.ToString(),
+                    StackTrace: ex.StackTrace,
+                    usuario: User.Identity?.Name ?? "Sistema",
+                    metodo: "DeleteArlAsync", // Es recomendable poner el nombre real del método
+                    ruta: $"/api/Arl/{id}",
+                    ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
+                    origen: "ArlController"
+                );
+
+                return StatusCode(500, new ResponseAPI<bool>
+                {
+                    EsCorrecto = false,
+                    Valor = false,
+                    Mensaje = $" {ex.Message}",
+                    CantRegistros = 0
+                });
+            }
+        }
     }
-    }
+}

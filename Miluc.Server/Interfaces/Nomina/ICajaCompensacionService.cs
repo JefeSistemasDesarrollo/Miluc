@@ -9,5 +9,6 @@ namespace Miluc.Server.Interfaces.Nomina
         public Task<CajaCompensacionReaderDto> CreateCajaAsync(CajaCreateDto cajaCompensacion);
         public Task<CajaCompensacionReaderDto> GetBycajaAsync(int id);
         public Task<CajaCompensacionReaderDto> CajaUpdate(CajaUpdate cajaUpdate);
+        Task<bool> DeleteCajaAsync(int id);
     }
 }

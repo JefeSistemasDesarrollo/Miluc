@@ -14,7 +14,7 @@
         @* --- HEADER --- *@
         <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
             <div>
-                <h2 class="fw-extrabold text-vinotinto m-0 tracking-tight">
+                <h2 class="fw-extrabold text-rojo m-0 tracking-tight">
                     <i class="bi bi-pencil-square me-2 header-icon"></i>
                     Editar EPS
                 </h2>
@@ -176,7 +176,7 @@
 
             if (!respuesta.EsCorrecto)
             {
-                await JS.InvokeVoidAsync("Swal.fire", "Error", $"No se pudo actualizar: {respuesta.Mensaje}", "error");
+                await JS.InvokeVoidAsync("Swal.fire", "Error", $"{respuesta.Mensaje}", "error");
             }
             else
             {

@@ -65,6 +65,8 @@ namespace Miluc.Server.Servicios.Nomina
             }
         }
 
+       
+
         public async Task<EpsReaderDto> GetByEpsAsync(int id)
         {
             try
@@ -80,9 +82,7 @@ namespace Miluc.Server.Servicios.Nomina
                         FechaCreacion = DateTime.Now,
                         Activo = e.Activo
 
-                    }).FirstOrDefaultAsync();
-                if (epsId == null) throw new Exception("Eps no encontrado.");
-
+                    }).FirstOrDefaultAsync() ?? throw new Exception("Eps no encontrado.");
                 return epsId;
 
 
@@ -141,13 +141,22 @@ namespace Miluc.Server.Servicios.Nomina
         {
             try
             {
-               
-                var eps = await _context.Eps.FirstOrDefaultAsync(e => e.EpsId == updateEps.EpsId);
 
-                if (eps == null)
-                    throw new Exception("La EPS no existe.");
+                var eps = await _context.Eps.FirstOrDefaultAsync(e => e.EpsId == updateEps.EpsId) ?? throw new Exception("La EPS no existe.");
 
-               
+                //validar si tiene afiliacionessi tiene no se puede  inactivar eps
+                if (eps.Activo && !updateEps.Activo) 
+                { 
+                    bool tieneAfiliaciones = await _context.AfiliacionSeguridadSocial.AnyAsync(a => a.EpsId == updateEps.EpsId);
+
+                    if (tieneAfiliaciones)
+                        throw new Exception("La eps no se puede inactivar y que hay empleados afiliados.");
+
+                    
+
+
+                }
+
                 var nombreFormateado = updateEps.Nombre?.Trim().ToUpper();
                 var codigoFormateado = updateEps.Codigo?.Trim().ToUpper();
 
@@ -182,10 +191,43 @@ namespace Miluc.Server.Servicios.Nomina
     }
             catch (Exception ex)
             {
-                throw new Exception($"Error al actualizar EPS: {ex.Message}");
+                throw new Exception($"{ex.Message}");
 
 
             }
         }
+        public async Task<bool> DeleteEpsAsync(int id)
+        {
+            try
+            {
+                var eps = await _context.Eps.FirstOrDefaultAsync(e => e.EpsId == id);
+
+                if (eps == null)
+                {
+                    throw new Exception("La EPS no existe.");
+                }
+
+                // Validar si tiene afiliaciones activas o históricas vinculadas
+                bool tieneEmpleadosAfiliados = await _context.AfiliacionSeguridadSocial
+                    .AnyAsync(af => af.EpsId == id);
+
+                if (tieneEmpleadosAfiliados)
+                {
+                    throw new Exception("La EPS no se puede eliminar porque cuenta con registros o empleados vinculados en el sistema.");
+                }
+
+                // Si no tiene registros vinculados, procedemos con seguridad
+                _context.Eps.Remove(eps);
+                await _context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
     }
-}
+    }
+

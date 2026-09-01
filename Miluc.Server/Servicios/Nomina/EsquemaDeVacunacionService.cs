@@ -23,7 +23,7 @@ namespace Miluc.Server.Servicios.Nomina
 
             var empleadoId = empleadoIds.First();
 
-            // 2. Extraer los IDs de vacunas sin duplicados
+            // Extraer los IDs de vacunas sin duplicados
             var vacunasNuevasIds = esquemaVacunacion.Select(x => x.VacunaId).Distinct().ToList();
 
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -33,7 +33,7 @@ namespace Miluc.Server.Servicios.Nomina
                 var vacunasAnteriores = await _context.EsquemaVacunacion
                     .Where(x => x.EmpleadoId == empleadoId
                              && vacunasNuevasIds.Contains(x.VacunaId)
-                             && (x.Activo == true || x.Activo == null))
+                             && (x.Activo == true ||   x.Activo == null))
                     .ToListAsync();
 
                 if (vacunasAnteriores.Any())
@@ -82,7 +82,8 @@ namespace Miluc.Server.Servicios.Nomina
                     string filtroMinuscula = filtro.Trim().ToLower();
                     query = query.Where(x => x.PrimerNombre.ToLower().Contains(filtroMinuscula)
                                           || x.PrimerApellido.ToLower().Contains(filtroMinuscula)
-                                          || x.Documento.ToLower().Contains(filtroMinuscula));
+                                          || x.Documento.ToLower()
+                                                        .Contains(filtroMinuscula));
                 }
 
                 var totalRegistros = await query.CountAsync();
@@ -92,12 +93,12 @@ namespace Miluc.Server.Servicios.Nomina
                     .Take(cantidadtop)
                     .Select(x => new
                     {
-                        EmpleadoId = x.EmpleadoId,
-                        PrimerNombre = x.PrimerNombre,
-                        SegundoNombre = x.SegundoNombre,
-                        PrimerApellido = x.PrimerApellido,
-                        SegundoApellido = x.SegundoApellido,
-                        Documento = x.Documento,
+                        x.EmpleadoId,
+                        x.PrimerNombre,
+                        x.SegundoNombre,
+                        x.PrimerApellido,
+                        x.SegundoApellido,
+                        x.Documento,
 
                         Esquema = x.EsquemaVacunacion
                             .Where(e => e.Activo != false)
