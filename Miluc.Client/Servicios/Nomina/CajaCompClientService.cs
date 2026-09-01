@@ -89,6 +89,28 @@ namespace Miluc.Client.Servicios.Nomina
             }
         }
 
+        public async Task<ResponseAPI<bool>> DeleteCajaAsync(int id)
+        {
+            try
+            {
+                var response = await httpClient.DeleteAsync($"/api/CajaCompensacion/{id}");
+                var result = await response.Content.ReadFromJsonAsync<ResponseAPI<bool>>();
+                return result ?? new ResponseAPI<bool>
+                {
+                    EsCorrecto = false,
+                    Mensaje = "Respuesta vacía del servidor."
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseAPI<bool>
+                {
+                    EsCorrecto = false,
+                    Mensaje = ex.Message
+                };
+            }
+        }
+
         public async Task<ResponseAPI<CajaCompensacionReaderDto>> GetBycajaAsync(int id)
         {
             try

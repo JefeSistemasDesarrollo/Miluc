@@ -11,5 +11,7 @@ namespace Miluc.Client.Interfaces.Nomina.SeguridadSocial
         Task<ResponseAPI<EpsReaderDto>> CreateEpsAsync(EpsCreateDto epsCreateDto);
         Task<ResponseAPI<EpsReaderDto>> GetByEpsAsync(int id);
         Task<ResponseAPI<EpsReaderDto>> UpdateEpsAsync(UpdateEpsDto updateEps);
+        Task<ResponseAPI<bool>> DeleteEpsAsync(int id);
+
     }
 }

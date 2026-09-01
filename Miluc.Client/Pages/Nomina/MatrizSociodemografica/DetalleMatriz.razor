@@ -1,9 +1,312 @@
-﻿@page "/Administrar/MatrizSociodemografica/Detalle/{id:int}"
-<h3>DetalleMatriz </h3>
+﻿@page "/Nomina/MatrizSociodemografica/Detalle/{id:int}"
+
+@using Miluc.Client.Interfaces.Nomina
+@using Miluc.Shared.DTOs.Nomina.MatrizSocioDemograficaDto
+
+@inject IMatrizSociodemograficaClientService _iMatriz
+@inject NavigationManager nav
+@inject IJSRuntime js
+
+<div class="empleado-page p-4 animate__animated animate__fadeIn">
+    <div class="container-fluid max-width-container">
+
+        @* --- CABECERA DE LA PÁGINA --- *@
+        <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
+            <div>
+                <h2 class="fw-extrabold text-black m-0 tracking-tight">
+                    <i class="bi bi-eye"></i>
+                    Detalle de Matriz Sociodemográfica
+                </h2>
+                <p class="text-muted mb-0 small mt-1">
+                    Visualización de la hoja de vida y datos maestros del colaborador.
+                </p>
+            </div>
+
+            <button class="btn btn-rojo btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
+                <i class="bi bi-arrow-left me-2"></i> Volver al listado
+            </button>
+        </div>
+
+        @if (cargando)
+        {
+            <div class="d-flex justify-content-center my-5">
+                <div class="spinner-border text-rojo" role="status">
+                    <span class="visually-hidden">Cargando datos...</span>
+                </div>
+            </div>
+        }
+        else if (!string.IsNullOrEmpty(errorMessage))
+        {
+            @* --- VISTA DE ERROR --- *@
+            <div class="card border-0 shadow-sm rounded-4 text-center p-5 my-4">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <i class="bi bi-exclamation-triangle text-warning" style="font-size: 4rem;"></i>
+                    </div>
+                    <h4 class="fw-bold text-dark mb-2">Aviso del Sistema</h4>
+                    <p class="text-muted mb-4 max-w-md mx-auto">
+                        @errorMessage
+                    </p>
+                    <button class="btn btn-rojo rounded-pill px-4 py-2 fw-semibold" @onclick="Volver">
+                        <i class="bi bi-arrow-left me-2"></i> Regresar al Listado
+                    </button>
+                </div>
+            </div>
+        }
+        else if (matriz != null)
+        {
+            @* --- VISTA DE DATOS --- *@
+            <div class="row g-4">
+                @* BLOQUE 1: INFORMACIÓN BÁSICA Y PERSONALES *@
+                <div class="col-12">
+                    <div class="card card-custom border-0 shadow-sm rounded-4">
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold text-rojo mb-3"><i class="bi bi-person"></i> Empleado</h5>
+
+                            <div class="section-title-container mb-4">
+                                <span class="badge bg-vinotinto-light text-vinotinto rounded-pill px-3 py-2 fw-bold text-uppercase tracking-wider">
+                                    Información Básica
+                                </span>
+                            </div>
+
+                            @* --- BLOQUE DE AUTORIZACIÓN (VISTA LECTURA) --- *@
+                            <div class="mb-4 p-3 border rounded bg-light">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="fw-bold mb-0">Autorización para el Tratamiento de Datos Personales</h6>
+                                    <span class="badge @(matriz.ConsentimientoInformado == true ? "bg-amarillo texto-amarillo" : "bg-Rojo text-rojo") rounded-pill px-3 py-2 fw-semibold">
+
+                                        @if (matriz.ConsentimientoInformado == true)
+                                        {
+                                            <i class="bi bi-clipboard2-check-fill me-1"></i>
+                                            <span>Consentimiento Firmado</span>
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-clipboard-x me-1"></i>
+                                            <span>Pendiente Consentimiento</span>
+                                        }
+
+                                    </span>
+                                </div>
+                                <p class="small text-muted mb-0">
+                                    Al firmar o enviar este formulario, autorizo de manera voluntaria, previa, expresa e informada a Avícola Miluc para recolectar, almacenar, usar y tratar mis datos personales suministrados. Entiendo y acepto que esta información será utilizada exclusivamente para los fines operativos, comerciales, de contacto y administrativos propios de la empresa. Asimismo, declaro que he sido informado sobre mis derechos como titular de los datos (conocer, actualizar, rectificar y solicitar la eliminación de mi información) conforme a la ley de protección de datos personales vigente.
+                                </p>
+                            </div>
+
+                            <div class="row g-4">
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">Nombre Completo Empleado</label>
+                                    <input type="text" class="form-control input-custom-view" value="@(matriz.NombreEmpleado ?? "Sin Nombre")" readonly />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">Edad</label>
+                                    <input type="text" class="form-control input-custom-view" value="@($"{matriz.Edad} años")" readonly />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">Género</label>
+                                    <input type="text" class="form-control input-custom-view" value="@(matriz.NombreGenero ?? "N/A")" readonly />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">Nacionalidad</label>
+                                    <input type="text" class="form-control input-custom-view" value="@(matriz.Nacionalidad ?? "N/A")" readonly />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">País de Nacimiento</label>
+                                    <input type="text" class="form-control input-custom-view" value="@(matriz.NombrePais ?? "N/A")" readonly />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* BLOQUE 2: SALUD Y HÁBITOS DE VIDA *@
+                <div class="col-12 col-md-6">
+                    <div class="card card-custom border-0 shadow-sm rounded-4 h-100">
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold text-rojo mb-3"><i class="bi bi-heart-pulse me-2"></i> Salud y Estilo de Vida</h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label label-custom">Condición Médica</label>
+                                    <input type="text" class="form-control input-custom-view" value="@(matriz.NombreCondicionMedica ?? "Ninguna")" readonly />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label label-custom">Deporte Practicado</label>
+                                    <input type="text" class="form-control input-custom-view" value="@(matriz.NombreDeporte ?? "Ninguno")" readonly />
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label label-custom">Hobbies / Aficiones</label>
+                                    <input type="text" class="form-control input-custom-view" value="@(matriz.Hobbies ?? "N/A")" readonly />
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label label-custom">¿Fuma?</label>
+                                    <input type="text" class="form-control input-custom-view" value="@(matriz.Fuma == true ? "Sí" : "No")" readonly />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label label-custom">¿Cuántas veces al mes fuma?</label>
+                                    <input type="text" class="form-control input-custom-view" value="@(matriz.FumaVecesAlMes)" readonly />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label label-custom">¿Consume Alcohol?</label>
+                                    <input type="text" class="form-control input-custom-view" value="@(matriz.Alcohol == true ? "Sí" : "No")" readonly />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label label-custom">Frecuencia consumo alcohólico</label>
+                                    <input type="text" class="form-control input-custom-view" value="@(matriz.BebeVecesAlAño)" readonly />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* BLOQUE 3: VIVIENDA Y TRANSPORTE *@
+                <div class="col-12 col-md-6">
+                    <div class="card card-custom border-0 shadow-sm rounded-4 h-100">
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold text-rojo mb-3"><i class="bi bi-house-door me-2"></i> Vivienda y Transporte</h5>
+                            <div class="mb-3">
+                                <label class="form-label label-custom">Medio de Transporte</label>
+                                <input type="text" class="form-control input-custom-view" value="@(matriz.NombreMedioDeTransporte ?? "N/A")" readonly />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label label-custom">Clase de Vivienda</label>
+                                <input type="text" class="form-control input-custom-view" value="@(matriz.NombreClaseVivienda ?? "N/A")" readonly />
+                            </div>
+                            <div class="mb-0">
+                                <label class="form-label label-custom">Tipo de Vivienda</label>
+                                <input type="text" class="form-control input-custom-view" value="@(matriz.NombreTipoDeVivienda ?? "N/A")" readonly />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* BLOQUE 4: FORMACIÓN ACADÉMICA *@
+                <div class="col-12 col-md-6">
+                    <div class="card card-custom border-0 shadow-sm rounded-4 h-100">
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold text-rojo mb-3"><i class="bi bi-journal-bookmark me-2"></i> Formación Académica</h5>
+                            <div class="mb-3">
+                                <label class="form-label label-custom">Nivel Académico</label>
+                                <input type="text" class="form-control input-custom-view" value="@(matriz.NombreNivelAcademico ?? "N/A")" readonly />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label label-custom">Entidad Educativa</label>
+                                <input type="text" class="form-control input-custom-view" value="@(matriz.EntidadEducativa ?? "N/A")" readonly />
+                            </div>
+                            <div class="mb-0">
+                                <label class="form-label label-custom">Título Obtenido</label>
+                                <input type="text" class="form-control input-custom-view" value="@(matriz.TituloObtenido ?? "N/A")" readonly />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* BLOQUE 5: ANTECEDENTES LABORALES *@
+                <div class="col-12 col-md-6">
+                    <div class="card card-custom border-0 shadow-sm rounded-4 h-100">
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold text-rojo mb-3"><i class="bi bi-briefcase me-2"></i> Última Experiencia Laboral</h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label label-custom">Última Empresa</label>
+                                    <input type="text" class="form-control input-custom-view" value="@(matriz.UltimaEmpresaTrabajo ?? "N/A")" readonly />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label label-custom">Cargo Desempeñado</label>
+                                    <input type="text" class="form-control input-custom-view" value="@(matriz.CargoDesempeñado ?? "N/A")" readonly />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label label-custom">Fecha Retiro</label>
+                                    <input type="text" class="form-control input-custom-view" value="@(matriz.FechaUltimoEmpleo.HasValue ? matriz.FechaUltimoEmpleo.Value.ToString("dd/MM/yyyy") : "N/A")" readonly />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label label-custom">Último Salario</label>
+                                    <input type="text" class="form-control input-custom-view" value="@matriz.UltimoSalario.ToString("C0", new System.Globalization.CultureInfo("es-CO"))" readonly />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* BLOQUE 6: CONTACTO DE EMERGENCIA *@
+                <div class="col-12 col-md-6">
+                    <div class="card card-custom border-0 shadow-sm rounded-4 h-100 border-start border-4 border-roja">
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold text-rojo mb-3"><i class="bi bi-telephone-outbound me-2"></i> Contacto de Emergencia</h5>
+                            <div class="mb-3">
+                                <label class="form-label label-custom">Persona de Contacto</label>
+                                <input type="text" class="form-control input-custom-view" value="@(matriz.PersonaEnCasoDeEmergencia ?? "No registrado")" readonly />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label label-custom">Teléfono de Contacto</label>
+                                <input type="text" class="form-control input-custom-view" value="@(matriz.TelefonoEmergencia ?? "No registrado")" readonly />
+                            </div>
+                            <div class="mb-0">
+                                <label class="form-label label-custom">Dirección del Contacto</label>
+                                <input type="text" class="form-control input-custom-view" value="@(matriz.DireccionPersonaEmergencia ?? "No registrado")" readonly />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* BLOQUE 7: SEGURIDAD DE DATOS (BANNER) *@
+                <div class="col-12 col-md-6">
+                    <div class="card card-info-banner border-0 shadow-sm rounded-4 h-100 p-4 position-relative overflow-hidden">
+                        <div class="position-relative z-index-2 d-flex flex-column h-100 justify-content-center">
+                            <h5 class="fw-bold text-rojo mb-2"><i class="bi bi-shield-lock-fill me-2"></i> Seguridad de los datos</h5>
+                            <p class="text-secondary small mb-0 lh-lg">
+                                Todos los datos registrados en esta plataforma son almacenados y procesados de manera segura.
+                                La organización garantiza la confidencialidad de la información del colaborador y limita su acceso
+                                exclusivamente a usuarios autorizados para fines administrativos, legales y de gestión humana.
+                            </p>
+                        </div>
+                        <div class="decorative-circle"></div>
+                    </div>
+                </div>
+
+            </div>
+        }
+    </div>
+</div>
 
 @code {
+    [Parameter]
+    public int id { get; set; }
 
-    [Parameter] public int id { get; set; }
+    private MatrizSociodemograficaReaderDto? matriz = null;
+    private bool cargando = true;
+    private string? errorMessage;
 
+    private void Volver() => nav.NavigateTo("Administrar/MatrizSociodemografica");
 
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if (id <= 0)
+            {
+                errorMessage = "ID de empleado no válido.";
+                return;
+            }
+
+            var response = await _iMatriz.GetMatrizPorEmpleadoIdAsync(id);
+
+            if (response != null && response.Valor != null)
+            {
+                matriz = response.Valor;
+            }
+            else
+            {
+                errorMessage = "El empleado no cuenta con un registro de matriz sociodemográfica o no fue encontrado.";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al consultar: {ex.Message}");
+            errorMessage = "Error interno al recuperar el detalle de la matriz sociodemográfica.";
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
 }

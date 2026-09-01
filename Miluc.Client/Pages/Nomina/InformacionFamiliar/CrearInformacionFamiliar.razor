@@ -3,10 +3,11 @@
 @using Miluc.Shared.DTOs.Nomina.InformacionFamiliarDto
 @using Miluc.Shared.DTOs.Nomina.ParentescoDto
 @using Miluc.Shared.DTOs.Nomina.EmpleadoDto
+@using Syncfusion.Blazor.Calendars
 @inject NavigationManager nav
 @inject IEmpleadoClientService _empleadoService
 @inject IInfoFamiliarClientService _infoFamiliarService
-@inject IParentescoClient _parentescoService
+@inject IParentescoClientService _parentescoService
 @inject IJSRuntime JS
 
 <div class="empleado-page p-4 animate__animated animate__fadeIn">
@@ -74,7 +75,12 @@
                             <div class="col-md-4">
                                 <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-calendar-event"></i></span> Fecha nacimiento</label>
                                 <div class="input-group-custom">
-                                    <InputDate class="form-control input-custom" @bind-Value="nuevaInfoFamiliar.FechaNacimiento" max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                                    <SfDatePicker TValue="DateTime?"
+                                                  @bind-Value="nuevaInfoFamiliar.FechaNacimiento"
+                                                  Format="dd/MM/yyyy"
+                                                  Placeholder="dd/mm/aaaa"
+                                                  Width="100%">
+                                    </SfDatePicker>
                                 </div>
                                 <ValidationMessage For="@(() => nuevaInfoFamiliar.FechaNacimiento)" class="text-danger small mt-1 d-block fw-medium" />
                             </div>

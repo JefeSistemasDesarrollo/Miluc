@@ -1,4 +1,4 @@
-﻿using Miluc.Client.Interfaces.Nomina;
+﻿using Miluc.Client.Interfaces.Nomina.SeguridadSocial;
 using Miluc.Shared.DTOs.Nomina.AfiliacionSeguridadSocialDto;
 
 using Miluc.Shared.Models.Response;
@@ -61,8 +61,7 @@ namespace Miluc.Client.Servicios.Nomina
             try
             {
                 //  CORRECCIÓN: Se añade "/" antes de {afiliacion.AfiliacionId}
-                var response = await _httpClient.PutAsJsonAsync(
-                    $"/api/AfiliacionSeguridadSocial/{afiliacion.AfiliacionId}",
+                var response = await _httpClient.PutAsJsonAsync($"/api/AfiliacionSeguridadSocial/{afiliacion.AfiliacionId}",
                     afiliacion
                 );
 

@@ -47,7 +47,30 @@ namespace Miluc.Client.Servicios.Nomina
             }
         }
 
-        public async Task<ResponseAPI<List<AfpReaderDto>>> GetAfpAsyc(string textoBusqueda, int paginaActual, int cantidadPorPagina)
+        public async Task<ResponseAPI<bool>> DeleteAfpAsync(int id)
+        {
+            try
+            {
+                var response = await httpClient.DeleteAsync($"api/Afp/{id}");
+                var result = await response.Content.ReadFromJsonAsync<ResponseAPI<bool>>();
+                return result ?? new ResponseAPI<bool>
+                {
+                    EsCorrecto = false,
+                    Mensaje = "Respuesta vacía del servidor."
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseAPI<bool>
+                {
+                    EsCorrecto = false,
+                    Mensaje = ex.Message
+                };
+            }
+        }
+
+
+public async Task<ResponseAPI<List<AfpReaderDto>>> GetAfpAsyc(string textoBusqueda, int paginaActual, int cantidadPorPagina)
         {
             try
             {

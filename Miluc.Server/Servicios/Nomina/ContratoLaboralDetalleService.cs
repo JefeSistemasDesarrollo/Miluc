@@ -18,7 +18,8 @@ namespace Miluc.Server.Servicios.Nomina
                     ContratoLaboralId = d.ContratoLaboralId,
                     FechaInicio = DateTime.Now,
                     FechaFinalizacion = DateTime.Now,
-                    Cargo = d.Cargo,
+                    CargoId = d.CargoId,
+                    Observacion = d.Observacion,
                     CentroCosto = d.CentroCosto,
                     Salario = d.Salario
                 }).ToListAsync();

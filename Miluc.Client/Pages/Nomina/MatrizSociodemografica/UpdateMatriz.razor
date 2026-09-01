@@ -1,0 +1,610 @@
+﻿@page "/Administrar/MatrizSociodemografica/Editar/{id:int}"
+
+@using Miluc.Client.Interfaces.Nomina
+@using Miluc.Shared.DTOs.Nomina.MatrizSocioDemograficaDto
+@using Miluc.Shared.DTOs.Nomina.ClaseVivienda
+@using Miluc.Shared.DTOs.Nomina.CondicionMedica
+@using Miluc.Shared.DTOs.Nomina.DeporteRederDto;
+@using Miluc.Shared.DTOs.Nomina.GeneroDto;
+@using Miluc.Shared.DTOs.Nomina.MedioTransporteDto;
+@using Miluc.Shared.DTOs.Nomina.NivelAcademico;
+@using Miluc.Shared.DTOs.Nomina.PaisDto;
+@using Miluc.Shared.DTOs.Nomina.TipoVivienda;
+@using Miluc.Client.Components;
+@using Syncfusion.Blazor
+@using Syncfusion.Blazor.Calendars
+
+@inject IClaseViviendaClientService _iClaseVivienda
+@inject ICondicionMedicaClientService _iCondicionMedica
+@inject IDeportesClientService _iDeportes
+@inject IGeneroClientService _iGenero
+@inject IMedioTransporteClientService _iMedioTransporte
+@inject INivelAcademicoClientService _iNivelAcademico
+@inject IPaisClientService _iPais
+@inject ITipoViviendaClientService _iTipoVivienda
+@inject IMatrizSociodemograficaClientService _iMatriz
+@inject IEmpleadoClientService _iEmpleado
+@inject NavigationManager nav
+@inject IJSRuntime JS
+
+
+<div class="empleado-page p-4 animate__animated animate__fadeIn">
+    <div class="container-fluid max-width-container">
+
+        @* --- CABECERA DE LA PÁGINA --- *@
+        <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
+            <div>
+                <h2 class="fw-extrabold text-black m-0 tracking-tight">
+                    <i class="bi bi-pencil-square"></i>
+                    Editar Matriz Sociodemográfica
+                </h2>
+                <p class="text-muted mb-0 small mt-1">
+                    Modificación de la hoja de vida y datos maestros del colaborador.
+                </p>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button class="btn btn-amarillo btn-outline-secondary rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver" disabled="@isSaving">
+                    <i class="bi bi-arrow-left me-2"></i> Cancelar
+                </button>
+                <button form="form-matriz" type="submit" class="btn btn-rojo rounded-pill px-4 py-2 transition-all fw-semibold" disabled="@(isSaving || matrizNoEncontrada)">
+                    @if (isSaving)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        <span>Guardando...</span>
+                    }
+                    else
+                    {
+                        <i class="bi bi-save me-2"></i> <span>Guardar </span>
+                    }
+                </button>
+            </div>
+        </div>
+
+        @if (isLoading)
+        {
+            <div class="d-flex justify-content-center my-5">
+                <div class="spinner-border text-rojo" role="status">
+                    <span class="visually-hidden">Cargando datos...</span>
+                </div>
+            </div>
+        }
+        else if (matrizNoEncontrada)
+        {
+            @* --- VISTA DE ERROR --- *@
+            <div class="card border-0 shadow-sm rounded-4 text-center p-5 my-4">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <i class="bi bi-exclamation-triangle text-warning" style="font-size: 4rem;"></i>
+                    </div>
+                    <h4 class="fw-bold text-dark mb-2">Error al cargar la Matriz</h4>
+                    <p class="text-muted mb-4 max-w-md mx-auto">
+                        El colaborador seleccionado no cuenta con una matriz sociodemográfica para editar.
+                    </p>
+                    <button class="btn btn-rojo rounded-pill px-4 py-2 fw-semibold" @onclick="Volver">
+                        <i class="bi bi-arrow-left me-2"></i> Regresar al Listado
+                    </button>
+                </div>
+            </div>
+        }
+        else
+        {
+            @* --- INICIO DEL EDITFORM --- *@
+            <EditForm id="form-matriz" Model="matriz" OnValidSubmit="Guardar">
+                <DataAnnotationsValidator />
+
+                <div class="row g-4">
+                    @* --- BLOQUE 1: INFORMACIÓN BÁSICA Y PERSONALES --- *@
+                    <div class="col-12">
+                        <div class="card card-custom border-0 shadow-sm rounded-4">
+                            <div class="card-body p-4">
+                                <h5 class="fw-bold text-rojo mb-3"><i class="bi bi-person"></i> Empleado</h5>
+
+                                <div class="section-title-container mb-4">
+                                    <span class="badge bg-vinotinto-light text-vinotinto rounded-pill px-3 py-2 fw-bold text-uppercase tracking-wider">
+                                        Información Básica
+                                    </span>
+                                </div>
+
+                                <div class="mb-4 p-3 border rounded bg-light">
+                                    <h6 class="fw-bold text-rojo">Autorización para el Tratamiento de Datos Personales</h6>
+                                    <p class="small text-muted mb-3">
+                                        Al firmar o enviar este formulario, autorizo de manera voluntaria, previa, expresa e informada a Avícola Miluc para recolectar, almacenar, usar y tratar mis datos personales suministrados.
+                                    </p>
+
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" role="switch" id="consentimientoSwitch" @bind="matriz.ConsentimientoInformado">
+                                        <label class="form-check-label fw-semibold @(matriz.ConsentimientoInformado ? "text-amarillo" : "text-rojo")" for="consentimientoSwitch">
+                                            @(matriz.ConsentimientoInformado ? " Consentimiento Firmado" : " Pendiente Consentimiento")
+                                        </label>
+                                    </div>
+                                    <ValidationMessage For="@(() => matriz.ConsentimientoInformado)" class="text-danger small" />
+                                </div>
+
+                                <div class="row g-4">
+                                    <div class="col-md-4">
+                                        <label class="form-label label-custom">Nombre Completo Empleado</label>
+                                        <input type="text" class="form-control" value="@matriz.NombreEmpleado" readonly />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label label-custom">Edad</label>
+                                        <input type="number" class="form-control" @bind="matriz.Edad" />
+                                        <ValidationMessage For="@(() => matriz.Edad)" class="text-danger small fw-bold" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label label-custom">Género</label>
+                                        <select class="form-select" @bind="matriz.GeneroId">
+                                            <option value="0">Seleccione...</option>
+                                            @foreach (var item in generoList)
+                                            {
+                                                <option value="@item.GeneroId">@item.Nombre</option>
+                                            }
+                                        </select>
+                                        <ValidationMessage For="@(() => matriz.GeneroId)" class="text-danger small fw-bold" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label label-custom">Nacionalidad</label>
+                                        <input type="text" class="form-control" @bind="matriz.Nacionalidad" />
+                                        <ValidationMessage For="@(() => matriz.Nacionalidad)" class="text-danger small fw-bold" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label label-custom">País de Nacimiento</label>
+                                        <select class="form-select" @bind="matriz.PaisNacimientoId">
+                                            <option value="0">Seleccione...</option>
+                                            @foreach (var item in paisList)
+                                            {
+                                                <option value="@item.PaisId">@item.pais</option>
+                                            }
+                                        </select>
+                                        <ValidationMessage For="@(() => matriz.PaisNacimientoId)" class="text-danger small fw-bold" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @* --- BLOQUE 2: SALUD Y HÁBITOS DE VIDA --- *@
+                    <div class="col-12 col-md-6">
+                        <div class="card card-custom border-0 shadow-sm rounded-4 h-100">
+                            <div class="card-body p-4">
+                                <h5 class="fw-bold text-rojo mb-3"><i class="bi bi-heart-pulse me-2"></i>Salud y Estilo de Vida</h5>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label label-custom">Condición Médica</label>
+                                        <select class="form-select" @bind="matriz.CondicionMedicaId">
+                                            <option value="0">Seleccione...</option>
+                                            @foreach (var item in condicionMedicaList)
+                                            {
+                                                <option value="@item.CondicionMedicaId">@item.Nombre</option>
+                                            }
+                                        </select>
+                                        <ValidationMessage For="@(() => matriz.CondicionMedicaId)" class="text-danger small fw-bold" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label label-custom">Deporte Practicado</label>
+                                        <select class="form-select" @bind="matriz.DeporteId">
+                                            <option value="0">Seleccione...</option>
+                                            @foreach (var item in deportesList)
+                                            {
+                                                <option value="@item.DeporteId">@item.Nombre</option>
+                                            }
+                                        </select>
+                                        <ValidationMessage For="@(() => matriz.DeporteId)" class="text-danger small fw-bold" />
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label label-custom">Hobbies / Aficiones</label>
+                                        <input type="text" class="form-control" @bind="matriz.Hobbies" />
+                                        <ValidationMessage For="@(() => matriz.Hobbies)" class="text-danger small fw-bold" />
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label label-custom">¿Fuma?</label>
+                                        <select class="form-select" @bind="FumaString">
+                                            <option value="">Seleccione...</option>
+                                            <option value="true">Sí</option>
+                                            <option value="false">No</option>
+                                        </select>
+                                        <ValidationMessage For="@(() => matriz.Fuma)" class="text-danger small fw-bold" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label label-custom">¿Cuántas veces al mes fuma?</label>
+                                        <input type="number" class="form-control" @bind="matriz.FumaVecesAlMes" disabled="@(matriz.Fuma != true)" />
+                                        <ValidationMessage For="@(() => matriz.FumaVecesAlMes)" class="text-danger small fw-bold" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label label-custom">¿Consume Alcohol?</label>
+                                        <select class="form-select" @bind="AlcoholString">
+                                            <option value="">Seleccione...</option>
+                                            <option value="true">Sí</option>
+                                            <option value="false">No</option>
+                                        </select>
+                                        <ValidationMessage For="@(() => matriz.Alcohol)" class="text-danger small fw-bold" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label label-custom">¿Frecuencia de alcohol (al mes)?</label>
+                                        <input type="number" class="form-control" @bind="matriz.BebeVecesAlAño" disabled="@(matriz.Alcohol != true)" />
+                                        <ValidationMessage For="@(() => matriz.BebeVecesAlAño)" class="text-danger small fw-bold" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @* --- BLOQUE 3: VIVIENDA Y TRANSPORTE --- *@
+                    <div class="col-12 col-md-6">
+                        <div class="card card-custom border-0 shadow-sm rounded-4 h-100">
+                            <div class="card-body p-4">
+                                <h5 class="fw-bold text-rojo mb-3"><i class="bi bi-house-door me-2"></i>Vivienda y Transporte</h5>
+                                <div class="mb-3">
+                                    <label class="form-label label-custom">Medio de Transporte</label>
+                                    <select class="form-select" @bind="matriz.MedioDeTransporteId">
+                                        <option value="0">Seleccione...</option>
+                                        @foreach (var item in medioTransporteList)
+                                        {
+                                            <option value="@item.MedioTransporteId">@item.Nombre</option>
+                                        }
+                                    </select>
+                                    <ValidationMessage For="@(() => matriz.MedioDeTransporteId)" class="text-danger small fw-bold" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label label-custom">Clase de Vivienda</label>
+                                    <select class="form-select" @bind="matriz.ClaseDeViviendaId">
+                                        <option value="0">Seleccione...</option>
+                                        @foreach (var item in claseViviendaList)
+                                        {
+                                            <option value="@item.ClaseDeViviendaId">@item.Nombre</option>
+                                        }
+                                    </select>
+                                    <ValidationMessage For="@(() => matriz.ClaseDeViviendaId)" class="text-danger small fw-bold" />
+                                </div>
+                                <div class="mb-0">
+                                    <label class="form-label label-custom">Tipo de Vivienda</label>
+                                    <select class="form-select" @bind="matriz.TipoDeViviendaId">
+                                        <option value="0">Seleccione...</option>
+                                        @foreach (var item in tipoViviendaList)
+                                        {
+                                            <option value="@item.TipoViviendaId">@item.Nombre</option>
+                                        }
+                                    </select>
+                                    <ValidationMessage For="@(() => matriz.TipoDeViviendaId)" class="text-danger small fw-bold" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @* --- BLOQUE 4: FORMACIÓN ACADÉMICA --- *@
+                    <div class="col-12 col-md-6">
+                        <div class="card card-custom border-0 shadow-sm rounded-4 h-100">
+                            <div class="card-body p-4">
+                                <h5 class="fw-bold text-rojo mb-3"><i class="bi bi-journal-bookmark me-2"></i>Formación Académica</h5>
+                                <div class="mb-3">
+                                    <label class="form-label label-custom">Nivel Académico</label>
+                                    <select class="form-select" @bind="matriz.NivelAcademicoId">
+                                        <option value="0">Seleccione...</option>
+                                        @foreach (var item in nivelAcademicoList)
+                                        {
+                                            <option value="@item.NivelAcademicoId">@item.Nombre</option>
+                                        }
+                                    </select>
+                                    <ValidationMessage For="@(() => matriz.NivelAcademicoId)" class="text-danger small fw-bold" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label label-custom">Entidad Educativa</label>
+                                    <input type="text" class="form-control" @bind="matriz.EntidadEducativa" />
+                                    <ValidationMessage For="@(() => matriz.EntidadEducativa)" class="text-danger small fw-bold" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label label-custom">
+                                        Título Obtenido
+                                    </label>
+
+                                    <input type="text"
+                                           class="form-control"
+                                           @bind="matriz.TituloObtenido" />
+
+                                    <ValidationMessage For="@(() => matriz.TituloObtenido)"
+                                                       class="text-danger small fw-bold" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label label-custom">
+                                        Fecha de Culminación de Estudios
+                                    </label>
+
+                                    <SfDatePicker TValue="DateTime?"
+                                                  @bind-Value="matriz.AñoFinalizacionEducacion"
+                                                  Format="dd/MM/yyyy"
+                                                  Placeholder="dd/mm/aaaa"
+                                                  Width="100%">
+                                    </SfDatePicker>
+                                    <ValidationMessage For="@(() => matriz.AñoFinalizacionEducacion)"
+                                                       class="text-danger small fw-bold" />
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    @* --- BLOQUE 5: ANTECEDENTES LABORALES --- *@
+                    <div class="col-12 col-md-6">
+                        <div class="card card-custom border-0 shadow-sm rounded-4 h-100">
+                            <div class="card-body p-4">
+                                <h5 class="fw-bold text-rojo mb-3"><i class="bi bi-briefcase me-2"></i>Última Experiencia Laboral</h5>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label label-custom">Última Empresa</label>
+                                        <input type="text" class="form-control" @bind="matriz.UltimaEmpresaTrabajo" />
+                                        <ValidationMessage For="@(() => matriz.UltimaEmpresaTrabajo)" class="text-danger small fw-bold" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label label-custom">Cargo Desempeñado</label>
+                                        <input type="text" class="form-control" @bind="matriz.CargoDesempeñado" />
+                                        <ValidationMessage For="@(() => matriz.CargoDesempeñado)" class="text-danger small fw-bold" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label label-custom">Fecha Ultimo Empleo</label>
+                                        <SfDatePicker TValue="DateTime?"
+                                                      @bind-Value="matriz.FechaUltimoEmpleo"
+                                                      Format="dd/MM/yyyy"
+                                                      Placeholder="dd/mm/aaaa"
+                                                      Width="100%">
+                                        </SfDatePicker>
+                                        <ValidationMessage For="@(() => matriz.FechaUltimoEmpleo)" class="text-danger small fw-bold" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label label-custom">Último Salario</label>
+                                        <input type="number" step="1" min="0" class="form-control"
+                                               @bind:get="Convert.ToInt64(matriz.UltimoSalario)"
+                                               @bind:set="val => matriz.UltimoSalario = Convert.ToDecimal(val)"
+                                               onkeypress="return event.charCode >= 48 && event.charCode <= 57" />
+                                        <ValidationMessage For="@(() => matriz.UltimoSalario)" class="text-danger small fw-bold" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @* --- BLOQUE 6: CONTACTO DE EMERGENCIA --- *@
+                    <div class="col-12 col-md-6">
+                        <div class="card card-custom border-0 shadow-sm rounded-4 h-100 border-start border-4 border-roja">
+                            <div class="card-body p-4">
+                                <h5 class="fw-bold text-rojo mb-3"><i class="bi bi-telephone-outbound me-2"></i>Contacto de Emergencia</h5>
+                                <div class="mb-3">
+                                    <label class="form-label label-custom">Persona de Contacto</label>
+                                    <input type="text" class="form-control" @bind="matriz.PersonaEnCasoDeEmergencia" />
+                                    <ValidationMessage For="@(() => matriz.PersonaEnCasoDeEmergencia)" class="text-danger small fw-bold" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label label-custom">Teléfono de Contacto</label>
+                                    <input type="text" class="form-control" @bind="matriz.TelefonoEmergencia" />
+                                    <ValidationMessage For="@(() => matriz.TelefonoEmergencia)" class="text-danger small fw-bold" />
+                                </div>
+                                <div class="mb-0">
+                                    <label class="form-label label-custom">Dirección del Contacto</label>
+                                    <input type="text" class="form-control" @bind="matriz.DireccionPersonaEmergencia" />
+                                    <ValidationMessage For="@(() => matriz.DireccionPersonaEmergencia)" class="text-danger small fw-bold" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @* --- BLOQUE 7: SEGURIDAD DE DATOS (BANNER) --- *@
+                    <div class="col-12 col-md-6">
+                        <div class="card card-info-banner border-0 shadow-sm rounded-4 h-100 p-4 position-relative overflow-hidden">
+                            <div class="position-relative z-index-2 d-flex flex-column h-100 justify-content-center">
+                                <h5 class="fw-bold text-rojo mb-2"><i class="bi bi-shield-lock-fill me-2"></i>Seguridad de los datos</h5>
+                                <p class="text-secondary small mb-0 lh-lg">
+                                    Estás editando información confidencial. Asegúrate de verificar los datos con el colaborador.
+                                    La organización garantiza la seguridad de estos registros para fines administrativos y legales.
+                                </p>
+                            </div>
+                            <div class="decorative-circle"></div>
+                        </div>
+                    </div>
+
+                </div> @* --- FIN DEL ROW PRINCIPAL G-4 --- *@
+
+                @* --- BOTONES DE ACCIÓN --- *@
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <button type="button" class="btn btn-amarillo btn-outline-secondary rounded-pill px-4 py-2 transition-all fw-semibold"
+                            @onclick="Volver"
+                            disabled="@isSaving">
+                        <i class="bi bi-arrow-left me-2"></i> Cancelar
+                    </button>
+
+                    <button type="submit" class="btn btn-rojo rounded-pill px-4 py-2 transition-all fw-semibold"
+                            disabled="@(isSaving || matrizNoEncontrada)">
+                        @if (isSaving)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            <span>Guardando...</span>
+                        }
+                        else
+                        {
+                            <i class="bi bi-save me-2"></i>
+                            <span>Guardar</span>
+                        }
+                    </button>
+                </div>
+            </EditForm>
+            @* --- FIN DEL EDITFORM --- *@
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public int id { get; set; }
+
+    private MatrizSocioDemograficaUpdateDto matriz = new();
+
+    private bool isLoading = true;
+    private bool isSaving = false;
+    private bool matrizNoEncontrada = false;
+    
+    // public DateTime? DateValue { get; set; } = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 10);
+    // public DateTime MinDate { get; set; } = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 05);
+    // public DateTime MaxDate { get; set; } = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 20);
+
+    private string FumaString
+    {
+        get => matriz.Fuma == true ? "true" : (matriz.Fuma == false ? "false" : "");
+        set
+        {
+            if (value == "true") matriz.Fuma = true;
+            else if (value == "false") matriz.Fuma = false;
+            else matriz.Fuma = null;
+        }
+    }
+
+    private string AlcoholString
+    {
+        get => matriz.Alcohol == true ? "true" : (matriz.Alcohol == false ? "false" : "");
+        set
+        {
+            if (value == "true") matriz.Alcohol = true;
+            else if (value == "false") matriz.Alcohol = false;
+            else matriz.Alcohol = null;
+        }
+    }
+
+    private List<ClaseViviendaReaderDto> claseViviendaList = new();
+    private List<CondicionMedicaReaderDto> condicionMedicaList = new();
+    private List<DeporteRederDto> deportesList = new();
+    private List<GeneroReaderDto> generoList = new();
+    private List<MedioTransporteReaderDto> medioTransporteList = new();
+    private List<NivelAcademicoReaderDto> nivelAcademicoList = new();
+    private List<PaisReaderDto> paisList = new();
+    private List<TipoViviendaReaderDto> tipoViviendaList = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var resClase = await _iClaseVivienda.GetClaseViviendaAsync();
+            if (resClase?.EsCorrecto == true && resClase.Valor != null) claseViviendaList = resClase.Valor;
+
+            var resCondicion = await _iCondicionMedica.GetCondicionMedicaAsync();
+            if (resCondicion?.EsCorrecto == true && resCondicion.Valor != null) condicionMedicaList = resCondicion.Valor;
+
+            var resDeportes = await _iDeportes.GetDeportesAsync();
+            if (resDeportes?.EsCorrecto == true && resDeportes.Valor != null) deportesList = resDeportes.Valor;
+
+            var resGenero = await _iGenero.GetGeneroAsync();
+            if (resGenero?.EsCorrecto == true && resGenero.Valor != null) generoList = resGenero.Valor;
+
+            var resMedio = await _iMedioTransporte.GetMedioTransporteAsync();
+            if (resMedio?.EsCorrecto == true && resMedio.Valor != null) medioTransporteList = resMedio.Valor;
+
+            var resNivel = await _iNivelAcademico.GetNivelAcademicoAsync();
+            if (resNivel?.EsCorrecto == true && resNivel.Valor != null) nivelAcademicoList = resNivel.Valor;
+
+            var resPais = await _iPais.GetPaisAsync();
+            if (resPais?.EsCorrecto == true && resPais.Valor != null) paisList = resPais.Valor;
+
+            var resTipo = await _iTipoVivienda.GetTipoViviendaAsync();
+            if (resTipo?.EsCorrecto == true && resTipo.Valor != null) tipoViviendaList = resTipo.Valor;
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("Swal.fire", "Error", $"Error al inicializar los catálogos: {ex.Message}", "error");
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await CargarMatriz();
+    }
+
+    private async Task CargarMatriz()
+    {
+        try
+        {
+            isLoading = true;
+            matrizNoEncontrada = false;
+
+            var response = await _iMatriz.GetMatrizPorEmpleadoIdAsync(id);
+
+            if (response != null && response.EsCorrecto && response.Valor != null)
+            {
+                var val = response.Valor;
+
+                matriz = new MatrizSocioDemograficaUpdateDto
+                {
+                    MatrizSociodemograficaId = val.MatrizSociodemograficaId,
+                    EmpleadoId = val.EmpleadoId,
+                    NombreEmpleado = val.NombreEmpleado,
+                    ConsentimientoInformado = val.ConsentimientoInformado,
+                    Edad = val.Edad,
+                    GeneroId = val.GeneroId,
+                    Nacionalidad = val.Nacionalidad,
+                    PaisNacimientoId = val.PaisNacimientoId,
+                    CondicionMedicaId = val.CondicionMedicaId,
+                    DeporteId = val.DeporteId,
+                    Hobbies = val.Hobbies,
+                    Fuma = val.Fuma,
+                    FumaVecesAlMes = val.FumaVecesAlMes,
+                    Alcohol = val.Alcohol,
+                    BebeVecesAlAño = val.BebeVecesAlAño,
+                    MedioDeTransporteId = val.MedioDeTransporteId,
+                    ClaseDeViviendaId = val.ClaseDeViviendaId,
+                    TipoDeViviendaId = val.TipoDeViviendaId,
+                    NivelAcademicoId = val.NivelAcademicoId,
+                    EntidadEducativa = val.EntidadEducativa,
+                    TituloObtenido = val.TituloObtenido,
+                    AñoFinalizacionEducacion = val.AñoFinalizacionEducacion,
+                    UltimaEmpresaTrabajo = val.UltimaEmpresaTrabajo,
+                    CargoDesempeñado = val.CargoDesempeñado,
+                    FechaUltimoEmpleo = val.FechaUltimoEmpleo,
+                    UltimoSalario = val.UltimoSalario,
+                    PersonaEnCasoDeEmergencia = val.PersonaEnCasoDeEmergencia,
+                    TelefonoEmergencia = val.TelefonoEmergencia,
+                    DireccionPersonaEmergencia = val.DireccionPersonaEmergencia
+                };
+            }
+            else
+            {
+                matrizNoEncontrada = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            matrizNoEncontrada = true;
+            await JS.InvokeVoidAsync("Swal.fire", "Error", $"Error al cargar la matriz sociodemográfica: {ex.Message}", "error");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task Guardar()
+    {
+        try
+        {
+            isSaving = true;
+            var response = await _iMatriz.updateMatrizAsync(matriz);
+
+            if (response != null && response.EsCorrecto)
+            {
+                await JS.InvokeVoidAsync("Swal.fire", "¡Éxito!", "Matriz sociodemográfica actualizada correctamente.", "success");
+                Volver();
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("Swal.fire", "Error", response?.Mensaje ?? "No se pudo actualizar la matriz.", "error");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("Swal.fire", "Error", $"Ocurrió un error al guardar: {ex.Message}", "error");
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void Volver()
+    {
+        nav.NavigateTo("/Administrar/MatrizSociodemografica");
+    }
+}

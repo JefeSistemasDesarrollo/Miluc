@@ -1,12 +1,13 @@
 ﻿@page "/nomina/detalle/{idEmpleado:int}"
 @using Miluc.Client.Interfaces.Nomina
-@using Miluc.Shared.DTOs.Nomina.EmpleadoDto
+@using Miluc.Client.Interfaces.Nomina.SeguridadSocial
 @using Miluc.Shared.DTOs.Nomina.AfiliacionSeguridadSocialDto
+@using Miluc.Shared.DTOs.Nomina.EmpleadoDto
 
 @inject NavigationManager nav
 @inject IAfSeguridadSocialClientService _afSeguridadSocialClientService
 @inject IEmpleadoClientService _empleadoService
-@inject IJSRuntime JS
+@inject IJSRuntime js
 
 <div class="detalleAfiliacionesEmpleado-page p-4 animate__animated animate__fadeIn">
     <div class="container-fluid max-width-container">
@@ -131,7 +132,7 @@
         {
             if (idEmpleado <= 0)
             {
-                await JS.InvokeVoidAsync("alert", "ID de empleado no válido.");
+                await js.InvokeVoidAsync("alert", "ID de empleado no válido.");
                 Volver();
                 return;
             }
@@ -146,20 +147,20 @@
                 
                 if (afiliacionSeguridadSocial == null)
                 {
-                    await JS.InvokeVoidAsync("alert", "El empleado no cuenta con un registro de seguridad social activo.");
+                    await js.InvokeVoidAsync("alert", "El empleado no cuenta con un registro de seguridad social activo.");
                     Volver();
                 }
             }
             else
             {
-                await JS.InvokeVoidAsync("alert", "No se pudo obtener la información de seguridad social.");
+                await js.InvokeVoidAsync("alert", "No se pudo obtener la información de seguridad social.");
                 Volver();
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error al consultar: {ex.Message}");
-            await JS.InvokeVoidAsync("alert", "Error interno al recuperar el detalle.");
+            await js.InvokeVoidAsync("alert", "Error interno al recuperar el detalle.");
             Volver();
         }
         finally

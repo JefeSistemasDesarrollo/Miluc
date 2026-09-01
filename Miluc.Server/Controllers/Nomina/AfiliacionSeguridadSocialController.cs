@@ -13,15 +13,20 @@ namespace Miluc.Server.Controllers.Nomina
         IAfiliacionSeguridadSocialService afiliacionSeguridadSocialService
         , ILogService _log) : Controller
     {
+        public IArlService ArlService { get; } = arlService;
+        public ICajaCompensacionService CajaCompensacionService { get; } = cajaCompensacionService;
+        public IAfiliacionSeguridadSocialService AfiliacionSeguridadSocialService { get; } = afiliacionSeguridadSocialService;
+        public ILogService Log { get; } = _log;
+
         [HttpGet("AfiliacionSeguridadSocial")]
         public async Task<ActionResult<ResponseAPI<List<AfiliacionSeguridadSocialreaderDto>>>> GetAfiliacionSeguridadSocialAsync([FromQuery] string? filtro = null,[FromQuery] int page = 1, [FromQuery] int cantidad = 10) 
         {
             try
             {
-                (List<AfiliacionSeguridadSocialreaderDto> afiliaciones, int totalRegistros) = await afiliacionSeguridadSocialService.GetAfiliacionSeguridadSocialAsync(filtro, page, cantidad);
+                (List<AfiliacionSeguridadSocialreaderDto> afiliaciones, int totalRegistros) = await AfiliacionSeguridadSocialService.GetAfiliacionSeguridadSocialAsync(filtro, page, cantidad);
                 
                // (List<AfiliacionSeguridadSocialreaderDto> afiliaciones, int totalRegistros) =
-                    await afiliacionSeguridadSocialService.GetAfiliacionSeguridadSocialAsync(filtro, page, cantidad);
+                    await AfiliacionSeguridadSocialService.GetAfiliacionSeguridadSocialAsync(filtro, page, cantidad);
 
                 if (afiliaciones == null || afiliaciones.Count == 0)
                 {
@@ -45,7 +50,7 @@ namespace Miluc.Server.Controllers.Nomina
             }
             catch (Exception ex)
             {
-                await _log.GuardarErrorAsync(
+                await Log.GuardarErrorAsync(
                     message: ex.Message,
                     StackTrace: ex.StackTrace,
                     usuario: User.Identity?.Name ?? "Sistema",
@@ -117,7 +122,7 @@ namespace Miluc.Server.Controllers.Nomina
             try
             {
                 // Upsert devuelve bool -> no es un DTO
-                var resultado = await afiliacionSeguridadSocialService.UpsertAfiliacionAsync(afiliacionUpdateDto);
+                var resultado = await AfiliacionSeguridadSocialService.UpsertAfiliacionAsync(afiliacionUpdateDto);
 
                 if (!resultado)
                 {
@@ -140,7 +145,7 @@ namespace Miluc.Server.Controllers.Nomina
             }
             catch (Exception ex)
             {
-                await _log.GuardarErrorAsync(
+                await Log.GuardarErrorAsync(
                     message: ex.Message,
                     StackTrace: ex.StackTrace,
                     usuario: User.Identity?.Name ?? "Sistema",
@@ -166,7 +171,7 @@ namespace Miluc.Server.Controllers.Nomina
                 try
                 {
 
-                var afiliaciones = await afiliacionSeguridadSocialService.GetAfiliacionSeguridadSocialByIdAsync(id);
+                var afiliaciones = await AfiliacionSeguridadSocialService.GetAfiliacionSeguridadSocialByIdAsync(id);
 
                 if (afiliaciones == null)
                     {
@@ -190,7 +195,7 @@ namespace Miluc.Server.Controllers.Nomina
                 }
                 catch (Exception ex)
                 {
-                    await _log.GuardarErrorAsync(
+                    await Log.GuardarErrorAsync(
                         message: ex.Message,
                         StackTrace: ex.StackTrace,
                         usuario: User.Identity?.Name ?? "Sistema",

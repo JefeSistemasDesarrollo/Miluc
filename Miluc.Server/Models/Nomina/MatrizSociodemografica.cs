@@ -2,7 +2,7 @@
 {
     public class MatrizSociodemografica
     {
-        public int MatrizSociodemograficaID { get; set; }
+        public int MatrizSociodemograficaId { get; set; }
         public int EmpleadoId { get; set; }
         public bool ConSentimientoInformado { get; set; }
         public int Edad { get; set; }
@@ -20,7 +20,7 @@
         public int ClaseDeViviendaId { get; set; }
         public int TipoViviendaId { get; set; }
         public int NivelAcademicoId { get; set; }
-        public int AñoFinalizacionEducacion { get; set; }
+        public DateTime? AñoFinalizacionEducacion { get; set; }
         public string EntidadEducativa { get; set; }
 
         public string TituloObtenido { get; set; }

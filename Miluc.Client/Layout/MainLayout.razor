@@ -2,7 +2,10 @@
 @inject NavigationManager Nav
 @using Microsoft.AspNetCore.Components.Authorization
 @using Miluc.Client.Interfaces
+@using Syncfusion.Blazor
 @inject IAuthClientService AuthService
+
+<SfScriptManager />
 
 <div class="miluc-layout @(isMenuOpen ? "menu-open" : "menu-closed")">
 
@@ -54,6 +57,7 @@
         </main>
     </div>
 </div>
+
 
 @code {
     private bool isMenuOpen = false; // Mejor iniciar cerrado en móvil

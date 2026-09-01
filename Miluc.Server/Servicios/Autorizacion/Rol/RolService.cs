@@ -30,7 +30,7 @@ namespace Miluc.Server.Servicios.Autorizacion.Rol
                 await _context.Roles.AddAsync(rol);
                 return await _context.SaveChangesAsync() > 0;
             }
-            catch (Exception ex)
+            catch (Exception )
             {
                // _logger.LogError(ex, "Error al crear un nuevo rol: {Nombre}", dtoCreate.Nombre);
                 throw new Exception($"Error al crear un nuevo rol: {dtoCreate.Nombre}");

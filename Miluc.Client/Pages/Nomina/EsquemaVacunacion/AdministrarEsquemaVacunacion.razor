@@ -5,7 +5,7 @@
 @using Miluc.Shared.DTOs.Nomina.EsquemaVacunacionDto
 @inject NavigationManager nav
 @inject IEmpleadoClientService _empleadoClientService
-@inject IEsquemaVacunacionClienteService _esquemaClienteService
+@inject IEsquemaVacunacionClientService _esquemaClienteService
 @inject IJSRuntime js
 
 <div class="afiliaciónEmpleados-page animate__animated animate__fadeIn p-4">
@@ -192,6 +192,7 @@
         {
             var respuesta = await _esquemaClienteService.GetEsquemasVacunacionAsync(textoBusqueda, paginaActual, cantidadPorPagina);
 
+           
             if (respuesta != null && respuesta.EsCorrecto && respuesta.Valor != null)
             {
                 listempleadosOrigen = respuesta.Valor;
@@ -293,5 +294,5 @@
         nav.NavigateTo($"/nomina/crear/esquemaVacunacion/{id}");
     }
 
-    private void Volver() => nav.NavigateTo("/Gestionar/Afiliaciones");
+    private void Volver() => nav.NavigateTo("/administrar-Nomina");
 }

@@ -177,7 +177,7 @@
 
             if (!respuesta.EsCorrecto)
             {
-                await JS.InvokeVoidAsync("Swal.fire", "Error", $"No se pudo actualizar: {respuesta.Mensaje}", "error");
+                await JS.InvokeVoidAsync("Swal.fire", "Error", $" {respuesta.Mensaje}", "error");
             }
             else
             {

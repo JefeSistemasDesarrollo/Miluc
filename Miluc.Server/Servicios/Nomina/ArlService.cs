@@ -14,7 +14,7 @@ using Miluc.Shared.DTOs.Nomina.EpsDto;
 namespace Miluc.Server.Servicios.Nomina
 {
 
-    public class ArlService(NominaDbContext _contex) : IArlService
+    public class ArlService(NominaDbContext _context) : IArlService
 
     {
         public async Task<ArlReaderDto> CreateArlAsync(ArlCreateDto arlCreateDto)
@@ -23,14 +23,14 @@ namespace Miluc.Server.Servicios.Nomina
                 throw new ArgumentNullException(nameof(arlCreateDto), "El objeto ArlCreateDto no puede ser nulo.");
             try
             {
-                var existeArl = await _contex.Arl.AnyAsync
+                var existeArl = await _context.Arl.AnyAsync
                     (a => a.Nombre.ToLower().Trim() == arlCreateDto.Nombre.ToLower().Trim());
                 if (existeArl) throw new Exception("Ya existe una ARL con el mismo nombre.");
 
                 // Validar si el código ya existe (solo si se proporciona un código)
                 if (!string.IsNullOrEmpty(arlCreateDto.Codigo))
                 {
-                    var existeCodigo = await _contex.Arl.AnyAsync
+                    var existeCodigo = await _context.Arl.AnyAsync
                         (a => a.Codigo.ToLower().Trim() == arlCreateDto.Codigo.ToLower().Trim());
                     if (existeCodigo) throw new Exception("Ya existe una ARL con el mismo código.");
                 }
@@ -45,8 +45,8 @@ namespace Miluc.Server.Servicios.Nomina
                     FechaCreacion = DateTime.UtcNow,
                     Activo = arlCreateDto.Activo,
                 };
-                _contex.Arl.Add(arl);
-                await _contex.SaveChangesAsync();
+                _context.Arl.Add(arl);
+                await _context.SaveChangesAsync();
                 return new ArlReaderDto
                 {
                     ArlId = arl.ArlId,
@@ -59,57 +59,59 @@ namespace Miluc.Server.Servicios.Nomina
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error al crear nueva ARL: {ex.Message}");
+                throw new Exception(ex.Message);
             }
         }
 
+
+
         public async Task<(List<ArlReaderDto> Data, int TotalRegistros)> GetArlAsync(string? filtro = null, int page = 1, int? cantidad = null)
         {
-            
-                try
+
+            try
+            {
+                int cantidadtop = cantidad ?? 20;
+                var query = _context.Arl.AsNoTracking().AsQueryable();
+
+
+                if (!string.IsNullOrWhiteSpace(filtro))
                 {
-                    int cantidadtop = cantidad ?? 20;
-                    var query = _contex.Arl.AsNoTracking().AsQueryable();
+                    query = query.Where(a => a.Nombre.Contains(filtro) || a.Codigo.Contains(filtro));
+                }
 
 
-                    if (!string.IsNullOrWhiteSpace(filtro))
+                int totalRegistros = await query.CountAsync();
+
+
+                var cajaComp = await query
+                    .Select(c => new ArlReaderDto
                     {
-                        query = query.Where(a => a.Nombre.Contains(filtro) || a.Codigo.Contains(filtro));
-                    }
+                        ArlId = c.ArlId,
+                        Nombre = c.Nombre,
+                        Codigo = c.Codigo,
+
+                        FechaCreacion = c.FechaCreacion,
+                        FechaActualizacion = c.FechaActualizacion,
+                        Activo = c.Activo,
+                    })
+                    .Skip((page - 1) * cantidadtop)
+                    .Take(cantidadtop)
+                    .ToListAsync();
 
 
-                    int totalRegistros = await query.CountAsync();
-
-
-                    var cajaComp = await query
-                        .Select(c => new ArlReaderDto
-                        {
-                            ArlId = c.ArlId,
-                            Nombre = c.Nombre,
-                            Codigo = c.Codigo,
-
-                            FechaCreacion = c.FechaCreacion,
-                            FechaActualizacion = c.FechaActualizacion,
-                            Activo = c.Activo,
-                        })
-                        .Skip((page - 1) * cantidadtop)
-                        .Take(cantidadtop)
-                        .ToListAsync();
-
-
-                    return (cajaComp, totalRegistros);
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception($"Error Al obtener Caja Compensacion: {ex.Message}");
-                }
+                return (cajaComp, totalRegistros);
             }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
 
 
 
 
 
-        
+
 
 
 
@@ -118,7 +120,7 @@ namespace Miluc.Server.Servicios.Nomina
         {
             try
             {
-                var arl = await _contex.Arl.AsNoTracking()
+                var arl = await _context.Arl.AsNoTracking()
                     .Where(a => a.ArlId == id)
                     .Select(a => new ArlReaderDto
                     {
@@ -135,13 +137,13 @@ namespace Miluc.Server.Servicios.Nomina
             }
             catch (KeyNotFoundException)
             {
-                // Si no se encontró el registro, relanzamos la excepción limpia  para que el controlador sepa que debe retornar un NotFound (404).
-                
+
+
                 throw;
             }
             catch (Exception ex)
             {
-                //  Si ocurre un fallo de base de datos u otro error inesperado,  cumplimos con S112 usando una excepción específica y pasando 'ex' como InnerException.
+
 
                 throw new InvalidOperationException($"Error al consultar la ARL con ID {id}.", ex);
             }
@@ -151,51 +153,77 @@ namespace Miluc.Server.Servicios.Nomina
         {
             try
             {
-                var arl = await _contex.Arl.FirstOrDefaultAsync(a => a.ArlId == arlUpdate.ArlId);
+                var arl = await _context.Arl.FirstOrDefaultAsync(a => a.ArlId == arlUpdate.ArlId) ?? throw new Exception("ARL no existe");
 
-
-                if (arl == null) throw new Exception("Arl no existe");
+                // VALIDACIÓN: Si la entidad está activa, pero intentan pasarla a inactiva (Activo = false)
+                if (arl.Activo && !arlUpdate.Activo)
+                {
+                    //Busca en tabla AfiliacionSeguridadSocial si hay empleados  afiliados a esrta arl
+                    bool tieneEmpleadosAfiliados = await _context.AfiliacionSeguridadSocial.AnyAsync(a => a.ArlId == arlUpdate.ArlId);
+                    // si Tiene afiliaciones Lanza exepcion  ya que tiene afiliados
+                    if (tieneEmpleadosAfiliados)
+                    {
+                        throw new Exception("La ARL no se puede inactivar porque tiene empleados afiliados.");
+                    }
+                }
 
                 var nombreformateado = arlUpdate.Nombre?.Trim().ToUpper();
                 var codigoFormateado = arlUpdate.Codigo?.Trim().ToUpper();
-                    var existeArl = await _contex.Arl.AnyAsync(a => 
-                          
+
+                var existeArl = await _context.Arl.AnyAsync(a =>
                     a.ArlId != arlUpdate.ArlId &&
                     (a.Nombre.ToUpper() == nombreformateado || a.Codigo.ToUpper() == codigoFormateado)
                 );
 
                 if (existeArl)
-                    throw new Exception("Ya existe otra EPS con el mismo nombre o código.");
-
+                    throw new Exception("Ya existe otra ARL con el mismo nombre o código.");
 
                 arl.Nombre = arlUpdate.Nombre;
                 arl.Codigo = arlUpdate.Codigo;
                 arl.FechaActualizacion = DateTime.Now;
                 arl.Activo = arlUpdate.Activo;
 
-
-                await _contex.SaveChangesAsync();
-
+                await _context.SaveChangesAsync();
 
                 return new ArlReaderDto
                 {
-                     ArlId= arl.ArlId,
+                    ArlId = arl.ArlId,
                     Nombre = arl.Nombre,
                     Codigo = arl.Codigo,
                     FechaActualizacion = arl.FechaActualizacion,
                     Activo = arl.Activo
                 };
-
-
-
-
             }
             catch (Exception ex)
             {
-                throw new Exception($":{ex.Message}");
+                throw new Exception($"{ex.Message}");
+            }
+        }
+        public async Task<bool> DeleteArlAsync(int id)
+        {
+            try
+            {
+                var arl = await _context.Arl.FirstOrDefaultAsync(e => e.ArlId == id) ?? throw new Exception("La Arl no existe.");
 
-                    }
+                // Validar si tiene afiliaciones activas o históricas vinculadas
+                bool tieneEmpleadosAfiliados = await _context.AfiliacionSeguridadSocial
+                    .AnyAsync(af => af.ArlId == id);
+
+                if (tieneEmpleadosAfiliados)
+                {
+                    throw new Exception("La ARl no se puede eliminar porque cuenta con registros o empleados vinculados en el sistema.");
+                }
+
+                // Si no tiene registros vinculados, procedemos con seguridad
+                _context.Arl.Remove(arl);
+                await _context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
             }
         }
     }
-
+}

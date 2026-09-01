@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Miluc.Server.Data;
 using Miluc.Server.Interfaces.Nomina;
+using Miluc.Shared.DTOs.Nomina.NewFolder;
 using Miluc.Shared.DTOs.Nomina.PaisDto;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
@@ -9,39 +10,23 @@ namespace Miluc.Server.Servicios.Nomina
     public class PaisService(NominaDbContext _context) : IPaisService
     {
 
-        public async Task<(List<PaisReaderDto> data, int CantidadRegistros)> GetPaisAsync(string? filtro = null, int page = 1, int? cantidad = null)
+        public async Task<List<PaisReaderDto>> GetPaisAsync()
         {
             try
             {
 
-                int cantidadTop = cantidad ?? 20;
+
+                var pais = await _context.Pais.AsNoTracking()
+           .Select(p => new PaisReaderDto
+           {
+               PaisId = p.PaisId,
+               Codigo = p.Codigo,
+               pais = p.pais
+
+           }).ToListAsync();
 
 
-                var query = _context.Pais.AsNoTracking().AsQueryable();
-
-                if (!string.IsNullOrEmpty(filtro))
-                {
-
-                    query = query.Where(p => p.pais.Contains(filtro));
-
-
-                }
-
-                int totalCount = await query.CountAsync();
-
-                var dataPais = await query.OrderBy(p => p.pais)
-                                .Skip((page - 1) * cantidadTop)
-                                .Take(cantidadTop)
-                                .Select(u => new PaisReaderDto
-                                {
-                                    PaisId = u.PaisId,
-                                    Codigo = u.Codigo,
-                                    pais = u.pais
-
-                                }).ToListAsync();
-
-
-                return (dataPais, totalCount);
+                return pais;
 
             }
             catch (Exception ex)

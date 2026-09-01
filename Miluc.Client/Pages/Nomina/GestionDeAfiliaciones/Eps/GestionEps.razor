@@ -141,12 +141,15 @@
                             @* Columna de Acciones Limpia *@
                                 <td class="text-center pe-4">
                                     <div class="btn-group shadow-sm border rounded-pill bg-white overflow-hidden">
-                                        <button class="btn btn-sm px-3" title="Ver Detalle" @onclick="() => VerDetalle(em.EpsId)">
+                                        <button class="btn-detail btn btn-dark btn-sm px-2 border-end" title="Ver Detalle" @onclick="() => VerDetalle(em.EpsId)">
                                             <i class="bi bi-eye"></i>
                                         </button>
-                                        <button class="btn btn-white btn-sm px-3" title="Editar EPS" @onclick="() => EditarEps(em.EpsId)">
+                                        <button class="btn btn-white btn-sm px-2 border-end edit" title="Editar EPS" @onclick="() => EditarEps(em.EpsId)">
                                             <i class="bi bi-pencil-square text-primary"></i>
-                                        </button>
+                                        </button
+                                        <button class="btn btn-white btn-sm px-2 delete" title="Eliminar EPS" @onclick="() => EliminarEps (em.EpsId)">
+                                            <i class="bi bi-trash3 text-danger"></i>
+                                        </button
                                     </div>
                                 </td>
                             </tr>
@@ -201,10 +204,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await cargarAfiliaciones();
+        await cargarEps();
     }
 
-    public async Task cargarAfiliaciones()
+    public async Task cargarEps()
     {
         cargando = true;
 
@@ -289,7 +292,7 @@
 
             if (string.IsNullOrWhiteSpace(_textoBusqueda))
             {
-                await cargarAfiliaciones();
+                await cargarEps();
             }
             else
             {
@@ -320,14 +323,87 @@
         paginaActual = nuevaPagina;
 
         if (string.IsNullOrWhiteSpace(_textoBusqueda))
-            await cargarAfiliaciones();
+            await cargarEps();
         else
             await BuscarEnServidor();
+    }
+      private async Task eliminarEps(int id)
+    {
+        var resultadoSwal = await js.InvokeAsync<System.Text.Json.JsonElement>("Swal.fire", new
+
+        {
+            title = "¿Deseas eliminar esta eps?",
+            text = "Esta acción removerá el registro permanentemente si no cuenta con transacciones.",
+            icon = "warning",            
+            showCancelButton = true,
+            confirmButtonColor = "#D62F46",
+            cancelButtonColor = "#FDC922",
+            confirmButtonText = "Sí, eliminar",
+            cancelButtonText = "Cancelar"
+        });
+
+        // Extrae el valor booleano resultante del JSON devuelto por JavaScript para comprobar si se confirmó la acción
+        bool confirmado = false;
+        if (resultadoSwal.ValueKind == System.Text.Json.JsonValueKind.Object &&
+            resultadoSwal.TryGetProperty("isConfirmed", out var propiedadConfirmado))
+        {
+            confirmado = propiedadConfirmado.GetBoolean();
+        }
+
+        if (confirmado)
+        {
+            cargando = true;
+            StateHasChanged();
+
+            try
+            {
+                // Invocación al cliente HTTP para eliminar físicamente el id seleccionado
+                var respuesta = await _epsService.DeleteEpsAsync(id);
+
+               if (respuesta != null && respuesta.EsCorrecto)
+            {
+                await js.InvokeVoidAsync("Swal.fire", new
+                {
+                    icon = "success",
+                    title = "¡Eliminado!",
+                 
+                    text = "La EPS ha sido removida con éxito.", 
+                    confirmButtonText = "Aceptar",
+                    confirmButtonColor = "#D62F46"
+                });
+
+                await cargarEps();
+            }
+                else
+                {
+                    string mensajeServidor = respuesta != null ? respuesta.Mensaje : "No se pudo procesar la solicitud.";
+
+                    await js.InvokeVoidAsync("Swal.fire", new
+                    {
+                        icon = "error",
+                        title = "No se puede eliminar",
+                        text = mensajeServidor,
+                        confirmButtonText = "Aceptar",
+                        confirmButtonColor = "#D62F46"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error durante el proceso de borrado: {ex.Message}");
+            }
+            finally
+            {
+                cargando = false;
+                StateHasChanged();
+            }
+        }
     }
 
     private void VerDetalle(int id) => nav.NavigateTo($"/api/Eps/{id}");
     private void Volver() => nav.NavigateTo("administrar-entidadesSeguridadSocial");
     private void IrACrearEps() => nav.NavigateTo("/api/Eps/CrearEps");
     private void EditarEps(int epsId) => nav.NavigateTo($"/editar/api/Eps/{epsId}");
+    private async Task EliminarEps(int id) => await eliminarEps(id);
 }
 

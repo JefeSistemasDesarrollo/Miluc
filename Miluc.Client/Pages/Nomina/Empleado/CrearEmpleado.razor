@@ -5,6 +5,7 @@
 @using Miluc.Shared.DTOs.Nomina.EstadoCivilDto
 @using Miluc.Shared.DTOs.Nomina.MunicipioDto
 @using Miluc.Shared.DTOs.Nomina.TipoDocumento
+@using Syncfusion.Blazor.Calendars
 
 @inject NavigationManager nav
 @inject IDepartamentosClientService _municipioClientService
@@ -55,7 +56,7 @@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom"><i class="bi bi-person-fill-add"></i> Primer Nombre<span class="text-danger">*</span> </label>
                                     <div class="input-group-custom">
-                                
+
                                         <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.PrimerNombre" placeholder="Ej: Juan" />
                                     </div>
                                     @* esto es para hacer las validaciones  que esta en el dto  *@
@@ -65,7 +66,7 @@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom"><i class="bi bi-person-fill-add"></i> Segundo Nombre</label>
                                     <div class="input-group-custom">
-                                   
+
                                         <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.SegundoNombre" placeholder="Opcional" />
                                     </div>
                                 </div>
@@ -73,7 +74,7 @@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom"> <i class="bi bi-person-fill-add"></i> Primer Apellido<span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
-                                    
+
                                         <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.PrimerApellido" placeholder="Primer Apellido" />
                                         <ValidationMessage For="@(() => nuevoEmpleado.PrimerApellido)" class="text-danger small mt-1 d-block fw-medium" />
 
@@ -85,7 +86,7 @@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom"> <i class="bi bi-person-fill-add"></i> Segundo Apellido</label>
                                     <div class="input-group-custom">
-                                       
+
                                         <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.SegundoApellido" placeholder="Segundo apellido" />
                                     </div>
                                 </div>
@@ -93,9 +94,14 @@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom"> <i class="bi bi-calendar-date"></i> Fecha nacimiento<span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
-                                        <InputDate class="form-control input-custom"
-                                                   @bind-Value="nuevoEmpleado.FechaNacimiento"
-                                                   max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+
+                                     
+                                        <SfDatePicker TValue="DateTime?"
+                                                      @bind-Value="nuevoEmpleado.FechaNacimiento"
+                                                      Format="dd/MM/yyyy"
+                                                      Placeholder="dd/mm/aaaa"
+                                                      Width="100%">
+                                        </SfDatePicker>
                    
                                         <ValidationMessage For="@(() => nuevoEmpleado.FechaNacimiento)" class="text-danger small mt-1 d-block fw-medium" />
                                     </div>
@@ -105,8 +111,8 @@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom"> <i class="bi bi-person-vcard"></i> Tipo de documento<span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
-                                      
 
+                                      
                                         <InputSelect @bind-Value="nuevoEmpleado.TipoDocumentoId" class="form-control input-custom">
                                             <option value="">Seleccionar tipo de documento</option>
                                             @foreach (var m in listDocumento)
@@ -122,7 +128,7 @@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom"><i class="bi bi-person-vcard"></i> Número de Documento <span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
-                                        
+
                                         <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.Documento" placeholder="Ej: 100023456" />
                                     </div>
                                     <ValidationMessage For="@(() => nuevoEmpleado.Documento)" class="text-danger small mt-1 d-block fw-medium" />
@@ -131,8 +137,12 @@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom"> <i class="bi bi-calendar-date"></i> Fecha Expedición Documento<span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
-                                        <InputDate class="form-control input-custom"
-                                                   @bind-Value="nuevoEmpleado.FechaExpedicionDoc" />
+                                        <SfDatePicker TValue="DateTime?"
+                                                      @bind-Value="nuevoEmpleado.FechaExpedicionDoc"
+                                                      Format="dd/MM/yyyy"
+                                                      Placeholder="dd/mm/aaaa"
+                                                      Width="100%">
+                                        </SfDatePicker>
                                         <ValidationMessage For="@(() => nuevoEmpleado.FechaExpedicionDoc)" class="text-danger small mt-1 d-block fw-medium" />
                                     </div>
                                 </div>
@@ -140,8 +150,8 @@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom"> <i class="bi bi-person-hearts"></i> Estado Civil<span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
-                                    
 
+                                    
                                         <div class="select2-wrapper">
 
                                             <InputSelect @bind-Value="nuevoEmpleado.EstadoCivilId" class="form-control input-custom">
@@ -151,7 +161,7 @@
                                                     <option value="@estado.EstadoCivilId">@estado.Nombre</option>
                                                 }
                                             </InputSelect>
-                                                                                   
+
                                         </div>
                                     </div>
                                     <ValidationMessage For="@(() => nuevoEmpleado.EstadoCivilId)" class="text-danger small mt-1 d-block fw-medium" />
@@ -172,7 +182,7 @@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom"><i class="bi bi-phone"></i> Celular Alterno</label>
                                     <div class="input-group-custom">
-                                    
+
                                         <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.CelularAlterno" placeholder="Celular Alterno" />
                                         <ValidationMessage For="@(() => nuevoEmpleado.CelularAlterno)" class="text-danger small mt-1 d-block fw-medium" />
                                         @* <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.SegundoApellido" placeholder="Segundo apellido" /> *@
@@ -182,7 +192,7 @@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom"><i class="bi bi-envelope-at"></i> Correo<span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
-                                      
+
                                         <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.CorreoElectronico" placeholder="Correo" />
                                         <ValidationMessage For="@(() => nuevoEmpleado.CorreoElectronico)" class="text-danger small mt-1 d-block fw-medium" />
                                         @* <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.SegundoApellido" placeholder="Segundo apellido" /> *@
@@ -192,8 +202,8 @@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom"> <i class="bi bi-person-dash text-muted"></i> Dirección</label>
                                     <div class="input-group-custom">
-                                        
 
+                                        
                                         <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.Direccion" placeholder="Direccion" />
                                         <ValidationMessage For="@(() => nuevoEmpleado.Direccion)" class="text-danger small mt-1 d-block fw-medium" />
                                         @* <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.SegundoApellido" placeholder="Segundo apellido" /> *@
@@ -203,7 +213,7 @@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom"> <i class="bi bi-person-dash text-muted"></i> Barrio</label>
                                     <div class="input-group-custom">
-                                        
+
                                         <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.Barrio" placeholder="Barrio" />
                                         <ValidationMessage For="@(() => nuevoEmpleado.Barrio)" class="text-danger small mt-1 d-block fw-medium" />
                                         @* <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.SegundoApellido" placeholder="Segundo apellido" /> *@
@@ -304,8 +314,8 @@
         nuevoEmpleado.CodigoMunicipio = codigo;
         StateHasChanged();
     }
-    //cuando se inicializala aplicacion por primera vez 
-    //aca vamos acargar todos las tablas dependientes paara crear empleados 
+    //cuando se inicializala aplicacion por primera vez
+    //aca vamos acargar todos las tablas dependientes paara crear empleados
 
     protected override async Task OnInitializedAsync()
     {
@@ -351,7 +361,7 @@
             }
             else
             {
-                await JS.InvokeVoidAsync("Swal.fire", "Error", $"No se pudo crear: {respuesta.Mensaje}", "error");
+                await JS.InvokeVoidAsync("Swal.fire", "Error", $"{respuesta.Mensaje}", "error");
             }
         }
         catch (Exception ex)
@@ -362,9 +372,9 @@
         {
             isProcessing = false;
         }
-        
+
     }
-  
+
 }
 
 @* --- LÓGICA JAVASCRIPT --- *@

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Miluc.Client.Interfaces.Nomina;
 using Miluc.Server.Data;
 using Miluc.Server.Interfaces.Autorizacion;
 using Miluc.Server.Interfaces.Encriptacion;
@@ -102,7 +103,7 @@ builder.Services.AddScoped<IClaseViviendaService, ClaseViviendaService>();
 builder.Services.AddScoped<INivelAcademicoService, NivelAcademicoService>();
 builder.Services.AddScoped<IMatrizSociodemograficaService, MatrizSociodemograficaService>();
 builder.Services.AddScoped<IEmpleadoService, EmpleadoService>();
-
+builder.Services.AddScoped<ICargoService, CargoService>();
 
 
 

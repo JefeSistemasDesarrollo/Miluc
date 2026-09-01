@@ -203,10 +203,7 @@ x-small {
     color: #D62F46;
 }
 
-.bg-vinotinto-suave {
-    background: rgba(128, 0, 32, 0.1);
-    color: #800020;
-}
+
 
 .bg-amarillo-suave {
     background: rgba(253, 201, 34, 0.2);
@@ -263,3 +260,5 @@ x-small {
 
 body {
 }
+
+

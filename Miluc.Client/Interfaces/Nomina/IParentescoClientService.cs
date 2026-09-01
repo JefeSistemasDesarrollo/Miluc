@@ -3,7 +3,7 @@ using Miluc.Shared.Models.Response;
 
 namespace Miluc.Client.Interfaces.Nomina
 {
-    public interface IParentescoClient
+    public interface IParentescoClientService
     {
         public Task<ResponseAPI<List<ParentescoReaderDto>>> GetAllParentescosAsync();
     }
