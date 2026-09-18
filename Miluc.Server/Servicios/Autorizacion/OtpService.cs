@@ -51,7 +51,7 @@ namespace Miluc.Server.Servicios.Autorizacion
                     true
                 );
             }
-            catch (Exception )
+            catch (Exception ex )
             {
                 throw new Exception($"ERROR EN GENERAR CODIGO DE VERIFICACION,{ex.Message}");
             }
