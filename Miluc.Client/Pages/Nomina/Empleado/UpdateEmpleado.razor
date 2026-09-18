@@ -5,6 +5,7 @@
 @using Miluc.Shared.DTOs.Nomina.EstadoCivilDto
 @using Miluc.Shared.DTOs.Nomina.MunicipioDto
 @using Miluc.Shared.DTOs.Nomina.TipoDocumento
+@using Syncfusion.Blazor.Calendars
 
 @inject NavigationManager nav
 @inject IDepartamentosClientService _municipioClientService
@@ -94,10 +95,12 @@
                                     <div class="input-group-custom">
                                         <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
 
-                                        <InputDate class="form-control input-custom"
-                                                   @bind-Value="editarEmpleado.FechaNacimiento"
-                                                   max="@DateTime.Today.ToString("yyyy-MM-dd")"
-                                                   placeholder="Fecha de nacimiento" />
+                                        <SfDatePicker TValue="DateTime?"
+                                                      @bind-Value="editarEmpleado.FechaNacimiento"
+                                                      Format="dd/MM/yyyy"
+                                                      Placeholder="dd/mm/aaaa"
+                                                      Width="100%">
+                                        </SfDatePicker>
                    
                                         <ValidationMessage For="@(() => editarEmpleado.FechaNacimiento)" class="text-danger small mt-1 d-block fw-medium" />
                                     </div>
@@ -136,11 +139,12 @@
                                     <div class="input-group-custom">
                                         <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
 
-                                        <InputDate class="form-control input-custom"
-                                                   @bind-Value="editarEmpleado.FechaExpedicionDoc"
-                                                   max="@DateTime.Today.ToString("yyyy-MM-dd")"
-                                                   placeholder="Fecha expedicion doc" />
-                   
+                                       <SfDatePicker TValue="DateTime?"
+                                                      @bind-Value="editarEmpleado.FechaExpedicionDoc"
+                                                      Format="dd/MM/yyyy"
+                                                      Placeholder="dd/mm/aaaa"
+                                                      Width="100%">
+                                        </SfDatePicker>
                                         <ValidationMessage For="@(() => editarEmpleado.FechaExpedicionDoc)" class="text-danger small mt-1 d-block fw-medium" />
                                     </div>
                                 </div>

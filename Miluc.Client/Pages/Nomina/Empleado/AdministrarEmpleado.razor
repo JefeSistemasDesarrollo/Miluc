@@ -7,6 +7,7 @@
 @inject NavigationManager nav
 @inject IEmpleadoClientService _empleadoClientService
 @inject IJSRuntime js
+@inject IAuthClientService _autcliente
 
 @* CONTENEDOR PRINCIPAL: Define el diseño y la animación de entrada para toda la vista de gestión *@
 <div class="empleados-page animate__animated animate__fadeIn p-4">
@@ -256,13 +257,23 @@
     {
         cargando = true; // Muestra el Spinner de carga
 
+       // var documento= _autcliente.CurrentSession.Documento ;
+
+
+        // var documento = "1030574297";
         // Petición asíncrona enviando los parámetros de paginación actuales
         var respuesta = await _empleadoClientService.GetEmpleadosAsync(textoBusqueda, paginaActual, cantidadPorPagina);
 
         if (respuesta.EsCorrecto)
         {
             listempleadosOrigen = respuesta.Valor == null ? new List<EmpleadoReaderDto>() : respuesta.Valor;     // Guardamos el respaldo original
+
+           
+
             listempleadosAlservidor = listempleadosOrigen; // Asignamos los datos a mostrar en la tabla
+           
+            // var result = listempleadosAlservidor.Where(x => x.Documento == documento).ToList();
+
             totalRegistros = respuesta.CantRegistros;  // Almacenamos cuántos registros existen en total en la DB
         }
 
@@ -441,7 +452,7 @@
                     await js.InvokeVoidAsync("Swal.fire", new
                     {
                         icon = "error",
-                        title = "No se puede eliminar",
+                        title = "No es posible eliminar el empleado porque tiene transacciones asociadas.",
                         text = mensajeServidor,
                         confirmButtonText = "Aceptar"
                     });

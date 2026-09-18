@@ -64,8 +64,7 @@ namespace Miluc.Client.Servicios.Nomina
             {
 
                 ResponseAPI<EmpleadoReaderDto> responseAPI = new ResponseAPI<EmpleadoReaderDto>();
-
-                var response = await httpClient.GetFromJsonAsync<ResponseAPI<EmpleadoReaderDto>>($"api/Empleado/{idempleado}");
+            var response = await httpClient.GetFromJsonAsync<ResponseAPI<EmpleadoReaderDto>>($"api/Empleado/{idempleado}");
 
                 if (response.Valor != null)
                 {

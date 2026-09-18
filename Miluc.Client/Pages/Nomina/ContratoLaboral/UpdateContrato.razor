@@ -9,7 +9,7 @@
 @inject NavigationManager nav
 @inject IContratoLaboralClientService _contratoService
 @inject IJSRuntime js
-@inject ICargos _cargos
+@inject ICargosClientService _cargos
 @inject IEmpresaClientSevice _empresa
 @inject ITipoContratoClientService _tipoContrato
 
@@ -102,7 +102,7 @@
 
                                 @* Centro de Costo *@
                                 <div class="col-md-6">
-                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-diagram-3"></i></span> Centro de Costo</label>
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-diagram-3"></i></span> Centro de Costo<span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
                                         <InputText class="form-control input-custom" @bind-Value="update.CentroCosto" placeholder="Ej. Tecnología" />
                                     </div>
@@ -136,7 +136,7 @@
 
                                 @* Fecha de Finalización *@
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-calendar-x"></i></span> Fecha de Finalización</label>
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-calendar-x"></i></span> Fecha de Finalización<span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
                                         <InputDate class="form-control input-custom" @bind-Value="update.FechaFinalizacion" />
                                     </div>

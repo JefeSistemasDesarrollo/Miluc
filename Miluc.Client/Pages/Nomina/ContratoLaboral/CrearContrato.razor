@@ -6,6 +6,7 @@
 @using Miluc.Shared.DTOs.Nomina.ContratoLaboralDto
 @using Miluc.Shared.DTOs.Nomina.EmpresaDto
 @using Miluc.Shared.DTOs.Nomina.TipoContratoDto
+@using Syncfusion.Blazor.Calendars
 @using TuProyecto.Client.Services
 
 
@@ -14,7 +15,7 @@
 @inject IEmpresaClientSevice _empresaService
 @inject ITipoContratoClientService _tipoContratoService
 @inject IEmpleadoClientService EmpleadoService
-@inject ICargos _cargoService
+@inject ICargosClientService _cargoService
 @inject IJSRuntime JS
 
 <div class="empleado-page p-4 animate__animated animate__fadeIn">
@@ -116,7 +117,8 @@
 
                                 @* Salario *@
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom"> <span class="input-icon">
+                                    <label class="form-label label-custom">
+                                        <span class="input-icon">
                                             <i class="bi bi-currency-dollar"></i>
                                         </span>
                                         Salario<span class="text-danger">*</span>
@@ -137,7 +139,12 @@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-calendar-event"></i></span> Fecha de Inicio<span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
-                                        <InputDate class="form-control input-custom" @bind-Value="createContratoDto.FechaInicio" />
+                                         <SfDatePicker TValue="DateTime?"
+                                                  @bind-Value="createContratoDto.FechaInicio"
+                                                  Format="dd/MM/yyyy"
+                                                  Placeholder="dd/mm/aaaa"
+                                                  Width="100%">
+                                    </SfDatePicker>
                                     </div>
                                     <ValidationMessage For="@(() => createContratoDto.FechaInicio)" class="text-danger small mt-1 d-block fw-medium" />
                                 </div>
@@ -146,7 +153,12 @@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-calendar-x"></i></span> Fecha de Finalización</label>
                                     <div class="input-group-custom">
-                                        <InputDate class="form-control input-custom" @bind-Value="createContratoDto.FechaFinalizacion" />
+                                        <SfDatePicker TValue="DateTime?"
+                                                      @bind-Value="createContratoDto.FechaFinalizacion"
+                                                      Format="dd/MM/yyyy"
+                                                      Placeholder="dd/mm/aaaa"
+                                                      Width="100%">
+                                        </SfDatePicker>
                                     </div>
                                     <ValidationMessage For="@(() => createContratoDto.FechaFinalizacion)" class="text-danger small mt-1 d-block fw-medium" />
                                 </div>

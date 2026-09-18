@@ -197,7 +197,7 @@ namespace Miluc.Server.Data
 
             // MatrizSociodemografica
             modelBuilder.Entity<MatrizSociodemografica>().ToTable("MatrizSociodemografica");
-            modelBuilder.Entity<MatrizSociodemografica>().HasKey(m => m.MatrizSociodemograficaID);
+            modelBuilder.Entity<MatrizSociodemografica>().HasKey(m => m.MatrizSociodemograficaId);
 
             // SOLUCIÓN AL WARNING: Definición de precisión para UltimoSalario
             modelBuilder.Entity<MatrizSociodemografica>()

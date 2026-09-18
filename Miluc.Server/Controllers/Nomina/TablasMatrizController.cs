@@ -10,7 +10,6 @@ using Miluc.Shared.DTOs.Nomina.GeneroDto;
 using Miluc.Shared.DTOs.Nomina.MedioTransporteDto;
 using Miluc.Shared.DTOs.Nomina.NivelAcademico;
 using Miluc.Shared.DTOs.Nomina.PaisDto;
-using Miluc.Shared.DTOs.Nomina.TipoContratoDto;
 using Miluc.Shared.DTOs.Nomina.TipoVivienda;
 using Miluc.Shared.Models.Response;
 
@@ -26,8 +25,8 @@ namespace Miluc.Server.Controllers.Nomina
         {
             try
             {
-                var gen = await generoService.GetGeneroAsync();
-                if (gen == null || gen.Count == 0)
+                var genero = await generoService.GetGeneroAsync();
+                if (genero == null || genero.Count == 0)
                 {
                     return NotFound(new ResponseAPI<List<GeneroReaderDto>>
                     {
@@ -40,9 +39,9 @@ namespace Miluc.Server.Controllers.Nomina
                 return Ok(new ResponseAPI<List<GeneroReaderDto>>
                 {
                     EsCorrecto = true,
-                    Valor = gen,
+                    Valor = genero,
                     Mensaje = "Se encontraron generos correctamente",
-                    CantRegistros = gen.Count,
+                    CantRegistros = genero.Count,
                 });
             }
             catch (Exception ex)
@@ -52,7 +51,7 @@ namespace Miluc.Server.Controllers.Nomina
                 StackTrace: ex.StackTrace,
                 usuario: User.Identity?.Name ?? "Sistema",
                 metodo: "HttpGet",
-                ruta: $"/api/TipoContrato",
+                ruta: $"/api/Genero",
                 ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
                 origen: "GeneroController");
 
@@ -67,16 +66,16 @@ namespace Miluc.Server.Controllers.Nomina
             }
         }
         [HttpGet("Pais")]
-        public async Task<ActionResult<ResponseAPI<List<PaisReaderDto>>>> GetPaisAsync([FromQuery] string ? filtro=null, [FromQuery]  int page  = 1, [FromQuery] int ?cantidad = null)
+        public async Task<ActionResult<ResponseAPI<List<PaisReaderDto>>>> GetPaisAsync()
 
         {
 
           
             try
             {
-                var pais = await paisService.GetPaisAsync(filtro, page, cantidad);
+                var pais = await paisService.GetPaisAsync();
                
-                if (pais.data == null || pais.CantidadRegistros == 0)
+                if (pais == null || pais.Count == 0)
                 {
                     return NotFound(new ResponseAPI<List<PaisReaderDto>>
                     {
@@ -89,9 +88,9 @@ namespace Miluc.Server.Controllers.Nomina
                 return Ok(new ResponseAPI<List<PaisReaderDto>>
                 {
                     EsCorrecto = true,
-                    Valor = pais.data,
+                    Valor = pais,
                     Mensaje = "Se encontraron paises correctamente",
-                    CantRegistros = pais.CantidadRegistros
+                    CantRegistros = pais.Count
 
 
                 });
@@ -107,7 +106,7 @@ namespace Miluc.Server.Controllers.Nomina
                  metodo: "HttpGet",
                 ruta: $"/api/Pais",
                 ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
-                 origen: "GeneroController");
+                 origen: "PaisController");
 
                 return StatusCode(500, new ResponseAPI<List<PaisReaderDto>>
                 {
@@ -257,7 +256,7 @@ namespace Miluc.Server.Controllers.Nomina
                    StackTrace: ex.StackTrace,
                     usuario: User.Identity?.Name ?? "Sistema",
                     metodo: "HttpGet",
-                   ruta: $"/api/",
+                   ruta: $"/api/MedioTransporte",
                    ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
                     origen: "MedioTransporteController");
 
@@ -272,7 +271,7 @@ namespace Miluc.Server.Controllers.Nomina
             }
         }
         [HttpGet("TipoVivienda")]
-        public async Task<ActionResult<ResponseAPI<List<TipoViviendaReaderDto>>>> GetMedioTipoViviendaAsync()
+        public async Task<ActionResult<ResponseAPI<List<TipoViviendaReaderDto>>>> GetTipoViviendaAsync()
         {
             try
             {
@@ -301,7 +300,7 @@ namespace Miluc.Server.Controllers.Nomina
                    StackTrace: ex.StackTrace,
                     usuario: User.Identity?.Name ?? "Sistema",
                     metodo: "HttpGet",
-                   ruta: $"/api/",
+                   ruta: $"/api/TipoVivienda",
                    ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
                     origen: "TiposViviendaController");
 
@@ -344,7 +343,7 @@ namespace Miluc.Server.Controllers.Nomina
                    StackTrace: ex.StackTrace,
                     usuario: User.Identity?.Name ?? "Sistema",
                     metodo: "HttpGet",
-                   ruta: $"/api/",
+                   ruta: $"/api/ClaseVivienda",
                    ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
                     origen: "ClasesViviendaController");
 
@@ -375,7 +374,7 @@ namespace Miluc.Server.Controllers.Nomina
                 {
                     EsCorrecto = true,
                     Valor = nivel,
-                    Mensaje = "se encontraron Clases de Vivienda Correctamente ",
+                    Mensaje = "se encontraron Niveles Académicos Correctamente ",
                     CantRegistros = nivel.Count
                 });
             }
@@ -387,7 +386,7 @@ namespace Miluc.Server.Controllers.Nomina
                    StackTrace: ex.StackTrace,
                     usuario: User.Identity?.Name ?? "Sistema",
                     metodo: "HttpGet",
-                   ruta: $"/api/",
+                   ruta: $"/api/NivelAcademico",
                    ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
                     origen: "NivelAcademicoController");
 
@@ -395,14 +394,16 @@ namespace Miluc.Server.Controllers.Nomina
                 {
                     EsCorrecto = false,
                     Valor = null,
-                    Mensaje = "Ocurrió un error al obtener los ClasesVivienda.",
+                    Mensaje = "Ocurrió un error al obtener los NivelAcademico.",
                     CantRegistros = 0
                 });
 
             }
         }
+       
+        }
     }
-}
+
 
 
 
