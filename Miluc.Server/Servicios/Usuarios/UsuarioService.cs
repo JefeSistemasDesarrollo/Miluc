@@ -15,8 +15,8 @@ namespace Miluc.Server.Servicios.Usuarios
                 throw new ArgumentNullException("El objeto del usuario viene vacío",nameof(dto));
          
             // 1. Validaciones de existencia (Username y Email)
-            if (await _context.Usuarios.AnyAsync(u => u.UserName.ToLower() == dto.UserName.ToLower()))
-                throw new InvalidOperationException("El nombre de usuario ya está registrado.");
+            //if (await _context.Usuarios.AnyAsync(u => u.UserName.ToLower() == dto.UserName.ToLower()))
+            //    throw new InvalidOperationException("El nombre de usuario ya está registrado.");
 
             if (await _context.Usuarios.AnyAsync(u => u.Email.ToLower() == dto.Email.ToLower()))
                 throw new InvalidOperationException("El correo electrónico ya está en uso.");
@@ -33,17 +33,19 @@ namespace Miluc.Server.Servicios.Usuarios
                 // 3. Mapeo de Entidad Principal
                 var usuario = new Usuario
                 {
-                    UserName = dto.UserName,
+                    UserName = dto.Email,
                     Nombres = dto.Nombres,  
                     Apellidos = dto.Apellidos,
                     Email = dto.Email,
                     Telefono = dto.Telefono,
                     Foto = dto.Foto,
-                    TwoFactorEnabled=true,
+                    TwoFactorEnabled=dto.TwoFactorEnabled,
                     DebeCambiarPassword = dto.DebeCambiarPassword,
                     PasswordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(dto.Password)),
                     Salt = hmac.Key,
                     Activo = true,
+                    HoraInicio=dto.HoraInicio,
+                    HoraFin=dto.HoraFin,
                     CodVendedorSAP = dto.CodVendedorSAP ?? -1,
                     FechaCreacion = DateTime.Now,
                     FechaActualizacion = DateTime.Now
@@ -128,6 +130,7 @@ namespace Miluc.Server.Servicios.Usuarios
             try
             {
                 //  datos de usuarios 
+                user.UserName = dto.Email;
                 user.Email = dto.Email;
                 user.Activo = dto.Activo;
                 user.Nombres = dto.Nombres;
@@ -143,6 +146,8 @@ namespace Miluc.Server.Servicios.Usuarios
                 user.TwoFactorEnabled=dto.TwoFactorEnabled;
                 user.DebeCambiarPassword = dto.DebeCambiarPassword;
                 user.FechaActualizacion = DateTime.UtcNow;
+                user.HoraInicio = dto.HoraInicio;
+                user.HoraFin=dto.HoraFin;
                 user.CodVendedorSAP = dto.CodVendedorSAP ?? -1;
                 //  PASSWORD (solo si se envía) 
                 if (!string.IsNullOrWhiteSpace(dto.Password))
@@ -240,10 +245,10 @@ namespace Miluc.Server.Servicios.Usuarios
                 // Importante: Incluimos relaciones y proyectamos al DTO
                 var usuarioGetId = await _context.Usuarios
                       .AsNoTracking()
-                      //.Include(u => u.UsuarioRoles)
-                      //     .ThenInclude(ur => ur.Rol)
-                      //.Include(u => u.UsuarioTipoUsuario)
-                      //   .ThenInclude(u => u.TipoUsuario)
+                      .Include(u => u.UsuarioRoles)
+                           .ThenInclude(ur => ur.Rol)
+                      .Include(u => u.UsuarioTipoUsuario)
+                         .ThenInclude(u => u.TipoUsuario)
                       .Where(u => u.IdUsuario == id)
                       .Select(u => new UsuarioReadDto
                       {
@@ -256,6 +261,8 @@ namespace Miluc.Server.Servicios.Usuarios
                           TwoFactorEnabled= u.TwoFactorEnabled,
                           Email = u.Email,
                           Activo = u.Activo,
+                          HoraInicio = u.HoraInicio,
+                          HoraFin=u.HoraFin,
                           CodVendedorSAP = u.CodVendedorSAP ?? -1,
                           NombresRoles = u.UsuarioRoles.Select(ur => ur.Rol.Nombre).ToList(),
                           NombresTiposUsuario = u.UsuarioTipoUsuario.Select(ut => ut.TipoUsuario.Nombre).ToList(),
@@ -281,7 +288,6 @@ namespace Miluc.Server.Servicios.Usuarios
                 {
                     cantidad = 10;
                 }
-
                 //  int cantidadTop = cantidad ?? 20;
 
                 var queryBusqueda = _context.Usuarios.AsNoTracking().AsQueryable();
@@ -324,7 +330,8 @@ namespace Miluc.Server.Servicios.Usuarios
                         TwoFactorEnabled= u.TwoFactorEnabled,
                         Email = u.Email,
                         Activo = u.Activo,
-
+                        HoraInicio=u.HoraInicio,
+                        HoraFin=u.HoraFin,
                         NombresRoles = u.UsuarioRoles.Select(ur => ur.Rol.Nombre).ToList(),
                         NombresTiposUsuario = u.UsuarioTipoUsuario.Select(ut => ut.TipoUsuario.Nombre).ToList()
 

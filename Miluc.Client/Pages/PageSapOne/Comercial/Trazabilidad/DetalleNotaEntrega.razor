@@ -1,0 +1,174 @@
+﻿@page "/administrar-detalle-nota/detalle/{DocEntry:int}/{DocNum:int}"
+
+@using Miluc.Client.Interfaces.SapInterfaces.TrazabilidadPedidos
+@using Miluc.Shared.DTOs.Sap.NotaDeEntrega
+@inject ISapTrazabilidadPedidos _sapDetalleNotaEntrega
+@inject NavigationManager _nav
+
+<div class="container-fluid py-3">
+    <!-- Encabezado sutil -->
+    <div class="card-bordered-red p-3 shadow-sm mb-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <div>
+                <h4 class="m-0 fw-bold text-dark">Detalle Nota credito</h4>
+                <small class="text-muted">Líneas del documento registradas en SAP</small>
+            </div>
+            <div class="text-end">
+                <span class="small text-muted d-block">DocEntry</span>
+                <span class="fs-5 fw-bold text-red-accent">#@DocEntry</span>
+            </div>
+            <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
+                <button class="btn btn-outline-secondary btn-sm" @onclick="Volver">
+                    <i class="bi bi-arrow-left me-2"></i> Volver
+                </button>
+            </div>
+        </div>
+    </div>
+    @if (cargando)
+    {
+        <div class="card-bordered-red p-5 text-center my-4 shadow-sm">
+            <div class="spinner-border text-dark mx-auto mb-2" role="status"></div>
+            <p class="text-muted m-0">Cargando detalles...</p>
+        </div>
+    }
+    else if (listaDetalleNota == null || !listaDetalleNota.Any())
+    {
+        <div class="card-bordered-red p-4 shadow-sm text-center">
+            <p class="m-0 text-muted">No se encontraron líneas asociadas al DocEntry <strong>@DocEntry</strong>.</p>
+        </div>
+    }
+    else
+    {
+        <!-- Resumen compacto -->
+        <div class="row g-3 mb-4">
+            <!-- Total registros -->
+            <div class="col-6 col-md-3">
+                <div class="card-bordered-red p-3 shadow-sm">
+                    <span class="small text-muted d-block">Total Registros</span>
+                    <span class="fs-5 fw-bold text-dark">
+                        @listaDetalleNota.Count
+                    </span>
+                </div>
+            </div>
+            <!-- Total Kg -->
+            <div class="col-6 col-md-3">
+                <div class="card-bordered-red p-3 shadow-sm">
+                    <span class="small text-muted d-block">Total Kg</span>
+                    <span class="fs-5 fw-bold text-dark">
+                        @listaDetalleNota.Sum(x => x.U_CantidadKg ?? 0).ToString("N2") kg
+                    </span>
+                </div>
+            </div>
+
+            <!-- Total UN -->
+            <div class="col-6 col-md-3">
+                <div class="card-bordered-red p-3 shadow-sm">
+                    <span class="small text-muted d-block">Total UN</span>
+                    <span class="fs-5 fw-bold text-dark">
+                        @listaDetalleNota.Sum(x => x.U_UnidadSal ?? 0).ToString("N2") UN
+                    </span>
+                </div>
+            </div>
+            <!-- Monto Total -->
+            <div class="col-6 col-md-3">
+                <div class="card-bordered-red p-3 shadow-sm">
+                    <span class="small text-muted d-block">Monto Total Líneas</span>
+                    <span class="fs-5 fw-bold text-red-accent">
+                        @listaDetalleNota.Sum(x => x.LineTotal ?? 0).ToString("C", new System.Globalization.CultureInfo("es-Co"))
+                    </span>
+                </div>
+            </div>
+        </div>
+        <!-- Tabla ordenada con el formato exacto del Select -->
+        <div class="card-bordered-red shadow-sm overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-modern mb-0 align-middle">
+                    <thead>
+                        <tr>
+                            <th class="text-center">DocEntry</th>
+                            <th class="text-center">LineNum</th>
+                            <th>Codigo</th>
+                            <th>descripción</th>
+                            <th class="text-end">Cantidad</th>
+                            <th class="text-center">Unidad Medidad</th>
+                            <th class="text-end">UN</th>
+                            <th class="text-end">KG</th>
+                            <th class="text-end">Price</th>
+                            <th class="text-end">Total</th>
+                            <th class="text-center">WhsCode</th>
+                            <th class="text-center">U_Picking</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in listaDetalleNota)
+                        {
+                            <tr>
+                                <td class="text-center text-muted small">@item.DocEntry</td>
+                                <td class="text-center">
+                                    <span class="badge-dark-subtle">#@item.LineNum</span>
+                                </td>
+                                <td class="fw-bold text-dark">@item.ItemCode</td>
+                                <td class="text-secondary" style="max-width: 280px;">@item.Dscription</td>
+                                <td class="text-end fw-semibold">@item.Quantity?.ToString("N2")</td>
+                                <td class="text-center">
+                                    <span class="badge bg-dark text-white fw-normal">@item.unitMsr</span>
+                                </td>
+                                <td class="text-end text-muted">@item.U_UnidadSal?.ToString("N2")</td>
+                                <td class="text-end fw-semibold">@item.U_CantidadKg?.ToString("N2")</td>
+                                <td class="text-end text-muted">@item.Price?.ToString("C", new System.Globalization.CultureInfo("es-CO"))</td> 
+                                <td class="text-end fw-bold text-dark">@item.LineTotal?.ToString("C", new System.Globalization.CultureInfo("es-CO"))</td>
+
+                                <td class="text-center">
+                                    <span class="badge bg-light text-dark border">@item.WhsCode</span>
+                                </td>
+                                <td class="text-center">
+                                    @if (item.U_Picking.HasValue)
+                                    {
+                                        <span class="badge bg-secondary">@item.U_Picking</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">-</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int DocEntry { get; set; }
+    [Parameter]
+    public int DocNum { get; set; }
+
+    public List<Dln1DetalleReaderDto> listaDetalleNota = new();
+    private bool cargando = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            cargando = true;
+            var response = await _sapDetalleNotaEntrega.ObtenerDetalleNota(DocEntry);
+
+            if (response != null && response.Valor != null)
+            {
+                listaDetalleNota = response.Valor;
+            }
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private void Volver()
+    {
+        _nav.NavigateTo($"/administrar-pedido/trazabilidad/{DocNum}");
+    }
+}

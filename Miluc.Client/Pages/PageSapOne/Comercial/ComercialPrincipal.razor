@@ -1,6 +1,6 @@
 ﻿@page "/administrar-modulo-comercial"
 @inject NavigationManager nav
-
+@inject IAuthClientService _auth
 <div class="container-fluid py-5 bg-light-gradient min-vh-100 animate__animated animate__fadeIn">
 
     <div class="mb-5 text-center">
@@ -56,6 +56,32 @@
                 </div>
             </div>
         </div>
+
+
+        @if (_auth.HasPermission("AccountsReceivable.View"))
+        {
+            <div class="col-12 col-sm-6 col-md-6 col-xl-4">
+                <div class="card h-100 shadow-sm border-0 border-top border-4 border-rojo text-center rounded-4 custom-hover-card alert-dark" style="cursor: pointer;" @onclick='() => nav.NavigateTo("/administrar-clientesCartera")'>
+                    <div class="card-body p-4 d-flex flex-column align-items-center justify-content-between">
+                        <div class="w-100">
+                            <div class="p-3 bg-rojo-suave text-rojo fs-3 rounded-circle mx-auto mb-3 icon-box">
+                                <i class="bi bi-person-fill-add"></i>
+                            </div>
+                            <span class="badge bg-rojo-suave text-dark border rounded-pill px-3 mb-2 small fw-bold">Cartera</span>
+
+                            <h4 class="fw-bold text-dark mb-2 fs-5">Adminsitrar Cartera </h4>
+                            <p class="text-muted small mb-0">
+                                Gestión de clientes, facturas pendientes, saldos y seguimiento de cartera.
+                            </p>
+                        </div>
+                        <button class="btn btn-rojo rounded-pill py-2 w-100 fw-semibold mt-4 shadow-sm"
+                                @onclick='() => nav.NavigateTo("/administrar-clientesCartera")'>
+                            <span>Clientes</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
 
     </div>
 </div>

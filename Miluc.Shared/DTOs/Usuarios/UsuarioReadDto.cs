@@ -17,6 +17,9 @@
         public bool TwoFactorEnabled { get; set; }
         public DateTime FechaCreacion { get; set; }
         public int ? CodVendedorSAP {  get; set; }
+        public TimeOnly? HoraInicio { get; set; }
+        public TimeOnly? HoraFin { get; set; }
+
         // Listas de strings para mostrar nombres en la interfaz (ej: "Admin, Editor")
         public List<string> NombresRoles { get; set; } = new();
         public List<string> NombresTiposUsuario { get; set; } = new();

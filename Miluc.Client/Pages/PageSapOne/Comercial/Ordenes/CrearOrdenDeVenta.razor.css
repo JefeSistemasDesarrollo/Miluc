@@ -116,3 +116,12 @@
     .list-group::-webkit-scrollbar-thumb:hover {
         background: #D62F46;
     }
+.pedido-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 100;
+    padding: 15px 20px;
+    background: #fff;
+    border-top: 1px solid #dee2e6;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+}

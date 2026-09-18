@@ -32,7 +32,8 @@ namespace Miluc.Client.Servicios.SapService
             }
         }
 
-        public async Task<ResponseAPI<List<OrdersReaderDto>>> ListarPedidosAsync(string? buscar = null, int? pagina = null, int? cantidad = null, DateTime? fechaInicio = null, DateTime? fechaFin = null, int? codVendedorSAP = null, char? DocStatus = null, char? CANCELED = null, char? Printed = null)
+        public async Task<ResponseAPI<List<OrdersReaderDto>>> ListarPedidosAsync(string? buscar = null, int? pagina = null, int? cantidad = null,
+            DateTime? fechaContabilizacionInicio = null, DateTime? fechaContabilizacionFin = null, DateTime? fechaEntregaInicio = null, DateTime? fechaEntregaFin = null, int? codVendedorSAP = null, char? DocStatus = null, char? CANCELED = null, char? Printed = null)
         {
             try
             {
@@ -40,15 +41,25 @@ namespace Miluc.Client.Servicios.SapService
                 ResponseAPI<List<OrdersReaderDto>> responseApiPeidos = new ResponseAPI<List<OrdersReaderDto>>();
                 //url
                 var url = $"api/Orders?buscar={buscar}&pagina={pagina}&cantidad={cantidad}";
-                //url con las fechas 
-                if (fechaInicio.HasValue)
+                //url con las fechas de contabilixacion
+                if (fechaContabilizacionInicio.HasValue)
                 {
-                    url += $"&fechaInicio={fechaInicio.Value:yyyy-MM-dd}";
+                    url += $"&fechaContantabilizacionInicio={fechaContabilizacionInicio.Value:yyyy-MM-dd}";
 
                 }
-                if (fechaFin.HasValue)
+                if (fechaContabilizacionFin.HasValue)
                 {
-                    url += $"&fechaFin={fechaFin.Value:yyyy-MM-dd}";
+                    url += $"&fechaContabilicacionFin={fechaContabilizacionFin.Value:yyyy-MM-dd}";
+
+                }
+                if (fechaEntregaInicio.HasValue)
+                {
+                    url += $"&fechaEntregaInicio={fechaEntregaInicio.Value:yyyy-MM-dd}";
+
+                }
+                if (fechaEntregaFin.HasValue)
+                {
+                    url += $"&fechaEntregaFin={fechaEntregaFin.Value:yyyy-MM-dd}";
 
                 }
                 if (codVendedorSAP.HasValue)

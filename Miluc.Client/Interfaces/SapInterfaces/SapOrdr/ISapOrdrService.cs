@@ -6,7 +6,8 @@ namespace Miluc.Client.Interfaces.SapInterfaces.SapOrdr
     public interface ISapOrdrService
     {
         Task<ResponseAPI<OrdersReaderDto>> CreatePedidoAsyc(PedidoCreateDto pedidoCreateDto);
-        Task<ResponseAPI<List<OrdersReaderDto>>> ListarPedidosAsync(string? buscar = null, int? pagina = null, int? cantidad = null, DateTime? fechaInicio = null, DateTime? fechaFin = null, int? codVendedorSAP = null, char? DocStatus = null, char? CANCELED = null, char? Printed = null);
+        Task<ResponseAPI<List<OrdersReaderDto>>> ListarPedidosAsync(string? buscar = null, int? pagina = null, int? cantidad = null, 
+            DateTime? fechaContabilizacionInicio = null, DateTime? fechaContabilizacionFin = null, DateTime? fechaEntregaInicio = null, DateTime? fechaEntregaFin = null, int? codVendedorSAP = null, char? DocStatus = null, char? CANCELED = null, char? Printed = null);
         Task<ResponseAPI<OrdersReaderDto>> GetOrderByIdAsync(int DocEntry);
 
         Task<ResponseAPI<OrdersReaderDto>> UpdatePedidoAsync(PedidoUpdateDto pedidoUpdateDto);

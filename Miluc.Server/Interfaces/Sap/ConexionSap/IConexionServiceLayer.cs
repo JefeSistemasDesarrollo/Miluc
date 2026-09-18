@@ -9,6 +9,5 @@ namespace Miluc.Server.Interfaces.Sap.ConexionSap
 
         Task<ResponseAPI<bool>> LogoutAsync(string urlServiceLayer, string sessionId, string routeId);
 
-        Task<ResponseAPI<bool>> ActualizarConfiguracionSAPAsync(string password);
     }
 }

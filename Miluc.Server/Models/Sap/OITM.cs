@@ -25,5 +25,7 @@ namespace Miluc.Server.Models.Sap
 
         [JsonIgnore]
         public ICollection<RDR1> RDR1 { get; set; }
+
+       // public OITB OITB { get; set; }
     }
 }

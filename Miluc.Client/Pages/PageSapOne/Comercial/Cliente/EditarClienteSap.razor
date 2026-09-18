@@ -114,17 +114,6 @@
                                 <ValidationMessage For="@(() => cliente.SucursalGen)" class="text-danger small" />
                             </div>
 
-
-                            @*     <div class="col-12 col-md-4">
-                                <label class="form-label text-muted small fw-semibold">Número Documento *</label>
-                                <div class="input-group input-group-sm">
-
-                                    <input type="text" class="form-control" @bind="cliente.FederalTaxID" @bind:event="oninput" />
-                                    <span class="input-group-text bg-light">-</span>
-                                    <input readonly class="form-control" value="@DigitoVerificacion" style="max-width:45px;" />
-                                </div>
-                                <ValidationMessage For="@(() => cliente.FederalTaxID)" class="text-danger small" />
-                            </div> *@
                             <div class="col-12 col-md-4 d-flex align-items-end">
                                 <div class="form-check form-switch mb-2">
                                     <InputCheckbox @bind-Value="cliente.validFor" class="form-check-input check-rojo" id="chkActivo" />
@@ -134,7 +123,7 @@
                             <div class="col-12 col-md-6">
                                 <label class="form-label text-muted small fw-semibold">Razón Social </label>
                                 <InputText @bind-Value="cliente.CardName" class="form-control form-control-sm" placeholder="Nombre completo o Empresa" />
-                                <ValidationMessage For="@(() => cliente.CardName)" class="text-danger small" />
+                                @* <ValidationMessage For="@(() => cliente.CardName)" class="text-danger small" /> *@
                             </div>
                             <div class="col-12 col-md-6">
                                 <label class="form-label text-muted small fw-semibold">Grupo *</label>
@@ -156,8 +145,6 @@
                             <div class="col-12 col-md-4">
                                 <label class="form-label text-muted small fw-semibold">Nombres </label>
                                 <InputText @bind-Value="cliente.U_HBT_Nombres" class="form-control form-control-sm" disabled="@EsPersonaJuridica()" />
-
-                            
                             </div>
 
                             <div class="col-12 col-md-4">
@@ -241,6 +228,11 @@
                                             <ValidationMessage For="@(() => cliente.ZipCode)" class="text-danger small" />
                                         </div>
                                         <div class="col-12">
+                                            <label class="form-label text-muted xx-small mb-1">Establecimiento Factura</label>
+                                            <InputText @bind-Value="cliente.EstableciminetoFactura" class="form-control form-control-sm" />
+
+                                        </div>
+                                        <div class="col-12">
                                             <label class="form-label text-muted xx-small mb-1">Calle / Número / Conjunto</label>
                                             <InputText @bind-Value="cliente.DirreccionFacturaStreet" class="form-control form-control-sm" />
                                             <ValidationMessage For="@(() => cliente.DirreccionFacturaStreet)" class="text-danger small" />
@@ -269,6 +261,11 @@
                                     <h6 class="fw-bold text-danger m-0 mb-2 small"><i class="bi bi-truck me-1"></i> Dirección Despacho</h6>
                                     <div class="row g-2">
 
+                                        <div class="col-12">
+                                            <label class="form-label text-muted xx-small mb-1">Establecimiento Despacho</label>
+                                            <InputText @bind-Value="cliente.EstableciminetoDespacho" class="form-control form-control-sm" />
+
+                                        </div>
                                         <div class="col-12">
                                             <label class="form-label text-muted xx-small mb-1">Calle / Número / Conjunto</label>
                                             <InputText @bind-Value="cliente.DirreccionDespachoStreet" class="form-control form-control-sm" />
@@ -476,7 +473,7 @@
                             <div class="col-12 col-lg-5">
                                 <label class="form-label text-muted small fw-semibold">Comentarios / Observaciones Internas</label>
                                 <InputTextArea @bind-Value="cliente.FreeText" class="form-control form-control-sm" rows="10" placeholder="Escribe aquí anotaciones relevantes para el despacho o condiciones especiales de entrega..." />
-                                <ValidationMessage For="@(() => cliente.FreeText)" class="text-danger small" />
+                                @* <ValidationMessage For="@(() => cliente.FreeText)" class="text-danger small" /> *@
                             </div>
                             <div class="col-12 col-md-4 d-flex align-items-end">
                                 <div class="form-check form-switch mb-2">
@@ -1346,15 +1343,15 @@
             {
                 cliente.U_HBT_TipDoc = client.Valor.U_HBT_TipDoc ?? string.Empty;
                 cliente.CardCode = client.Valor.CardCode ?? string.Empty;
-                //aca si tiene : vamos a capturar el numero sigiente 
+                //aca si tiene : vamos a capturar el numero sigiente
                 if (client.Valor.CardCode.Contains(":"))
-                {      
+                {
                     var prueba = client.Valor.CardCode.Split(":");
                     cliente.SucursalGen = Convert.ToInt32(prueba[1]);
                 }
-               
+
                 cliente.CardForeignName = client.Valor.CardFName ?? string.Empty;
-                cliente.CardType = client.Valor.CardType ?? string.Empty;
+                cliente.CardType = client.Valor.CardType ;
                 cliente.GroupCode = client.Valor.GroupCode ?? 0;
                 cliente.PriceListNum = client.Valor.ListNum ?? 0;
                 cliente.ZipCode = client.Valor.ZipCode ?? string.Empty;
@@ -1381,16 +1378,18 @@
                     {
                         if (dir.AdresType == 'B' && dir.U_HBT_DirMM == 'Y')
                         {
-                            cliente.DirreccionFacturaStreet = dir.Street ?? string.Empty;
-                            cliente.DirreccionFacturaBlock = dir.Block ?? string.Empty;
-                            cliente.DireccionFacturaCounty = dir.County ?? string.Empty;
+                            cliente.DirreccionFacturaStreet = dir.Street ?? "";
+                            cliente.EstableciminetoFactura = dir.Address2 ?? "";
+                            cliente.DirreccionFacturaBlock = dir.Block ?? "";
+                            cliente.DireccionFacturaCounty = dir.County ?? "";
 
                         }
                         else if (dir.AdresType == 'S' && dir.U_HBT_DirMM == 'N')
                         {
-                            cliente.DirreccionDespachoStreet = dir.Street ?? string.Empty;
-                            cliente.DirreccionDespachoBlock = dir.Block ?? string.Empty;
-                            cliente.DireccionDespachoCounty = dir.County ?? string.Empty;
+                            cliente.DirreccionDespachoStreet = dir.Street ?? "";
+                            cliente.EstableciminetoDespacho = dir.Address2 ?? "";
+                            cliente.DirreccionDespachoBlock = dir.Block ?? "";
+                            cliente.DireccionDespachoCounty = dir.County ?? "";
                         }
                     }
                 }
@@ -1435,18 +1434,9 @@
                         {
                             listaPropiedades[i - 1].Activa = true;
                         }
-                        // char valor = propiedad.GetValue(client.Valor);
-
-
-
-
-                        // if (valor == 'Y')
-                        // {
-                        //     listaPropiedades[i - 1].Activa = true;
-                        // }
                     }
                 }
-                cliente.FreeText = client.Valor.Free_Text;
+                cliente.FreeText = Convert.ToString(client.Valor.Free_Text) ?? "";
 
                 if (client.Valor.validFor == 'Y')
                 {
@@ -1485,6 +1475,7 @@
 
     private void CopiarADespacho()
     {
+        cliente.EstableciminetoDespacho = cliente.EstableciminetoFactura;
         cliente.DirreccionDespachoStreet = cliente.DirreccionFacturaStreet;
         cliente.DirreccionDespachoBlock = cliente.DirreccionFacturaBlock;
         cliente.DireccionDespachoCounty = cliente.DireccionFacturaCounty;
@@ -1520,6 +1511,10 @@
             cliente.U_HBT_Apellido1 = string.Empty;
             cliente.U_HBT_Apellido2 = string.Empty;
         }
+        else
+        {
+            exito = false;
+        }
         return exito;
     }
     private async Task EditarClienteAsync()
@@ -1533,14 +1528,50 @@
             // sapClienteCreateDto.CardCode = cliente.FederalTaxID;
             sapClienteCreateDto.U_HBT_TipDoc = cliente.U_HBT_TipDoc;
             sapClienteCreateDto.CardCode = cliente.CardCode;
-            sapClienteCreateDto.CardName = cliente.CardName.ToUpper();
-            sapClienteCreateDto.CardForeignName = cliente.CardForeignName.ToUpper();
+
+            if (cliente.CardName != null)
+            {
+                sapClienteCreateDto.CardName = cliente.CardName.ToUpper();
+            }
+            else
+            {
+                sapClienteCreateDto.CardName = cliente.CardName;
+            }
+            if (cliente.CardForeignName != null)
+            {
+                sapClienteCreateDto.CardForeignName = cliente.CardForeignName.ToUpper();
+            }else{
+                sapClienteCreateDto.CardForeignName = cliente.CardForeignName;
+            }
             sapClienteCreateDto.CardType = "cCustomer";
             sapClienteCreateDto.GroupCode = cliente.GroupCode;
             sapClienteCreateDto.FederalTaxID = cliente.FederalTaxID + "-" + DigitoVerificacion;
-            sapClienteCreateDto.U_HBT_Nombres = cliente.U_HBT_Nombres.ToUpper();
-            sapClienteCreateDto.U_HBT_Apellido1 = cliente.U_HBT_Apellido1.ToUpper();
-            sapClienteCreateDto.U_HBT_Apellido2 = cliente.U_HBT_Apellido2.ToUpper();
+            if (cliente.U_HBT_Nombres != null)
+            {
+                sapClienteCreateDto.U_HBT_Nombres = cliente.U_HBT_Nombres.ToUpper();
+            }
+            else
+            {
+                sapClienteCreateDto.U_HBT_Nombres = cliente.U_HBT_Nombres;
+            }
+            if (cliente.U_HBT_Apellido1 != null)
+            {
+                sapClienteCreateDto.U_HBT_Apellido1 = cliente.U_HBT_Apellido1.ToUpper();
+            }
+            else
+            {
+                sapClienteCreateDto.U_HBT_Apellido1 = cliente.U_HBT_Apellido1;
+            }
+
+            if (cliente.U_HBT_Apellido2 != null)
+            {
+                sapClienteCreateDto.U_HBT_Apellido2 = cliente.U_HBT_Apellido2.ToUpper();
+            }
+            else
+            {
+                sapClienteCreateDto.U_HBT_Apellido2 = cliente.U_HBT_Apellido2;
+            }
+
             sapClienteCreateDto.Phone1 = cliente.Phone1.ToUpper();
             sapClienteCreateDto.Cellular = cliente.Cellular;
             sapClienteCreateDto.EmailAddress = cliente.EmailAddress.ToUpper();
@@ -1581,6 +1612,7 @@
             sapClienteCreateDto.BPAddresses.Add(new AddressClienteDto
             {
                 AddressName = "PRINCIPAL",
+                AddressName2 = cliente.EstableciminetoFactura,
                 Street = cliente.DirreccionFacturaStreet.ToUpper(),
                 Block = cliente.DirreccionFacturaBlock.ToUpper(),
                 ZipCode = cliente.ZipCode,
@@ -1595,6 +1627,7 @@
             sapClienteCreateDto.BPAddresses.Add(new AddressClienteDto
             {
                 AddressName = "PRINCIPAL",
+                AddressName2 = cliente.EstableciminetoDespacho,
                 Street = cliente.DirreccionDespachoStreet.ToUpper(),
                 Block = cliente.DirreccionDespachoBlock.ToUpper(),
                 ZipCode = cliente.ZipCode,
@@ -1615,7 +1648,6 @@
                 sapClienteCreateDto.U_AplicaBolsaMercantil = "Y";
             }
 
-
             var listtapropiedadesSelecionadas = listaPropiedades.Where(x => x.Activa == true).ToList();
 
             foreach (var propiedad in listaPropiedades)
@@ -1627,13 +1659,14 @@
                     info.SetValue(sapClienteCreateDto, propiedad.Activa ? "tYES" : "tNO");
                 }
             }
-            sapClienteCreateDto.FreeText = cliente.FreeText.ToUpper();
-
+            if (sapClienteCreateDto.FreeText != null)
+            {
+                sapClienteCreateDto.FreeText = cliente.FreeText.ToUpper();
+            }
             foreach (var impuestos in listretencionDtos)
             {
                 if (impuestos.Activa == true)
                 {
-
                     sapClienteCreateDto.BPWithholdingTaxCollection.Add(new SapBPWithholdingTaxDto
                     {
                         WTCode = impuestos.WTCode,
@@ -1641,8 +1674,6 @@
                     });
                 }
             }
-
-
             var result = await _jsRuntime.InvokeAsync<JsonElement>
             ("Swal.fire", new
             {
@@ -1655,15 +1686,10 @@
                 confirmButtonText = "Sí, Editar",
                 cancelButtonText = "Cancelar"
             });
-
             if (result.GetProperty("isConfirmed").GetBoolean())
             {
                 await _jsRuntime.InvokeVoidAsync("mostrarEspera", "Sincronizando - SAP ONE", "Editando Cliente ...<br><br><b>No cierre esta ventana.</b>", "info");
-
-
                 var response = await _sapOcrdClientService.ActualizarClienteAsync(cardCode, sapClienteCreateDto);
-
-
                 if (response.EsCorrecto == true)
                 {
                     await _jsRuntime.InvokeVoidAsync("cerrarEspera");
@@ -1694,26 +1720,18 @@
             }
             else
             {
-                await _jsRuntime.InvokeVoidAsync("Swal.fire",
-                              "Cancelado",
-                              $"La edición del cliente ha sido cancelada.",
-                              "info");
+                await _jsRuntime.InvokeVoidAsync("Swal.fire","Cancelado",$"La edición del cliente ha sido cancelada.","info");
                 return;
             }
-
-
-
-
 
         }
         catch (Exception ex)
         {
             await _jsRuntime.InvokeVoidAsync("cerrarEspera");
-
             await _logClientService.GuardarErrorAsync(ex.Message, ex.StackTrace, _authClientService.CurrentSession?.UserName ?? "No encontrado",
                 nameof(EditarClienteAsync), "Editar cliente", "Cliente Razor", "Error");
-            await _jsRuntime.InvokeVoidAsync("Swal.fire", "Error", ex.Message, "error");
 
+            await _jsRuntime.InvokeVoidAsync("Swal.fire", "Error", ex.Message, "error");
         }
     }
     private void Cancelar() => activeTab = "general";

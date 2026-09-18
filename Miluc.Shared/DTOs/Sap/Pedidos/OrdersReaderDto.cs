@@ -4,7 +4,8 @@ namespace Miluc.Shared.DTOs.Sap.Pedidos
 {
     public class OrdersReaderDto
     {
-        public string? CardCode { get; set; }
+        public string? CardCode { get; set; }   
+        public string? NumAtCard { get; set; }
         public string? CardName { get; set; }
         public string? CardFName { get; set; }
         public string? Domicilio { get; set; }
@@ -22,7 +23,6 @@ namespace Miluc.Shared.DTOs.Sap.Pedidos
         public DateTime DocDueDate { get; set; }
         public string? Address { get; set; }
         public string? Address2 { get; set; }
-        public string? NumAtCard { get; set; }
         public decimal? VatSum { get; set; }
         public decimal? DocRate { get; set; }
         public decimal? DocTotal { get; set; }

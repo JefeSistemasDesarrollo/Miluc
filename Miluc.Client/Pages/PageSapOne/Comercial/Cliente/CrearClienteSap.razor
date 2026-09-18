@@ -113,21 +113,7 @@
                                 <ValidationMessage For="@(() => cliente.FederalTaxID)" class="text-danger small" />
                                 <ValidationMessage For="@(() => cliente.SucursalGen)" class="text-danger small" />
                             </div>
-                            @*   <div class="col-12 col-md-4">
-                                <label class="form-label text-muted small fw-semibold">Número Documento *</label>
-                                <div class="input-group input-group-sm">
 
-                                    <input type="text" class="form-control" @bind="cliente.FederalTaxID" @bind:event="oninput" />
-
-<span class="input-group-text bg-light">:</span>
-                                    <input value="cliente.SucursalGen" class="form-control" min="0" max="999" style="max-width:65px;" />
-                                    <span class="input-group-text bg-light">-</span>
-                                    <input readonly class="form-control" value="@DigitoVerificacion" min="0" max="9" style="max-width:45px;" />
-                                </div>
-                                <ValidationMessage For="@(() => cliente.FederalTaxID)" class="text-danger small" />
-                                 <ValidationMessage For="@(() => cliente.SucursalGen)" class="text-danger small" />
-
-                            </div> *@
                             <div class="col-12 col-md-4 d-flex align-items-end">
                                 <div class="form-check form-switch  check-rojo mb-2">
                                     <InputCheckbox @bind-Value="cliente.validFor" class="form-check-input check-rojo" id="chkActivo" />
@@ -137,7 +123,7 @@
                             <div class="col-12 col-md-6">
                                 <label class="form-label text-muted small fw-semibold">Razón Social </label>
                                 <InputText @bind-Value="cliente.CardName" class="form-control form-control-sm" placeholder="Nombre completo o Empresa" />
-                                <ValidationMessage For="@(() => cliente.CardName)" class="text-danger small" />
+                                @* <ValidationMessage For="@(() => cliente.CardName)" class="text-danger small" /> *@
                             </div>
                             <div class="col-12 col-md-6">
                                 <label class="form-label text-muted small fw-semibold">Grupo *</label>
@@ -242,6 +228,13 @@
 
                                         </div>
                                         <div class="col-12">
+                                            <label class="form-label text-muted xx-small mb-1">Establecimiento Factura </label>
+                                            <InputText @bind-Value="cliente.EstableciminetoFactura" class="form-control form-control-sm" />
+                                            <ValidationMessage For="@(() => cliente.EstableciminetoFactura)" class="text-danger small" />
+
+                                        </div>
+
+                                        <div class="col-12">
                                             <label class="form-label text-muted xx-small mb-1">Calle / Número / Conjunto *</label>
                                             <InputText @bind-Value="cliente.DirreccionFacturaStreet" class="form-control form-control-sm" />
                                             <ValidationMessage For="@(() => cliente.DirreccionFacturaStreet)" class="text-danger small" />
@@ -271,6 +264,11 @@
                                     <h6 class="fw-bold text-danger m-0 mb-2 small"><i class="bi bi-truck me-1"></i> Dirección Despacho</h6>
                                     <div class="row g-2">
 
+                                        <div class="col-12">
+                                            <label class="form-label text-muted xx-small mb-1">Establecimiento Despacho</label>
+                                            <InputText @bind-Value="cliente.EstableciminetoDespacho" class="form-control form-control-sm" />
+                                            <ValidationMessage For="@(() => cliente.EstableciminetoDespacho)" class="text-danger small" />
+                                        </div>
                                         <div class="col-12">
                                             <label class="form-label text-muted xx-small mb-1">Calle / Número / Conjunto</label>
                                             <InputText @bind-Value="cliente.DirreccionDespachoStreet" class="form-control form-control-sm" />
@@ -478,7 +476,7 @@
                             <div class="col-12 col-lg-5">
                                 <label class="form-label text-muted small fw-semibold">Comentarios / Observaciones Internas</label>
                                 <InputTextArea @bind-Value="cliente.FreeText" class="form-control form-control-sm" rows="10" placeholder="Escribe aquí anotaciones relevantes para el despacho o condiciones especiales de entrega..." />
-                                <ValidationMessage For="@(() => cliente.FreeText)" class="text-danger small" />
+                              @*   <ValidationMessage For="@(() => cliente.FreeText)" class="text-danger small" /> *@
                             </div>
                             <div class="col-12 col-md-4 d-flex align-items-end">
                                 <div class="form-check form-switch mb-2">
@@ -1194,12 +1192,12 @@
 
             if (resposeOctg.Valor != null)
             {
-             
+
                 if (!_authClientService.HasPermission("CondicionPagoSap.View"))
                 {
                     listDias = resposeOctg.Valor.Where(x => x.PymntGroup.ToUpper() == "CONTADO" || x.PymntGroup.ToUpper() == "DOMICILIO").ToList();
 
-    
+
                 }else{
                     listDias = resposeOctg.Valor;
                 }
@@ -1209,7 +1207,7 @@
             //aca la lista de precios y si es vendor cargo una lista generica de dos item de domicilio y de contado
             //si es administrador cargo la lista de precios y si es vendor cargo una lista generica de dos item de domicilio y de contado
 
-        
+
             var responseOpln = await _sapOplnClientService.GetListOplnAsync();
 
             if (responseOpln.Valor != null)
@@ -1227,20 +1225,11 @@
                         listOpln = responseOpln.Valor;
                     }
                 }
-                
-                
 
-                
+
+
+
             }
-
-            // if(sesion != null)
-            // {
-            //     listOpln = listOpln.Where(x => x.ListName == "Domicilio" || x.ListName == "Contado").ToList();
-            // }
-            // if (sesion != null && sesion.Roles == "Vendedor")
-            // {
-            //     listOpln = listOpln.Where(x => x.Code == "Domicilio" || x.Code == "Contado").ToList();
-            // }
 
 
             var responseRegimenfiscal = await _sapLocalizacionService.GetRegimenFiscal();
@@ -1425,6 +1414,7 @@
 
     private void CopiarADespacho()
     {
+        cliente.EstableciminetoDespacho = cliente.EstableciminetoFactura;
         cliente.DirreccionDespachoStreet = cliente.DirreccionFacturaStreet;
         cliente.DirreccionDespachoBlock = cliente.DirreccionFacturaBlock;
         cliente.DireccionDespachoCounty = cliente.DireccionFacturaCounty;
@@ -1457,10 +1447,8 @@
             SapClienteCreateEditDto sapClienteCreateDto = new();
             //vamos hacer el metodo para guardar todo
             //poner todos los campos en mayusculas
-
             sapClienteCreateDto.U_HBT_TipDoc = cliente.U_HBT_TipDoc;
             // sapClienteCreateDto.CardCode = cliente.FederalTaxID;
-
             if (cliente.SucursalGen > 0)
             {
                 sapClienteCreateDto.CardCode = "C" + cliente.FederalTaxID + ":" + cliente.SucursalGen;
@@ -1469,14 +1457,55 @@
             {
                 sapClienteCreateDto.CardCode = "C" + cliente.FederalTaxID;
             }
-            sapClienteCreateDto.CardName = cliente.CardName.ToUpper();
-            sapClienteCreateDto.CardForeignName = cliente.CardForeignName.ToUpper();
+            if (cliente.CardName != null)
+            {
+                sapClienteCreateDto.CardName = cliente.CardName.ToUpper();
+            }
+            else
+            {
+                sapClienteCreateDto.CardName = cliente.CardName ??"";
+            }
+            if (cliente.CardForeignName != null)
+            {
+                sapClienteCreateDto.CardForeignName = cliente.CardForeignName.ToUpper();
+            }
+            else
+            {
+                sapClienteCreateDto.CardForeignName = cliente.CardForeignName ??"";
+            }
+
+
             sapClienteCreateDto.CardType = "cCustomer";
             sapClienteCreateDto.GroupCode = cliente.GroupCode;
             sapClienteCreateDto.FederalTaxID = cliente.FederalTaxID + "-" + DigitoVerificacion;
-            sapClienteCreateDto.U_HBT_Nombres = cliente.U_HBT_Nombres.ToUpper();
-            sapClienteCreateDto.U_HBT_Apellido1 = cliente.U_HBT_Apellido1.ToUpper();
-            sapClienteCreateDto.U_HBT_Apellido2 = cliente.U_HBT_Apellido2.ToUpper();
+
+            if (cliente.U_HBT_Nombres != null)
+            {
+                sapClienteCreateDto.U_HBT_Nombres = cliente.U_HBT_Nombres.ToUpper();
+            }
+            else
+            {
+                sapClienteCreateDto.U_HBT_Nombres = cliente.U_HBT_Nombres ??"";
+            }
+            if (cliente.U_HBT_Apellido1 != null)
+            {
+                sapClienteCreateDto.U_HBT_Apellido1 = cliente.U_HBT_Apellido1.ToUpper();
+            }
+            else
+            {
+                sapClienteCreateDto.U_HBT_Apellido1 = cliente.U_HBT_Apellido1??"";
+            }  
+
+
+            if (cliente.U_HBT_Apellido2 != null)
+            {
+                sapClienteCreateDto.U_HBT_Apellido2 = cliente.U_HBT_Apellido2.ToUpper();
+            }
+            else
+            {
+                sapClienteCreateDto.U_HBT_Apellido2 = cliente.U_HBT_Apellido2 ??"";
+            }
+
             sapClienteCreateDto.Phone1 = cliente.Phone1;
             sapClienteCreateDto.Cellular = cliente.Cellular;
             sapClienteCreateDto.EmailAddress = cliente.EmailAddress.ToUpper();
@@ -1502,8 +1531,6 @@
             sapClienteCreateDto.U_HBT_InfoTrib = cliente.U_HBT_InfoTrib;
             sapClienteCreateDto.U_HBT_MailRecep_FE = cliente.EmailAddress.ToUpper();
             sapClienteCreateDto.ZipCode = cliente.ZipCode;
-
-
             if (cliente.validFor == false)
             {
                 sapClienteCreateDto.Valid = "tNO";
@@ -1514,10 +1541,10 @@
                 sapClienteCreateDto.Valid = "tYES";
                 sapClienteCreateDto.Frozen = "tNO";
             }
-
             sapClienteCreateDto.BPAddresses.Add(new AddressClienteDto
             {
                 AddressName = "PRINCIPAL",
+                AddressName2 = cliente.EstableciminetoFactura.ToUpper(),
                 Street = cliente.DirreccionFacturaStreet.ToUpper(),
                 Block = cliente.DirreccionFacturaBlock.ToUpper(),
                 ZipCode = cliente.ZipCode,
@@ -1532,6 +1559,7 @@
             sapClienteCreateDto.BPAddresses.Add(new AddressClienteDto
             {
                 AddressName = "PRINCIPAL",
+                AddressName2 = cliente.EstableciminetoDespacho,
                 Street = cliente.DirreccionDespachoStreet.ToUpper(),
                 Block = cliente.DirreccionDespachoBlock.ToUpper(),
                 ZipCode = cliente.ZipCode,
@@ -1551,12 +1579,7 @@
             {
                 sapClienteCreateDto.U_AplicaBolsaMercantil = "Y";
             }
-
-
-
-
             var listtapropiedadesSelecionadas = listaPropiedades.Where(x => x.Activa == true).ToList();
-
             foreach (var propiedad in listaPropiedades)
             {
                 var info = sapClienteCreateDto.GetType().GetProperty(propiedad.Propiedad);
@@ -1566,13 +1589,20 @@
                     info.SetValue(sapClienteCreateDto, propiedad.Activa ? "tYES" : "tNO");
                 }
             }
-            sapClienteCreateDto.FreeText = cliente.FreeText.ToUpper();
+            if (cliente.FreeText != null)
+            {
+                sapClienteCreateDto.FreeText = cliente.FreeText.ToUpper() ?? "";
+            }
+            else
+            {
+                sapClienteCreateDto.FreeText = cliente.FreeText ?? "";
+            }
+
 
             foreach (var impuestos in listretencionDtos)
             {
                 if (impuestos.Activa == true)
                 {
-
                     sapClienteCreateDto.BPWithholdingTaxCollection.Add(new SapBPWithholdingTaxDto
                     {
                         WTCode = impuestos.WTCode,
@@ -1652,6 +1682,10 @@
             cliente.U_HBT_Nombres = string.Empty;
             cliente.U_HBT_Apellido1 = string.Empty;
             cliente.U_HBT_Apellido2 = string.Empty;
+        }
+        else
+        {
+            exito = false;
         }
         return exito;
     }

@@ -27,9 +27,9 @@
             <button type="button" class="btn btn-outline-secondary rounded-pill px-4" @onclick='() => nav.NavigateTo("/administrar-pedido/pedidos")'>
                 Volver
             </button>
-            <button type="submit" form="pedidoForm" class="btn btn-miluc rounded-pill px-4">
-                 Editar
-            </button>
+            @*   <button type="submit" form="pedidoForm" class="btn btn-miluc rounded-pill px-4">
+                Editar
+            </button> *@
         </div>
     </div>
     <EditForm id="pedidoForm" Model="modelUpdateOrden" OnValidSubmit="EditarOrdenVenta">
@@ -79,7 +79,13 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Fecha de Entrega</label>
-                            <InputDate class="form-control form-control-sm" @bind-Value="fechaEntrega" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                            <InputDate class="form-control form-control-sm" @bind-Value="fechaEntrega"  min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Numero referencia O.C</label>
+                            @* <InputDate class="form-control form-control-sm" @bind-Value="fechaEntrega" min="@DateTime.Now.ToString("yyyy-MM-dd")" /> *@
+                            <InputText class="form-control form-control-sm" @bind-Value="clienteSeleccionado.NumAtCard"></InputText>
+                            <ValidationMessage For="@(() => clienteSeleccionado.NumAtCard)" class="text-danger small" />
                         </div>
                     </div>
                 </div>
@@ -111,22 +117,15 @@
                             <select class="form-select form-select-sm" @bind="origenSeleccionado">
                                 @if (modelUpdateOrden != null)
                                 {
-
-                                    var origenPredeterminado = listOrigenPedidos.FirstOrDefault(o => o.OrigenPedidoId == modelUpdateOrden.U_OrigenPedido);
-
                                     @foreach (var origen in listOrigenPedidos)
                                     {
                                         if (origen.OrigenPedidoId == modelUpdateOrden.U_OrigenPedido)
                                         {
                                             <option value="@origen.OrigenPedidoId" selected>@origen.OrigenNombre</option>
                                         }
-                                    }
-                                    @foreach (var vendedor in listVendedores)
-                                    {
-                                        <option value="@vendedor.SlpCode">@vendedor.SlpName</option>
+                                        <option value="@origen.OrigenPedidoId">@origen.OrigenNombre</option>
                                     }
                                 }
-
                             </select>
                         </div>
                     </div>
@@ -148,17 +147,17 @@
                             <tr>
                                 <th class="ps-3" style="width: 3%">#</th>
                                 <th style="width: 5%">Código</th>
-                                <th style="width: 15%">Descripción</th>
+                                <th style="width: 40%">Descripción</th>
                                 <th class="text-center" style="width: 3%">Cantidad</th>
                                 <th style="width: 3%">U.M</th>
                                 <th style="width: 8%">Equi.k</th>
                                 <th style="width: 8%">Equi.U</th>
-                                <th class="text-end" style="width: 10%">Precio</th>
-                                <th class="text-end" style="width: 10%">Precio Cliente</th>
+                                <th class="text-end" style="width: 15%">Precio</th>
+                                @* <th class="text-end" style="width: 10%">Precio Cliente</th> *@
                                 <th class="text-end" style="width: 8%">Precio Especial</th>
-                                <th class="text-end" style="width: 10%">Impuesto</th>
+                                @*       <th class="text-end" style="width: 10%">Impuesto</th>
                                 <th class="text-end" style="width: 10%">% Renta</th>
-                                <th class="text-end pe-3" style="width: 10%">Total Impuesto</th>
+                                <th class="text-end pe-3" style="width: 10%">Total Impuesto</th>*@
                                 <th class="text-end pe-3" style="width: 10%">Total</th>
                                 <th class="text-center" style="width: 5%"> Eliminar</th>
                             </tr>
@@ -178,13 +177,11 @@
                                     <td>
                                         <input type="text" readonly class="form-control form-control-sm" @bind="linea.ItemName">
                                     </td>
-
-                                    <!-- CANTIDAD -->
                                     <!-- CANTIDAD -->
                                     <td>
                                         @if (linea.BuyUnitMsr?.ToUpper() == "KG")
                                         {
-                                            <InputNumber TValue="decimal?"Value="linea.Quantity"ValueChanged="@(v => OnCantidadChanged(v, linea))"
+                                            <InputNumber TValue="decimal?" Value="linea.Quantity" ValueChanged="@(v => OnCantidadChanged(v, linea))"
                                                          ValueExpression="() => linea.Quantity"
                                                          class="form-control form-control-sm text-end"
                                                          step="any"
@@ -192,78 +189,81 @@
                                         }
                                         else
                                         {
-                                            <InputNumber TValue="decimal?"Value="linea.Quantity"ValueChanged="@(v => OnCantidadChanged(Math.Round(v ?? 0,0,MidpointRounding.AwayFromZero), linea))"
+                                            <InputNumber TValue="decimal?" Value="linea.Quantity" ValueChanged="@(v => OnCantidadChanged(Math.Round(v ?? 0, 0, MidpointRounding.AwayFromZero), linea))"
                                                          ValueExpression="() => linea.Quantity"
                                                          class="form-control form-control-sm text-end"
-                                                         step="1" min="0" readonly />
+                                                         step="1" min="0" />
                                         }
                                     </td>
-
                                     <td class="align-content-center">
                                         @linea.BuyUnitMsr
                                     </td>
-
                                     <!-- EQUIVALENTE KG -->
                                     <td>
                                         @if (linea.BuyUnitMsr?.ToUpper() == "KG")
                                         {
                                             <!-- Cuando el artículo se vende por Kg, este campo solo muestra el valor -->
-                                            <InputNumber TValue="decimal?"Value="linea.U_CantidadKg"ValueExpression="() => linea.U_CantidadKg"
-                                                         class="form-control form-control-sm text-end"
-                                                         step="any"
-                                                         readonly />
+                                            <InputNumber TValue="decimal?" Value="linea.U_CantidadKg" ValueExpression="() => linea.U_CantidadKg"
+                                                         class="form-control form-control-sm text-end"step="any"readonly />
                                         }
                                         else
                                         {
                                             <!-- Cuando el artículo se vende por unidades, este campo SI se puede editar -->
-                                            <InputNumber TValue="decimal?"Value="linea.U_CantidadKg"ValueChanged="@(v => OnKgChanged(v, linea))"
-                                                         ValueExpression="() => linea.U_CantidadKg"
-                                                         class="form-control form-control-sm text-end"
-                                                         step="any"
-                                                         min="0" />
+                                            <InputNumber TValue="decimal?" Value="linea.U_CantidadKg" ValueChanged="@(v => OnKgChanged(v, linea))"
+                                                         ValueExpression="() => linea.U_CantidadKg"class="form-control form-control-sm text-end"
+                                                         step="any"min="0" />
                                         }
                                     </td>
-
                                     <!-- EQUIVALENTE UNIDADES -->
                                     <td>
                                         @if (linea.BuyUnitMsr?.ToUpper() == "KG")
                                         {
                                             <!-- Cuando el artículo se vende por Kg, este campo SI se puede editar -->
-                                            <InputNumber TValue="decimal?"Value="linea.U_UnidadSal"ValueChanged="@(v => OnUnidadesChanged(v, linea))"
-                                                         ValueExpression="() => linea.U_UnidadSal"
-                                                         class="form-control form-control-sm text-end"
-                                                         step="1"
-                                                         min="0" />
+                                            <InputNumber TValue="decimal?" Value="linea.U_UnidadSal" ValueChanged="@(v => OnUnidadesChanged(v, linea))"
+                                                         ValueExpression="() => linea.U_UnidadSal"class="form-control form-control-sm text-end"
+                                                         step="1" min="0" />
                                         }
                                         else
                                         {
                                             <!-- Cuando el artículo se vende por unidades, solo muestra el valor -->
-                                            <InputNumber TValue="decimal?"
-                                                         Value="linea.U_UnidadSal"
+                                            <InputNumber TValue="decimal?" Value="linea.U_UnidadSal"
                                                          ValueExpression="() => linea.U_UnidadSal"
                                                          class="form-control form-control-sm text-end"
                                                          readonly />
                                         }
                                     </td>
                                     <!-- PRECIOS -->
-                                    <td>
+                             @*        <td>
                                         <input type="number" readonly class="form-control form-control-sm text-end" @bind="linea.PriceAcobrar" @bind:event="oninput">
-                                    </td>
+                                    </td> *@
+
                                     <td>
-                                        <input type="number" readonly class="form-control form-control-sm text-end" @bind="linea.PriceAsignado" @bind:event="oninput">
+                                        @if (_authClientService.HasPermission("Orden.EditarPrice"))
+                                        {
+                                            <InputNumber TValue="decimal?" Value="linea.PriceAcobrar"ValueChanged="@(v => { linea.PriceAcobrar = v; CalcularTotales(linea); })"
+                                                         ValueExpression="() => linea.PriceAcobrar" class="form-control form-control-sm text-end"step="any" min="0" />
+                                        }
+                                        else
+                                        {
+                                            <input type="number" readonly class="form-control form-control-sm text-end" @bind="linea.PriceAcobrar" @bind:event="oninput">
+                                        }
                                     </td>
+
+                               @*      <td>
+                                        <input type="number" readonly class="form-control form-control-sm text-end" @bind="linea.PriceAsignado" @bind:event="oninput">
+                                    </td> *@
                                     <td>
                                         <input type="number" readonly class="form-control form-control-sm text-end" @bind="linea.PriceEspecial" @bind:event="oninput">
                                     </td>
-                                    <td>
+                                  @*   <td>
                                         <input type="text" readonly class="form-control form-control-sm" @bind="linea.TaxCode">
                                     </td>
                                     <td>
                                         <input type="number" readonly class="form-control form-control-sm text-end" @bind="linea.Rate" @bind:event="oninput">
-                                    </td>
-                                    <td class="text-end pe-3 fw-bold text-maroon">
+                                    </td> *@
+                              @*       <td class="text-end pe-3 fw-bold text-maroon">
                                         @linea.TotalImpuesto.ToString("N2", new CultureInfo("es-CO"))
-                                    </td>
+                                    </td> *@
                                     <td class="text-end pe-3 fw-bold text-maroon">
                                         @linea.BaseSum.ToString("N2", new CultureInfo("es-CO"))
                                     </td>
@@ -316,7 +316,15 @@
         </div>
     </EditForm>
 </div>
-
+<footer class="pedido-footer">
+    <div class="container-fluid d-flex justify-content-end align-items-center">
+        <button type="submit"
+                form="pedidoForm"
+                class="btn btn-miluc rounded-pill px-4">
+            <i class="bi bi-check-circle me-1"></i> Editar
+        </button>
+    </div>
+</footer>
 @* MODAL DE ARTICULOS *@
 <div class="modal fade @(mostrarModalArticulo ? "show d-block" : "")" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 1050;">
 
@@ -327,33 +335,23 @@
             <div class="modal-header bg-maroon-modal text-modal">
                 <h5 class="modal-title mb-0"><i class="bi bi-box-seam me-2"></i>Buscar Artículo</h5>
                 <button type="button" class="btn-close text-modal ms-auto" @onclick="CerrarModalArticulo"></button>
-
             </div>
-
             <!-- BODY -->
             <div class="modal-body">
-
                 <!-- BUSCADOR -->
                 <div class="input-group mb-3">
-
                     <input type="text" class="form-control text-modal" placeholder="Buscar artículo..." @bind="textoBusquedaArticulo" @onkeyup="HandleEnterArticulo">
-
                     <button class="btn btn-marron-modal" @onclick="BuscarEnServidorArticulo"><i class="bi bi-search"></i>Buscar</button>
                 </div>
                 <!-- INFORMACION -->
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <small class="text-muted">
-                        Registros encontrados:
-                        <strong>@CantidadDeArticulosEncontrados</strong>
+                        Registros encontrados:<strong>@CantidadDeArticulosEncontrados</strong>
                     </small>
-
-                    <small class="text-muted">
-                        Página @paginaActualArticulo de @TotalPaginasArticulo
-                    </small>
+                    <small class="text-muted">Página @paginaActualArticulo de @TotalPaginasArticulo</small>
                 </div>
                 <!-- LISTA -->
-                <div class="list-group"
-                     style="max-height: 350px; overflow-y: auto;">
+                <div class="list-group"style="max-height: 350px; overflow-y: auto;">
 
                     @if (listaArticulosApi.Any())
                     {
@@ -441,8 +439,8 @@
 
     private List<SapOitmDto> listaArticulosApi = new();
     //FECHAS DEL PEDIDO, INICIALIZAMOS CON LA FECHA ACTUAL PERO EL USUARIO PUEDE MODIFICARLA SI LO DESEA, LA FECHA DE CONTABILIZACIÓN SE UTILIZA PARA CALCULAR LOS TOTALES Y LA FECHA DE ENTREGA SE UTILIZA PARA CALCULAR LOS PLAZOS DE ENTREGA Y LAS CONDICIONES DE PAGO
-    private DateTime fechaContabilizacion = DateTime.Now;
-    private DateTime fechaEntrega = DateTime.Now;
+    private DateTime fechaContabilizacion;
+    private DateTime fechaEntrega;
     //LA VAMOS A PASAR DESDE EL CLIENTE DEL PEDIDO , CUANDO EL USUARIO SELECCIONE EL PEDIDO QUE DESEA EDITAR, SE CONSULTA A SAP POR LOS DETALLES DE ESE PEDIDO Y SE INICIALIZA ESTE OBJETO CON LOS VALORES O
     private Int16? origenSeleccionado = 0;
     private ArticuloPorListaDePreciosDto articuloPorListaDePreciosDto = new();
@@ -517,13 +515,13 @@
             origenSeleccionado = modelUpdateOrden.U_OrigenPedido;
             fechaContabilizacion = modelUpdateOrden.DocDate;
             fechaEntrega = modelUpdateOrden.DocDueDate;
-
             comentarios = modelUpdateOrden.Comments;
             // ASIGNAMOS EL CLIENTE SELECCIONADO
             if (!string.IsNullOrEmpty(modelUpdateOrden.CardCode))
             {
                 // var responseCliente = await _sapOcrdClientService.GetClienteByCardCodeAsync(modelUpdateOrden.CardCode);
                 clienteSeleccionado.CardCode = modelUpdateOrden.CardCode;
+                clienteSeleccionado.NumAtCard = modelUpdateOrden.NumAtCard;
                 clienteSeleccionado.CardName = modelUpdateOrden.CardName;
                 clienteSeleccionado.ListName = modelUpdateOrden.ListName;
                 // clienteSeleccionado.ListName = modelUpdateOrden.ListName;
@@ -532,7 +530,6 @@
                 clienteSeleccionado.SlpCode = Convert.ToInt32(modelUpdateOrden.SlpCode);
             }
             // ASIGNAMOS LAS LINEAS DEL PEDIDO
-
             if (modelUpdateOrden.detalle != null)
             {
                 lineasPedido = modelUpdateOrden.detalle.Select(linea => new ArticuloPorListaDePreciosDto
@@ -549,12 +546,9 @@
                     // NombreRate = linea.NombreRate,
                     SWeight1 = Math.Round(Convert.ToDecimal(linea.SWeight1), 2)
                 }).ToList();
-
                 //aca vamos
-
                 foreach (var linea in lineasPedido)
                 {
-
                     if (linea.SWeight1 > 0)
                     {
                         //calcular el equivalente en kg y unidades dependiendo de la unidad de medida de compra, teniendo en cuenta el peso del artículo
@@ -575,34 +569,27 @@
                     }
                     linea.BaseSum = Math.Round(Convert.ToDecimal(linea.Quantity) * Convert.ToDecimal((linea.PriceAcobrar ?? 0)), 2);
                     linea.TotalImpuesto = Math.Round(Convert.ToDecimal((linea.BaseSum * linea.Rate) / 100), 2);
-
                 }
-
             }
-
         }
-        fechaContabilizacion = DateTime.Now;
-        fechaEntrega = DateTime.Now;
-
+        // fechaContabilizacion = DateTime.Now;
+        // fechaEntrega = DateTime.Now;
         listOrigenPedidos = new List<OrigenPedidoDto>
-    {
-        new OrigenPedidoDto{OrigenPedidoId=1,OrigenNombre="Seleccione.."},
-        new OrigenPedidoDto{OrigenPedidoId=2,OrigenNombre="Redes Sociales"},
-        new OrigenPedidoDto{OrigenPedidoId=3,OrigenNombre="WhatsApp"},
-        new OrigenPedidoDto{OrigenPedidoId=4,OrigenNombre="Télefono Celular"},
-        new OrigenPedidoDto{OrigenPedidoId=5,OrigenNombre="Correo"},
-        new OrigenPedidoDto{OrigenPedidoId=6,OrigenNombre="Tienda - pag"},
-        new OrigenPedidoDto{OrigenPedidoId=7,OrigenNombre="Referidos"}
-    };
+        {
+            new OrigenPedidoDto{OrigenPedidoId=1,OrigenNombre="Seleccione.."},
+            new OrigenPedidoDto{OrigenPedidoId=2,OrigenNombre="Redes Sociales"},
+            new OrigenPedidoDto{OrigenPedidoId=3,OrigenNombre="WhatsApp"},
+            new OrigenPedidoDto{OrigenPedidoId=4,OrigenNombre="Télefono Celular"},
+            new OrigenPedidoDto{OrigenPedidoId=5,OrigenNombre="Correo"},
+            new OrigenPedidoDto{OrigenPedidoId=6,OrigenNombre="Tienda - pag"},
+            new OrigenPedidoDto{OrigenPedidoId=7,OrigenNombre="Referidos"}
+        };
 
         listVendedores = (await _sapOslpVendedorService.GetListVendedoresAsync()).Valor ?? new List<SapVendedorReaderDto>();
 
         listaArticulosApi = (await _sapOitmClientService.GetListOitmAsync("P", paginaActualArticulo, CantidadRegistrosPorPaginaArticulo)).Valor ?? new List<SapOitmDto>();
-
         // await BuscarEnServidorCliente();
     }
-
-
     private void AgregarLinea()
     {
         if (clienteSeleccionado == null)
@@ -614,17 +601,16 @@
     }
     private void AbrirModalArticulo()
     {
+        textoBusquedaArticulo = string.Empty;
         if (clienteSeleccionado.CardCode == null)
         {
             _jsRuntime.InvokeVoidAsync("Swal.fire", "Error.", "Seleccione el cliente Por favor", "error");
-            return;
-
             mostrarModalArticulo = false;
+            return;
         }
         else
         {
             mostrarModalArticulo = true;
-
         }
     }
     //para manejar los valores de cantidad y
@@ -730,7 +716,7 @@
                         BaseSum = Math.Round(Convert.ToDecimal(artData.BaseSum), 2),
                         Rate = Math.Round(Convert.ToDecimal(artData.Rate), 2),
                         TaxCode = artData.TaxCode,
-                        U_CantidadKg=artData.U_CantidadKg,
+                        U_CantidadKg = artData.U_CantidadKg,
                         U_UnidadSal = artData.U_UnidadSal,
                         TotalImpuesto = Math.Round(Convert.ToDecimal(artData.TotalImpuesto), 2)
                     });
@@ -747,7 +733,6 @@
             StateHasChanged();
         }
     }
-
     private async Task EditarOrdenVenta()
     {
         try
@@ -756,6 +741,15 @@
             {
                 await _jsRuntime.InvokeVoidAsync("Swal.fire", "Error", $"El pedido no tiene cliente seleccionado", "error");
                 return;
+            }
+            if (!string.IsNullOrEmpty(clienteSeleccionado?.NumAtCard))
+            {
+                if (clienteSeleccionado.NumAtCard.Length >= 20)
+                {
+                    await _jsRuntime.InvokeVoidAsync("Swal.fire", "Error", $"Numero o referencia O.C Supera los 20 caracteres permitidos", "error");
+                    return;
+                }
+
             }
             var result = await _jsRuntime.InvokeAsync<JsonElement>
              ("Swal.fire", new
@@ -778,7 +772,7 @@
                     await _jsRuntime.InvokeVoidAsync("Swal.fire", "Error", "El pedido no tiene detalle.", "error");
                     return;
                 }
-                await _jsRuntime.InvokeVoidAsync("mostrarEspera", "Sincronizando SAP ONE", "Editar Orden de venta con SAP...<br><br><b>Espere un momento.</b>",  "info");
+                await _jsRuntime.InvokeVoidAsync("mostrarEspera", "Sincronizando SAP ONE", "Editar Orden de venta con SAP...<br><br><b>Espere un momento.</b>", "info");
                 //en responsable le envio el usuario que hizo la orden de venta
                 foreach (var line in lineasPedido)
                 {
@@ -787,49 +781,44 @@
 
                 if (lineasPedido.Count > 0)
                 {
-            PedidoUpdateDto pedidoUpdateDto = new PedidoUpdateDto
-            {
-                DocEntry = DocEntry,
-                CardCode = clienteSeleccionado.CardCode,
-                DocDate = fechaContabilizacion,
-                DocDueDate = fechaEntrega,
-                Reference2 = "Generado por pagina web",
-                Comments = comentarios,
-                JournalMemo = "Pedido editado desde Miluc Web",
-                SalesPersonCode = clienteSeleccionado.SlpCode,
-                U_OrigenPedido = origenSeleccionado,
-                U_Responsable = _authClientService.CurrentSession.UserName,
-                DocumentLines = lineasPedido.Select(x => new PedidoCrearDetalleLineaDTO
-                {
-                    ItemCode = x.ItemCode,
-                    Quantity = Convert.ToDecimal(x.Quantity),
-                            U_CantidadKg = Convert.ToDecimal(x.U_CantidadKg),
-                            U_UnidadSal = Convert.ToDecimal(x.U_UnidadSal)
+                    PedidoUpdateDto pedidoUpdateDto = new PedidoUpdateDto
+                        {
+                            DocEntry = DocEntry,
+                            CardCode = clienteSeleccionado.CardCode,
+                            NumAtCard = clienteSeleccionado.NumAtCard,
+                            DocDate = fechaContabilizacion,
+                            DocDueDate = fechaEntrega,
+                            Reference2 = "Generado por pagina web",
+                            Comments = comentarios,
+                            JournalMemo = "Pedido editado desde Miluc Web",
+                            SalesPersonCode = clienteSeleccionado.SlpCode,
+                            U_OrigenPedido = origenSeleccionado,
+                            U_Responsable = _authClientService.CurrentSession.IdUsuario.ToString(),
 
-                }).ToList()
-            };
+                        // U_Responsable = _authClientService.CurrentSession.UserName,
+                            DocumentLines = lineasPedido.Select(x => new PedidoCrearDetalleLineaDTO
+                            {
+                                ItemCode = x.ItemCode,
+                                Quantity = Convert.ToDecimal(x.Quantity),
+                                U_CantidadKg = Convert.ToDecimal(x.U_CantidadKg),
+                                U_UnidadSal = Convert.ToDecimal(x.U_UnidadSal),
+                                UnitPrice = Convert.ToDecimal(x.PriceAcobrar),
+                            }).ToList()
 
+                        };
                     if (TotalFinal > 0)
                     {
-            var response = await _sapOrdrService.UpdatePedidoAsync(pedidoUpdateDto);
+                        var response = await _sapOrdrService.UpdatePedidoAsync(pedidoUpdateDto);
 
 
-            if (response.EsCorrecto == true)
-            {
+                        if (response.EsCorrecto == true)
+                        {
                             await _jsRuntime.InvokeVoidAsync("cerrarEspera");
 
-                await _jsRuntime.InvokeVoidAsync("Swal.fire",
-                    "Correcto",
-                                $"Pedido Editado correctamente. Número de documento: {response.Valor.DocNum}",
-                    "success");
+                            await _jsRuntime.InvokeVoidAsync("Swal.fire",
+                                "Correcto", $"Pedido Editado correctamente. Número de documento: {response.Valor.DocNum}", "success");
 
-
-                nav.NavigateTo("/administrar-pedido/pedidos", forceLoad: true);
-                            // await _jsRuntime.InvokeVoidAsync("Swal.fire",
-                            //     "Correcto",
-                            //     $"Pedido Editados correctamente. Número de documento: {response.Valor.DocNum}",
-                            //     "success");
-                            // nav.NavigateTo("/administrar-pedido/pedidos", forceLoad: true);
+                            nav.NavigateTo("/administrar-pedido/pedidos", forceLoad: true);
                         }
                         else
                         {
@@ -839,30 +828,28 @@
                             // await _jsRuntime.InvokeVoidAsync("Swal.fire", "Error", $"No se pudo editar el  pedido. Detalles: {response.Mensaje}", "error");
                         }
 
-            }
-            else
-            {
+                    }
+                    else
+                    {
                         await _jsRuntime.InvokeVoidAsync("cerrarEspera");
                         await _jsRuntime.InvokeVoidAsync("Swal.fire", "Error", $"El total del pedido tiene que ser mayor a 0", "error");
                     }
 
-
-                 
-
-
-
                 }
-
-
-
-
-
-              
             }
-            }
+        }
         catch (Exception ex)
         {
+            await _logClientService.GuardarErrorAsync(
+                  mensagge: ex.Message,
+                  StackTrace: ex.StackTrace,
+                  usuario: _authClientService.CurrentSession?.UserName ?? "No encontrado",
+                  metodo: "Editar",
+                  ruta: $"Permisos/Crear",
+                  origen: "Blazor Cliente",
+                  nivel: "error");
 
+            await _jsRuntime.InvokeVoidAsync("Swal.fire", "Error de sistema", ex.Message, "error");
         }
 
     }

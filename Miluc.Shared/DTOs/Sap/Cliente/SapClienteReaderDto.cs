@@ -1,5 +1,6 @@
 ﻿using Miluc.Shared.DTOs.Sap.DireccionCliente;
 using Miluc.Shared.DTOs.Sap.Impuesto;
+using System.ComponentModel.DataAnnotations;
 
 namespace Miluc.Shared.DTOs.Sap.Cliente
 {
@@ -7,6 +8,9 @@ namespace Miluc.Shared.DTOs.Sap.Cliente
     {
         public string? CardCode { get; set; }
         public string? CardName { get; set; }
+
+      //  [MaxLength(20, ErrorMessage = "El número Referencia O.C")]
+        public string? NumAtCard { get; set; }
         public string? CardFName { get; set; } //NOMBRE DE FANTASIA DEL CLIENTE  
         public string? ListName { get; set; }
         public string? CardType { get; set; }
