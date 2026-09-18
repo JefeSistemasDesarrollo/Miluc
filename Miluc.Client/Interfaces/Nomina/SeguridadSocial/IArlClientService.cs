@@ -12,6 +12,7 @@ namespace Miluc.Client.Interfaces.Nomina.SeguridadSocial
         Task<ResponseAPI<List<ArlReaderDto>>> GetArlAsync(string textoBusqueda, int paginaActual, int cantidadPorPagina);
         Task<ResponseAPI<ArlReaderDto>> GetByArlAsync(int id);
         Task<ResponseAPI<ArlReaderDto>> UpdateArlAsync(ArlUpdate arlUpdate);
+        Task<ResponseAPI<bool>> DeleteArlAsync(int id);
 
     }
 }

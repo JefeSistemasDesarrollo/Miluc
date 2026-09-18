@@ -1,7 +1,9 @@
 @page "/Administrar/contratoLaboral"
 @using Miluc.Client.Interfaces.Nomina
-@using Miluc.Shared.DTOs.Nomina.EmpleadoDto
+@using Miluc.Client.Interfaces.Nomina.SeguridadSocial
 @using Miluc.Shared.DTOs.Nomina.ContratoLaboralDto
+@using Miluc.Shared.DTOs.Nomina.EmpleadoDto
+@using TuProyecto.Client.Services
 @inject NavigationManager nav
 @inject IContratoLaboralClientService _contratoLaboralClientService
 @inject IAfSeguridadSocialClientService afSeguridadSocialClientService
@@ -13,10 +15,10 @@
         <div>
             <h2 class="fw-extrabold text-black m-0 tracking-tight">
                 <i class="bi bi-people-fill"></i>
-                Seguridad Social
+                Gestion de contratos
             </h2>
             <p class="text-muted mb-0 small mt-1">
-                Administración seguridad social del empleado.
+                Administrar contratos de empleados.
             </p>
         </div>
 
@@ -81,7 +83,7 @@
                     <th class="ps-4 py-3 text-rojo text-start">Documento</th>
                     <th class="text-center text-rojo">NombreEmpresa</th>
                     <th class="text-center text-rojo">NombreTipoContrato</th>
-                    <th class="text-center text-rojo">Cargo</th>                    
+                    <th class="text-center text-rojo">Cargo</th>
                     <th class="text-center text-rojo">Acciones</th>
                 </tr>
             </thead>
@@ -121,11 +123,11 @@
                                 <div class="text-muted x-small text-uppercase text-center">@em.NombreTipoContrato</div>
                             </td>
                             <td>
-                                <div class="text-muted x-small text-uppercase text-center">@em.Cargo</div>
+                                <div class="text-muted x-small text-uppercase text-center">@em.NombreCargo</div>
                             </td>
+
                             
 
-        
                             <td class="text-center">
                                 @if (em.Activo ?? false)
                                 {
@@ -139,7 +141,7 @@
                                     <i class="bi text-rojo bi-x-circle"></i>
 
                                 }
-                            </td> 
+                            </td>
 
                             @* Columna de Acciones Limpia *@
                             <td class="text-center pe-4">
@@ -147,7 +149,7 @@
                                     <button class="btn  btn-sm px-3" title="Ver Detalle" @onclick="() => VerDetalle(em.EmpleadoId)">
                                         <i class="bi bi-eye text-black-"></i>
                                     </button>
-                                    <button class="btn btn-white btn-sm px-3" title="Modificar Seguridad Social" @onclick="() => ModificarSeguridadSocial(em.EmpleadoId)">
+                                    <button class="btn btn-white btn-sm px-3" title="CrearContratos" @onclick="() => CrearContratos(em.EmpleadoId)">
                                         <i class="bi bi-pencil-square text-primary"></i>
                                     </button>
                                 </div>
@@ -157,7 +159,7 @@
 
                                   
                 }
-                }
+                @* } *@
             </tbody>
         </table>
     </div>
@@ -182,8 +184,8 @@
 </div>
 
 @code {
-    private List<ContratoLabralreaderDto> listempleadosOrigen = new List<ContratoLabralreaderDto>();
-    private List<ContratoLabralreaderDto> listempleadosAlservidor = new List<ContratoLabralreaderDto>();
+    private List<ContratoLaboralreaderDto> listempleadosOrigen = new List<ContratoLaboralreaderDto>();
+    private List<ContratoLaboralreaderDto> listempleadosAlservidor = new List<ContratoLaboralreaderDto>();
 
     private string _textoBusqueda = "";
 
@@ -235,11 +237,11 @@
             listempleadosAlservidor = listempleadosOrigen.Where(e =>
 
                 e.NombreEmpleado.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) /* || */
-                // e.ContratoLaboralDetalleId.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ||
-                // e.EmpresaId.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ||
-                // e.TipoContratoId.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) 
-                
-            ).ToList();
+// e.ContratoLaboralDetalleId.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+// e.EmpresaId.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+// e.TipoContratoId.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)
+
+).ToList();
         }
     }
 
@@ -258,8 +260,8 @@
         }
         else
         {
-            listempleadosOrigen = new List<ContratoLabralreaderDto>();
-            listempleadosAlservidor = new List<ContratoLabralreaderDto>();
+            listempleadosOrigen = new List<ContratoLaboralreaderDto>();
+            listempleadosAlservidor = new List<ContratoLaboralreaderDto>();
             totalRegistros = 0;
 
             string erroresConcatenados = respuesta?.Errores != null && respuesta.Errores.Any()
@@ -329,13 +331,13 @@
 
     private void VerDetalle(int idempleado)
     {
-        nav.NavigateTo($"/nomina/detalle/{idempleado}");
+        nav.NavigateTo($"/api/ContratoLaboral/{idempleado}");
     }
 
-    private void ModificarSeguridadSocial(int idempleado)
+    private void CrearContratos(int idempleado)
     {
 
-        nav.NavigateTo($"/nomina/seguridad-social/editar/{idempleado}");
+        nav.NavigateTo($"/api/ContratoLaboral/CreateContratoLaboral{idempleado}");
     }
 
     private void Volver() => nav.NavigateTo("/Gestionar/Afiliaciones");

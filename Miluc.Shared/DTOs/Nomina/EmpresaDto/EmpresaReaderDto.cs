@@ -9,7 +9,7 @@ namespace Miluc.Shared.DTOs.Nomina.EmpresaDto
         public int EmpresaId { get; set; }
         public string Nit { get; set; }
         public string NombreEmpresa { get; set; }
-        public DateTime FechaCreacion { get; set; }
+        public DateTime? FechaCreacion { get; set; }
         public DateTime? FechaActualizacion { get; set; }
         public bool Activo { get; set; }
 

@@ -13,6 +13,7 @@ namespace Miluc.Client.Interfaces.Nomina.SeguridadSocial
         public Task<ResponseAPI<AfpCreateDto>> CreateAfpAsync(AfpCreateDto afpCreateDto);
         Task<ResponseAPI<AfpReaderDto>> GetByAfpAsync(int id);
         Task<ResponseAPI<AfpReaderDto>> UpdateAfpAsync(UpdateAfp updateAfp);
+        Task<ResponseAPI<bool>> DeleteAfpAsync(int id);
 
     }
 }

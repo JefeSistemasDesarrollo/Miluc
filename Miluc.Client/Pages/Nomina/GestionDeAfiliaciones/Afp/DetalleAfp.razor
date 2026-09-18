@@ -115,7 +115,7 @@
     public int id { get; set; }
 
     private AfpReaderDto? afpDetalle;
-    private bool cargando = true;
+    
 
     protected override async Task OnInitializedAsync()
     {
@@ -124,7 +124,7 @@
 
     private async Task CargarAfp()
     {
-        cargando = true;
+      
         try
         {
             var respuesta = await _afpService.GetByAfpAsync(id);
@@ -144,7 +144,7 @@
         }
         finally
         {
-            cargando = false;
+           
         }
     }
 

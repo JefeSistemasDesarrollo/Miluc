@@ -29,7 +29,7 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-//  GESTIÓN DE RED Y COOKIES
+//  GESTIÃ“N DE RED Y COOKIES
 builder.Services.AddTransient<CookieHandler>();
 
 builder.Services.AddScoped(sp =>
@@ -43,10 +43,10 @@ builder.Services.AddScoped(sp =>
         BaseAddress = new Uri("https://localhost:7222/")
     };
 });
-//  AUTENTICACIÓN
+//  AUTENTICACIÃ“N
 builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
-// SERVICIOS DE APLICACIÓN
+// SERVICIOS DE APLICACIÃ“N
 builder.Services.AddScoped<IAuthClientService, AuthFrontService>();
 builder.Services.AddScoped<CustomAuthStateProvider>();
 builder.Services.AddScoped<CierrePorInactividad>();
@@ -89,8 +89,8 @@ builder.Services.AddScoped<ICajaCompensacionClientService, CajaCompClientService
 
 builder.Services.AddScoped<IExportarService, ExportarService>();
 
-// Abre el Program.cs del proyecto Client y añade esta línea junto a tus otros servicios de nómina:
-//  INICIALIZACIÓN DE SESIÓN (ANTES DE MOSTRAR UI)
+// Abre el Program.cs del proyecto Client y aÃ±ade esta lÃ­nea junto a tus otros servicios de nÃ³mina:
+//  INICIALIZACIÃ“N DE SESIÃ“N (ANTES DE MOSTRAR UI)
 var host = builder.Build();
 var authService = host.Services.GetRequiredService<IAuthClientService>();
 await authService.InitializeAsync(); // Recupera cookie + usuario

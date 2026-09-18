@@ -1,0 +1,378 @@
+﻿@page "/api/ContratoLaboral/{idempleado:int}"
+
+@using System.Text.Json
+@using Miluc.Client.Interfaces.Nomina
+@using Miluc.Shared.DTOs.Nomina.ContratoLaboralDto
+@using TuProyecto.Client.Services
+
+@inject NavigationManager nav
+@inject IContratoLaboralClientService _contratoService
+@inject IEmpleadoClientService EmpleadoService
+@inject IJSRuntime JS
+
+<div class="detalle-contratos-empleado-page p-4 animate__animated animate__fadeIn">
+    <div class="container-fluid max-width-container">
+
+        @* --- CABECERA DE LA PÁGINA --- *@
+        <div class="header-box mb-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom pb-3 gap-3">
+            <div>
+                <h2 class="fw-extrabold text-dark m-0 tracking-tight d-flex align-items-center">
+                    <i class="bi bi-file-earmark-text text-vinotinto me-2 fs-3"></i>
+                    Detalle del Contrato Laboral
+                </h2>
+                <p class="text-muted mb-0 small mt-1">
+                    Visualización y gestión de los contratos y movimientos registrados para el colaborador.
+                </p>
+            </div>
+            <button class="btn btn-rojo btn-outline-secondary rounded-pill px-4 py-2 transition-all fw-semibold shadow-sm" @onclick="Volver">
+                <i class="bi bi-arrow-left me-2"></i> Volver
+            </button>
+        </div>
+
+        @if (cargando)
+        {
+            <div class="d-flex justify-content-center align-items-center my-5 py-5">
+                <div class="spinner-border text-vinotinto" role="status" style="width: 3rem; height: 3rem;">
+                    <span class="visually-hidden">Cargando datos...</span>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="row g-4">
+
+                @* --- RESUMEN DEL EMPLEADO --- *@
+                <div class="col-12">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white p-3 border-start border-4">
+                                <div class="card-body d-flex align-items-center p-2">
+                                    <div class="rounded-circle p-3 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                        <i class="bi bi-person-badge fs-4 text-danger"></i>
+                                    </div>
+                                    <div>
+                                        <span class="text-uppercase text-muted fw-bold small d-block">Colaborador Actual</span>
+                                        <h4 class="fw-bold text-dark mb-0">@(string.IsNullOrEmpty(nombreEmpleado) ? "Sin Asignar" : nombreEmpleado)</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white p-3 border-start border-4 border-secondary">
+                                <div class="card-body d-flex align-items-center p-2">
+                                    <div class="rounded-circle p-3 me-3 d-flex align-items-center justify-content-center bg-light text-secondary" style="width: 50px; height: 50px;">
+                                        <i class="bi bi-layers fs-4"></i>
+                                    </div>
+                                    <div>
+                                        <span class="text-uppercase text-muted fw-bold small d-block">Total de Registros</span>
+                                        <h4 class="fw-bold text-dark mb-0">@(listaContratos != null ? listaContratos.Count : 0)</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* --- TABLA CON EL LISTADO DE CONTRATOS --- *@
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                        <div class="card-header bg-white p-4 border-bottom d-flex justify-content-between align-items-center">
+                            <h5 class="fw-bold m-0 text-dark">
+                                <i class="bi bi-list-columns-reverse me-2 text-rojo"></i>Historial de Contratos y Detalles
+                            </h5>
+                            <span class="badge bg-danger rounded-pill px-3 py-2 fw-semibold">
+                                @(listaContratos != null ? listaContratos.Count : 0) Elementos
+                            </span>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0 text-nowrap">
+                                <thead class="bg-light text-uppercase text-secondary fs-7">
+                                    <tr>
+                                        <th class="ps-4 py-3">#</th>
+                                        <th class="py-3">Empresa</th>
+                                        <th class="py-3">Tipo Contrato</th>
+                                        <th class="py-3">Cargo</th>
+                                        <th class="text-end py-3">Salario</th>
+                                        <th class="text-center py-3">F. Inicio</th>
+                                        <th class="text-center py-3">F. Fin</th>
+                                        <th class="text-center py-3">F. Terminación</th>
+                                        <th class="py-3">Observación</th>
+                                        <th class="text-center py-3">Estado</th>
+                                        <th class="text-center pe-4 py-3">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (listaContratos == null || !listaContratos.Any())
+                                    {
+                                        <tr>
+                                            <td colspan="11" class="text-center py-5 text-muted">
+                                                <div class="my-3">
+                                                    <i class="bi bi-folder2-open display-4 text-muted opacity-50"></i>
+                                                    <p class="mt-2 mb-0">No se encontraron contratos o detalles registrados para este empleado.</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                    else
+                                    {
+                                        @for (int i = 0; i < listaContratos.Count; i++)
+                                        {
+                                            var contrato = listaContratos[i];
+                                            bool estaActivo = contrato.Activo ?? true;
+                                            <tr>
+                                                <td class="ps-4 fw-bold text-muted">@(i + 1)</td>
+                                                <td>
+                                                    <span class="fw-semibold text-dark">@(string.IsNullOrEmpty(contrato.NombreEmpresa) ? "No especificada" : contrato.NombreEmpresa)</span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-light text-dark border px-2 py-1">@(string.IsNullOrEmpty(contrato.NombreTipoContrato) ? "No especificado" : contrato.NombreTipoContrato)</span>
+                                                </td>
+                                                <td>
+                                                    <span class="text-secondary fw-medium">@(string.IsNullOrEmpty(contrato.NombreCargo) ? "Sin cargo" : contrato.NombreCargo)</span>
+                                                </td>
+                                                <td class="text-end text-dark fw-bold font-monospace">
+                                                    $@(contrato.Salario.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("es-CO")))
+                                                </td>
+                                                <td class="text-center text-muted small">
+                                                    <i class="bi bi-calendar-event text-amarillo me-1"></i>@(contrato.FechaInicio?.ToString("yyyy-MM-dd") ?? "-")
+                                                </td>
+                                                <td class="text-center text-muted small">
+                                                    <i class="bi bi-calendar-x text-amarillo me-1"></i>@(contrato.FechaFinalizacion?.ToString("yyyy-MM-dd") ?? "Indefinido")
+                                                </td>
+                                                <td class="text-center text-muted small">
+                                                    <i class="bi bi-calendar-check text-amarillo me-1"></i>@(contrato.FechaTerminacion?.ToString("yyyy-MM-dd") ?? "Vigente")
+                                                </td>
+
+                                                <td>
+                                                    <div class="text-truncate text-muted small" style="max-width: 200px;" title="@contrato.Observacion">
+                                                        @(string.IsNullOrEmpty(contrato.Observacion) ? "Sin observaciones" : contrato.Observacion)
+                                                    </div>
+                                                </td>
+                                                <td class="text-center">
+                                                    @if (estaActivo)
+                                                    {
+                                                        <i class="bi text-black bi-check2-circle"></i>
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="bi text-rojo bi-x-circle"></i>
+                                                    }
+                                                </td>
+                                                
+                                                @* BOTÓN QUE ABRE EL MODAL VERTICAL EN EL CENTRO *@
+                                                <td class="text-center">
+                                                    <button class="btn btn-amarillo btn-sm px-2 border-center edit"
+                                                            title="Terminar Contrato"
+                                                            @onclick="() => InhabilitarContrato(contrato.ContratoLaboralId)">
+                                                        <i class="bi bi-person-x-fill text-rojo"></i>
+                                                    </button>
+                                                    @* Botón para navegar al formulario de edición *@
+                                                    <button class="btn btn-white btn-sm px-2 border-end edit" title="Editar Contrato" @onclick="() => EditarContrato(contrato.ContratoLaboralId)">
+                                                        <i class="bi bi-pencil-square text-primary"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                @* --- INFORMACIÓN EXTRA DE SEGURIDAD --- *@
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm rounded-4 p-4 bg-light text-secondary">
+                        <div class="d-flex align-items-start gap-3">
+                            <i class="bi bi-shield-lock-fill fs-3 text-danger flex-shrink-0"></i>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1">Seguridad y Confidencialidad de los Datos</h6>
+                                <p class="small mb-0 text-muted lh-base">
+                                    Todos los registros de contratación son procesados bajo estrictas normas de seguridad. Su acceso está limitado exclusivamente a personal autorizado para fines de gestión humana y cumplimiento legal.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        }
+    </div>
+</div>
+
+@* Modal Inhabilitar Contrato *@
+@if (mostrarModalInhabilitar)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(2px);">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+
+                @* Cabecera *@
+                <div class="modal-header bg-light border-bottom px-4 py-3">
+                    <h5 class="modal-title fw-bold text-dark fs-6 d-flex align-items-center">
+                        <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i> Terminar Contrato
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="CerrarModal"></button>
+                </div>
+
+                @* Cuerpo con los campos verticales *@
+                <div class="modal-body p-4">
+                    <EditForm Model="modeloInhabilitacion" OnValidSubmit="GuardarInhabilitacionAsync">
+                        <DataAnnotationsValidator />
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary small">Fecha de Terminación</label>
+                            <InputDate @bind-Value="modeloInhabilitacion.FechaTerminacion" class="form-control rounded-3" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary small">Observación</label>
+                            <InputTextArea @bind-Value="modeloInhabilitacion.Observacion" class="form-control rounded-3" rows="3" placeholder="Motivo de la terminación..." />
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-4 pt-2 border-top">
+                            <button type="button" class="btn btn-light rounded-pill px-3 py-2 fw-semibold small" @onclick="CerrarModal">
+                                Cancelar
+                            </button>
+                            <button type="submit" class="btn btn-danger rounded-pill px-3 py-2 fw-semibold small shadow-sm">
+                                Confirmar
+                            </button>
+
+                           
+
+                        </div>
+                    </EditForm>
+                </div>
+
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int idempleado { get; set; }
+
+    private List<ContratoLaboralreaderDto> listaContratos = new();
+    private string nombreEmpleado = string.Empty;
+    private bool cargando = true;
+
+    // Variables para controlar el modal vertical
+    private bool mostrarModalInhabilitar = false;
+    private int contratoIdSeleccionado;
+
+    private InhabilitarContratoDto modeloInhabilitacion = new();
+
+    private void Volver() => nav.NavigateTo("/Administrar/contratoLaboral");
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDatosAsync();
+    }
+
+    
+    private async Task CargarDatosAsync()
+    {
+        cargando = true;
+        try
+        {
+            if (idempleado <= 0)
+            {
+                await JS.InvokeVoidAsync("Swal.fire", "Error", "ID de empleado no válido.", "error");
+                Volver();
+                return;
+            }
+
+            var tareaContratos = _contratoService.GetContratosPorEmpleadoAsync(idempleado);
+            var tareaEmpleado = EmpleadoService.GetEmpleadoByIdAsync(idempleado);
+
+            await Task.WhenAll(tareaContratos, tareaEmpleado);
+
+            var responseEmpleado = await tareaEmpleado;
+            if (responseEmpleado != null && responseEmpleado.EsCorrecto && responseEmpleado.Valor != null)
+            {
+                var emp = responseEmpleado.Valor;
+                nombreEmpleado = $"{emp.PrimerNombre} {emp.SegundoNombre ?? ""} {emp.PrimerApellido} {emp.SegundoApellido ?? ""}".Replace("  ", " ").Trim();
+            }
+            else
+            {
+                nombreEmpleado = $"Colaborador #{idempleado}";
+            }
+
+            var responseContratos = await tareaContratos;
+            if (responseContratos != null && responseContratos.EsCorrecto && responseContratos.Valor != null)
+            {
+                listaContratos = responseContratos.Valor;
+            }
+            else
+            {
+                listaContratos = new List<ContratoLaboralreaderDto>();
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("Swal.fire", "Error", $"Error al cargar los contratos: {ex.Message}", "error");
+            nombreEmpleado = "Empleado";
+            listaContratos = new List<ContratoLaboralreaderDto>();
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+   
+
+    // --- Métodos del Modal ---
+    private void InhabilitarContrato(int contratoId)
+    {
+        contratoIdSeleccionado = contratoId;
+        modeloInhabilitacion = new InhabilitarContratoDto
+        {
+            FechaTerminacion = DateTime.Today,
+            Activo = false
+        };
+        mostrarModalInhabilitar = true;
+        modeloInhabilitacion.FechaTerminacion = null;
+    }
+
+    private void CerrarModal()
+    {
+        mostrarModalInhabilitar = false;
+        modeloInhabilitacion = new();
+    }
+
+    private async Task GuardarInhabilitacionAsync()
+    {
+        try
+        {
+            modeloInhabilitacion.ContratoLaboralId = contratoIdSeleccionado;
+            modeloInhabilitacion.Activo = false;
+
+            var response = await _contratoService.InhabilitarContratoAsync(modeloInhabilitacion);
+
+            if (response != null && response.EsCorrecto)
+            {
+                await JS.InvokeVoidAsync("Swal.fire", "¡Éxito!", "El contrato ha sido inhabilitado correctamente.", "success");
+                CerrarModal();
+                await CargarDatosAsync();
+            }
+            else
+            {
+                var mensajeError = response?.Mensaje ?? "No se pudo completar la operación.";
+                await JS.InvokeVoidAsync("Swal.fire", "Error", mensajeError, "error");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("Swal.fire", "Error", $"Error de conexión: {ex.Message}", "error");
+        }
+
+    }
+    private void EditarContrato(int contratoLaboralId)
+    {
+       
+        nav.NavigateTo($"/Administrar/Contrato/Editar/{contratoLaboralId}");
+    }
+}

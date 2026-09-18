@@ -1,0 +1,304 @@
+﻿@page "/api/ContratoLaboral/CreateContratoLaboral{idempleado:int}"
+@using Miluc.Client.Interfaces.Nomina
+@using Miluc.Client.Interfaces.Nomina.SeguridadSocial
+@using Miluc.Shared.DTOs.Nomina.Cargos
+@using Miluc.Shared.DTOs.Nomina.ContratoLaboralDetalleDto
+@using Miluc.Shared.DTOs.Nomina.ContratoLaboralDto
+@using Miluc.Shared.DTOs.Nomina.EmpresaDto
+@using Miluc.Shared.DTOs.Nomina.TipoContratoDto
+@using TuProyecto.Client.Services
+
+
+@inject NavigationManager nav
+@inject IContratoLaboralClientService _contratoService
+@inject IEmpresaClientSevice _empresaService
+@inject ITipoContratoClientService _tipoContratoService
+@inject IEmpleadoClientService EmpleadoService
+@inject ICargos _cargoService
+@inject IJSRuntime JS
+
+<div class="empleado-page p-4 animate__animated animate__fadeIn">
+    <div class="container-fluid max-width-container">
+
+        @* --- HEADER --- *@
+        <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
+            <div>
+                <h2 class="fw-extrabold text-black m-0 tracking-tight">
+                    <i class="bi bi-file-earmark-text me-2 header-icon"></i>
+                    Registrar Contrato Laboral
+                </h2>
+                <p class="text-muted mb-0 small mt-1">
+                    Gestione el registro y las condiciones del contrato laboral del empleado: <strong>@nombreEmpleado</strong>. Los campos marcados con <span class="text-danger">*</span> son requeridos.
+                </p>
+            </div>
+            <button class="btn btn-rojo btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
+                <i class="bi bi-arrow-left me-2"></i> Volver al listado
+            </button>
+        </div>
+
+        @if (cargando)
+        {
+            <div class="d-flex justify-content-center my-5">
+                <div class="spinner-border text-vinotinto" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+            </div>
+        }
+        else
+        {
+            @* --- FORMULARIO --- *@
+            <EditForm Model="createContratoDto" OnValidSubmit="EjecutarGuardado">
+                <DataAnnotationsValidator />
+
+                <div class="col-12">
+                    <div class="card card-custom border-0 shadow-sm rounded-4">
+                        <div class="card-body p-4">
+                            <div class="section-title-container mb-4">
+                                <span class="badge bg-vinotinto-light text-vinotinto rounded-pill mb-2 px-3 py-2 fw-bold text-uppercase tracking-wider">Paso 1</span>
+                                <h5 class="fw-bold text-dark m-0">Detalles del Contrato</h5>
+                            </div>
+
+                            <div class="row g-3">
+                                @* Empresa *@
+                                <div class="col-md-6">
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-building"></i></span> Empresa<span class="text-danger">*</span></label>
+                                    <div class="input-group-custom">
+                                        <InputSelect @bind-Value="createContratoDto.EmpresaId" class="form-control input-custom">
+                                            <option value="0">-- Seleccionar empresa --</option>
+                                            @foreach (var empresa in listaEmpresa)
+                                            {
+                                                <option value="@empresa.EmpresaId">@empresa.NombreEmpresa (@empresa.Nit)</option>
+                                            }
+                                        </InputSelect>
+                                    </div>
+                                    <ValidationMessage For="@(() => createContratoDto.EmpresaId)" class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
+
+                                @* Tipo de Contrato *@
+                                <div class="col-md-6">
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-file-text"></i></span> Tipo de Contrato<span class="text-danger">*</span></label>
+                                    <div class="input-group-custom">
+                                        <InputSelect @bind-Value="createContratoDto.TipoContratoId" class="form-control input-custom">
+                                            <option value="0">-- Seleccionar tipo de contrato --</option>
+                                            @foreach (var tipo in listaTipoContrato)
+                                            {
+                                                <option value="@tipo.TipoContratoId">@tipo.NombreContrato</option>
+                                            }
+                                        </InputSelect>
+                                    </div>
+                                    <ValidationMessage For="@(() => createContratoDto.TipoContratoId)" class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
+
+                                @* Cargo *@
+                                <div class="col-md-6">
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-file-text"></i></span> Cargo<span class="text-danger">*</span></label>
+                                    <div class="input-group-custom">
+                                        <InputSelect @bind-Value="createContratoDto.CargoId" class="form-control input-custom">
+                                            <option value="0">-- Seleccionar  --</option>
+                                            @foreach (var tipo in ListaCargos)
+                                            {
+                                                <option value="@tipo.CargoId">@tipo.CargoNombre</option>
+                                            }
+                                        </InputSelect>
+                                    </div>
+                                    <ValidationMessage For="@(() => createContratoDto.TipoContratoId)" class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
+
+
+                                @* Centro de Costo *@
+                                <div class="col-md-6">
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-diagram-3"></i></span> Centro de Costo</label>
+                                    <div class="input-group-custom">
+                                        <InputText class="form-control input-custom" @bind-Value="createContratoDto.CentroCosto" placeholder="Ej. Tecnología" />
+                                    </div>
+                                    <ValidationMessage For="@(() => createContratoDto.CentroCosto)" class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
+
+                                @* Salario *@
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom"> <span class="input-icon">
+                                            <i class="bi bi-currency-dollar"></i>
+                                        </span>
+                                        Salario<span class="text-danger">*</span>
+                                    </label>
+
+                                    <div class="input-group-custom">
+                                        <InputText class="form-control input-custom"
+                                                   @bind-Value="salarioFormateado"
+                                                   @oninput="FormatearSalario"
+                                                   placeholder="Ej. 2.000.000" />
+                                    </div>
+
+                                    <ValidationMessage For="@(() => createContratoDto.Salario)"
+                                                       class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
+
+                                @* Fecha de Inicio *@
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-calendar-event"></i></span> Fecha de Inicio<span class="text-danger">*</span></label>
+                                    <div class="input-group-custom">
+                                        <InputDate class="form-control input-custom" @bind-Value="createContratoDto.FechaInicio" />
+                                    </div>
+                                    <ValidationMessage For="@(() => createContratoDto.FechaInicio)" class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
+
+                                @* Fecha de Finalización *@
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-calendar-x"></i></span> Fecha de Finalización</label>
+                                    <div class="input-group-custom">
+                                        <InputDate class="form-control input-custom" @bind-Value="createContratoDto.FechaFinalizacion" />
+                                    </div>
+                                    <ValidationMessage For="@(() => createContratoDto.FechaFinalizacion)" class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* Botón de cancelación y guardado *@
+                <div class="mt-4 d-flex justify-content-end gap-3">
+                    <button type="button" class="btn btn-amarillo btn-secondary rounded-pill px-4 py-2 fw-semibold" @onclick="Volver">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-rojo rounded-pill px-4" disabled="@isProcessing">
+                        @if (isProcessing)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            <span>Guardando en Servidor...</span>
+                        }
+                        else
+                        {
+                            <span>Guardar</span>
+                        }
+                    </button>
+                </div>
+            </EditForm>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int idempleado { get; set; }
+
+    private CreateContratoLaboralDto createContratoDto = new();
+    private string nombreEmpleado = string.Empty;
+
+    private bool cargando = true;
+    private bool isProcessing = false;
+
+    private List<EmpresaReaderDto> listaEmpresa = new();
+    private List<CargosDto> ListaCargos = new();
+    private List<TipoContratoReaderDto> listaTipoContrato = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var tareaEmpresas = _empresaService.GetEmpresasAsync();
+            var tareaTipos = _tipoContratoService.GetTipoContratoAsync(string.Empty, 1, 100);
+            var tareaEmpleado = EmpleadoService.GetEmpleadoByIdAsync(idempleado);
+            var tareaCargos = _cargoService.GetCargosAsyc(string.Empty, 1, 100);
+
+            // 1. Esperamos todas las tareas en paralelo
+            await Task.WhenAll(tareaEmpresas, tareaTipos, tareaEmpleado, tareaCargos);
+
+            // 2. Asignamos Empresas
+            if (tareaEmpresas.Result?.EsCorrecto == true && tareaEmpresas.Result.Valor != null)
+                listaEmpresa = tareaEmpresas.Result.Valor;
+
+            // 3. Asignamos Tipos de Contrato
+            if (tareaTipos.Result?.EsCorrecto == true && tareaTipos.Result.Valor != null)
+                listaTipoContrato = tareaTipos.Result.Valor;
+
+            // 4. Asignamos Cargos (Independiente de los demás)
+            if (tareaCargos.Result?.EsCorrecto == true && tareaCargos.Result.Valor != null)
+                ListaCargos = tareaCargos.Result.Valor;
+
+            // 5. Obtenemos el nombre del empleado correctamente
+            var responseEmpleado = tareaEmpleado.Result;
+            if (responseEmpleado != null && responseEmpleado.EsCorrecto && responseEmpleado.Valor != null)
+            {
+                var emp = responseEmpleado.Valor;
+                nombreEmpleado = $"{emp.PrimerNombre} {emp.SegundoNombre ?? ""} {emp.PrimerApellido} {emp.SegundoApellido ?? ""}".Replace("  ", " ").Trim();
+            }
+            else
+            {
+                nombreEmpleado = $"Colaborador #{idempleado}";
+            }
+
+            createContratoDto.EmpleadoId = idempleado;
+            createContratoDto.FechaInicio = null;
+            createContratoDto.FechaFinalizacion = null;
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("Swal.fire", "Error", $"Error al inicializar el formulario: {ex.Message}", "error");
+        }
+        finally
+        {
+            cargando = false;
+            StateHasChanged();
+        }
+    }
+    public async Task EjecutarGuardado()
+    {
+        isProcessing = true;
+
+        try
+        {
+            createContratoDto.EmpleadoId = idempleado;
+
+            
+            createContratoDto.NombreEmpledo = nombreEmpleado;
+
+            var respuesta = await _contratoService.CreateContratoLaboralAsync(createContratoDto);
+            if (respuesta != null && respuesta.EsCorrecto)
+            {
+                await JS.InvokeVoidAsync("Swal.fire", "¡Éxito!", "La información del contrato ha sido registrada correctamente.", "success");
+                await Task.Delay(1500);
+                Volver();
+            }
+            else
+            {
+                var mensajeError = respuesta?.Mensaje ?? "Error al procesar la solicitud en el servidor.";
+                await JS.InvokeVoidAsync("Swal.fire", "Error", mensajeError, "error");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("Swal.fire", "Fatal Error", $"Ocurrió un error inesperado: {ex.Message}", "error");
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+    // valor decimal para salario
+    private string salarioFormateado = "";
+
+    private void FormatearSalario(ChangeEventArgs e)
+    {
+        var valor = e.Value?.ToString() ?? "";
+
+        // Dejar únicamente números
+        valor = new string(valor.Where(char.IsDigit).ToArray());
+
+        if (string.IsNullOrEmpty(valor))
+        {
+            salarioFormateado = "";
+            createContratoDto.Salario = 0;
+            return;
+        }
+
+        if (decimal.TryParse(valor, out decimal salario))
+        {
+            createContratoDto.Salario = salario;
+
+            salarioFormateado = salario.ToString("N0",
+                System.Globalization.CultureInfo.GetCultureInfo("es-CO"));
+        }
+    }
+
+    private void Volver() => nav.NavigateTo($"/Administrar/contratoLaboral");
+}

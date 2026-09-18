@@ -138,12 +138,17 @@
                             @* Columna de Acciones Limpia *@
                             <td class="text-center pe-4">
                                 <div class="btn-group shadow-sm border rounded-pill bg-white overflow-hidden">
-                                    <button class="btn  btn-sm px-3" title="Ver Detalle" @onclick="() => VerDetalle(em.CajaCompensacionId)">
+                                    <button class="btn-detail btn btn-dark btn-sm px-2 border-end""Ver Detalle" @onclick="() => VerDetalle(em.CajaCompensacionId)">
                                         <i class="bi bi-eye text-black-"></i>
                                     </button>
-                                    <button class="btn btn-white btn-sm px-3" title="Modificar Caja de Compensación" @onclick="() => ModificarCajaCompensacion(em.CajaCompensacionId)">
+                                    <button class="btn btn-white btn-sm px-2 border-end edit" title= "ModificarArl" @onclick="() => ModificarCajaCompensacion(em.CajaCompensacionId)">
                                         <i class="bi bi-pencil-square text-primary"></i>
                                     </button>
+                                    <button class="btn btn-white btn-sm px-2 delete" title="Eliminar Caja" @onclick="() => EliminarCaja (em.CajaCompensacionId)">
+                                            <i class="bi bi-trash3 text-danger"></i>
+                                        </button
+
+
                                 </div>
                             </td>
                         </tr>
@@ -199,10 +204,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await cargarAfiliaciones();
+        await cargarCaja();
     }
 
-    public async Task cargarAfiliaciones()
+    public async Task cargarCaja()
     {
         cargando = true;
 
@@ -287,7 +292,7 @@
 
         if (string.IsNullOrWhiteSpace(_textoBusqueda))
         {
-            await cargarAfiliaciones();
+            await cargarCaja();
         }
         else
         {
@@ -295,7 +300,7 @@
         }
     }
 
-  
+
     private int totalPaginas
     {
         get
@@ -315,11 +320,86 @@
         paginaActual = nuevaPagina;
 
         if (string.IsNullOrWhiteSpace(_textoBusqueda))
-            await cargarAfiliaciones();
+            await cargarCaja();
         else
             await BuscarEnServidor();
     }
+   private async Task eliminarCaja(int id)
+{
+    var resultadoSwal = await js.InvokeAsync<System.Text.Json.JsonElement>("Swal.fire", new
+    {
+        title = "¿Deseas eliminar esta Caja?",
+        text = "Esta acción removerá el registro permanentemente.",
+        icon = "warning",            
+        showCancelButton = true,
+        confirmButtonColor = "#D62F46",
+        cancelButtonColor = "#FDC922",
+        confirmButtonText = "Sí, eliminar",
+        cancelButtonText = "Cancelar"
+    });
 
+    bool confirmado = false;
+    if (resultadoSwal.ValueKind == System.Text.Json.JsonValueKind.Object &&
+        resultadoSwal.TryGetProperty("isConfirmed", out var propiedadConfirmado))
+    {
+        confirmado = propiedadConfirmado.GetBoolean();
+    }
+
+    if (confirmado)
+    {
+        cargando = true;
+        StateHasChanged();
+
+        try
+        {
+            // Llamada directa a tu servicio cliente HTTP
+            var respuesta = await _cajaCompensacionClientService.DeleteCajaAsync(id);
+
+            if (respuesta != null && respuesta.EsCorrecto)
+            {
+                await js.InvokeVoidAsync("Swal.fire", new
+                {
+                    icon = "success",
+                    title = "¡Eliminado!",
+                    text = "La Caja ha sido removida con éxito.", 
+                    confirmButtonText = "Aceptar",
+                    confirmButtonColor = "#D62F46"
+                });
+
+                await cargarCaja();
+            }
+            else
+            {
+                string mensajeServidor = respuesta != null ? respuesta.Mensaje : "No se pudo procesar la solicitud.";
+
+                await js.InvokeVoidAsync("Swal.fire", new
+                {
+                    icon = "error",
+                    title = "No se puede eliminar",
+                    text = mensajeServidor,
+                    confirmButtonText = "Aceptar",
+                    confirmButtonColor = "#D62F46"
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            await js.InvokeVoidAsync("Swal.fire", new
+            {
+                icon = "error",
+                title = "Error",
+                text = ex.Message,
+                confirmButtonText = "Aceptar"
+            });
+        }
+        finally
+        {
+            cargando = false;
+            StateHasChanged();
+        }
+    }
+}
+  private async Task  EliminarCaja(int id) => await EliminarCaja(id);
     private void VerDetalle(int id)
     {
         nav.NavigateTo($"/api/CajaCompensacion/{id}");
@@ -332,4 +412,5 @@
 
     private void Volver() => nav.NavigateTo("administrar-entidadesSeguridadSocial");
     private void CrearCajaCompensacion() => nav.NavigateTo("/api/CajaCompensacion/CrearCaja");
+  
 }

@@ -2,6 +2,7 @@
 using Miluc.Server.Data;
 using Miluc.Server.Interfaces.Nomina;
 using Miluc.Server.Models.Nomina;
+using Miluc.Shared.DTOs.Nomina.AfpDto;
 using Miluc.Shared.DTOs.Nomina.CajaCompensacionDto;
 using Miluc.Shared.DTOs.Nomina.EpsDto;
 
@@ -13,34 +14,41 @@ namespace Miluc.Server.Servicios.Nomina
         {
             try
             {
-
-                var caja = await _context.CajaCompensacion.FirstOrDefaultAsync(e => e.CajaCompensacionId == cajaUpdate.CajaCompensacionId);
+                var caja = await _context.CajaCompensacion
+                    .FirstOrDefaultAsync(e => e.CajaCompensacionId == cajaUpdate.CajaCompensacionId);
 
                 if (caja == null)
-                    throw new Exception("La EPS no existe.");
-
+                    throw new Exception("La caja de compensación no existe.");
 
                 var nombreFormateado = cajaUpdate.Nombre?.Trim().ToUpper();
                 var codigoFormateado = cajaUpdate.Codigo?.Trim().ToUpper();
 
-
+                
                 var existeCaja = await _context.CajaCompensacion.AnyAsync(e =>
-                    e.Codigo!= cajaUpdate.Codigo &&
+                    e.CajaCompensacionId != cajaUpdate.CajaCompensacionId &&
                     (e.Nombre.ToUpper() == nombreFormateado || e.Codigo.ToUpper() == codigoFormateado)
                 );
 
                 if (existeCaja)
-                    throw new Exception("Ya existe otra EPS con el mismo nombre o código.");
+                    throw new Exception("Ya existe otra caja de compensación con el mismo nombre o código.");
 
+                if (caja.Activo && !cajaUpdate.Activo)
+                {
+                    bool tieneEmpleadosAfiliados = await _context.AfiliacionSeguridadSocial
+                        .AnyAsync(a => a.CajaCompensacionId == cajaUpdate.CajaCompensacionId);
+
+                    if (tieneEmpleadosAfiliados)
+                    {
+                        throw new Exception("La caja de compensación no se puede inactivar porque tiene empleados afiliados.");
+                    }
+                }
 
                 caja.Nombre = cajaUpdate.Nombre;
                 caja.Codigo = cajaUpdate.Codigo;
                 caja.FechaActualizacion = DateTime.Now;
                 caja.Activo = cajaUpdate.Activo;
 
-
                 await _context.SaveChangesAsync();
-
 
                 return new CajaCompensacionReaderDto
                 {
@@ -50,13 +58,10 @@ namespace Miluc.Server.Servicios.Nomina
                     FechaActualizacion = caja.FechaActualizacion,
                     Activo = caja.Activo
                 };
-
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error al actualizar caja: {ex.Message}");
-
-
+                throw new Exception(ex.Message);
             }
         }
 
@@ -96,6 +101,7 @@ namespace Miluc.Server.Servicios.Nomina
             }
         }
 
+        
         public async Task<CajaCompensacionReaderDto> GetBycajaAsync(int id)
         {
             try
@@ -112,14 +118,14 @@ namespace Miluc.Server.Servicios.Nomina
                         Activo = e.Activo
 
                     }).FirstOrDefaultAsync();
-                if (caja == null) throw new Exception("Eps no encontrado.");
+                if (caja == null) throw new Exception("Caja no encontrado.");
 
                 return caja;
             }
 
 
 
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw new Exception("Error al  obtener  cajas");
 
@@ -169,6 +175,38 @@ namespace Miluc.Server.Servicios.Nomina
                 throw new Exception($"Error Al obtener Caja Compensacion: {ex.Message}");
             }
         }
+        public async Task<bool> DeleteCajaAsync(int id)   
+        {
+            try
+            {
+                var caja = await _context.CajaCompensacion.FirstOrDefaultAsync(e => e.CajaCompensacionId == id);
+
+                if (caja == null)
+                {
+                    throw new Exception("La caja no existe.");
+                }
+
+                // Validar si tiene afiliaciones activas o históricas vinculadas
+                bool tieneEmpleadosAfiliados = await _context.AfiliacionSeguridadSocial
+                    .AnyAsync(af => af.CajaCompensacionId == id);
+
+                if (tieneEmpleadosAfiliados)
+                {
+                    throw new Exception("La Caja no se puede eliminar porque cuenta con registros o empleados vinculados en el sistema.");
+                }
+
+                // Si no tiene registros vinculados, procedemos con seguridad
+                _context.CajaCompensacion.Remove(caja);
+                await _context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
     }
 }
 

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Miluc.Server.Data;
 using Miluc.Server.Interfaces.Nomina;
+using Miluc.Shared.DTOs.Nomina.EpsDto;
 using Miluc.Shared.DTOs.Nomina.TipoContratoDto;
 using System.Linq.Expressions;
 
@@ -8,29 +9,44 @@ namespace Miluc.Server.Servicios.Nomina
 {
     public class TipoContratoService(NominaDbContext _contex) : ITipoContratoService
     {
-        public async Task<List<TipoContratoReaderDto>> GetAllTipoContratoAsync()
+
+
+        public async Task<(List<TipoContratoReaderDto> Data, int TotalRegistros)> GetTipoContratoAsync(string? filtro = null, int page = 1, int? cantidad = null)
         {
-            try
             {
-
-                var tipoContratos = await _contex.TipoContrato.AsNoTracking()
-                .Select(t => new TipoContratoReaderDto
-
+                try
                 {
-                    TipoContratoId = t.TipoContratoId,
-                    NombreContrato = t.NombreContrato
-                }).ToListAsync();
+                    int cantidadtop = cantidad ?? 20;
+                    var query = _contex.TipoContrato.AsNoTracking().AsQueryable();
 
-                if (tipoContratos == null || tipoContratos.Count == 0)
-                {
-                    throw new Exception("No se encontraron tipos de contrato.");
+                    if (!string.IsNullOrEmpty(filtro))
+                    {
+                        query = query.Where(e => e.NombreContrato.Contains(filtro));
+                    }
+                    var totalRegistros = query.Count();
+
+                    var epsList = await query
+                        .Select(e => new TipoContratoReaderDto
+                        {
+                            TipoContratoId = e.TipoContratoId,
+                            NombreContrato = e.NombreContrato
+                        })
+                        .Skip((page - 1) * cantidadtop)
+                        .Take(cantidadtop)
+                        .ToListAsync();
+                    return (epsList, totalRegistros);
+
+
                 }
 
-                return tipoContratos;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error al obtener los Tipo de contrato: {ex.Message}", ex);
+                catch (Exception ex)
+                {
+
+                    throw new Exception($"Error al obtener las Eps: {ex.Message}");
+
+                }
+
+
             }
         }
     }

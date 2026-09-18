@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Miluc.Client.Interfaces.Nomina;
 using Miluc.Server.Data;
 using Miluc.Server.Interfaces.Autorizacion;
 using Miluc.Server.Interfaces.Encriptacion;
@@ -115,7 +116,7 @@ builder.Services.AddScoped<ISapOitmService, SapOitmService>();
 builder.Services.AddScoped<IConexionServiceLayer, SapConexionService>();
 builder.Services.AddScoped<ISapOrdrService, SapOrderService>();
 builder.Services.AddScoped<IEncryptionService, EncryptionService>();
-// 3. CONFIGURACIÓN DE COOKIES (Seguridad BFF)
+// 3. CONFIGURACIÃ“N DE COOKIES (Seguridad BFF)
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = "SmartScheme";
@@ -151,8 +152,8 @@ builder.Services.AddAuthentication(options =>
     {
         OnValidatePrincipal = context =>
         {
-            // Opcional: Aquí puedes depurar si llegan los roles
-            // Esto te permite ver en el debugger qué Claims tiene la cookie que llegó
+            // Opcional: AquÃ­ puedes depurar si llegan los roles
+            // Esto te permite ver en el debugger quÃ© Claims tiene la cookie que llegÃ³
             var identity = context.Principal?.Identity as ClaimsIdentity;
             var roles = identity?.FindAll(ClaimTypes.Role).Select(c => c.Value);
             return Task.CompletedTask;
@@ -179,7 +180,7 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// 4. Configuración de CORS (Para que Blazor pueda llamar a la API)
+// 4. ConfiguraciÃ³n de CORS (Para que Blazor pueda llamar a la API)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("BlazorCors", policy =>
@@ -194,7 +195,7 @@ builder.Services.AddCors(options =>
 //builder.Services.AddControllers();
 
 
-// Modifica la línea de los controladores para romper
+// Modifica la lÃ­nea de los controladores para romper
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -208,13 +209,13 @@ builder.Services.AddOpenApi();
 var app = builder.Build();
 // 5. ORDEN DEL MIDDLEWARE (El orden es vital)
 // Configure the HTTP request pipeline.
-// Configuración 
+// ConfiguraciÃ³n 
 // Redirigir siempre a HTTPS
 app.UseHttpsRedirection();
 
 app.UseCors("BlazorCors");
 
-// Autenticación
+// AutenticaciÃ³n
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -236,7 +237,7 @@ app.MapScalarApiReference(options =>
 
 app.UseHttpsRedirection();//para manejar solo el trafico por https 
 
-//app.UseAuthentication(); // Quién eres
+//app.UseAuthentication(); // QuiÃ©n eres
 //app.UseAuthorization(); //  permiso
 app.MapControllers();
 //app.UseMiddleware<ErrorMiddleware>();

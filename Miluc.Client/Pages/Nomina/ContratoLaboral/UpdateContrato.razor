@@ -1,0 +1,301 @@
+﻿@page "/Administrar/Contrato/Editar/{idContrato:int}"
+@using Miluc.Client.Interfaces.Nomina
+@using Miluc.Shared.DTOs.Nomina.Cargos
+@using Miluc.Shared.DTOs.Nomina.ContratoLaboralDto
+@using Miluc.Shared.DTOs.Nomina.EmpresaDto
+@using Miluc.Shared.DTOs.Nomina.TipoContratoDto
+@using TuProyecto.Client.Services
+
+@inject NavigationManager nav
+@inject IContratoLaboralClientService _contratoService
+@inject IJSRuntime js
+@inject ICargos _cargos
+@inject IEmpresaClientSevice _empresa
+@inject ITipoContratoClientService _tipoContrato
+
+<div class="empleado-page p-4 animate__animated animate__fadeIn">
+    <div class="container-fluid max-width-container">
+
+        @* --- HEADER --- *@
+        <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
+            <div>
+                <h2 class="fw-extrabold text-black m-0 tracking-tight">
+                    <i class="bi bi-file-earmark-text me-2 header-icon"></i>
+                    Actualizar Contrato Laboral
+                </h2>
+                <p class="text-muted mb-0 small mt-1">
+                    Gestione el registro y las condiciones del contrato laboral del empleado: <strong>@nombreEmpleado</strong>. Los campos marcados con <span class="text-danger">*</span> son requeridos.
+                </p>
+            </div>
+            <button class="btn btn-rojo btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
+                <i class="bi bi-arrow-left me-2"></i> Volver al listado
+            </button>
+        </div>
+
+        @if (cargando)
+        {
+            <div class="d-flex justify-content-center my-5">
+                <div class="spinner-border text-vinotinto" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+            </div>
+        }
+        else
+        {
+            @* --- FORMULARIO --- *@
+            <EditForm Model="update" OnValidSubmit="EjecutarGuardado">
+                <DataAnnotationsValidator />
+
+                <div class="col-12">
+                    <div class="card card-custom border-0 shadow-sm rounded-4">
+                        <div class="card-body p-4">
+                            <div class="section-title-container mb-4">
+                                <span class="badge bg-vinotinto-light text-vinotinto rounded-pill mb-2 px-3 py-2 fw-bold text-uppercase tracking-wider">Paso 1</span>
+                                <h5 class="fw-bold text-dark m-0">Detalles del Contrato</h5>
+                            </div>
+
+                            <div class="row g-3">
+                                @* Empresa *@
+                                <div class="col-md-6">
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-building"></i></span> Empresa<span class="text-danger">*</span></label>
+                                    <div class="input-group-custom">
+                                        <InputSelect @bind-Value="update.EmpresaId" class="form-control input-custom">
+                                            <option value="0">-- Seleccionar empresa --</option>
+                                            @foreach (var empresa in listaEmpresa)
+                                            {
+                                                <option value="@empresa.EmpresaId">@empresa.NombreEmpresa (@empresa.Nit)</option>
+                                            }
+                                        </InputSelect>
+                                    </div>
+                                    <ValidationMessage For="@(() => update.EmpresaId)" class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
+
+                                @* Tipo de Contrato *@
+                                <div class="col-md-6">
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-file-text"></i></span> Tipo de Contrato<span class="text-danger">*</span></label>
+                                    <div class="input-group-custom">
+                                        <InputSelect @bind-Value="update.TipoContratoId" class="form-control input-custom">
+                                            <option value="0">-- Seleccionar tipo de contrato --</option>
+                                            @foreach (var tipo in listaTipoContrato)
+                                            {
+                                                <option value="@tipo.TipoContratoId">@tipo.NombreContrato</option>
+                                            }
+                                        </InputSelect>
+                                    </div>
+                                    <ValidationMessage For="@(() => update.TipoContratoId)" class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
+
+                                @* Cargo *@
+                                <div class="col-md-6">
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-file-text"></i></span> Cargo<span class="text-danger">*</span></label>
+                                    <div class="input-group-custom">
+                                        <InputSelect @bind-Value="update.CargoId" class="form-control input-custom">
+                                            <option value="0">-- Seleccionar --</option>
+                                            @foreach (var cargo in ListaCargos)
+                                            {
+                                                <option value="@cargo.CargoId">@cargo.CargoNombre</option>
+                                            }
+                                        </InputSelect>
+                                    </div>
+                                    <ValidationMessage For="@(() => update.CargoId)" class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
+
+                                @* Centro de Costo *@
+                                <div class="col-md-6">
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-diagram-3"></i></span> Centro de Costo</label>
+                                    <div class="input-group-custom">
+                                        <InputText class="form-control input-custom" @bind-Value="update.CentroCosto" placeholder="Ej. Tecnología" />
+                                    </div>
+                                    <ValidationMessage For="@(() => update.CentroCosto)" class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
+
+                                @* Salario - Corregido sin @bind-Value para evitar conflicto de eventos *@
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">
+                                        <span class="input-icon"><i class="bi bi-currency-dollar"></i></span>
+                                        Salario<span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group-custom">
+                                        <input type="text"
+                                               class="form-control input-custom"
+                                               value="@salarioFormateado"
+                                               @oninput="FormatearSalario"
+                                               placeholder="Ej. 2.000.000" />
+                                    </div>
+                                    <ValidationMessage For="@(() => update.Salario)" class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
+
+                                @* Fecha de Inicio *@
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-calendar-event"></i></span> Fecha de Inicio<span class="text-danger">*</span></label>
+                                    <div class="input-group-custom">
+                                        <InputDate class="form-control input-custom" @bind-Value="update.FechaInicio" />
+                                    </div>
+                                    <ValidationMessage For="@(() => update.FechaInicio)" class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
+
+                                @* Fecha de Finalización *@
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-calendar-x"></i></span> Fecha de Finalización</label>
+                                    <div class="input-group-custom">
+                                        <InputDate class="form-control input-custom" @bind-Value="update.FechaFinalizacion" />
+                                    </div>
+                                    <ValidationMessage For="@(() => update.FechaFinalizacion)" class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* Botones *@
+                <div class="mt-4 d-flex justify-content-end gap-3">
+                    <button type="button" class="btn btn-amarillo btn-secondary rounded-pill px-4 py-2 fw-semibold" @onclick="Volver">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-rojo rounded-pill px-4" disabled="@isProcessing">
+                        @if (isProcessing)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            <span>Guardando...</span>
+                        }
+                        else
+                        {
+                            <span>Guardar</span>
+                        }
+                    </button>
+                </div>
+            </EditForm>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int idContrato { get; set; }
+
+    private UpdateContratoDto update = new();
+
+    private List<EmpresaReaderDto> listaEmpresa = new();
+    private List<TipoContratoReaderDto> listaTipoContrato = new();
+    private List<CargosDto> ListaCargos = new();
+
+    private bool cargando = true;
+    private bool isProcessing = false;
+    private string nombreEmpleado = string.Empty;
+    private string salarioFormateado = string.Empty;
+
+    private readonly System.Globalization.CultureInfo _culture = System.Globalization.CultureInfo.GetCultureInfo("es-CO");
+
+    private void Volver() => nav.NavigateTo("/Administrar/contratoLaboral");
+
+    protected override async Task OnInitializedAsync()
+    {
+        cargando = true;
+        try
+        {
+            // 1. CARGA EN PARALELO DE CATÁLOGOS Y DATOS (Optimización de velocidad)
+            var tareaEmpresas = _empresa.GetEmpresasAsync();
+            var tareaTipos = _tipoContrato.GetTipoContratoAsync(string.Empty, 1, 100);
+            var tareaCargos = _cargos.GetCargosAsyc(string.Empty, 1, 100);
+            var tareaContrato = _contratoService.GetContratoByIdAsync(idContrato);
+
+            await Task.WhenAll(tareaEmpresas, tareaTipos, tareaCargos, tareaContrato);
+
+            var respuestaEmpresas = await tareaEmpresas;
+            var respuestaTipos = await tareaTipos;
+            var respuestaCargos = await tareaCargos;
+            var respuestaContrato = await tareaContrato;
+
+            if (respuestaEmpresas?.EsCorrecto == true && respuestaEmpresas.Valor != null)
+                listaEmpresa = respuestaEmpresas.Valor;
+
+            if (respuestaTipos?.EsCorrecto == true && respuestaTipos.Valor != null)
+                listaTipoContrato = respuestaTipos.Valor;
+
+            if (respuestaCargos?.EsCorrecto == true && respuestaCargos.Valor != null)
+                ListaCargos = respuestaCargos.Valor;
+
+            // 2. POBLAR MODELO CON DATOS RETORNADOS
+            if (respuestaContrato != null && respuestaContrato.EsCorrecto)
+            {
+                var contrato = respuestaContrato.Valor;
+
+                if (contrato != null)
+                {
+                    update.ContratoLaboralId = contrato.ContratoLaboralId;
+                    update.EmpresaId = contrato.EmpresaId;
+                    update.TipoContratoId = contrato.TipoContratoId;
+                    update.CargoId = contrato.CargoId;
+                    update.CentroCosto = contrato.CentroCosto ?? string.Empty;
+                    update.Salario = contrato.Salario;
+                    update.FechaInicio = contrato.FechaInicio;
+                    update.FechaFinalizacion = contrato.FechaFinalizacion;
+
+                    salarioFormateado = (update.Salario ?? 0).ToString("N0", _culture);
+                    nombreEmpleado = string.IsNullOrWhiteSpace(contrato.NombreEmpleado) ? "Empleado" : contrato.NombreEmpleado;
+                }
+                else
+                {
+                    await js.InvokeVoidAsync("Swal.fire", "Atención", "No se encontraron los datos de este contrato.", "warning");
+                }
+            }
+            else
+            {
+                await js.InvokeVoidAsync("Swal.fire", "Error", respuestaContrato?.Mensaje ?? "Error al obtener el contrato.", "error");
+            }
+        }
+        catch (Exception ex)
+        {
+            await js.InvokeVoidAsync("Swal.fire", "Error", $"No se pudieron cargar los datos iniciales: {ex.Message}", "error");
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private void FormatearSalario(ChangeEventArgs e)
+    {
+        var input = e.Value?.ToString() ?? string.Empty;
+        var soloNumeros = new string(input.Where(char.IsDigit).ToArray());
+
+        if (string.IsNullOrEmpty(soloNumeros))
+        {
+            salarioFormateado = string.Empty;
+            update.Salario = 0;
+            return;
+        }
+
+        if (decimal.TryParse(soloNumeros, out decimal valorDecimal))
+        {
+            update.Salario = valorDecimal;
+            salarioFormateado = valorDecimal.ToString("N0", _culture);
+        }
+    }
+
+    public async Task EjecutarGuardado()
+    {
+        isProcessing = true;
+        try
+        {
+            var respuesta = await _contratoService.UpdateContratoLaboralAsync(update);
+            if (respuesta != null && respuesta.EsCorrecto)
+            {
+                await js.InvokeVoidAsync("Swal.fire", "¡Éxito!", "La información se actualizó correctamente.", "success");
+                Volver();
+            }
+            else
+            {
+                await js.InvokeVoidAsync("Swal.fire", "Error", respuesta?.Mensaje ?? "Error al actualizar.", "error");
+            }
+        }
+        catch (Exception ex)
+        {
+            await js.InvokeVoidAsync("Swal.fire", "Error Fatal", $"Excepción Interna: {ex.Message}", "error");
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+}

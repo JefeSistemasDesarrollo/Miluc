@@ -351,7 +351,7 @@
             }
             else
             {
-                await JS.InvokeVoidAsync("Swal.fire", "Error", $"No se pudo crear: {respuesta.Mensaje}", "error");
+                await JS.InvokeVoidAsync("Swal.fire", "Error", $"{respuesta.Mensaje}", "error");
             }
         }
         catch (Exception ex)
