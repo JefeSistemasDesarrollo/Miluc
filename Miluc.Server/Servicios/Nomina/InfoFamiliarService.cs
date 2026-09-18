@@ -98,10 +98,7 @@ namespace Miluc.Server.Servicios.Nomina
                         Activo = f.Activo
                     })
                     .ToListAsync();
-                if (infoFamiliar == null) throw new Exception("Informacion familiar no encontrada");
-
-                return infoFamiliar;
-
+                return infoFamiliar ?? throw new Exception("Informacion familiar no encontrada");
             }
             catch (Exception ex)
             {
@@ -173,61 +170,63 @@ namespace Miluc.Server.Servicios.Nomina
                 var familiar = await _context.InformacionFamiliar
                     .FirstOrDefaultAsync(f => f.InformacionFamiliarId == dto.InformacionFamiliarId);
 
-                if (familiar == null)
-                    throw new Exception("El registro de información familiar no existe.");
-
-               
-
-                // Existe otro familiar del mismo empleado con ese mismo DOCUMENTO?
-                if (!string.IsNullOrWhiteSpace(dto.Documento))
+                if (familiar != null)
                 {
-                    var existeDocumento = await _context.InformacionFamiliar
-                        .AnyAsync(f => f.Documento == dto.Documento
+                    // Existe otro familiar del mismo empleado con ese mismo DOCUMENTO?
+                    if (!string.IsNullOrWhiteSpace(dto.Documento))
+                    {
+                        var existeDocumento = await _context.InformacionFamiliar
+                            .AnyAsync(f => f.Documento == dto.Documento
+                                        && f.EmpleadoId == dto.EmpleadoId
+                                        && f.InformacionFamiliarId != dto.InformacionFamiliarId);
+
+                        if (existeDocumento)
+                        {
+                            throw new Exception("Ya existe un familiar registrado con este número de documento para este empleado.");
+                        }
+                    }
+
+                    //  ¿Existe otro familiar del mismo empleado con ese mismo NOMBRE?
+                    var existeNombre = await _context.InformacionFamiliar
+                        .AnyAsync(f => f.NombreCompleto.ToUpper() == dto.NombreCompleto.ToUpper().Trim()
                                     && f.EmpleadoId == dto.EmpleadoId
                                     && f.InformacionFamiliarId != dto.InformacionFamiliarId);
 
-                    if (existeDocumento)
-                        throw new Exception("Ya existe un familiar registrado con este número de documento para este empleado.");
+                    if (existeNombre)
+                        throw new Exception("Ya existe un familiar registrado con este nombre para este empleado.");
+
+                    // 3. Mapeo y actualización
+                    familiar.NombreCompleto = dto.NombreCompleto.ToUpper().Trim();
+                    familiar.Documento = dto.Documento;
+                    familiar.ParentescoId = dto.ParentescoId;
+                    familiar.FechaNacimiento = dto.FechaNacimiento;
+                    familiar.ViveConEmpleado = dto.ViveConEmpleado.GetValueOrDefault();
+                    familiar.DependeEconomicamente = dto.DependeEconomicamente.GetValueOrDefault();
+                    familiar.PersonaaCargo = dto.PersonaaCargo.GetValueOrDefault();
+                    familiar.Activo = dto.Activo;
+                    familiar.FechaActualizacion = DateTime.Now;
+
+                    // Guardamos los cambios del familiar editado en la Base de Datos
+                    await _context.SaveChangesAsync();
+
+
+
+                    return new InfoFamiliarReaderDto
+                    {
+                        InformacionFamiliarId = familiar.InformacionFamiliarId,
+                        EmpleadoId = familiar.EmpleadoId,
+                        Documento = familiar.Documento,
+                        NombreCompleto = familiar.NombreCompleto,
+                        ParentescoId = familiar.ParentescoId,
+                        FechaNacimiento = familiar.FechaNacimiento,
+                        ViveConEmpleado = familiar.ViveConEmpleado,
+                        DependeEconomicamente = familiar.DependeEconomicamente,
+                        PersonaaCargo = familiar.PersonaaCargo,
+                        Activo = familiar.Activo
+                    };
                 }
 
-                //  ¿Existe otro familiar del mismo empleado con ese mismo NOMBRE?
-                var existeNombre = await _context.InformacionFamiliar
-                    .AnyAsync(f => f.NombreCompleto.ToUpper() == dto.NombreCompleto.ToUpper().Trim()
-                                && f.EmpleadoId == dto.EmpleadoId
-                                && f.InformacionFamiliarId != dto.InformacionFamiliarId);
-
-                if (existeNombre)
-                    throw new Exception("Ya existe un familiar registrado con este nombre para este empleado.");
-
-                // 3. Mapeo y actualización
-                familiar.NombreCompleto = dto.NombreCompleto.ToUpper().Trim();
-                familiar.Documento = dto.Documento;
-                familiar.ParentescoId = dto.ParentescoId;
-                familiar.FechaNacimiento = dto.FechaNacimiento;
-                familiar.ViveConEmpleado = dto.ViveConEmpleado.GetValueOrDefault();
-                familiar.DependeEconomicamente = dto.DependeEconomicamente.GetValueOrDefault();
-                familiar.PersonaaCargo = dto.PersonaaCargo.GetValueOrDefault();
-                familiar.Activo = dto.Activo;
-                familiar.FechaActualizacion = DateTime.Now;
-
-                // Guardamos los cambios del familiar editado en la Base de Datos
-                await _context.SaveChangesAsync();
-
-
-
-                return new InfoFamiliarReaderDto
-                {
-                    InformacionFamiliarId = familiar.InformacionFamiliarId,
-                    EmpleadoId = familiar.EmpleadoId,
-                    Documento = familiar.Documento,
-                    NombreCompleto = familiar.NombreCompleto,
-                    ParentescoId = familiar.ParentescoId,
-                    FechaNacimiento = familiar.FechaNacimiento,
-                    ViveConEmpleado = familiar.ViveConEmpleado,
-                    DependeEconomicamente = familiar.DependeEconomicamente,
-                    PersonaaCargo = familiar.PersonaaCargo,
-                    Activo = familiar.Activo
-                };
+                throw new Exception("El registro de información familiar no existe.");
             }
             catch (Exception ex)
             {

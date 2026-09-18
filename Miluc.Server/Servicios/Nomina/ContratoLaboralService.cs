@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Miluc.Server.Data;
 using Miluc.Server.Interfaces.Nomina;
 
@@ -116,5 +116,6 @@ namespace Miluc.Server.Servicios.Nomina
     }
 
 }
+
 
 
