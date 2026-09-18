@@ -1,8 +1,12 @@
-﻿namespace Miluc.Shared.DTOs.Sap.Pedidos
+﻿using System.Text.Json.Serialization;
+
+namespace Miluc.Shared.DTOs.Sap.Pedidos
 {
     public class PedidoCreateDto
     {
         public string CardCode { get; set; } = string.Empty;
+
+        public string NumAtCard {  get; set; } = string.Empty;
         public DateTime DocDate { get; set; }
         public DateTime DocDueDate { get; set; }
 
@@ -18,6 +22,11 @@
         public decimal U_CantidadKg { get; set; }
 
         public decimal U_UnidadSal { get; set; }
+
+       // public string ? Printed {  get; set; }
+
+        //[JsonIgnore]
+        //public int IdUsuario { get; set; }
 
         public List<PedidoCrearDetalleLineaDTO> DocumentLines { get; set; } = new();
     }

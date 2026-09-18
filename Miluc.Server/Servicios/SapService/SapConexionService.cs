@@ -11,50 +11,12 @@ namespace Miluc.Server.Servicios.SapService
 {
     public class SapConexionService(MilucDbContext _contex, IEncryptionService _encryptionService) : IConexionServiceLayer
     {
-        public async Task<ResponseAPI<bool>> ActualizarConfiguracionSAPAsync(string password)
-        {
-            try
-            {
-                var configuracion = await _contex.SisConfiguracionesGenerales.FirstOrDefaultAsync(x => x.Modulo == "SAP");
-
-                if (configuracion == null)
-                {
-                    return new ResponseAPI<bool>
-                    {
-                        EsCorrecto = false,
-                        Mensaje = "No existe la configuración SAP.",
-                        Valor = false
-                    };
-                }
-                configuracion.PasswordServiceLayer = _encryptionService.Encrypt(password);
-
-                await _contex.SaveChangesAsync();
-
-                return new ResponseAPI<bool>
-                {
-                    EsCorrecto = true,
-                    Mensaje = "Contraseña Actualizada Correctamente",
-                    Valor = true
-                };
-
-            }
-            catch (Exception ex)
-{
-                return new ResponseAPI<bool>
-    {
-                    EsCorrecto = false,
-                    Mensaje = ex.Message,
-                    Valor = false
-                };
-            }
-        }
-
         public async Task<ResponseAPI<ConexionSapServiceLayerDto>> ConexionSapService()
         {
             try
             {
                 var conexion = await _contex.SisConfiguracionesGenerales
-                    .Where(x => x.Modulo == "SAP")
+                    .Where(x => x.Modulo == "SapPruebas")
                     .Select(x => new ConexionSapServiceLayerDto
                     {
                         URLServiceLayer = x.UrlServiceLayer,
@@ -96,9 +58,7 @@ namespace Miluc.Server.Servicios.SapService
                     $"{conexion.URLServiceLayer}/Login",
                     new StringContent(json, Encoding.UTF8, "application/json")
                 );
-
                 var content = await response.Content.ReadAsStringAsync();
-
                 if (!response.IsSuccessStatusCode)
                 {
                     return new ResponseAPI<ConexionSapServiceLayerDto>
@@ -108,7 +68,6 @@ namespace Miluc.Server.Servicios.SapService
                         Valor = null
                     };
                 }
-
                 // Obtener cookies
                 if (response.Headers.TryGetValues("Set-Cookie", out var cookies))
                 {
@@ -120,7 +79,6 @@ namespace Miluc.Server.Servicios.SapService
                                 .Split(';')[0]
                                 .Split('=')[1];
                         }
-
                         if (cookie.StartsWith("ROUTEID"))
                         {
                             conexion.ROUTEID = cookie
@@ -129,7 +87,6 @@ namespace Miluc.Server.Servicios.SapService
                         }
                     }
                 }
-
                 return new ResponseAPI<ConexionSapServiceLayerDto>
                 {
                     EsCorrecto = true,

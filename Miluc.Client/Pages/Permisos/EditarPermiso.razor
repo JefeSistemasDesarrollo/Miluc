@@ -16,7 +16,7 @@
             <p class="text-muted mb-0 small">Complete los datos obligatorios marcados con (*).</p>
         </div>
         <button class="btn btn-rojo btn-sm rounded-pill px-3" @onclick='() => nav.NavigateTo("/configuracion/permisos")'>
-            <i class="bi bi-arrow-left me-1"></i> Volver 
+            <i class="bi bi-arrow-left me-1"></i> Volver
         </button>
     </div>
     <EditForm Model="permisosUpdateDto" OnValidSubmit="GuardarPermiso">
@@ -26,17 +26,17 @@
             <div class="col-xl-12 col-lg-10 col-12 col-md-6 col-lg-4 col-xl-4">
                 <div class="card shadow-sm border-0 mb-4 rounded-4">
                     <div class="card-body p-4">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold small text-secondary">Nombre del permiso*</label>
-                                <InputText class="form-control custom-input" @bind-Value="permisosUpdateDto.Nombre" placeholder="ejemplo Productos.view" />
-                                <ValidationMessage For="@(() => permisosUpdateDto.Nombre)" class="text-danger small" />
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-bold small text-secondary">Descripcion del permiso*</label>
-                                <InputText class="form-control custom-input" placeholder="Descripción Permiso" @bind-Value="permisosUpdateDto.Descripcion" />
-                                <ValidationMessage For="@(() => permisosUpdateDto.Descripcion)" class="text-danger small" />
-                            </div>
-                             <div class="mt-4 p-3 rounded-3 bg-light border-start border-4 border-warning shadow-sm">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-secondary">Nombre del permiso*</label>
+                            <InputText class="form-control custom-input" @bind-Value="permisosUpdateDto.Nombre" placeholder="ejemplo Productos.view" />
+                            <ValidationMessage For="@(() => permisosUpdateDto.Nombre)" class="text-danger small" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-secondary">Descripcion del permiso*</label>
+                            <InputText class="form-control custom-input" placeholder="Descripción Permiso" @bind-Value="permisosUpdateDto.Descripcion" />
+                            <ValidationMessage For="@(() => permisosUpdateDto.Descripcion)" class="text-danger small" />
+                        </div>
+                        <div class="mt-4 p-3 rounded-3 bg-light border-start border-4 border-warning shadow-sm">
                             <div class="form-check form-switch m-0">
                                 <InputCheckbox class="form-check-input" id="chkPass" @bind-Value="permisosUpdateDto.Activo" />
                                 <label class="form-check-label fw-bold small cursor-pointer" for="chkPass">Activo</label>
@@ -44,12 +44,12 @@
                         </div>
 
                     </div>
-                 </div>
-            </div>   
-                @* --- TIPOS DE USUARIO --- *@
+                </div>
+            </div>
+            @* --- TIPOS DE USUARIO --- *@
             <div class="col-xl-12 col-lg-10 col-12 col-md-6 col-lg-4 col-xl-4">
-                 <div class="card shadow-sm border-0 rounded-4 h-100">
-                 <div class="card-header bg-white py-3 border-0">
+                <div class="card shadow-sm border-0 rounded-4 h-100">
+                    <div class="card-header bg-white py-3 border-0">
                         <div class="row align-items-center">
                             <div class="col-md-6"><h6 class="mb-0 fw-bold text-rojo text-uppercase">Asignación de Roles*</h6></div>
                             <div class="col-md-6">
@@ -59,37 +59,37 @@
                                 </div>
                             </div>
                         </div>
-                 </div>
-                 <div class="card-body pt-0">
-                               <div class="alert alert-warning py-2 small border-0 bg-opacity-10 mb-3 d-flex justify-content-between">
+                    </div>
+                    <div class="card-body pt-0">
+                        <div class="alert alert-warning py-2 small border-0 bg-opacity-10 mb-3 d-flex justify-content-between">
                             <span><i class="bi bi-shield-check me-2"></i>Seleccione los Roles</span>
                             <span class="badge bg-rojo rounded-pill">@permisosUpdateDto.RolesIds.Count seleccionados</span>
-                  </div>
-                <div class="card shadow-sm border-0 rounded-4">
-                    <div class="card-header bg-white py-3 border-0"><h6 class="mb-0 fw-bold text-rojo">Roles*</h6></div>
+                        </div>
+                        <div class="card shadow-sm border-0 rounded-4">
+                            <div class="card-header bg-white py-3 border-0"><h6 class="mb-0 fw-bold text-rojo">Roles*</h6></div>
 
-                    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-2 g-2 overflow-auto pe-1" style="max-height: 580px;">
-                        @if (rolesFiltrados != null)
-                        {
-                            @foreach (var roles in rolesFiltrados)
-                            {
-                                 <div class="col">
-                                    <div class=" role-card tipo-item p-2 mb-2 rounded-3 @(permisosUpdateDto.RolesIds.Contains(roles.IdRol) ? "active" : "")">
-                                        <div class="form-check form-switch d-flex align-items-center justify-content-between p-0">
-                                            <label class="form-check-label fw-semibold small ms-2" for="tipo-@roles.IdRol">@roles.Nombre</label>
-                                            <input class="form-check-input ms-0" type="checkbox" id="tipo-@roles.IdRol"
-                                                   checked="@permisosUpdateDto.RolesIds.Contains(roles.IdRol)"
-                                                   @onchange="@(e => ToggleRoles(roles.IdRol, e.Value))" />
+                            <div class="row row-cols-1 row-cols-md-2 row-cols-xl-2 g-2 overflow-auto pe-1" style="max-height: 580px;">
+                                @if (rolesFiltrados != null)
+                                {
+                                    @foreach (var roles in rolesFiltrados)
+                                    {
+                                        <div class="col">
+                                            <div class=" role-card tipo-item p-2 mb-2 rounded-3 @(permisosUpdateDto.RolesIds.Contains(roles.IdRol) ? "active" : "")">
+                                                <div class="form-check form-switch d-flex align-items-center justify-content-between p-0">
+                                                    <label class="form-check-label fw-semibold small ms-2" for="tipo-@roles.IdRol">@roles.Nombre</label>
+                                                    <input class="form-check-input ms-0" type="checkbox" id="tipo-@roles.IdRol"
+                                                           checked="@permisosUpdateDto.RolesIds.Contains(roles.IdRol)"
+                                                           @onchange="@(e => ToggleRoles(roles.IdRol, e.Value))" />
+                                                </div>
+                                                <span class="text-muted role-desc ">@roles.Descripcion</span>
+                                            </div>
                                         </div>
-                                      <span class="text-muted role-desc ">@roles.Descripcion</span>
-                                    </div>
-                                </div>
-                            }
-                        }
+                                    }
+                                }
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-                     <div class="card-footer bg-white border-0 p-4 text-end">
+                    <div class="card-footer bg-white border-0 p-4 text-end">
                         <button type="submit" class="btn btn-rojo btn-lg rounded-pill px-5 shadow-sm" disabled="@procesando">
                             @if (procesando)
                             {
@@ -100,20 +100,20 @@
                                 <span><i class="bi bi-shield-lock me-2"></i>Guardar</span>
                             }
                         </button>
-                    </div> 
-                </div> 
-           </div> 
-       </div> 
+                    </div>
+                </div>
+            </div>
+        </div>
     </EditForm>
 </div>
 @code {
     [Parameter]
-    public int IdPermiso{ get; set; }
+    public int IdPermiso { get; set; }
     private PermisosUpdateDto permisosUpdateDto = new PermisosUpdateDto { RolesIds = new List<int>() };
     private List<RolReadDto> listRoles = new();
     private List<RolReadDto>? rolesFiltrados;
     private bool procesando = false;
-  
+
     protected override async Task OnParametersSetAsync()
     {
         if (!authClient.HasPermission("Permiso.Update"))
@@ -125,18 +125,25 @@
         {
             var responsePermiso = await _permisoService.GetByIdPermisoAsync(IdPermiso);
 
-            if (responsePermiso.Valor!=null)
+            if (responsePermiso.Valor != null)
             {
                 permisosUpdateDto.IdPermiso = responsePermiso.Valor.IdPermiso;
                 permisosUpdateDto.Nombre = responsePermiso.Valor.Nombre;
                 permisosUpdateDto.Descripcion = responsePermiso.Valor.Descripcion;
                 permisosUpdateDto.Activo = responsePermiso.Valor.Activo;
-                permisosUpdateDto.RolesIds = responsePermiso.Valor.RolesIds  != null ? new List<int>(responsePermiso.Valor.RolesIds)
+                permisosUpdateDto.RolesIds = responsePermiso.Valor.RolesIds != null ? new List<int>(responsePermiso.Valor.RolesIds)
                 : new List<int>();
             }
+            else
+            {
+                await js.InvokeVoidAsync("Swal.fire", "Error", $"No se ver los permiso: {responsePermiso.Mensaje}", "error");
+
+                return;
+            }
+
             var responseRole = await _rolService.GetAllRolesAsync();
 
-            if (responseRole.Valor!=null)
+            if (responseRole.Valor != null)
             {
                 listRoles = responseRole.Valor;
                 rolesFiltrados = listRoles;
@@ -151,7 +158,7 @@
                        metodo: "OnParametersSetAsync",
                        ruta: $"/permiso/Editar/{IdPermiso}",
                        origen: "Blazor Cliente",
-                       nivel: "error");              
+                       nivel: "error");
         }
     }
     private void FiltrarRoles(ChangeEventArgs e)

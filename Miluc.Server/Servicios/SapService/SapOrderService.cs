@@ -6,12 +6,11 @@ using Miluc.Server.Interfaces.Sap.Ordr;
 using Miluc.Shared.DTOs.Sap.Articulos;
 using Miluc.Shared.DTOs.Sap.Pedidos;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System.Text;
 
 namespace Miluc.Server.Servicios.SapService
 {
-    public class SapOrderService(SapDbContex _sapDbContex, IConexionServiceLayer _serviceConexion, ISapOitmService _sapOitmService) : ISapOrdrService
+    public class SapOrderService(SapDbContex _sapDbContex, MilucDbContext _dbcontex, IConexionServiceLayer _serviceConexion, ISapOitmService _sapOitmService) : ISapOrdrService
     {
         public async Task<OrdersReaderDto> CreatePedidoAsyc(PedidoCreateDto pedidoCreateDto)
         {
@@ -32,6 +31,25 @@ namespace Miluc.Server.Servicios.SapService
                 {
                     throw new ArgumentNullException("El cliente es inválido");
                 }
+                var HoraActual = TimeOnly.FromDateTime(DateTime.Now);
+
+                int idUsuario = Convert.ToInt32(pedidoCreateDto.U_Responsable);
+                var Usuario = await _dbcontex.Usuarios.FirstOrDefaultAsync(x => x.IdUsuario == idUsuario);
+
+                if (Usuario != null)
+                {
+                    pedidoCreateDto.U_Responsable = $"{Usuario.Nombres } { Usuario.Apellidos}";
+
+                    if (Usuario.HoraInicio.HasValue && Usuario.HoraFin.HasValue )
+                    {
+                        if (HoraActual < Usuario.HoraInicio.Value || HoraActual > Usuario.HoraFin.Value)
+                        {
+                            throw new UnauthorizedAccessException($"No tiene permitido realizar la orden de venta : desde {Usuario.HoraInicio} hasta {Usuario.HoraFin}");
+
+                        }
+                    }
+                }
+
                 HttpClientHandler clientHandler = new()
                 {
                     ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
@@ -56,24 +74,12 @@ namespace Miluc.Server.Servicios.SapService
 
                 if (response.IsSuccessStatusCode)
                 {
+                    var result = JsonConvert.DeserializeObject<OrdersReaderDto>(contect);
 
-//                    var result = JObject.Parse(contect);
-
-            var result = JsonConvert.DeserializeObject<OrdersReaderDto>(contect);
-                   
                     if (result == null)
                     {
                         throw new Exception("No se pudo deserializar la respuesta de SAP.");
                     }
-
-
-                    //return new OrdersReaderDto
-                    //{
-                    //    CardCode = result["CardCode"]?.ToString(),
-                    //    DocNum = result["DocNum"]?.ToString(),
-                    //    DocEntry = result["DocEntry"]?.Value<int>()
-                    //};
-
                     return new OrdersReaderDto
                     {
                         CardCode = Convert.ToString(result?.CardCode) ?? "",
@@ -118,19 +124,14 @@ namespace Miluc.Server.Servicios.SapService
             try
             {
                 // VALIDACIONES
-
                 if (string.IsNullOrEmpty(pedidoUpdateDto.CardCode))
                 {
                     throw new Exception("El cliente es inválido");
                 }
-
-
                 if (credenciales?.Valor == null)
                 {
-                    throw new Exception(
-                        "No se encontraron credenciales SAP");
+                    throw new Exception("No se encontraron credenciales SAP");
                 }
-
                 if (pedidoUpdateDto == null)
                 {
                     throw new Exception("El pedido es inválido");
@@ -151,18 +152,30 @@ namespace Miluc.Server.Servicios.SapService
                     ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
                 };
 
+                var HoraActual = TimeOnly.FromDateTime(DateTime.Now);
+
+                int idUsuario = Convert.ToInt32(pedidoUpdateDto.U_Responsable);
+                var Usuario = await _dbcontex.Usuarios.FirstOrDefaultAsync(x => x.IdUsuario == idUsuario);
+
+
+                if (Usuario != null)
+                {
+                    pedidoUpdateDto.U_Responsable = $"{Usuario.Nombres} {Usuario.Apellidos}";
+
+                    if (Usuario.HoraInicio.HasValue && Usuario.HoraFin.HasValue)
+                    {
+                        if (HoraActual < Usuario.HoraInicio.Value || HoraActual > Usuario.HoraFin.Value)
+                        {
+                            throw new UnauthorizedAccessException($"No tiene permitido realizar la orden de venta : desde {Usuario.HoraInicio} hasta {Usuario.HoraFin}");
+                        }
+                    }
+                }
                 using var httpClient = new HttpClient(clientHandler);
-
                 // COOKIE SAP
-
                 httpClient.DefaultRequestHeaders.Add("Cookie", $"B1SESSION={credenciales.Valor.B1SESSION}; RouteId={credenciales.Valor.ROUTEID}");
-
                 // IMPORTANTE PARA PATCH DE LINEAS
-
                 httpClient.DefaultRequestHeaders.Add("B1S-ReplaceCollectionsOnPatch", "true");
-
                 // URL PATCH
-
                 string url = $"{credenciales.Valor.URLServiceLayer}/Orders({pedidoUpdateDto.DocEntry})";
 
                 var json = JsonConvert.SerializeObject(pedidoUpdateDto);
@@ -180,18 +193,9 @@ namespace Miluc.Server.Servicios.SapService
                 if (!response.IsSuccessStatusCode)
                 {
                     string errorMessage = $"Error SAP: {content}";
-                    try
-                    {
-
-                    }
-                    catch (Exception ex)
-                    {
-                        { }
                         await _serviceConexion.LogoutAsync(credenciales.Valor.URLServiceLayer, credenciales.Valor.B1SESSION, credenciales.Valor.ROUTEID);
-
                         // throw new Exception(errorMessage);
                         throw new HttpRequestException($"SAP Service Layer rechazó la actualización de direcciones del cliente. Detalles: {errorMessage}");
-                    }
                 }
 
                 // SAP DEVUELVE 204
@@ -232,6 +236,7 @@ namespace Miluc.Server.Servicios.SapService
                     .Select(x => new OrdersReaderDto
                     {
                         CardCode = x.CardCode,
+                        NumAtCard=x.NumAtCard,
                         CardName = x.CardName,
                         ListName = x.OcrdClienteSap.OPLN.ListName,
                         CardFName = x.OcrdClienteSap.CardFName,
@@ -244,13 +249,12 @@ namespace Miluc.Server.Servicios.SapService
                         DocRate = x.DocRate,
                         DocTotal = x.DocTotal,
                         Address = x.Address,
-                        NumAtCard = x.NumAtCard,
                         VatSum = x.VatSum,
                         PaidToDate = x.PaidToDate,
                         Comments = x.Comments ?? "",
                         U_Picking = x.U_Picking ?? 0,
                         U_PLACAS = x.piking != null && x.piking.Name != null ? x.piking.Name : "Sin placa",
-                        CANCELED = Convert.ToString(x.CANCELED),
+                        CANCELED = Convert.ToString(x.CANCELED)??"",
                         // SlpCode = x.SlpCode,
                         SlpCode = x.OSLP.SlpCode,
                         SlpName = x.OSLP.SlpName,
@@ -264,10 +268,6 @@ namespace Miluc.Server.Servicios.SapService
                             BuyUnitMsr = d.UnitMsr,
                             Rate = Convert.ToDecimal(d.VatPrcnt),
                             TaxCode = d.TaxCode,
-                            // VatPrcnt = d.VatPrcnt,
-                            //U_EquivalentedKg = d.U_EquivalentedKg,
-                            //U_EquivalenteUni = d.U_EquivalenteUni,
-                            // BaseSum = d.BaseSum
                             PriceAcobrar = d.Price,
                         }).ToList()
                     })
@@ -309,7 +309,7 @@ namespace Miluc.Server.Servicios.SapService
             }
         }
         public async Task<(List<OrdersReaderDto> data, int TotalRegistros)> ListarPedidosAsync(string? buscar = null, int? pagina = null,
-        int? cantidad = null, DateTime? fechaInicio = null, DateTime? fechaFin = null, int? codVendedorSAP = null,
+        int? cantidad = null, DateTime? fechaContabilizacionInicio = null, DateTime? fechaContabilizacionFin = null, DateTime? fechaEntregaInicio = null, DateTime? fechaEntregaFin = null, int? codVendedorSAP = null,
         char? DocStatus = null, char? CANCELED = null, char? Printed = null)
         {
             try
@@ -321,22 +321,35 @@ namespace Miluc.Server.Servicios.SapService
                 if (!string.IsNullOrEmpty(buscar))
                 {
                     query = query.Where(x => x.CardCode.Contains(buscar) ||
-                                             x.CardName.Contains(buscar) ||
+                                             x.CardName.Contains(buscar) ||                
+                                             x.OcrdClienteSap.CardFName.Contains(buscar) ||                
                                              x.DocNum.ToString().Contains(buscar) ||
                                              x.U_PLACAS.ToString().Contains(buscar));
                 }
                 // 2. Filtro por Rango de Fechas (Garantizando horas extremas)
-                if (fechaInicio.HasValue)
+                if (fechaContabilizacionInicio.HasValue)
                 {
-                    DateTime inicio = fechaInicio.Value.Date; // 
+                    DateTime inicio = fechaContabilizacionInicio.Value.Date; // 
                     query = query.Where(x => x.DocDate >= inicio);
                 }
-                if (fechaFin.HasValue)
+                if (fechaContabilizacionFin.HasValue)
                 {
-                    DateTime fin = fechaFin.Value.Date.AddDays(1).AddTicks(-1); // 23:59:59.999
+                    DateTime fin = fechaContabilizacionFin.Value.Date.AddDays(1).AddTicks(-1); // 23:59:59.999
                     query = query.Where(x => x.DocDate <= fin);
                 }
-               
+                 
+                //fecha de entrega
+                if (fechaEntregaInicio.HasValue)
+                {
+                    DateTime inicio = fechaEntregaInicio.Value.Date; // 
+                    query = query.Where(x => x.DocDueDate >= inicio);
+                }
+                if (fechaEntregaFin.HasValue)
+                {
+                    DateTime fin = fechaEntregaFin.Value.Date.AddDays(1).AddTicks(-1); // 23:59:59.999
+                    query = query.Where(x => x.DocDueDate <= fin);
+                }
+
                 if (DocStatus != null)
                 {
                     query = query.Where(x => x.DocStatus == DocStatus);
@@ -365,11 +378,12 @@ namespace Miluc.Server.Servicios.SapService
                     {
                         CardCode = x.CardCode,
                         CardName = x.CardName,
+                        CardFName =x.OcrdClienteSap.CardFName ?? "Sin Sucursal",
                         DocNum = x.DocNum.ToString(),
                         DocEntry = x.DocEntry,
                         DocDate = x.DocDate,
-                        DocStatus = Convert.ToString(x.DocStatus),
-                        CANCELED = Convert.ToString(x.CANCELED),
+                        DocStatus = Convert.ToString(x.DocStatus) ??"",
+                        CANCELED = Convert.ToString(x.CANCELED)??"",
                         DocDueDate = x.DocDueDate,
                         DocRate = x.DocRate,
                         DocTotal = x.DocTotal,
@@ -380,8 +394,8 @@ namespace Miluc.Server.Servicios.SapService
                         Comments = x.Comments ?? "",
                         U_Picking = x.U_Picking ?? 0,
                         U_PLACAS = x.piking != null && x.piking.Name != null ? x.piking.Name : "Sin placa",
-                        Printed = Convert.ToString(x.Printed),
-                      
+                        Printed = Convert.ToString(x.Printed)??"",
+
                     }).ToListAsync();
 
                 return (lista, totalRegistros);

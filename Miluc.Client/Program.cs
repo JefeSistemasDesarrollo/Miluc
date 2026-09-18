@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Miluc.Client;
 using Miluc.Client.Interfaces;
+using Miluc.Client.Interfaces.Exportar;
 using Miluc.Client.Interfaces.LogInterfaceClient;
 using Miluc.Client.Interfaces.Nomina;
 using Miluc.Client.Interfaces.Nomina.SeguridadSocial;
@@ -14,14 +15,15 @@ using Miluc.Client.Interfaces.SapInterfaces.Oslp;
 using Miluc.Client.Interfaces.SapInterfaces.Rutas;
 using Miluc.Client.Interfaces.SapInterfaces.SapOitm;
 using Miluc.Client.Interfaces.SapInterfaces.SapOrdr;
+using Miluc.Client.Interfaces.SapInterfaces.TrazabilidadPedidos;
 using Miluc.Client.Interfaces.UsuariosRolesPermisos;
 using Miluc.Client.Servicios.Autorizacion;
+using Miluc.Client.Servicios.ExportarArchivo;
 using Miluc.Client.Servicios.LocalizacionSapService;
 using Miluc.Client.Servicios.LogService;
 using Miluc.Client.Servicios.Nomina;
 using Miluc.Client.Servicios.SapService;
 using Miluc.Client.Servicios.UsuariosRolesPermisos;
-using Miluc.Shared.DTOs.Nomina.AfiliacionSeguridadSocialDto;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -36,12 +38,11 @@ builder.Services.AddScoped(sp =>
 
     return new HttpClient(handler)
     {
-      BaseAddress = new Uri("https://localhost:7222/")
-    // BaseAddress = new Uri("https://avicolamiluc.ddns.net:91/")
+        // BaseAddress = new Uri("https://avicolamiluc.ddns.net:91/")
 
+        BaseAddress = new Uri("https://localhost:7222/")
     };
 });
-
 //  AUTENTICACIÓN
 builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
@@ -59,7 +60,6 @@ builder.Services.AddScoped<ILogClientService, LogClientService>();
 //builder.Services.AddScoped<ISapOslpService, SapOslpService>();
 //builder.Services.AddScoped<ISapOcrdClientService, SapOcrdClientService>();
 //builder.Services.AddScoped<ISapOitmClientService, SapOitmClientService>();
-
 //sap 
 builder.Services.AddScoped<ISapOslpService, SapOslpService>();
 builder.Services.AddScoped<ISapOcrdClientService, SapOcrdClientService>();
@@ -69,9 +69,7 @@ builder.Services.AddScoped<ILocalizacionClientSap, LocalizacionSapService>();
 builder.Services.AddScoped<ISapObppClientService, SapObppClientService>();
 builder.Services.AddScoped<ISapOctgClientService, SapOctgClientService>();
 builder.Services.AddScoped<ISapOplnClientService, SapOplnClientService>();
-
-
-
+builder.Services.AddScoped<ISapTrazabilidadPedidos, SapTrazabilidadClientServices>();
 //Nomina
 builder.Services.AddScoped<IEmpleadoClientService, EmpleadoClientService>();
 builder.Services.AddScoped<IDepartamentosClientService, DepartamentoClienteService>();
@@ -88,12 +86,10 @@ builder.Services.AddScoped<IEpsClientService, EpsClientService>();
 builder.Services.AddScoped<IArlClientService, ArlClientService>();
 builder.Services.AddScoped<IAfpClientService, AfpClientService>();
 builder.Services.AddScoped<ICajaCompensacionClientService, CajaCompClientService>();
+
+builder.Services.AddScoped<IExportarService, ExportarService>();
+
 // Abre el Program.cs del proyecto Client y añade esta línea junto a tus otros servicios de nómina:
-
-
-
-
-
 //  INICIALIZACIÓN DE SESIÓN (ANTES DE MOSTRAR UI)
 var host = builder.Build();
 var authService = host.Services.GetRequiredService<IAuthClientService>();

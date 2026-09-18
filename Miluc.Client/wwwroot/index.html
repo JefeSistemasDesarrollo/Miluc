@@ -51,6 +51,23 @@
             }
         };
     </script>
+
+    <script>
+        window.descargarArchivo = (nombreArchivo, base64) => {
+
+            const link = document.createElement('a');
+
+            link.download = nombreArchivo;
+            link.href = "data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64," + base64;
+
+            document.body.appendChild(link);
+
+            link.click();
+
+            document.body.removeChild(link);
+        };
+
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 

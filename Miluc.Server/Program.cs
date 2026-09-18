@@ -23,6 +23,7 @@ using Miluc.Server.Interfaces.Sap.Opln;
 using Miluc.Server.Interfaces.Sap.Ordr;
 using Miluc.Server.Interfaces.Sap.Oslp;
 using Miluc.Server.Interfaces.Sap.Ospp;
+using Miluc.Server.Interfaces.Sap.TrasabilidadOrdendeVenta;
 using Miluc.Server.Interfaces.Usuarios;
 using Miluc.Server.Models.Nomina;
 using Miluc.Server.Models.Sap;
@@ -54,9 +55,6 @@ builder.Services.AddDbContext<NominaDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("nomina"));
 });
-
-
-
 // 2. Registro de tus servicios e interfacesbuilder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
@@ -102,22 +100,8 @@ builder.Services.AddScoped<IClaseViviendaService, ClaseViviendaService>();
 builder.Services.AddScoped<INivelAcademicoService, NivelAcademicoService>();
 builder.Services.AddScoped<IMatrizSociodemograficaService, MatrizSociodemograficaService>();
 builder.Services.AddScoped<IEmpleadoService, EmpleadoService>();
-
-
-
-
+builder.Services.AddScoped<ISapTrazabilidadPedido,SapTrazabiliadPedidosService>();
 ////sap
-//builder.Services.AddScoped<IBusinessPartnerGroups, BusinessPartnerGroupsService>();
-//builder.Services.AddScoped<ISapOcrdService, SapOcrdService>();
-//builder.Services.AddScoped<ISapOslpService, SapOslpService>();
-//builder.Services.AddScoped<ISapOitmService, SapOitmService>();
-//builder.Services.AddScoped<ISapItm1Service, SapItm1Service>();
-//builder.Services.AddScoped<ISapOplnService, SapOplnService>();
-//builder.Services.AddScoped<ISapObppService, SapObppService>();
-//builder.Services.AddScoped<ISapOctgService, SapOctgService>();
-//builder.Services.AddScoped<ISapCiudadMMService, SapCiudadMMService>();
-//builder.Services.AddScoped<ISapOsppService, OsppService>();
-//builder.Services.AddScoped<ISapOitmService, SapOitmService>();
 builder.Services.AddScoped<IBusinessPartnerGroups, BusinessPartnerGroupsService>();
 builder.Services.AddScoped<ISapOcrdService, SapOcrdService>();
 builder.Services.AddScoped<ISapOslpService, SapOslpService>();
@@ -125,16 +109,12 @@ builder.Services.AddScoped<ISapOitmService, SapOitmService>();
 builder.Services.AddScoped<ISapItm1Service, SapItm1Service>();
 builder.Services.AddScoped<ISapOplnService, SapOplnService>();
 builder.Services.AddScoped<ISapObppService, SapObppService>();
-
 builder.Services.AddScoped<ISapCiudadMMService, SapCiudadMMService>();
 builder.Services.AddScoped<ISapOsppService, OsppService>();
 builder.Services.AddScoped<ISapOitmService, SapOitmService>();
 builder.Services.AddScoped<IConexionServiceLayer, SapConexionService>();
 builder.Services.AddScoped<ISapOrdrService, SapOrderService>();
 builder.Services.AddScoped<IEncryptionService, EncryptionService>();
-
-
-
 // 3. CONFIGURACIÓN DE COOKIES (Seguridad BFF)
 builder.Services.AddAuthentication(options =>
 {
@@ -161,7 +141,7 @@ builder.Services.AddAuthentication(options =>
     // IMPORTANTE para cross-origin (puertos distintos)
     options.Cookie.SameSite = SameSiteMode.None;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-   // options.ExpireTimeSpan = TimeSpan.FromMinutes(builder.Configuration["Jwt:AccessTokenExpirationMinutes"]);
+    // options.ExpireTimeSpan = TimeSpan.FromMinutes(builder.Configuration["Jwt:AccessTokenExpirationMinutes"]);
     options.ExpireTimeSpan = TimeSpan.FromMinutes(Convert.ToDouble(builder.Configuration["Jwt:AccessTokenExpirationMinutes"])
 );
     //options.Cookie.Domain = "avicolamiluc.ddns.net";
@@ -204,29 +184,26 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("BlazorCors", policy =>
     {
-       
         //policy.WithOrigins("https://avicolamiluc.ddns.net:92")
         policy.WithOrigins("https://localhost:7198")
-       .AllowAnyHeader()
-       .AllowAnyMethod()
-     .AllowCredentials(); // OBLIGATORIO para enviar cookies
+         .AllowAnyHeader()
+         .AllowAnyMethod()
+       .AllowCredentials(); // OBLIGATORIO para enviar cookies
     });
 });
 //builder.Services.AddControllers();
 
 
-// Modifica la línea de los controladores para romper los ciclos infinitos de SAP
+// Modifica la línea de los controladores para romper
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        // Esto evita que Scalar truene al procesar relaciones circulares (ej. ORDR -> OSLP -> ORDR)
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     });
 
 
 // Learn more about configuring OpenAPI at 
 builder.Services.AddOpenApi();
-
 
 var app = builder.Build();
 // 5. ORDEN DEL MIDDLEWARE (El orden es vital)

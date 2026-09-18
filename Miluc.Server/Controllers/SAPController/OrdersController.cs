@@ -13,7 +13,6 @@ namespace Miluc.Server.Controllers.SAPController
     [Route("api/[controller]")]
     public class OrdersController(ISapOrdrService _sapOrdrService, ILogService _log) : Controller
     {
-
         [HttpPost]
         [PermissionAuthorize("Orders.Create")]
         public async Task<ActionResult<ResponseAPI<OrdersReaderDto>>> CreatePedido([FromBody] PedidoCreateDto pedidoCreateDto)
@@ -24,7 +23,11 @@ namespace Miluc.Server.Controllers.SAPController
 
                 if (response == null)
                 {
-                    return NotFound();
+                    return NotFound(new ResponseAPI<OrdersReaderDto>
+                    {
+                        EsCorrecto=false,
+                        Mensaje=""
+                    });
                 }
 
                 return Ok(new ResponseAPI<OrdersReaderDto>
@@ -58,7 +61,7 @@ namespace Miluc.Server.Controllers.SAPController
                     new ResponseAPI<OrdersReaderDto>
                     {
                         EsCorrecto = false,
-                        Mensaje = "Ocurrió un error interno.",
+                        Mensaje = $"Ocurrió un error interno. {ex.Message}",
                         Errores = new List<string> { ex.Message }
                     });
             }
@@ -66,11 +69,14 @@ namespace Miluc.Server.Controllers.SAPController
 
         [HttpGet]
         [PermissionAuthorize("Orders.View")]
-        public async Task<ActionResult<ResponseAPI<List<OrdersReaderDto>>>> ListarPedidosAsync([FromQuery] string? buscar = null, [FromQuery] int? pagina = null, [FromQuery] int? cantidad = null, [FromQuery] DateTime? fechaInicio = null, [FromQuery] DateTime? fechaFin = null, [FromQuery] int? codVendedorSAP = null, [FromQuery] char? DocStatus = null, [FromQuery] char? CANCELED = null, [FromQuery] char? Printed = null)
+        public async Task<ActionResult<ResponseAPI<List<OrdersReaderDto>>>>
+            ListarPedidosAsync([FromQuery] string? buscar = null, [FromQuery] int? pagina = null, [FromQuery] int? cantidad = null, [FromQuery] DateTime? fechaContantabilizacionInicio= null, [FromQuery] DateTime? fechaContabilicacionFin = null,
+            [FromQuery] DateTime? fechaEntregaInicio = null, [FromQuery] DateTime? fechaEntregaFin = null,
+            [FromQuery] int? codVendedorSAP = null, [FromQuery] char? DocStatus = null, [FromQuery] char? CANCELED = null, [FromQuery] char? Printed = null)
         {
             try
             {
-                var response = await _sapOrdrService.ListarPedidosAsync(buscar, pagina, cantidad,fechaInicio, fechaFin, codVendedorSAP, DocStatus, CANCELED, Printed);
+                var response = await _sapOrdrService.ListarPedidosAsync(buscar, pagina, cantidad,fechaContantabilizacionInicio, fechaContabilicacionFin, fechaEntregaInicio, fechaEntregaFin, codVendedorSAP, DocStatus, CANCELED, Printed);
 
                 if (response.data == null)
                 {
@@ -114,7 +120,7 @@ namespace Miluc.Server.Controllers.SAPController
                 return StatusCode(500, new ResponseAPI<(List<OrdersReaderDto> data, int TotalRegistros)>
                 {
                     EsCorrecto = false,
-                    Mensaje = "Ocurrió un error al listar los pedidos.",
+                    Mensaje = $"Ocurrió un error al listar los pedidos.{ex.Message}",
                     Errores = new List<string> { ex.Message },
                     Valor = (new List<OrdersReaderDto>(), 0)
                 });
@@ -148,8 +154,6 @@ namespace Miluc.Server.Controllers.SAPController
             }
             catch (Exception ex)
             {
-
-
                 await _log.GuardarErrorAsync(
               message: ex.Message,
               StackTrace: ex.StackTrace,
@@ -158,13 +162,10 @@ namespace Miluc.Server.Controllers.SAPController
               ruta: HttpContext.Request.Path,
               ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
               origen: nameof(OrdersController));
-
-
-
                 return StatusCode(500, new ResponseAPI<OrdersReaderDto>
                 {
                     EsCorrecto = false,
-                    Mensaje = "Ocurrió un error al obtener el pedido.",
+                    Mensaje = $"Ocurrió un error al obtener el pedido. {ex.Message}",
                     Errores = new List<string> { ex.Message },
                     Valor = null
                 });
@@ -240,8 +241,7 @@ namespace Miluc.Server.Controllers.SAPController
                 return StatusCode(500, new ResponseAPI<OrdersReaderDto>
                 {
                     EsCorrecto = false,
-                    Mensaje =
-                            "Ocurrió un error al actualizar el pedido.",
+                    Mensaje =$"Ocurrió un error al actualizar el pedido. {ex.Message}",
                     Errores = new List<string> { ex.Message },
                     Valor = null
                 });
@@ -268,8 +268,7 @@ namespace Miluc.Server.Controllers.SAPController
             }
             catch (Exception ex)
             {
-                return StatusCode(500,
-                    new ResponseAPI<bool>
+                return StatusCode(500,new ResponseAPI<bool>
                     {
                         EsCorrecto = false,
                         Mensaje = ex.Message,

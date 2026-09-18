@@ -4,6 +4,7 @@
     {
         public string? CardCode { get; set; }
         public string? Address { get; set; }//DIRECCION PRINCIPAL DEL CLIENTE
+        public string? Address2 { get; set; }//DIRECCION PRINCIPAL DEL CLIENTE
         public string? Street { get; set; }//calle
         public string? Block { get; set; }//bloque o manzana
         public string? ZipCode { get; set; }//la relacion entre ciudad medios magneticos y cliente

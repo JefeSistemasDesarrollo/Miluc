@@ -214,6 +214,7 @@
                                                     </h6>
 
                                                     <div class="small text-secondary d-flex flex-column gap-1 mt-3">
+                                                        <div><span class="fw-semibold text-dark">Esta Fact:</span> @dir.Address2</div>
                                                         <div><span class="fw-semibold text-dark">Calle/Av:</span> @dir.Street</div>
                                                         <div><span class="fw-semibold text-dark">Barrio:</span> @dir.Block</div>
                                                         <div><span class="fw-semibold text-dark">Ciudad/Mun:</span> @dir.City @(!string.IsNullOrEmpty(dir.ZipCode) ? $"({dir.ZipCode})" : "")</div>
@@ -536,6 +537,8 @@
 
                 clienteDetalle = cliente.Valor;
 
+
+
                 medioDepago = lisMediosDePago.Where(s => s.UHBTMedPag == clienteDetalle.U_HBT_MedPag).FirstOrDefault().NameMediosDepago;
 
                 nacionalidad = listNacionalidad.Where(x => x.Code == clienteDetalle.U_HBT_Nacional).FirstOrDefault().U_hbtNacionalidad;
@@ -582,7 +585,7 @@
             {
                 icon = "error",
                 title = "Error Inesperado",
-                text = "Ocurrió un fallo en la conexión con el servicio.",
+                text = $"Ocurrió un fallo en la conexión con el servicio. {ex.Message}",
                 confirmButtonColor = "#6c1d1d"
             });
         }

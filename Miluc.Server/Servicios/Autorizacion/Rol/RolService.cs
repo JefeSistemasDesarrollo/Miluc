@@ -33,7 +33,7 @@ namespace Miluc.Server.Servicios.Autorizacion.Rol
             catch (Exception ex)
             {
                // _logger.LogError(ex, "Error al crear un nuevo rol: {Nombre}", dtoCreate.Nombre);
-                throw new Exception($"Error al crear un nuevo rol: {dtoCreate.Nombre}");
+                throw new Exception($"Error al crear un nuevo rol: {dtoCreate.Nombre}  {ex.Message}");
             }
         }
         public async Task<bool> DeleteRolAsync(int idRole)
@@ -116,7 +116,7 @@ namespace Miluc.Server.Servicios.Autorizacion.Rol
                     {
                         IdRol = r.IdRol,
                         Nombre = r.Nombre,
-                        Descripcion = r.Descripcion,
+                        Descripcion = r.Descripcion ?? "",
                         Activo = r.Activo,
                         CantidadRoles = _context.UsuarioRoles.Count(ur => ur.IdRol == r.IdRol)
                     }).ToListAsync();
@@ -132,7 +132,7 @@ namespace Miluc.Server.Servicios.Autorizacion.Rol
             }
         }
         //visualizar el detalle de los roles 
-        public async Task<RolReadDto?> GetByIdRolesAsync(int idRole)
+        public async Task<RolReadDto> GetByIdRolesAsync(int idRole)
         {
             try
             {
@@ -144,11 +144,15 @@ namespace Miluc.Server.Servicios.Autorizacion.Rol
                     {
                         IdRol = r.IdRol,
                         Nombre = r.Nombre,
-                        Descripcion = r.Descripcion,
+                        Descripcion = r.Descripcion ??"",
                         Activo = r.Activo,
                         CantidadRoles = _context.UsuarioRoles.Count(ur => ur.IdRol == r.IdRol)
                     }).FirstOrDefaultAsync();
-
+              
+                if (roles == null)
+                {
+                    throw new ArgumentNullException(nameof(GetByIdRolesAsync), "No hay roles");
+                }
                 return roles;
             }
             catch (Exception ex)

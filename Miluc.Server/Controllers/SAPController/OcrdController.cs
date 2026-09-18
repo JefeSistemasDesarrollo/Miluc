@@ -4,13 +4,14 @@ using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Sap.Ocrd;
 using Miluc.Server.Security;
 using Miluc.Shared.DTOs.Sap.Cliente;
+using Miluc.Shared.DTOs.Sap.Factura;
 using Miluc.Shared.Models.Response;
 
 namespace Miluc.Server.Controllers.SAPController
 {
     [ApiController]
     [Route("api/[Controller]")]
-    [Authorize]
+   [Authorize]
 
     public class OcrdController(ISapOcrdService _sapClienteService, ILogService _log) : Controller
     {
@@ -27,7 +28,6 @@ namespace Miluc.Server.Controllers.SAPController
             try
             {
                 var response = await _sapClienteService.GetallClienteAsync(buscar, pagina, cantidad, codVendedorSAP);
-
                 return Ok(new ResponseAPI<List<SapClienteReaderDto>>
                 {
                     EsCorrecto = true,
@@ -38,8 +38,6 @@ namespace Miluc.Server.Controllers.SAPController
             }
             catch (Exception ex)
             {
-            
-
                 await _log.GuardarErrorAsync(message: ex.Message,
                               StackTrace: ex.StackTrace,
                               usuario: User.Identity?.Name ?? "Sistema",
@@ -56,8 +54,6 @@ namespace Miluc.Server.Controllers.SAPController
                 });
             }
         }
-
-
         [HttpGet("{cardcode}")]
         [PermissionAuthorize("Cliente.Detail")]
         public async Task<ActionResult<ResponseAPI<SapClienteReaderDto>>> GetByIdClienteAsync(string cardcode)
@@ -285,9 +281,67 @@ namespace Miluc.Server.Controllers.SAPController
                     Mensaje = mensaje,
                     Errores = new List<string> { ex.Message }
                 });
+            }
+        }
+       
+        
+        [HttpGet("cliente-facturas/{CardCode}")]
+       // [HttpGet("devolucion-detalle/{DocEntry:int}")]
+       [PermissionAuthorize("AccountsReceivable.View")]
+        public async Task<ActionResult<ResponseAPI<List<OinvReaderDto>>>> FacturasPendientes(string CardCode)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(CardCode))
+                {
+                    return BadRequest(new ResponseAPI<bool>
+                    {
+                        EsCorrecto = false,
+                        Mensaje = "El código del cliente es obligatorio",
+                        Errores = new List<string> { "El código del cliente es obligatorio" }
 
+                    });
+                }
+
+                var facturas = await _sapClienteService.FacturasPendientesCliente(CardCode);
+
+                if (facturas==null)
+                {
+                    return NotFound(new ResponseAPI<List<OinvReaderDto>>
+                    {
+                        EsCorrecto = false,
+                        Mensaje = $"Error. {facturas}",
+                    });
+                }
+                return Ok(new ResponseAPI<List<OinvReaderDto>>
+                {
+                    EsCorrecto = true,
+                    Valor = facturas,
+                    Mensaje = "Lista de facturas correctamente."
+                });
+            }
+            catch(Exception ex)
+            {
+                await _log.GuardarErrorAsync(
+                message: ex.Message,
+                StackTrace: ex.StackTrace,
+                usuario: User.Identity?.Name ?? "Sistema",
+                metodo: nameof(EliminarClienteAsync),
+                ruta: HttpContext.Request.Path,
+                ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
+                origen: nameof(OcrdController));
+
+                string mensaje = ex.Message;
+           
+                return StatusCode(500, new ResponseAPI<List<OinvReaderDto>>
+                {
+                    EsCorrecto = false,
+                    Mensaje = $"error al consultar facturas pendeintes {mensaje}",
+                    Errores = new List<string> { ex.Message }
+                });
 
             }
+
         }
     }
 }

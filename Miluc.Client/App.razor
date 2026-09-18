@@ -76,7 +76,7 @@
             }
         };
 
-        cierrePorInactividad.StartMonitoringInactividad(120); // 120 minutos para pruebas
+        cierrePorInactividad.StartMonitoringInactividad(15); // 15 minutos para pruebas
 
         //este bloque es para el timer de refresco de token
         refrescarToken.OnTimeout += async () =>
@@ -108,6 +108,8 @@
             }
             else
             {
+                await authService.Logout();
+
                 NavigationManager.NavigateTo("/login", true);
             }
         };

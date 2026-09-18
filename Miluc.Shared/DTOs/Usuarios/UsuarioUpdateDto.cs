@@ -42,6 +42,12 @@ namespace Miluc.Shared.DTOs.Usuarios
         [Compare("Password", ErrorMessage = "Las contraseñas no coinciden")]
         public string? ConfirmarPassword { get; set; }
 
+
+        [Required(ErrorMessage = "La hora de inicio es requerida")]
+        public TimeOnly? HoraInicio { get; set; }
+        [Required(ErrorMessage = "La hora de fin es requerida")]
+        public TimeOnly? HoraFin { get; set; }
+
         public bool Activo { get; set; }
 
         // Listas actualizadas para las tablas intermedias

@@ -1,4 +1,5 @@
 ﻿using Miluc.Shared.DTOs.Sap.Cliente;
+using Miluc.Shared.DTOs.Sap.Factura;
 using Miluc.Shared.DTOs.Sap.GrupoDeVenta;
 using Miluc.Shared.Models.Response;
 
@@ -15,6 +16,7 @@ namespace Miluc.Client.Interfaces.SapInterfaces.Cliente
 
         Task<ResponseAPI<bool>> EliminarClienteAsync(string cardCode);
 
+        Task<ResponseAPI<List<OinvReaderDto>>> FacturasPendientes(string cardcode);
 
         //ResponseAPI<SapClienteReaderDto>>> ActualizarClienteAsync(string cardCode,[FromBody] SapClienteCreateEditDto sapClienteCreateDto)
 

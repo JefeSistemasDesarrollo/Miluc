@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Miluc.Server.Models.Sap;
+using System.Data;
 
 namespace Miluc.Server.Data
 {
@@ -34,15 +36,23 @@ namespace Miluc.Server.Data
         public DbSet<HBT_CODIGOSPOSTALES>? HBT_CODIGOSPOSTALES { get; set; }
         public DbSet<HBT_ACTIVIDADECO>? HBT_ACTIVIDADECO { get; set; }
 
-
-
         public DbSet<OK1_FE_RESPONFIS>? OK1_FE_RESPONFIS { get; set; }
         public DbSet<HBT_REGIMENFISCAL>? HBT_REGIMENFISCAL { get; set; }
         public DbSet<HBT_RESPFISCAL>? HBT_RESPFISCAL { get; set; }
-
         //HBT_RESPFISCAL
         public DbSet<OWHT>? OWHT { get; set; }
         public DbSet<CRD4>? CRD4 { get; set; }
+        public DbSet<ODLN>? ODLN { get; set; }
+        public DbSet<DLN1>? DLN1 { get; set; }
+        public DbSet<OINV>? OINV { get; set; }
+        public DbSet<INV1>? INV1 { get; set; }
+        public DbSet<ORDN>? ORDN { get; set; }
+        public DbSet<RDN1>? RDN1 { get; set; }
+        public DbSet<ORIN>? ORIN { get; set; }
+        public DbSet<RIN1>? RIN1 { get; set; }
+
+        public DbSet<OITB>? OITB { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // 1. CONFIGURACIÓN DE MAESTROS (OCRD, OSLP, etc.)
@@ -102,6 +112,8 @@ namespace Miluc.Server.Data
 
             modelBuilder.Entity<CRD4>().ToTable("CRD4").HasKey(c => new { c.CardCode, c.WTCode });
 
+            modelBuilder.Entity<DLN1>().ToTable("DLN1").HasKey(c => c.DocEntry);
+
             // 2. CONFIGURACIÓN DE DOCUMENTOS (ORDR, RDR1)
             // ORDR - Órdenes de Venta (¡CORREGIDO: La PK real en SAP es DocEntry!)
             modelBuilder.Entity<ORDR>().ToTable("ORDR").HasKey(o => o.DocEntry);
@@ -115,6 +127,95 @@ namespace Miluc.Server.Data
             modelBuilder.Entity<RDR1>().Property(d => d.LineTotal).HasColumnType("decimal(18,2)");
             modelBuilder.Entity<RDR1>().Property(d => d.VatSum).HasColumnType("decimal(18,2)");
             // 3. MAPEO DE RELACIONES (NAVIGATIONS)
+            //NOTA DE ENTREGA 
+
+            // NOTA DE ENTREGA
+            modelBuilder.Entity<ODLN>().ToTable("ODLN").HasKey(d => d.DocEntry);
+
+            // DETALLE NOTA DE ENTREGA
+            modelBuilder.Entity<DLN1>().ToTable("DLN1").HasKey(d => new { d.DocEntry, d.LineNum });
+
+            modelBuilder.Entity<DLN1>().Property(d => d.Price).HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<ODLN>().HasMany(x => x.DLN1).WithOne(x => x.ODLN).HasForeignKey(x => x.DocEntry)
+                .HasPrincipalKey(x => x.DocEntry);
+            // DEVOLUCIÓN
+            modelBuilder.Entity<ORDN>().ToTable("ORDN").HasKey(d => d.DocEntry);
+            // DETALLE DEVOLUCIÓN
+            modelBuilder.Entity<RDN1>().ToTable("RDN1").HasKey(d => new { d.DocEntry, d.LineNum });
+            modelBuilder.Entity<RDN1>().Property(d => d.Price).HasColumnType("decimal(18,2)");
+            //notas credito 
+            modelBuilder.Entity<ORIN>().ToTable("ORIN").HasKey(d=>d.DocEntry);
+            modelBuilder.Entity<ORIN>().Property(d => d.DocTotal).HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<RIN1>().ToTable("RIN1").HasKey(d=>d.DocEntry);
+            //modelBuilder.Entity<RIN1>().Property(d => d.LineNum).HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<OITB>().ToTable("OITB").HasKey(d => d.ItmsGrpCod);
+
+            //modelBuilder.Entity<OITB>().HasMany(x=>x.OITM).WithOne(x=>x.OITB).HasForeignKey(x => x.ItmsGrpCod)
+            //    .HasPrincipalKey(x => x.ItmsGrpCod);
+
+
+            modelBuilder.Entity<ORIN>().HasMany(x=>x.RIN1).WithOne(x=>x.ORIN).HasForeignKey(x => x.DocEntry)
+                    .HasPrincipalKey(x => x.DocEntry);
+
+
+
+            modelBuilder.Entity<ORDN>().HasMany(x => x.RDN1).WithOne(x => x.ORDN)
+                .HasForeignKey(x => x.DocEntry).HasPrincipalKey(x => x.DocEntry);
+
+
+            // DLN1 → RDN1
+            modelBuilder.Entity<RDN1>().HasOne(x => x.DLN1)
+                .WithMany(x => x.RDN1).HasForeignKey(x => new { x.BaseEntry, x.BaseLine })
+                .HasPrincipalKey(x => new { x.DocEntry, x.LineNum });
+
+            //factura 
+            modelBuilder.Entity<OINV>().ToTable("OINV").HasKey(d => d.DocEntry);
+            modelBuilder.Entity<INV1>().ToTable("INV1").HasKey(d => new { d.DocEntry, d.LineNum });
+            modelBuilder.Entity<INV1>().Property(d => d.Price).HasColumnType("decimal(18,2)");
+            modelBuilder.Entity<INV1>().Property(d => d.LineTotal).HasColumnType("decimal(18,2)");
+            modelBuilder.Entity<INV1>().Property(d => d.VatSum).HasColumnType("decimal(18,2)");
+            modelBuilder.Entity<OINV>().HasMany(x => x.INV1).WithOne(x => x.OINV).HasForeignKey(x => x.DocEntry)
+                .HasPrincipalKey(x => x.DocEntry);
+            modelBuilder.Entity<INV1>().HasOne(x => x.DLN1).WithMany(x => x.INV1).HasForeignKey(x => new { x.BaseEntry, x.BaseLine })
+            .HasPrincipalKey(x => new { x.DocEntry, x.LineNum });
+
+         //modelBuilder.Entity<INV1>().HasOne(x => x.RDR1).WithMany(x => x.INV1).HasForeignKey(x=>new {x.DocEntry,x.BaseLine})
+         //       .HasPrincipalKey(x => new {x.DocEntry, x.LineNum});
+
+            modelBuilder.Entity<INV1>().HasOne(x => x.RDR1).WithMany(x => x.INV1)
+                        .HasForeignKey(x => new { x.BaseEntry, x.BaseLine })
+                        .HasPrincipalKey(x => new { x.DocEntry, x.LineNum });
+
+            //relacion entre factura y nota credito 
+            modelBuilder.Entity<RIN1>().HasOne(x => x.INV1)
+                .WithMany(x => x.RIN1).HasForeignKey(x => new { x.BaseEntry,x.BaseLine })
+                .HasPrincipalKey(x=>new {x.DocEntry,x.LineNum});
+
+
+            //  modelBuilder.Entity<INV1>().HasMany(x => x.DLN1).WithMany(x => x.INV1).UsingEntity<Dictionary<string, object>>(
+            //      "INV1_DLN1",
+            //      j => j.HasOne<DLN1>().WithMany().HasForeignKey("DocEntry", "LineNum").HasPrincipalKey("BaseEntry", "BaseLine"),
+            //      j => j.HasOne<INV1>().WithMany().HasForeignKey("DocEntry", "LineNum").HasPrincipalKey("DocEntry", "LineNum")
+            //      );
+
+            //  //DEVOLUCIONES DE VENTA 
+            //  modelBuilder.Entity<ORDN>().ToTable("ORDN").HasKey(d => d.DocEntry);
+            //  modelBuilder.Entity<RDN1>().ToTable("RDN1").HasKey(d => new { d.DocEntry, d.LineNum});
+
+
+            //  //relacion entre detalle nota y detalle detalle devolucion 
+            //modelBuilder.Entity<DLN1>().HasMany(x => x.RDN1).WithMany(x => x.DLN1)
+            //      .UsingEntity<Dictionary<string, object>>(
+            //          "DLN1_RDN1",
+            //          j => j.HasOne<RDN1>().WithMany().HasForeignKey("DocEntry", "LineNum").HasPrincipalKey("BaseEntry", "BaseLine"),
+            //          j => j.HasOne<DLN1>().WithMany().HasForeignKey("DocEntry", "LineNum").HasPrincipalKey("DocEntry", "LineNum")
+            //      );  
+
+            //modelBuilder.Entity<ORDN>().HasMany(x => x.RDN1).WithOne(x => x.ORDN).HasForeignKey(x => new { x.DocEntry, x.BaseLine })
+            //    .HasPrincipalKey(x => new { x.DocEntry });
             // Relación: Artículos -> Precios
             modelBuilder.Entity<ITM1>().HasOne(p => p.OITM).WithMany(i => i.ITM1).HasForeignKey(p => p.ItemCode);
             modelBuilder.Entity<OPLN>().HasMany(c => c.ITM1).WithOne(p => p.OPLN).HasForeignKey(p => p.PriceList);
@@ -124,6 +225,8 @@ namespace Miluc.Server.Data
             modelBuilder.Entity<OPLN>().HasMany(c => c.OCRD).WithOne(g => g.OPLN).HasForeignKey(c => c.ListNum);
             // Relación: Vendedor (OSLP) -> Cliente (OCRD) (Corregido a WithMany)
             modelBuilder.Entity<OSLP>().HasMany(v => v.OCRD).WithOne(c => c.OSLP).HasForeignKey(c => c.SlpCode);
+            //modelBuilder.Entity<OSLP>().HasMany(o=>o.OINV).WithOne(c => c.OSLP).HasForeignKey(c => c.SlpCode); 
+            //modelBuilder.Entity<OSLP>().HasMany(v => v.ODLN).WithOne(c => c.OSLP).HasForeignKey(C=>C.SlpCode);
             // Relación: Grupo Clientes -> Cliente
             modelBuilder.Entity<OcrdClienteSap>().HasOne(c => c.OCRG).WithMany(g => g.OCRD).HasForeignKey(c => c.GroupCode);
             // Relación: Rutas -> Cliente
@@ -138,8 +241,18 @@ namespace Miluc.Server.Data
             modelBuilder.Entity<OSTC>().HasMany(c => c.OITM).WithOne(o => o.OSTC).HasForeignKey(o => o.TaxCodeAR);
             // Relación: Orden de Venta -> Cliente
             modelBuilder.Entity<ORDR>().HasOne(o => o.OcrdClienteSap).WithMany(c => c.ORDR).HasForeignKey(o => o.CardCode);
+
             // Relación: Orden de Venta -> Detalle Orden (RDR1 se une por DocEntry perfectamente ahora)
-            modelBuilder.Entity<RDR1>().HasOne(d => d.ORDR).WithMany(o => o.RDR1).HasForeignKey(d => d.DocEntry);
+            //modelBuilder.Entity<RDR1>().HasOne(d => d.ORDR).WithMany(o => o.RDR1).HasForeignKey(d => d.DocEntry);
+
+            modelBuilder.Entity<ORDR>().HasMany(x => x.RDR1).WithOne(x => x.ORDR).HasForeignKey(x => x.DocEntry)
+                .HasPrincipalKey(x => x.DocEntry);
+
+            //modelBuilder.Entity<RDR1>().HasMany(x => x.DLN1).WithOne(x => x.RDR1).HasForeignKey(x=>x.BaseEntry,x=>x. );
+            modelBuilder.Entity<RDR1>().HasMany(x => x.DLN1).WithOne(x => x.RDR1).HasForeignKey(x => new{x.BaseEntry,x.BaseLine})
+            .HasPrincipalKey(x => new {x.DocEntry,x.LineNum});
+
+
             // Relación: Placas Picking -> Orden de Venta
             modelBuilder.Entity<OK1_PICK_TPLACAS>().HasMany(p => p.ORDR).WithOne(o => o.piking).HasForeignKey(o => o.U_PLACAS).HasPrincipalKey(p => p.code).IsRequired(false);
             modelBuilder.Entity<OcrdClienteSap>().HasOne(d => d.HBT_TIPODOC).WithMany(o => o.OCRD).HasForeignKey(o => o.U_HBT_TipDoc);
@@ -169,8 +282,16 @@ namespace Miluc.Server.Data
             modelBuilder.Entity<OcrdClienteSap>().HasMany(c => c.CRD4).WithOne(d => d.OCRD).HasForeignKey(d => d.CardCode);
             modelBuilder.Entity<OWHT>().HasMany(c => c.CRD4).WithOne(d => d.OWHT).HasForeignKey(d => d.WTCode);
 
+
+            modelBuilder.Entity<ODLN>().HasMany(c => c.DLN1).WithOne(d => d.ODLN).HasForeignKey(d => d.DocEntry);
+
+
+
+
+
             //modelBuilder.Entity<CRD4>().HasOne(d => d.Cliente).WithMany(o => o.CRD4).HasForeignKey(o => o.CardCode);
             //modelBuilder.Entity<CRD4>().HasOne(d => d.Retencion).WithMany(o => o.CRD4).HasForeignKey(o => o.WTCode);
+
         }
     }
 }

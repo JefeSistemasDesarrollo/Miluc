@@ -47,13 +47,6 @@
                             </div>
                             <small class="d-block text-muted mt-2">Formatos: JPG, PNG (Máx 2MB)</small>
                         </div>
-
-                        @*    <div class="mb-3">
-                            <label class="form-label fw-bold small text-secondary">Nombre de Usuario (Login)*</label>
-                            <InputText class="form-control custom-input" @bind-Value="usuarioDto.UserName" placeholder="Nombre único para el ingreso" />
-                            <ValidationMessage For="@(() => usuarioDto.UserName)" class="text-danger small" />
-                        </div> *@
-
                         <div class="row g-2">
                             <div class="col-6 mb-3">
                                 <label class="form-label fw-bold small text-secondary">Nombres*</label>
@@ -89,6 +82,16 @@
                                 <label class="form-label fw-bold small text-secondary">Confirmar*</label>
                                 <InputText type="password" class="form-control custom-input" @bind-Value="usuarioDto.ConfirmarPassword" />
                                 <ValidationMessage For="@(() => usuarioDto.ConfirmarPassword)" class="text-danger small" />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-bold small text-secondary">Hora Inicio</label>
+                                <input type="time" class="form-control custom-input" @bind="usuarioDto.HoraInicio" />
+                                <ValidationMessage For="@(() => usuarioDto.HoraInicio)" class="text-danger small" />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-bold small text-secondary">Hora Final</label>
+                                <input type="time" class="form-control custom-input" @bind="usuarioDto.HoraFin" />
+                                <ValidationMessage For="@(() => usuarioDto.HoraFin)" class="text-danger small" />
                             </div>
                             <div class="col-12">
                                 <label class="form-label fw-bold small text-secondary">Lista vendedores</label>
@@ -204,7 +207,7 @@
                             }
                             else
                             {
-                                <span><i class="bi bi-person-check-fill me-2"></i>Editar Usuario</span>
+                                <span><i class="bi bi-person-check-fill me-2"></i>Editar </span>
                             }
                         </button>
                     </div>
@@ -267,6 +270,8 @@
             usuarioDto.Activo = usuariosRes.Valor.Activo;
             usuarioDto.TwoFactorEnabled = usuariosRes.Valor.TwoFactorEnabled;
             usuarioDto.DebeCambiarPassword = usuariosRes.Valor.DebeCambiarPassword;
+            usuarioDto.HoraInicio = usuariosRes.Valor.HoraInicio;
+            usuarioDto.HoraFin = usuariosRes.Valor.HoraFin;
             //  AQUI ESTA LO IMPORTANTE PARA ASIGNAR LOS VALORES A LA NUEVA LISTA
             usuarioDto.RolesIds = usuariosRes.Valor.RolesIds != null
                 ? new List<int>(usuariosRes.Valor.RolesIds)
@@ -284,6 +289,9 @@
             }
             // usuarioDto = usuariosRes.Valor;
         }
+
+        usuarioDto.Password = "";
+        usuarioDto.ConfirmarPassword = "";
     }
     private void FiltrarRoles(ChangeEventArgs e)
     {
@@ -305,6 +313,12 @@
         try
         {
             procesando = true;
+            if (usuarioDto.HoraInicio> usuarioDto.HoraFin)
+            {
+                await js.InvokeVoidAsync("Swal.fire", "Faltan datos", $"La hora de inicial {usuarioDto.HoraInicio} debe ser menor que la hora final {usuarioDto.HoraFin}", "warning");
+                return;
+            }
+
             var response = await _usuarioClientService.ActualizarUsuarioAsync(usuarioDto);
 
             if (response != null && response.EsCorrecto)

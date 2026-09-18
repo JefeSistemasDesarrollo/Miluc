@@ -1,0 +1,66 @@
+﻿
+
+.card.h-100 {
+    animation: cardAppear 0.3s ease both;
+}
+
+@keyframes cardAppear {
+
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+
+    .border-bottom.pb-3 {
+        gap: 12px;
+    }
+
+    h4.fw-bold {
+        font-size: 1.05rem;
+    }
+
+    .card-header {
+        padding-left: 14px !important;
+    }
+
+    .card-body {
+        padding-left: 14px !important;
+    }
+
+        .card-body .row.g-2 > .col-5 {
+            padding: 7px;
+        }
+
+    .card-header small {
+        font-size: 0.62rem;
+    }
+}
+
+
+@media (max-width: 576px) {
+
+    .border-bottom.pb-3 {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+
+        .border-bottom.pb-3 > button {
+            width: 100%;
+        }
+
+    .card-body .row.g-2 > .col-5 {
+        width: 45%;
+    }
+
+    .card-body .row.g-2 > .col-2 {
+        width: 10%;
+    }
+}
