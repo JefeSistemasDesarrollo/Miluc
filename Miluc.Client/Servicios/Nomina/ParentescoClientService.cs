@@ -5,7 +5,7 @@ using System.Net.Http.Json;
 
 namespace Miluc.Client.Servicios.Nomina
 {
-    public class ParentescoClientService(HttpClient httpClient) : IParentescoClient
+    public class ParentescoClientService(HttpClient httpClient) : IParentescoClientService
     {
         public async Task<ResponseAPI<List<ParentescoReaderDto>>> GetAllParentescosAsync()
         {

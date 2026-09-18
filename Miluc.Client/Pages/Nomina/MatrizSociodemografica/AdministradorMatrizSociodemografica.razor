@@ -10,16 +10,15 @@
         
     <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
         <div>
-            <h2 class="fw-bold text-vinotinto m-0 ">
+            <h2 class="fw-bold text-black m-0 ">
                 <i class="bi bi-person-badge-fill me-2"> Gestionar Matriz Sociodemográfica</i>
             </h2>
             <p class="m-0 text-muted">Administración Matriz Sociodemográfica</p>
         </div>
-        
-        
-        <button class="btn btn-vinotinto btn-nuevo rounded-pill px-4 shadow-sm" @onclick=IrACrearMatrizSociodemografica>
-            <i class="bi bi-plus-lg me-1"></i> Nuevo MatrizSociodemografica
+         <button class="btn btn-rojo btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
+            <i class="bi bi-arrow-left me-2"></i> Volver
         </button>
+       
     </div>
 </div>
 
@@ -39,7 +38,7 @@
                            @bind="textoBusqueda" @bind:event="oninput" @onkeyup="HandleEnter" />
 
                      
-                    <button class="btn btn-vinotinto rounded-end-pill px-4" @onclick="BuscarEnServidor">
+                    <button class="btn btn-rojo rounded-end-pill px-4" @onclick="BuscarEnServidor">
                         <i class="bi bi-search me-2"></i>
                     </button>
                 </div>
@@ -58,7 +57,7 @@
                     </select>
                     
                     @* Muestra el total de registros encontrados *@
-                    <span class="badge bg-vinotinto rounded-pill ms-2 px-3 py-2">
+                    <span class="badge bg-rojo rounded-pill ms-2 px-3 py-2">
                         Total: @totalRegistros
                     </span>
                 </div>
@@ -69,8 +68,8 @@
 
 <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
     <div class="table-responsive">
-        <table class="table table-striped table-hover mb-0">
-            <thead class="bg-vinotinto text-white">
+        <table class="table table-striped table-hover text-uppercase mb-0">
+            <thead class="bg-rojo text-white">
                 <tr>
                     
                     
@@ -113,16 +112,23 @@
                             <td>@item.Nacionalidad</td>
                             <td>@item.NombreGenero</td>
                            
-                            <td class="text-center">
-                                <button class="btn btn-sm btn-primary me-1" @onclick="() => VerDetalle(item.MatrizSociodemograficaID)">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                                <button class="btn btn-sm btn-warning me-1" @onclick="() => EditarEmpleado(item.MatrizSociodemograficaID)">
-                                    <i class="bi bi-pencil-square"></i>
-                                </button>
-                                <button class="btn btn-sm btn-danger" @onclick="() => EliminarEmpleado(item.MatrizSociodemograficaID)">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                           
+                            <td class="text-center pe-4">
+                                @* Botonera de acciones CRUD para cada registro individual *@
+                                <div class="btn-group shadow-sm border rounded-pill bg-white overflow-hidden">
+
+                                    @* Botón para ir al detalle del empleado (Usando EmpleadoId) *@
+                                    <button class="btn-detail btn btn-dark btn-sm px-2 border-end" title="Ver Detalle" @onclick="() => VerDetalle(item.EmpleadoId)">
+                                        <i class="bi bi-eye text-dark"></i>
+                                    </button>
+
+                                    @* Botón para navegar al formulario de edición (Usando EmpleadoId) *@
+                                    <button class="btn btn-white btn-sm px-2 border-end edit" title="Editar Usuario" @onclick="() => EditarEmpleado(item.EmpleadoId)">
+                                        <i class="bi bi-pencil-square text-primary"></i>
+                                    </button>
+
+                                    
+                                </div>
                             </td>
                         </tr>
                     }
@@ -141,7 +147,7 @@
                 <i class="bi bi-chevron-left"></i>
             </button>
             
-            <span class="mx-3 fw-bold text-vinotinto">@paginaActual</span>
+            <span class="mx-3 fw-bold text-rojo">@paginaActual</span>
             
             
             <button class="btn btn-sm rounded-circle @(paginaActual >= totalPaginas ? "disabled" : "")" @onclick="() => IrPagina(paginaActual + 1)">
@@ -309,7 +315,7 @@
     // Redirige al Detalle usando interpolación de cadenas para mandar el ID en la URL
     private void VerDetalle(int id)
     {
-        nav.NavigateTo($"/Administrar/MatrizSociodemografica/Detalle/{id}");
+        nav.NavigateTo($"/Nomina/MatrizSociodemografica/Detalle/{id}");
     }
 
     // Redirige al formulario de Edición pasando el ID por la URL
@@ -319,10 +325,10 @@
     }
 
     // Redirige a la pantalla de confirmación de Eliminación pasando el ID por la URL
-    private void EliminarEmpleado(int id)
-    {
-        nav.NavigateTo($"/Administrar/MatrizSociodemografica/Eliminar/{id}");
-    }
-
+    // private void EliminarEmpleado(int id)
+    // {
+    //     nav.NavigateTo($"/Administrar/MatrizSociodemografica/Eliminar/{id}");
+    // }
+    private void Volver() => nav.NavigateTo("/administrar-Nomina");
 
     }

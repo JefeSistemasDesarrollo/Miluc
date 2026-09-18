@@ -6,7 +6,7 @@ using System.Net.Http.Json;
 
 namespace Miluc.Client.Servicios.Nomina
 {
-    public class EsquemaVacunacionClienteService(HttpClient _httpClient) : IEsquemaVacunacionClienteService
+    public class EsquemaVacunacionClienteService(HttpClient _httpClient) : IEsquemaVacunacionClientService
     {
         public async Task<ResponseAPI<bool>> CreateEsquemaVacunacionAsync(List<CreateEsquemaVacunacionDto> esquemaVacunacion)
         { 

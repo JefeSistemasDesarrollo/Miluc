@@ -24,6 +24,17 @@ using Miluc.Client.Servicios.LogService;
 using Miluc.Client.Servicios.Nomina;
 using Miluc.Client.Servicios.SapService;
 using Miluc.Client.Servicios.UsuariosRolesPermisos;
+using Miluc.Shared.DTOs.Nomina.AfiliacionSeguridadSocialDto;
+using Syncfusion.Blazor;
+using TuProyecto.Client.Services;
+using System.Globalization;
+
+var culture = new CultureInfo("es-CO");
+
+CultureInfo.DefaultThreadCurrentCulture = culture;
+CultureInfo.DefaultThreadCurrentUICulture = culture;
+
+
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -80,12 +91,35 @@ builder.Services.AddScoped<IInfoFamiliarClientService, InfoFamiliarClientService
 builder.Services.AddScoped<IAfSeguridadSocialClientService, AfSeguridadSocialClientService>();
 builder.Services.AddScoped<IContratoLaboralClientService, ContratoLaboralClientService>();
 builder.Services.AddScoped<IVacunaClientService, VacunaClientService>();
-builder.Services.AddScoped<IEsquemaVacunacionClienteService, EsquemaVacunacionClienteService>();
-builder.Services.AddScoped<IParentescoClient, ParentescoClientService>();
+builder.Services.AddScoped<IEsquemaVacunacionClientService, EsquemaVacunacionClienteService>();
+builder.Services.AddScoped<IParentescoClientService, ParentescoClientService>();
 builder.Services.AddScoped<IEpsClientService, EpsClientService>();
 builder.Services.AddScoped<IArlClientService, ArlClientService>();
 builder.Services.AddScoped<IAfpClientService, AfpClientService>();
 builder.Services.AddScoped<ICajaCompensacionClientService, CajaCompClientService>();
+builder.Services.AddScoped<ITipoContratoClientService, TipoContratoClientService>();
+builder.Services.AddScoped<IContratoLaboralDetalleClientService, ContratoLaboralDetalleClientService>();
+builder.Services.AddScoped<IEmpresaClientSevice, EmpresaClienteService>();
+builder.Services.AddScoped<ICargosClientService, CargoClientService>();
+builder.Services.AddScoped<IClaseViviendaClientService, ClaseViviendaClientService>();
+builder.Services.AddScoped<ICondicionMedicaClientService, CondicionMedicaClientservice>();
+builder.Services.AddScoped<IDeportesClientService, DeportesClienteService>();
+builder.Services.AddScoped<IGeneroClientService, GeneroClienteService>();
+builder.Services.AddScoped<ITipoViviendaClientService, TipoDeViviendaClientService>();
+builder.Services.AddScoped<IMedioTransporteClientService, MedioTransporteClientService>();
+
+builder.Services.AddScoped<INivelAcademicoClientService, NivelAcademicoClientService>();
+builder.Services.AddScoped<IPaisClientService, PaisClienteService>();
+
+builder.Services.AddSyncfusionBlazor();
+
+
+
+
+// Abre el Program.cs del proyecto Client y a�ade esta l�nea junto a tus otros servicios de n�mina:
+
+
+
 
 builder.Services.AddScoped<IExportarService, ExportarService>();
 
@@ -96,3 +130,5 @@ var authService = host.Services.GetRequiredService<IAuthClientService>();
 await authService.InitializeAsync(); // Recupera cookie + usuario
 
 await host.RunAsync(); // SE USA EL MISMO HOST
+
+// ...

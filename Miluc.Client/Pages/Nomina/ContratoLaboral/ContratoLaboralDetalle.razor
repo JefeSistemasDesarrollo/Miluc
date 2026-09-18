@@ -223,12 +223,12 @@
                         <DataAnnotationsValidator />
 
                         <div class="mb-3">
-                            <label class="form-label fw-semibold text-secondary small">Fecha de Terminación</label>
+                            <label class="form-label fw-semibold text-secondary small">Fecha de Terminación<span class="text-rojo">*</span></label>
                             <InputDate @bind-Value="modeloInhabilitacion.FechaTerminacion" class="form-control rounded-3" />
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-semibold text-secondary small">Observación</label>
+                            <label class="form-label fw-semibold text-secondary small">Observación<span class="text-rojo">*</span></label>
                             <InputTextArea @bind-Value="modeloInhabilitacion.Observacion" class="form-control rounded-3" rows="3" placeholder="Motivo de la terminación..." />
                         </div>
 

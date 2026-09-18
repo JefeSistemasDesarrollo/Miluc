@@ -1,0 +1,20 @@
+﻿@* @page "/client/datepicker/overview"
+
+@using Telerik.Blazor
+@using Telerik.Blazor.Components
+
+<p>The DatePicker Value is: @DatePickerValue.ToShortDateString()</p>
+
+<TelerikDatePicker @bind-Value="DatePickerValue"
+                   Format="dd MMMM yyyy"
+                   Min="@MinDate"
+                   Max="@MaxDate"
+                   Width="200px" />
+
+@code {
+    private DateTime DatePickerValue { get; set; } = DateTime.Today;
+
+    private DateTime MinDate { get; set; } = DateTime.Today.AddMonths(-1);
+
+    private DateTime MaxDate { get; set; } = DateTime.Today.AddMonths(1);
+} *@

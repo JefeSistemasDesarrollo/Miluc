@@ -61,8 +61,7 @@ namespace Miluc.Client.Servicios.Nomina
             try
             {
                 //  CORRECCIÓN: Se añade "/" antes de {afiliacion.AfiliacionId}
-                var response = await _httpClient.PutAsJsonAsync(
-                    $"/api/AfiliacionSeguridadSocial/{afiliacion.AfiliacionId}",
+                var response = await _httpClient.PutAsJsonAsync($"/api/AfiliacionSeguridadSocial/{afiliacion.AfiliacionId}",
                     afiliacion
                 );
 
