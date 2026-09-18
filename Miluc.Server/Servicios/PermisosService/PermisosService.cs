@@ -147,7 +147,7 @@ namespace Miluc.Server.Servicios.PermisosService
                         RolesIds=p.RolPermisos.Select(r=>r.Rol.IdRol).ToList()
                     }).FirstOrDefaultAsync();
 
-                return permisoId;
+                return permisoId ?? new PermisosReadDto();
             }
             catch (Exception ex)
             {

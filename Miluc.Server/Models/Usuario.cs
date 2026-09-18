@@ -1,5 +1,6 @@
 ﻿
 using Miluc.Server.Models.AutorizacionModel;
+using Org.BouncyCastle.Asn1.Cms;
 using System.ComponentModel.DataAnnotations;
 
 namespace Miluc.Server.Models
@@ -25,7 +26,8 @@ namespace Miluc.Server.Models
         //public bool Usuarios {  get; set; }
         public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
         public DateTime FechaActualizacion { get; set; }
-
+        public TimeOnly ? HoraInicio {  get; set; }
+        public TimeOnly ?HoraFin {  get; set; }
         public int ? CodVendedorSAP { get; set; } = 0;
         // Navegación
         public ICollection<UsuarioRol> UsuarioRoles { get; set; } = [];

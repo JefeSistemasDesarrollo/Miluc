@@ -199,7 +199,28 @@
     private int totalRegistros = 0;
     private int totalPaginas => (int)Math.Ceiling((double)totalRegistros / cantidadPorPagina);
 
-    protected override async Task OnInitializedAsync() => await CargarDatos();
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+
+            await CargarDatos();
+        }
+        catch (Exception ex)
+        {
+            await LogService.GuardarErrorAsync(
+                    ex.Message,
+                    ex.StackTrace,
+                    usuario: authClient.CurrentSession?.UserName ?? "No encontrado",
+                    metodo: $"CargarDatos Administrar Permisos {nameof(OnInitializedAsync)}",
+                    ruta: $"/configuracion/permisos",
+                    origen: "Blazor Cliente",
+                    nivel: "error");
+
+
+            await js.InvokeVoidAsync("Swal.fire", "Error", ex.Message, "error");
+        }
+    }
 
     private async Task CargarDatos()
     {

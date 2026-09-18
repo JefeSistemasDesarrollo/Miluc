@@ -1,0 +1,424 @@
+﻿@page "/administrar-pedido/trazabilidad/{DocNum:int}"
+@using Miluc.Client.Interfaces.SapInterfaces.TrazabilidadPedidos
+@using Miluc.Shared.DTOs.Sap.TrazabilidadOrdenesVenta
+@inject NavigationManager _nav
+@inject ISapTrazabilidadPedidos _serviceTrazabilidadPedidos
+@inject IAuthClientService _authClientService
+ 
+<div class="container py-4">
+    <!-- Header Navegación / Título -->
+    <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
+        <div>
+            <h4 class="fw-bold mb-1 text-dark">
+                <i class="bi bi-diagram-3 me-2 text-danger"></i>Mapa de Trazabilidad Comercial
+            </h4>
+            <p class="text-muted small mb-0">Seguimiento de flujo documental para la Orden N° <strong>@DocNum</strong></p>
+        </div>
+        <button class="btn btn-outline-secondary btn-sm" @onclick='() => _nav.NavigateTo("/administrar-pedido/pedidos")'>
+            <i class="bi bi-arrow-left me-1"></i> Volver
+        </button>
+    </div>
+
+    @if (!cargando)
+    {
+        <!-- Estado de Carga -->
+        <div class="card shadow-sm border-0 py-5 my-3 text-center">
+            <div class="card-body">
+                <div class="spinner-border text-danger mb-3" role="status" style="width: 2.5rem; height: 2.5rem;">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <h6 class="text-muted fw-normal">Consultando flujo de documentos en SAP...</h6>
+            </div>
+        </div>
+    }
+    else if (trazabilidadOrdenReaderDtos == null)
+    {
+        <!-- Estado Sin Datos -->
+        <div class="alert alert-warning d-flex align-items-center shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+            <div>
+                No se encontraron documentos ni entregas asociadas a la orden <strong>N° @DocNum</strong>.
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            <!-- SECCIÓN 1: NOTAS DE ENTREGA (ODLN) -->
+            <div class="col-12">
+                <div class="d-flex align-items-center mb-3">
+                    <span class="badge bg-danger rounded-circle p-2 me-2">
+                        <i class="bi bi-box-seam fs-6"></i>
+                    </span>
+                    <h5 class="fw-bold mb-0 text-dark">Notas de Entrega</h5>
+                    @* <span class="badge bg-light text-dark border ms-2">@trazabilidadOrdenReaderDtos.Count registrado(s)</span> *@
+                </div>
+
+                <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
+                    @foreach (var item in trazabilidadOrdenReaderDtos.OdlnReader)
+                    {
+                        <div class="col">
+                            <div class="card h-100 shadow-sm border-0 border-start border-4 border-danger rounded-3">
+                                <div class="card-header bg-white border-bottom-0 pt-3 pb-2 d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-danger-subtle text-danger fw-semibold px-2 py-1">
+                                        Entrega N° @item.DocNum
+                                    </span>
+                                    <small class="text-muted">Pedido: @item.BaseEntry </small>
+                                </div>
+                                <div class="card-body pt-1 pb-3">
+                                    <div class="mb-2">
+                                        <small class="text-uppercase text-muted fw-bold d-block fs-8">Código</small>
+                                        <span class="fw-semibold text-dark">@item.CardCode</span>
+                                    </div>
+                                    <div class="row g-2 mb-2">
+                                        <div class="col-5">
+                                            <small class="text-muted d-block fs-8">Emisión</small>
+                                            <span class="fs-7"><i class="bi bi-calendar-event me-1"></i>@item.DocDate.ToShortDateString()</span>
+                                        </div>
+                                        <div class="col-5">
+                                            <small class="text-muted d-block fs-8">Vencimiento</small>
+                                            <span class="fs-7"><i class="bi bi-calendar-check me-1"></i>@item.DocDueDate.ToShortDateString()</span>
+                                        </div>
+                                        <div class="col-2">
+                                            @if (_authClientService.HasPermission("DeliveryNotes.Details"))
+                                            {
+                                                <button class="btn btn-outline-secondary border-0 btn-sm" @onclick:stopPropagation="true" @onclick="() => VerDetalleNota(item.DocEntry, DocNum)">
+                                                    <i class="bi bi-list-task"></i>
+                                                </button>
+                                            }
+                                        </div>
+                                    </div>
+                                    <hr class="my-2 text-muted opacity-25" />
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted fs-7">Monto Total:</span>
+                                        <span class="fw-bold text-danger fs-6">@item.DocTotal.ToString("C", new System.Globalization.CultureInfo("es-CO"))</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- SECCIÓN 2: DEVOLUCIONES (Espacio reservado) -->
+            <div class="col-12">
+                <div class="p-3 bg-light rounded-3 border border-dashed">
+                    <div class="d-flex align-items-center text-muted">
+                        <i class="bi bi-arrow-repeat me-2 fs-5"></i>
+                        <h6 class="mb-0 fw-bold">Devoluciones</h6>
+                    </div>
+                    <p class="small text-muted mb-0 mt-1">Lista de devoluciones.</p>
+                </div>
+
+                
+                <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
+                    @foreach (var item in trazabilidadOrdenReaderDtos.OrdnReader)
+                    {
+                        <div class="col">
+                            <div class="card h-100 shadow-sm border-0 border-start border-4 border-danger rounded-3">
+                                <div class="card-header bg-white border-bottom-0 pt-3 pb-2 d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-danger-subtle text-danger fw-semibold px-2 py-1">
+                                        Devolución N° @item.DocNum
+                                    </span>
+                                    <small class="text-muted">Nota : @item.BaseEntry</small>
+                                </div>
+                                <div class="card-body pt-1 pb-3">
+                                    <div class="mb-2">
+                                        <small class="text-uppercase text-muted fw-bold d-block fs-8">Cliente / Código</small>
+                                        <span class="fw-semibold text-dark">@item.CardCode</span>
+                                    </div>
+                                    <div class="row g-2 mb-2">
+                                        <div class="col-5">
+                                            <small class="text-muted d-block fs-8">Emisión</small>
+                                            <span class="fs-7"><i class="bi bi-calendar-event me-1"></i>@item.DocDate.Value.Date.ToShortDateString()</span>
+                                        </div>
+                                        <div class="col-5">
+                                            <small class="text-muted d-block fs-8">Vencimiento</small>
+                                            <span class="fs-7"><i class="bi bi-calendar-check me-1"></i>@item.DocDueDate.Value.Date.ToShortDateString()</span>
+                                        </div>
+                                        <div class="col-2">
+                                            @if (_authClientService.HasPermission("Returns.Details"))
+                                            {
+                                                <button class="btn btn-outline-secondary border-0 btn-sm" @onclick:stopPropagation="true" @onclick="() => VerDetalleDevolucion(item.DocEntry, DocNum)">
+                                                    <i class="bi bi-list-task"></i>
+                                                </button>
+                                            }
+                                        </div>
+                                    </div>
+                                    <hr class="my-2 text-muted opacity-25" />
+               
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted fs-7">Monto Total:</span><span class="fw-bold text-danger fs-6">@item.DocTotal.ToString("C", new System.Globalization.CultureInfo("es-CO"))</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            <!-- SECCIÓN 3: FACTURAS DE VENTA (Espacio reservado) -->
+            <div class="col-12">
+                <div class="p-3 bg-light rounded-3 border border-dashed">
+                    <div class="d-flex align-items-center text-muted">
+                        <i class="bi bi-receipt me-2 fs-5"></i>
+                        <h6 class="mb-0 fw-bold">Facturas de Venta</h6>
+                    </div>
+                    <p class="small text-muted mb-0 mt-1">Facturas de venta.</p>
+                </div>
+                <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
+                    @foreach (var item in trazabilidadOrdenReaderDtos.OinvReader)
+                    {
+                        <div class="col">
+                            <div class="card h-100 shadow-sm border-0 border-start border-4 border-danger rounded-3">
+                                <div class="card-header bg-white border-bottom-0 pt-3 pb-2 d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-danger-subtle text-danger fw-semibold px-2 py-1">
+                                        Factura N° @item.DocNum
+                                    </span>
+                                    <small class="text-muted">Entrega : @item.BaseEntry</small>
+                                </div>
+                                <div class="card-body pt-1 pb-3">
+                                    <div class="mb-2">
+                                        <small class="text-uppercase text-muted fw-bold d-block fs-8">Cliente / Código</small>
+                                        <span class="fw-semibold text-dark">@item.CardCode</span>
+                                    </div>
+                                    <div class="row g-2 mb-2">
+                                        <div class="col-5">
+                                            <small class="text-muted d-block fs-8">Emisión</small>
+                                            <span class="fs-7"><i class="bi bi-calendar-event me-1"></i>@item.DocDate.Value.Date.ToShortDateString()</span>
+                                        </div>
+                                        <div class="col-5">
+                                            <small class="text-muted d-block fs-8">Vencimiento</small>
+                                            <span class="fs-7"><i class="bi bi-calendar-check me-1"></i>@item.DocDueDate.Value.Date.ToShortDateString()</span>
+                                        </div>
+                                        <div class="col-2">
+                                            @if (_authClientService.HasPermission("Invoices.Details"))
+                                            {
+                                                <button class="btn btn-outline-secondary border-0 btn-sm" @onclick:stopPropagation="true" @onclick="() => VerDetalleFactura(item.DocEntry, DocNum)">
+                                                    <i class="bi bi-list-task"></i>
+                                                </button>
+                                            }
+                                        </div>
+                                    </div>
+                                    <hr class="my-2 text-muted opacity-25" />
+                                  
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted fs-7">Monto Total:</span>
+                                        <span class="fw-bold text-danger fs-6">@item.DocTotal.ToString("C", new System.Globalization.CultureInfo("es-CO"))</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div class="p-3 bg-light rounded-3 border border-dashed">
+                    <div class="d-flex align-items-center text-muted">
+                        <i class="bi bi-receipt me-2 fs-5"></i>
+                        <h6 class="mb-0 fw-bold">Facturas desde orden </h6>
+                    </div>
+                    <p class="small text-muted mb-0 mt-1">Orden factura.</p>
+                </div>
+                <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
+                    @foreach (var item in trazabilidadOrdenReaderDtos.OinvOrders)
+                    {
+                        <div class="col">
+                            <div class="card h-100 shadow-sm border-0 border-start border-4 border-danger rounded-3">
+                                <div class="card-header bg-white border-bottom-0 pt-3 pb-2 d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-danger-subtle text-danger fw-semibold px-2 py-1">
+                                        Factura N° @item.DocNum
+                                    </span>
+                                    <small class="text-muted">Orden : @item.BaseEntry</small>
+                                </div>
+                                <div class="card-body pt-1 pb-3">
+                                    <div class="mb-2">
+                                        <small class="text-uppercase text-muted fw-bold d-block fs-8">Cliente / Código</small>
+                                        <span class="fw-semibold text-dark">@item.CardCode</span>
+                                    </div>
+                                    <div class="row g-2 mb-2">
+                                        <div class="col-5">
+                                            <small class="text-muted d-block fs-8">Emisión</small>
+                                            <span class="fs-7"><i class="bi bi-calendar-event me-1"></i>@item.DocDate.Value.Date.ToShortDateString()</span>
+                                        </div>
+                                        <div class="col-5">
+                                            <small class="text-muted d-block fs-8">Vencimiento</small>
+                                            <span class="fs-7"><i class="bi bi-calendar-check me-1"></i>@item.DocDueDate.Value.Date.ToShortDateString()</span>
+                                        </div>
+                                        <div class="col-2">
+                                            @if (_authClientService.HasPermission("Invoices.Details"))
+                                            {
+                                                <button class="btn btn-outline-secondary border-0 btn-sm" @onclick:stopPropagation="true" @onclick="() => VerDetalleFactura(item.DocEntry, DocNum)">
+                                                    <i class="bi bi-list-task"></i>
+                                                </button>
+                                            }
+                                        </div>
+                                    </div>
+                                    <hr class="my-2 text-muted opacity-25" />
+                                  
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted fs-7">Monto Total:</span>
+                                        <span class="fw-bold text-danger fs-6">@item.DocTotal.ToString("C", new System.Globalization.CultureInfo("es-CO"))</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            <!-- SECCIÓN 4: NOTAS CRÉDITO (Espacio reservado) -->
+            <div class="col-12">
+                <div class="p-3 bg-light rounded-3 border border-dashed">
+                    <div class="d-flex align-items-center text-muted">
+                        <i class="bi bi-file-earmark-minus me-2 fs-5"></i>
+                        <h6 class="mb-0 fw-bold">Notas Crédito</h6>
+                    </div>
+                    <p class="small text-muted mb-0 mt-1">Nota Credito.</p>
+                </div>
+                <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
+                    @foreach (var item in trazabilidadOrdenReaderDtos.orinReaders)
+                    {
+                        <div class="col">
+                            <div class="card h-100 shadow-sm border-0 border-start border-4 border-danger rounded-3">
+                                <div class="card-header bg-white border-bottom-0 pt-3 pb-2 d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-danger-subtle text-danger fw-semibold px-2 py-1">
+                                        Nota Credito N° @item.DocNum
+                                    </span>
+                                    <small class="text-muted">Factura : @item.BaseEntry</small>
+                                </div>
+                                <div class="card-body pt-1 pb-3">
+                                    <div class="mb-2">
+                                        <small class="text-uppercase text-muted fw-bold d-block fs-8">Cliente / Código</small>
+                                        <span class="fw-semibold text-dark">@item.CardCode</span>
+                                    </div>
+                                    <div class="row g-2 mb-2">
+                                        <div class="col-5">
+                                            <small class="text-muted d-block fs-8">Emisión</small>
+                                            <span class="fs-7"><i class="bi bi-calendar-event me-1"></i>@item.DocDate.Value.Date.ToShortDateString()</span>
+                                        </div>
+                                        <div class="col-5">
+                                            <small class="text-muted d-block fs-8">Vencimiento</small>
+                                            <span class="fs-7"><i class="bi bi-calendar-check me-1"></i>@item.DocDueDate.Value.Date.ToShortDateString()</span>
+                                        </div>
+
+                                        <div class="col-2">
+
+                                            @if (_authClientService.HasPermission("CreditNote.Datails"))
+                                            {
+                                                <button class="btn btn-outline-secondary border-0 btn-sm" @onclick:stopPropagation="true" @onclick="() => VerDetalleNotaCredito(item.DocEntry, DocNum)">
+                                                    <i class="bi bi-list-task"></i>
+                                                </button>
+                                            }
+                                        </div>
+
+
+                                    </div>
+                                    <hr class="my-2 text-muted opacity-25" />
+                                  
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted fs-7">Monto Total:</span>
+                                        <span class="fw-bold text-danger fs-6">@item.DocTotal.ToString("C", new System.Globalization.CultureInfo("es-CO"))</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+@code {
+    [Parameter]
+    public int DocNum { get; set; }
+
+    public bool cargando = false;
+    public TrazabilidadOrdenReaderDto trazabilidadOrdenReaderDtos = new TrazabilidadOrdenReaderDto();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await _serviceTrazabilidadPedidos.ObtenerTrazabilidadOrden(DocNum);
+
+        if (result?.Valor != null)
+        {
+            trazabilidadOrdenReaderDtos = result.Valor;
+
+            trazabilidadOrdenReaderDtos.OdlnReader = trazabilidadOrdenReaderDtos.OdlnReader?.GroupBy(x => x.DocNum).Select(g => g.First()).ToList() ?? new();
+            trazabilidadOrdenReaderDtos.OinvReader = trazabilidadOrdenReaderDtos.OinvReader?.GroupBy(x => x.DocNum).Select(g => g.First()).ToList() ?? new();
+            trazabilidadOrdenReaderDtos.OrdnReader = trazabilidadOrdenReaderDtos.OrdnReader?.GroupBy(x => x.DocNum).Select(g => g.First()).ToList() ?? new();
+            trazabilidadOrdenReaderDtos.orinReaders = trazabilidadOrdenReaderDtos.orinReaders?.GroupBy(x => x.DocNum).Select(g => g.First()).ToList() ?? new();
+            trazabilidadOrdenReaderDtos.OinvOrders = trazabilidadOrdenReaderDtos.OinvOrders?.GroupBy(x => x.DocNum).Select(g => g.First()).ToList() ?? new();
+
+            cargando = true;
+        }
+        else
+        {
+            _nav.NavigateTo("/administrar-pedido");
+        }
+    }
+
+    private void VerDetalleNota(int DocEntry, int DocNum)
+    {
+
+        // //
+        // if (_authClientService.HasPermission("Orders.Detail"))
+        // {
+        _nav.NavigateTo($"/administrar-detalle-nota/detalle/{DocEntry}/{DocNum}");
+        // }
+        // else
+        // {
+        //     Nav.NavigateTo("/no-autorizado");
+        //     return;
+        // }
+
+    }
+    private void VerDetalleDevolucion(int DocEntry, int DocNum)
+    {
+
+        // //
+        // if (_authClientService.HasPermission("Orders.Detail"))
+        // {
+        _nav.NavigateTo($"/administrar-detalle-devolucion/detalle/{DocEntry}/{DocNum}");
+        // }
+        // else
+        // {
+        //     Nav.NavigateTo("/no-autorizado");
+        //     return;
+        // }
+
+    }
+    private void VerDetalleNotaCredito(int DocEntry, int DocNum)
+    {
+
+        // //
+        // if (_authClientService.HasPermission("Orders.Detail"))
+        // {
+        _nav.NavigateTo($"/administrar-detalle-notacredito/detalle/{DocEntry}/{DocNum}");
+        // }
+        // else
+        // {
+        //     Nav.NavigateTo("/no-autorizado");
+        //     return;
+        // }
+
+    }
+    private void VerDetalleFactura(int DocEntry, int DocNum)
+    {
+
+        // //
+        // if (_authClientService.HasPermission("Orders.Detail"))
+        // {
+        _nav.NavigateTo($"/administrar-detalle-factura/detalle/{DocEntry}/{DocNum}");
+        // }
+        // else
+        // {
+        //     Nav.NavigateTo("/no-autorizado");
+        //     return;
+        // }
+
+    }
+
+
+}

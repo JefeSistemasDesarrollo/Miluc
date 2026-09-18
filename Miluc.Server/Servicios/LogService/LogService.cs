@@ -12,7 +12,7 @@ namespace Miluc.Server.Servicios.LogService
             {
                 var log = new LogsErrores
                 {
-                    Mensaje = message,
+                    Mensaje = message ??"",
                     StackTrace = StackTrace,
                     Ruta = ruta,
                     Metodo = metodo,

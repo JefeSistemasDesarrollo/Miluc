@@ -1,0 +1,66 @@
+﻿
+/* Tipografías auxiliares */
+.x-small {
+    font-size: 0.75rem;
+}
+
+.text-vinotinto {
+    color: #d62f46;
+}
+
+/* Estilos de Tarjetas */
+.cliente-card {
+    border: 1px solid rgba(0,0,0,0.06) !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .cliente-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(108, 29, 29, 0.08) !important;
+    }
+
+/* Fondos y Badges personalizados */
+.bg-vinotinto-soft {
+    background-color: #ffffff;
+}
+
+.bg-amarillo-soft {
+    background-color: #fef9e7;
+}
+
+/* Botones con los colores Corporativos */
+.btn-rojo {
+    background-color: #d62f46;
+    color: #ffffff;
+    border: none;
+    transition: background-color 0.2s;
+}
+
+    .btn-rojo:hover {
+        background-color: #d62f46;
+        color: #ffffff;
+    }
+
+.btn-outline-vinotinto {
+    color: #6c1d1d;
+    border-color: #d62f46;
+    background-color: transparent;
+    transition: all 0.2s ease;
+}
+
+    .btn-outline-vinotinto:hover {
+        background-color: #d62f46;
+        color: #ffffff;
+    }
+
+/* Botón responsive */
+.btn-sm-custom {
+    font-size: 0.85rem;
+    padding: 0.35rem 1rem;
+}
+
+/* Personalización del Input Search */
+.search-group .form-control:focus {
+    box-shadow: none;
+    border-color: #dee2e6;
+}

@@ -1,4 +1,5 @@
 ﻿using Miluc.Shared.DTOs.Sap.Cliente;
+using Miluc.Shared.DTOs.Sap.Factura;
 
 namespace Miluc.Server.Interfaces.Sap.Ocrd
 {
@@ -13,5 +14,7 @@ namespace Miluc.Server.Interfaces.Sap.Ocrd
          
         public Task<SapClienteReaderDto> EditarClienteAsunc(SapClienteCreateEditDto sapClienteEditDto);
         public Task<bool> EliminarClienteAsync(string cardCode);
+
+        public Task<List<OinvReaderDto>> FacturasPendientesCliente(string cardcode);
     }
 }

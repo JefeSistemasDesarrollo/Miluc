@@ -24,6 +24,7 @@ using Miluc.Server.Interfaces.Sap.Opln;
 using Miluc.Server.Interfaces.Sap.Ordr;
 using Miluc.Server.Interfaces.Sap.Oslp;
 using Miluc.Server.Interfaces.Sap.Ospp;
+using Miluc.Server.Interfaces.Sap.TrasabilidadOrdendeVenta;
 using Miluc.Server.Interfaces.Usuarios;
 using Miluc.Server.Models.Nomina;
 using Miluc.Server.Models.Sap;
@@ -55,9 +56,6 @@ builder.Services.AddDbContext<NominaDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("nomina"));
 });
-
-
-
 // 2. Registro de tus servicios e interfacesbuilder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
@@ -103,22 +101,8 @@ builder.Services.AddScoped<IClaseViviendaService, ClaseViviendaService>();
 builder.Services.AddScoped<INivelAcademicoService, NivelAcademicoService>();
 builder.Services.AddScoped<IMatrizSociodemograficaService, MatrizSociodemograficaService>();
 builder.Services.AddScoped<IEmpleadoService, EmpleadoService>();
-builder.Services.AddScoped<ICargoService, CargoService>();
-
-
-
+builder.Services.AddScoped<ISapTrazabilidadPedido,SapTrazabiliadPedidosService>();
 ////sap
-//builder.Services.AddScoped<IBusinessPartnerGroups, BusinessPartnerGroupsService>();
-//builder.Services.AddScoped<ISapOcrdService, SapOcrdService>();
-//builder.Services.AddScoped<ISapOslpService, SapOslpService>();
-//builder.Services.AddScoped<ISapOitmService, SapOitmService>();
-//builder.Services.AddScoped<ISapItm1Service, SapItm1Service>();
-//builder.Services.AddScoped<ISapOplnService, SapOplnService>();
-//builder.Services.AddScoped<ISapObppService, SapObppService>();
-//builder.Services.AddScoped<ISapOctgService, SapOctgService>();
-//builder.Services.AddScoped<ISapCiudadMMService, SapCiudadMMService>();
-//builder.Services.AddScoped<ISapOsppService, OsppService>();
-//builder.Services.AddScoped<ISapOitmService, SapOitmService>();
 builder.Services.AddScoped<IBusinessPartnerGroups, BusinessPartnerGroupsService>();
 builder.Services.AddScoped<ISapOcrdService, SapOcrdService>();
 builder.Services.AddScoped<ISapOslpService, SapOslpService>();
@@ -126,17 +110,13 @@ builder.Services.AddScoped<ISapOitmService, SapOitmService>();
 builder.Services.AddScoped<ISapItm1Service, SapItm1Service>();
 builder.Services.AddScoped<ISapOplnService, SapOplnService>();
 builder.Services.AddScoped<ISapObppService, SapObppService>();
-
 builder.Services.AddScoped<ISapCiudadMMService, SapCiudadMMService>();
 builder.Services.AddScoped<ISapOsppService, OsppService>();
 builder.Services.AddScoped<ISapOitmService, SapOitmService>();
 builder.Services.AddScoped<IConexionServiceLayer, SapConexionService>();
 builder.Services.AddScoped<ISapOrdrService, SapOrderService>();
 builder.Services.AddScoped<IEncryptionService, EncryptionService>();
-
-
-
-// 3. CONFIGURACIÓN DE COOKIES (Seguridad BFF)
+// 3. CONFIGURACIÃ“N DE COOKIES (Seguridad BFF)
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = "SmartScheme";
@@ -162,7 +142,7 @@ builder.Services.AddAuthentication(options =>
     // IMPORTANTE para cross-origin (puertos distintos)
     options.Cookie.SameSite = SameSiteMode.None;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-   // options.ExpireTimeSpan = TimeSpan.FromMinutes(builder.Configuration["Jwt:AccessTokenExpirationMinutes"]);
+    // options.ExpireTimeSpan = TimeSpan.FromMinutes(builder.Configuration["Jwt:AccessTokenExpirationMinutes"]);
     options.ExpireTimeSpan = TimeSpan.FromMinutes(Convert.ToDouble(builder.Configuration["Jwt:AccessTokenExpirationMinutes"])
 );
     //options.Cookie.Domain = "avicolamiluc.ddns.net";
@@ -172,8 +152,8 @@ builder.Services.AddAuthentication(options =>
     {
         OnValidatePrincipal = context =>
         {
-            // Opcional: Aquí puedes depurar si llegan los roles
-            // Esto te permite ver en el debugger qué Claims tiene la cookie que llegó
+            // Opcional: AquÃ­ puedes depurar si llegan los roles
+            // Esto te permite ver en el debugger quÃ© Claims tiene la cookie que llegÃ³
             var identity = context.Principal?.Identity as ClaimsIdentity;
             var roles = identity?.FindAll(ClaimTypes.Role).Select(c => c.Value);
             return Task.CompletedTask;
@@ -200,27 +180,25 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// 4. Configuración de CORS (Para que Blazor pueda llamar a la API)
+// 4. ConfiguraciÃ³n de CORS (Para que Blazor pueda llamar a la API)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("BlazorCors", policy =>
     {
-       
         //policy.WithOrigins("https://avicolamiluc.ddns.net:92")
         policy.WithOrigins("https://localhost:7198")
-       .AllowAnyHeader()
-       .AllowAnyMethod()
-     .AllowCredentials(); // OBLIGATORIO para enviar cookies
+         .AllowAnyHeader()
+         .AllowAnyMethod()
+       .AllowCredentials(); // OBLIGATORIO para enviar cookies
     });
 });
 //builder.Services.AddControllers();
 
 
-// Modifica la línea de los controladores para romper los ciclos infinitos de SAP
+// Modifica la lÃ­nea de los controladores para romper
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        // Esto evita que Scalar truene al procesar relaciones circulares (ej. ORDR -> OSLP -> ORDR)
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     });
 
@@ -228,17 +206,16 @@ builder.Services.AddControllers()
 // Learn more about configuring OpenAPI at 
 builder.Services.AddOpenApi();
 
-
 var app = builder.Build();
 // 5. ORDEN DEL MIDDLEWARE (El orden es vital)
 // Configure the HTTP request pipeline.
-// Configuración 
+// ConfiguraciÃ³n 
 // Redirigir siempre a HTTPS
 app.UseHttpsRedirection();
 
 app.UseCors("BlazorCors");
 
-// Autenticación
+// AutenticaciÃ³n
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -260,7 +237,7 @@ app.MapScalarApiReference(options =>
 
 app.UseHttpsRedirection();//para manejar solo el trafico por https 
 
-//app.UseAuthentication(); // Quién eres
+//app.UseAuthentication(); // QuiÃ©n eres
 //app.UseAuthorization(); //  permiso
 app.MapControllers();
 //app.UseMiddleware<ErrorMiddleware>();

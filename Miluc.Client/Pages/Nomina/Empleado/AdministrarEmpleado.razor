@@ -2,6 +2,7 @@
 @using Miluc.Client.Interfaces.Nomina
 @using Miluc.Shared.DTOs.Nomina.EmpleadoDto
 @using Miluc.Shared.Models.Response
+@inject IAuthClientService _authClientService
 
 @inject NavigationManager nav
 @inject IEmpleadoClientService _empleadoClientService
@@ -227,7 +228,28 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await cargarEmpleados(); // Solicita la primera tanda de empleados
+        if (_authClientService.HasPermission("Empleados.View"))
+        {
+            await cargarEmpleados();
+        }
+        else
+        {
+
+            nav.NavigateTo("/no-autorizado");
+
+            /* await js.InvokeVoidAsync("Swal.fire", new
+                        {
+                            icon = "error",
+                            title = "Acceso denegado",
+                            text = "No tienes permiso para Visualizar los empleados.",
+                            confirmButtonColor = "#6c1d1d"
+                        });
+*/
+      
+            return;
+        }
+
+        // Solicita la primera tanda de empleados
     }
 
     // Carga los empleados de forma inicial o al cambiar de página básica sin filtros pesados

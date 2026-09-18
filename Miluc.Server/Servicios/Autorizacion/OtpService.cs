@@ -50,20 +50,12 @@ namespace Miluc.Server.Servicios.Autorizacion
                     $"Tu código es: <b>{codigo}</b>. Expira en {OTP_EXPIRATION_MINUTES} minutos.",
                     true
                 );
-
             }
             catch (Exception )
             {
-
-
-                throw;
-
+                throw new Exception($"ERROR EN GENERAR CODIGO DE VERIFICACION,{ex.Message}");
             }
-
-
         }
-
-        
         // VALIDAR OTP
         public async Task<bool> ValidarOtpAsync(int idUsuario,string codigoIngresado,string ip,string userAgent)
         {

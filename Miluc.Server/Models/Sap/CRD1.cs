@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.Metrics;
+using System.Globalization;
 using System.Reflection.Emit;
 
 namespace Miluc.Server.Models.Sap
@@ -8,6 +9,7 @@ namespace Miluc.Server.Models.Sap
         public string? CardCode { get; set; }
         public string? Address { get; set; }//DIRECCION PRINCIPAL DEL CLIENTE
         public string? Street { get; set; }//calle
+        public string ? Address2 { get; set; }
         public string? Block { get; set; }//bloque o manzana
         public string? ZipCode { get; set; }//la relacion entre ciudad medios magneticos y cliente
         public string? City { get; set; }//CIUDAD DEL CLIENTE

@@ -29,7 +29,6 @@
             <!-- FILTROS -->
             <div class="col-12 col-lg-5">
                 <div class="card shadow-sm border-0 rounded-3 h-100">
-
                     <div class="card-body py-3 px-3">
 
                         <div class="d-flex align-items-center mb-3">
@@ -38,59 +37,93 @@
                                 Filtros
                             </span>
                         </div>
-
                         <div class="row g-3">
                             <!-- FILTRO FECHA -->
                             <div class="col-12 col-md-6">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <label class="form-label text-muted small fw-semibold mb-0">
-                                        Fecha
+                                        Fecha emisión
                                     </label>
                                     <div class="form-check form-switch m-0">
-                                        <InputCheckbox class="form-check-input" @bind-Value="checkFechas" />
+                                        <InputCheckbox class="form-check-input" @bind-Value="checkFechasContabilizacion" />
                                     </div>
                                 </div>
-                                @if (checkFechas)
+                                @if (checkFechasContabilizacion)
+                                {
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <label class="form-label text-muted small mb-1">Emisión inicio</label>
+                                            <div class="input-group input-group-sm">
+                                                <span class="input-group-text bg-white border-end-0 text-muted">
+                                                    <i class="bi bi-calendar-event"></i>
+                                                </span>
+                                                <InputDate class="form-control ps-0 border-start-0" @bind-Value="fechaInicioContabilizacion" />
+                                            </div>
+                                        </div>
+
+                                        <div class="col-6">
+                                            <label class="form-label text-muted small mb-1">Emisión Final</label>
+                                            <div class="input-group input-group-sm">
+                                                <span class="input-group-text bg-white border-end-0 text-muted">
+                                                    <i class="bi bi-calendar-check"></i>
+                                                </span>
+                                                <InputDate class="form-control ps-0 border-start-0" @bind-Value="fechaFinalContabilizacion" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                }
+
+
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label class="form-label text-muted small fw-semibold mb-0">
+                                        Fecha entrega
+                                    </label>
+                                    <div class="form-check form-switch m-0">
+                                        <InputCheckbox class="form-check-input" @bind-Value="checkFechasEntrega" />
+                                    </div>
+                                </div>
+                                @if (checkFechasEntrega)
                                 {
                                     <div class="row g-2">
                                         <div class="col-6">
                                             <label class="form-label text-muted small mb-1">
-                                                Contabilización
+                                                Ent Inicio
                                             </label>
 
                                             <div class="input-group input-group-sm">
                                                 <span class="input-group-text bg-white border-end-0 text-muted">
                                                     <i class="bi bi-calendar-event"></i>
                                                 </span>
-                                                <InputDate class="form-control ps-0 border-start-0" @bind-Value="fechaContabilizacion" />
+                                                <InputDate class="form-control ps-0 border-start-0" @bind-Value="fechaEntregaInicio" />
                                             </div>
                                         </div>
 
                                         <div class="col-6">
-                                            <label class="form-label text-muted small mb-1">Entrega</label>
+                                            <label class="form-label text-muted small mb-1">Entrega Final</label>
                                             <div class="input-group input-group-sm">
                                                 <span class="input-group-text bg-white border-end-0 text-muted">
                                                     <i class="bi bi-calendar-check"></i>
                                                 </span>
-                                                <InputDate class="form-control ps-0 border-start-0" @bind-Value="fechaEntrega" />
+                                                <InputDate class="form-control ps-0 border-start-0" @bind-Value="fechaEntregaFinal" />
                                             </div>
                                         </div>
                                     </div>
                                 }
+
                             </div>
                             <!-- FILTRO ESTADO -->
                             <div class="col-12 col-md-6">
-
                                 <div class="d-flex justify-content-between align-items-center">
                                     <label class="form-label text-muted small fw-semibold mb-0">
                                         Estado
                                     </label>
-
                                     <div class="form-check form-switch m-0">
                                         <InputCheckbox class="form-check-input" @bind-Value="checkEstado" />
                                     </div>
                                 </div>
-
                                 @if (checkEstado)
                                 {
                                     <select class="form-select form-select-sm mt-2"
@@ -103,7 +136,6 @@
                             </div>
                             <!-- CANCELADAS -->
                             <div class="col-12 col-md-6">
-
                                 <div class="d-flex justify-content-between align-items-center">
                                     <label class="form-label text-muted small fw-semibold mb-0">
                                         Canceladas
@@ -124,12 +156,10 @@
                             </div>
                             <!-- IMPRESAS -->
                             <div class="col-12 col-md-6">
-
                                 <div class="d-flex justify-content-between align-items-center">
                                     <label class="form-label text-muted small fw-semibold mb-0">
                                         Impresas
                                     </label>
-
                                     <div class="form-check form-switch m-0">
                                         <InputCheckbox class="form-check-input" @bind-Value="checkImpresas" />
                                     </div>
@@ -157,7 +187,6 @@
                             @onclick='() => Nav.NavigateTo("/administrar-modulo-comercial")'>
                         <i class="bi bi-arrow-left me-2"></i>Volver
                     </button>
-
                     @if (_authClientService.HasPermission("Orders.Create"))
                     {
                         <button type="button" class="btn btn-vinotinto btn-lg rounded-pill px-4 shadow-sm w-100 fs-6 fw-semibold" @onclick="IrACrear">
@@ -168,12 +197,10 @@
             </div>
         </div>
     </div>
-
     @* Filtros Modernos *@
     <div class="row g-3 mb-4">
         <div class="col-md-8">
             <div class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden border">
-               
                 @if (_authClientService.HasPermission("Orders.Search"))
                 {
                     <span class="input-group-text bg-white border-0 ps-4">
@@ -182,7 +209,6 @@
                     <input type="text" class="form-control border-0 shadow-none fs-6" placeholder="Cliente, documento o placa..." @bind="textoBusqueda" @bind:event="oninput" @onkeyup="HandleEnter" />
                     <button class="btn btn-vinotinto px-4" @onclick="BuscarEnServidor">Buscar</button>
                 }
-
             </div>
         </div>
         <div class="col-md-4">
@@ -193,7 +219,6 @@
             </div>
         </div>
     </div>
-
     @* Contenedor de Pedidos *@
     @if (cargando)
     {
@@ -219,8 +244,8 @@
                         <div class="card-body p-4">
                             @* Estado *@
                             <div class="status-badge">
+
                                
-                                
                                 @if (pedido.CANCELED == "Y")
                                 {
                                     <span class="badge bg-danger rounded-pill">Cancelado</span>
@@ -241,31 +266,33 @@
                                 {
                                     <span class="badge bg-danger rounded-pill">No Impresa</span>
                                 }
-
                             </div>
-
                             @* Info Principal *@
                             <div class="mb-3">
                                 <h6 class="text-muted small fw-bold mb-1 text-uppercase">Doc #@pedido.DocNum</h6>
                                 <h5 class="fw-bold text-dark mb-0 text-truncate">@pedido.CardName</h5>
-                                <small class="text-muted">@pedido.CardCode</small>
+                                <small class="text-muted">@pedido.CardCode - @pedido.CardFName </small>
                             </div>
-
                             <div class="row g-2 mb-3">
-                                <div class="col-6">
+                                <div class="col-4">
                                     <div class="p-2 rounded-3 bg-light text-center">
                                         <small class="d-block text-muted x-small">Fecha Emisión</small>
                                         <span class="fw-bold small">@(pedido.DocDate.ToString("dd MMM yyyy"))</span>
                                     </div>
                                 </div>
-                                <div class="col-6">
+                                <div class="col-4">
+                                    <div class="p-2 rounded-3 bg-light text-center">
+                                        <small class="d-block text-muted x-small">Fecha entrega</small>
+                                        <span class="fw-bold small">@(pedido.DocDueDate.ToString("dd MMM yyyy"))</span>
+                                    </div>
+                                </div>
+                                <div class="col-4">
                                     <div class="p-2 rounded-3 bg-light text-center">
                                         <small class="d-block text-muted x-small">Placa</small>
                                         <span class="fw-bold small">@pedido.U_PLACAS</span>
                                     </div>
                                 </div>
                             </div>
-
                             <div class="d-flex justify-content-between align-items-end">
                                 <div>
                                     <small class="d-block text-muted x-small">Monto Total</small>
@@ -285,7 +312,7 @@
                                     {
                                         @if (_authClientService.HasPermission("Orders.Update"))
                                         {
-                                            <button class="btn btn-outline-dark border-0 btn-sm" @onclick:stopPropagation="true" @onclick="() => EditarPedido(pedido.DocEntry ?? 0)">
+                                            <button class="btn btn-outline-dark border-0 btn-sm" title="Editar Pedido" @onclick:stopPropagation="true" @onclick="() => EditarPedido(pedido.DocEntry ?? 0)">
                                                 <i class="bi bi-pencil-square"></i>
                                             </button>
                                         }
@@ -294,11 +321,15 @@
                                     {
                                         @*     @if (_authClientService.HasPermission("Orders.Cancelar"))
                                         { *@
-                                        <button class="btn btn-outline-danger border-0 btn-sm" @onclick:stopPropagation="true" @onclick="() => CancelarPedido(pedido.DocEntry ?? 0)">
+                                        <button class="btn btn-outline-danger border-0 btn-sm" title="Cancelar Pedido" @onclick:stopPropagation="true" @onclick="() => CancelarPedido(pedido.DocEntry ?? 0)">
                                             <i class="bi bi-x-octagon"></i>
                                         </button>
                                         @* } *@
                                     }
+
+                                    <button class="btn btn-outline-danger border-0  btn-sm" title="Ver Trazabilidad" @onclick:stopPropagation="true" @onclick="() => VerTrazabilidad(Convert.ToInt32(pedido.DocNum))">
+                                        <i class="bi bi-diagram-3"> </i>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -343,15 +374,20 @@
 @code {
     private List<OrdersReaderDto> listaOriginal = new();
     private List<OrdersReaderDto> listPedidosApi = new();
-    private DateTime fechaContabilizacion;
-    private DateTime fechaEntrega;
+    private DateTime? fechaInicioContabilizacion;
+    private DateTime? fechaFinalContabilizacion;
+    private DateTime? fechaEntregaInicio;
+    private DateTime? fechaEntregaFinal;
     private string _textoBusqueda = "";
     private string textoBusqueda
     {
         get => _textoBusqueda;
         set { _textoBusqueda = value; FiltrarLocal(); }
     }
-    private bool checkFechas { get; set; }
+    private bool checkFechasContabilizacion { get; set; }
+
+    private bool checkFechasEntrega { get; set; }
+
     private bool checkEstado = false;
     private bool checkCanceladas = false;
     private bool checkImpresas = false;
@@ -367,17 +403,57 @@
 
     protected override async Task OnInitializedAsync()
     {
-        fechaContabilizacion = DateTime.Now;
-        fechaEntrega = DateTime.Now;
+        fechaInicioContabilizacion = DateTime.Now;
+        fechaFinalContabilizacion = DateTime.Now;
+        fechaEntregaInicio = DateTime.Now;
+        fechaEntregaFinal = DateTime.Now;
         paginaActual = 1;
 
         //aca solo filtra por la ordenes del vendedor logueado, si es null trae todas las ordenes
         // int CodVendedor = _authClientService.CurrentSession.CodVendedorSAP ?? -1;
         cargando = true;
+        textoBusqueda ??= string.Empty;
+
+        if (paginaActual < 1)
+            paginaActual = 1;
+
+        if (cantidadPorPagina < 1)
+            cantidadPorPagina = 12;
+
+        // Filtros de fechas
+        if (!checkFechasContabilizacion)
+        {
+            fechaInicioContabilizacion = null;
+            fechaFinalContabilizacion = null;
+        }
+        if (!checkFechasEntrega)
+        {
+            fechaEntregaInicio = null;
+            fechaEntregaFinal = null;
+        }
+
+        // Filtro de estado
+        if (!checkEstado || estadoOrden == 'T')
+        {
+            estadoOrden = null;
+        }
+
+        // Filtro de canceladas
+        if (!checkCanceladas || Canceladas == 'T')
+        {
+            Canceladas = null;
+        }
+
+        // Filtro de impresas
+        if (!checkImpresas || Impresas == 'T')
+        {
+            Impresas = null;
+        }
+
         try
         {
 
-            await ObtenerPedidosDesdeApiAsync(_textoBusqueda, paginaActual, cantidadPorPagina, fechaContabilizacion, fechaEntrega, estadoOrden, Canceladas, Impresas);
+            await ObtenerPedidosDesdeApiAsync(_textoBusqueda, paginaActual, cantidadPorPagina, fechaInicioContabilizacion, fechaFinalContabilizacion, fechaEntregaInicio, fechaEntregaFinal, estadoOrden, Canceladas, Impresas);
         }
         catch (Exception ex)
         {
@@ -401,12 +477,15 @@
                 text = ex.Message
             });
         }
-        fechaContabilizacion = DateTime.Now;
-        fechaEntrega = DateTime.Now;
+
+        fechaInicioContabilizacion = DateTime.Now;
+        fechaFinalContabilizacion = DateTime.Now;
+        fechaEntregaInicio = DateTime.Now;
+        fechaEntregaFinal = DateTime.Now;
 
         cargando = false;
     }
-    private async Task ObtenerPedidosDesdeApiAsync(string? textoBusqueda = null, int? pagina = null, int? cantidadPagina = null, DateTime? fechaInicio = null, DateTime? fechaFin = null,char? DocStatus = null, char? CANCELED = null, char? Printed = null)
+    private async Task ObtenerPedidosDesdeApiAsync(string? textoBusqueda = null, int? pagina = null, int? cantidadPagina = null, DateTime? ContabilizacionInicio = null, DateTime? ContabilizacionFin = null, DateTime? EntregaInicio = null, DateTime? EntregaFin = null, char? DocStatus = null, char? CANCELED = null, char? Printed = null)
     {
         try
         {
@@ -420,86 +499,41 @@
                     confirmButtonColor = "#6c1d1d"
                 });
 
-                return; 
+                return;
             }
 
-            if (string.IsNullOrEmpty(textoBusqueda))
+            textoBusqueda ??= string.Empty;
+
+            if (paginaActual < 1)
+                paginaActual = 1;
+
+            if (cantidadPorPagina < 1)
+                cantidadPorPagina = 12;
+
+            // Filtros de fechas
+            if (!checkFechasContabilizacion)
             {
-                textoBusqueda = string.Empty;
+                fechaInicioContabilizacion = null;
+                fechaFinalContabilizacion = null;
             }
-            if (Convert.ToInt32(pagina) < 0)
+            if (!checkFechasEntrega)
             {
-                pagina = 1;
+                fechaEntregaInicio = null;
+                fechaEntregaFinal = null;
             }
-            if (Convert.ToInt32(cantidadPagina) < 0)
-            {
-                cantidadPagina = 12;
-            }
-            if (checkFechas == true)
-            {
-                fechaInicio = fechaContabilizacion;
-                fechaFin = fechaEntrega;
-            }
-            else
-            {
-                fechaInicio = null;
-                fechaFin = null;
-            }
-            if (checkEstado == true)
-            {
-                if (estadoOrden == 'O')
-                {
-                    DocStatus = 'O';
-                }
-                else if (estadoOrden == 'C')
-                {
-                    DocStatus = 'C';
-                }
-                else if (estadoOrden == 'T')
-                {
-                    DocStatus = null;
-                };
-            }
-            else
+
+            // Filtro de estado
+            if (!checkEstado || estadoOrden == 'T')
             {
                 estadoOrden = null;
             }
-
-            if (checkCanceladas == true)
-            {
-                if (Canceladas == 'Y')
-                {
-                    CANCELED = 'Y';
-                }
-                else if (Canceladas == 'N')
-                {
-                    CANCELED = 'N';
-                }
-                else if (Canceladas == 'T')
-                {
-                    CANCELED = null;
-                }   
-            }
-            else
+            // Filtro de canceladas
+            if (!checkCanceladas || Canceladas == 'T')
             {
                 Canceladas = null;
             }
-            if (checkImpresas == true)
-            {
-                if (Impresas == 'Y')
-                {
-                    Printed = 'Y';
-                }
-                else if (Impresas == 'N')
-                {
-                    Printed = 'N';
-                }
-                else if (Impresas == 'T')
-                {
-                    Printed = null;
-                }  
-            }
-            else
+            // Filtro de impresas
+            if (!checkImpresas || Impresas == 'T')
             {
                 Impresas = null;
             }
@@ -507,7 +541,7 @@
             ResponseAPI<List<OrdersReaderDto>> responseApi = new();
             int CodVendedor = _authClientService.CurrentSession.CodVendedorSAP ?? -1;
 
-            responseApi = await _pedidoService.ListarPedidosAsync(textoBusqueda, pagina, cantidadPagina, fechaInicio, fechaFin, CodVendedor, DocStatus, CANCELED, Printed);
+            responseApi = await _pedidoService.ListarPedidosAsync(textoBusqueda, pagina, cantidadPagina, ContabilizacionInicio, ContabilizacionFin, EntregaInicio, EntregaFin, CodVendedor, DocStatus, CANCELED, Printed);
 
             if (responseApi.Valor != null)
             {
@@ -532,7 +566,6 @@
                     confirmButtonColor = "#6c1d1d"
                 });
             }
-
         }
         catch (Exception ex)
         {
@@ -578,7 +611,46 @@
             paginaActual = 1;
             //pendientes cuando coloque los valores de los filtros, que se mantengan al cambiar la cantidad de pagina
 
-            await ObtenerPedidosDesdeApiAsync(_textoBusqueda, paginaActual, cantidadPorPagina, fechaContabilizacion, fechaEntrega, estadoOrden, Canceladas, Impresas);
+            textoBusqueda ??= string.Empty;
+
+            if (paginaActual < 1)
+                paginaActual = 1;
+
+            if (cantidadPorPagina < 1)
+                cantidadPorPagina = 12;
+
+            // Filtros de fechas
+            if (!checkFechasContabilizacion)
+            {
+                fechaInicioContabilizacion = null;
+                fechaFinalContabilizacion = null;
+            }
+            if (!checkFechasEntrega)
+            {
+                fechaEntregaInicio = null;
+                fechaEntregaFinal = null;
+            }
+
+            // Filtro de estado
+            if (!checkEstado || estadoOrden == 'T')
+            {
+                estadoOrden = null;
+            }
+
+            // Filtro de canceladas
+            if (!checkCanceladas || Canceladas == 'T')
+            {
+                Canceladas = null;
+            }
+
+            // Filtro de impresas
+            if (!checkImpresas || Impresas == 'T')
+            {
+                Impresas = null;
+            }
+
+
+            await ObtenerPedidosDesdeApiAsync(_textoBusqueda, paginaActual, cantidadPorPagina, fechaInicioContabilizacion, fechaFinalContabilizacion, fechaEntregaInicio, fechaEntregaFinal, estadoOrden, Canceladas, Impresas);
             // await ObtenerPedidosDesdeApiAsync(_textoBusqueda, paginaActual, cantidadPorPagina);
         }
 
@@ -617,8 +689,47 @@
         if (nuevaPagina < 1 || nuevaPagina > totalPaginas || nuevaPagina == paginaActual)
             return;
 
+
+        textoBusqueda ??= string.Empty;
+
+        if (paginaActual < 1)
+            paginaActual = 1;
+
+        if (cantidadPorPagina < 1)
+            cantidadPorPagina = 12;
+
+        // Filtros de fechas
+        if (!checkFechasContabilizacion)
+        {
+            fechaInicioContabilizacion = null;
+            fechaFinalContabilizacion = null;
+        }
+        if (!checkFechasEntrega)
+        {
+            fechaEntregaInicio = null;
+            fechaEntregaFinal = null;
+        }
+       
+        // Filtro de estado
+        if (!checkEstado || estadoOrden == 'T')
+        {
+            estadoOrden = null;
+        }
+
+        // Filtro de canceladas
+        if (!checkCanceladas || Canceladas == 'T')
+        {
+            Canceladas = null;
+        }
+
+        // Filtro de impresas
+        if (!checkImpresas || Impresas == 'T')
+        {
+            Impresas = null;
+        }
+
         paginaActual = nuevaPagina;
-        await ObtenerPedidosDesdeApiAsync(_textoBusqueda, paginaActual, cantidadPorPagina, fechaContabilizacion, fechaEntrega, estadoOrden, Canceladas, Impresas);
+        await ObtenerPedidosDesdeApiAsync(_textoBusqueda, paginaActual, cantidadPorPagina, fechaInicioContabilizacion, fechaFinalContabilizacion, fechaEntregaInicio, fechaEntregaFinal, estadoOrden, Canceladas, Impresas);
     }
 
     private async Task BuscarEnServidor()
@@ -632,13 +743,71 @@
                 text = "No tienes permiso para Visualizar las órdenes.",
                 confirmButtonColor = "#6c1d1d"
             });
+
             return;
         }
 
+        textoBusqueda ??= string.Empty;
+
+        if (paginaActual < 1)
+            paginaActual = 1;
+
+        if (cantidadPorPagina < 1)
+            cantidadPorPagina = 12;
+
+        // Filtros de fechas
+        if (!checkFechasContabilizacion)
+        {
+            fechaInicioContabilizacion = null;
+            fechaFinalContabilizacion = null;
+        }
+        if (!checkFechasEntrega)
+        {
+            fechaEntregaInicio = null;
+            fechaEntregaFinal = null;
+        }
+
+        // Filtro de estado
+        if (!checkEstado || estadoOrden == 'T')
+        {
+            estadoOrden = null;
+        }
+
+        // Filtro de canceladas
+        if (!checkCanceladas || Canceladas == 'T')
+        {
+            Canceladas = null;
+        }
+
+        // Filtro de impresas
+        if (!checkImpresas || Impresas == 'T')
+        {
+            Impresas = null;
+        }
+
         paginaActual = 1;
-        await ObtenerPedidosDesdeApiAsync(_textoBusqueda, paginaActual, cantidadPorPagina, fechaContabilizacion, fechaEntrega, estadoOrden, Canceladas, Impresas);
-        cargando = false;   
-    }   
+
+        cargando = true;
+
+        try
+        {
+            await ObtenerPedidosDesdeApiAsync(
+                textoBusqueda,
+                paginaActual,
+                cantidadPorPagina,
+                fechaInicioContabilizacion,
+                fechaFinalContabilizacion,
+                fechaEntregaInicio,
+                fechaEntregaFinal,
+                estadoOrden,
+                Canceladas,
+                Impresas);
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
     private async Task HandleEnter(KeyboardEventArgs e)
     {
         if (!_authClientService.HasPermission("Orders.View"))
@@ -656,9 +825,7 @@
         {
             await BuscarEnServidor();
         }
-
     }
-
     private void IrACrear()
     {
         if (!_authClientService.HasPermission("Orders.Create"))
@@ -672,7 +839,7 @@
     private void VerDetalle(int id)
     {
 
-        //  
+        //
         if (_authClientService.HasPermission("Orders.Detail"))
         {
             Nav.NavigateTo($"/administrar-pedido/detalle/{id}");
@@ -694,6 +861,12 @@
         {
             Nav.NavigateTo("/no-autorizado");
         }
+
+    }
+    private void VerTrazabilidad(int DocNum)
+    {
+     
+            Nav.NavigateTo($"/administrar-pedido/trazabilidad/{DocNum}");
 
     }
     //cancela el pedido

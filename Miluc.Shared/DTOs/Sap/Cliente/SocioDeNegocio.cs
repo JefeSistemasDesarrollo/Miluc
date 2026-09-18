@@ -13,10 +13,11 @@ namespace Miluc.Shared.DTOs.Sap.Cliente
         public string U_HBT_TipDoc { get; set; }
         public string CardCode { get; set; }
         //[Required(ErrorMessage = "Por favor ingrese la razon social")]
-        [StringLength(100, MinimumLength = 3, ErrorMessage = "El nombre no puede tener entre 3 a 100 caracteres")]
-        public string CardName { get; set; }
+        //[StringLength(100, MinimumLength = 3, ErrorMessage = "El nombre no puede tener entre 3 a 100 caracteres")]
+        public string ? CardName { get; set; }
 
-
+       // [MaxLength(20, ErrorMessage ="El número Referencia O.C")]
+        public string ? NumAtCard { get; set; }
         // [Required(ErrorMessage = "La sucursal es obligatoria")]
         //[RegularExpression(@"^\d{3}$",ErrorMessage = "La sucursal debe contener exactamente 3 números")]
 
@@ -26,7 +27,7 @@ namespace Miluc.Shared.DTOs.Sap.Cliente
         [Range(0, 999, ErrorMessage = "La sucursal debe ser un número entre 0 y 999")]
         public int SucursalGen { get; set; }
 
-        public string CardType { get; set; }
+        public string ?CardType { get; set; }
         [Validar(ErrorMessage = "Debe seleccionar un grupo")]
         public int GroupCode { get; set; }
         [Validar(ErrorMessage = "Debe seleccionar una lista de precios")]
@@ -67,7 +68,7 @@ namespace Miluc.Shared.DTOs.Sap.Cliente
 
         [Required(ErrorMessage = "La sucursal es obligatoria.")]
          [StringLength(100, MinimumLength = 0,ErrorMessage = "El nombre comercial debe tener entre 3 y 100 caracteres.")]
-        public string CardForeignName { get; set; }
+        public string  CardForeignName { get; set; }
 
         public string Properties1 { get; set; }
         public string Properties2 { get; set; }
@@ -96,12 +97,12 @@ namespace Miluc.Shared.DTOs.Sap.Cliente
         //[Required(ErrorMessage = "El nombre es obligatorio.")]
         //[StringLength(60, MinimumLength = 2)]
         //[RegularExpression(@"^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$",ErrorMessage = "El nombre solo puede contener letras.")]
-        public string U_HBT_Nombres { get; set; }
+        public string ?U_HBT_Nombres { get; set; }
 
         //[StringLength(60)]
         //[Required(ErrorMessage = "El primer apellido es obligatorio.")]
         //[RegularExpression(@"^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]*$",ErrorMessage = "El primer apellido solo puede contener letras.")]
-        public string U_HBT_Apellido1 { get; set; }
+        public string ?U_HBT_Apellido1 { get; set; }
         //[Required(ErrorMessage = "Selccione una opcion")]
         //[StringLength(60)]
         //[RegularExpression(@"^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]*$",ErrorMessage = "El segundo apellido solo puede contener letras.")]
@@ -138,49 +139,15 @@ namespace Miluc.Shared.DTOs.Sap.Cliente
         //public string U_AplicaBolsaMercantil { get; set; }
         public string Valid { get; set; }
         public string Frozen { get; set; }
-        public string FreeText { get; set; }
+        public string ?FreeText { get; set; }
         public bool U_AplicaBolsaMercantilcheck { get; set; }
         public bool validFor { get; set; } = true;
 
-        //aca voy a llamar la clas de diorecciones del cliente 
-        //public List<AddressClienteDto>? BPAddresses { get; set; } = new List<AddressClienteDto> 
-        //{
-        //    new()
-        //    {
-        //        AddressName = "Direccion de Factura",
-        //        Street = "",
-        //        Block = "",
-        //        ZipCode = "",
-        //        City = "",
-        //        County = "",
-        //        Country = "",
-        //        AddressType = "bo_BillTo",
-        //        U_HBT_MunMed = "",
-        //        U_HBT_DirMM = ""
-        //    }, new()
-        //    {
-        //        AddressName = "Direccion de Despacho",
-        //        Street = "",
-        //        Block = "",
-        //        ZipCode = "",
-        //        City = "",
-        //        County = "",
-        //        Country = "",
-        //        AddressType = "bo_ShipTo",
-        //        U_HBT_MunMed = "",
-        //        U_HBT_DirMM = ""
-        //    }
-        //};
-        //[ValidateComplexType]
 
-
-
-
-
-
-        //direccion de factura 
-
-
+        [Required(ErrorMessage = "El establecimiento es obligatorio.")]
+        [StringLength(100, ErrorMessage = "La dirección no puede superar los 100 caracteres.")]
+        public string EstableciminetoFactura { get; set; }
+            //direccion de factura 
         [Required(ErrorMessage = "La dirección es obligatoria.")]
         [StringLength(254, ErrorMessage = "La dirección no puede superar los 254 caracteres.")]
         public string DirreccionFacturaStreet { get; set; }
@@ -193,15 +160,11 @@ namespace Miluc.Shared.DTOs.Sap.Cliente
         [Required(ErrorMessage = "El departamento es obligatorio.")]
         [StringLength(100, ErrorMessage = "El departamento no puede superar los 100 caracteres.")]
         public string DireccionFacturaCounty { get; set; }
-        //public string Country { get; set; }
-        //public string AddressType { get; set; }
-        //public string U_HBT_MunMed { get; set; }
-        //public string U_HBT_DirMM { get; set; }
-        //public AddressClienteDto DireccionFactura { get; set; } = new AddressClienteDto();
-
-        //public AddressClienteDto DireccionDespacho { get; set; } = new AddressClienteDto();
 
 
+        [Required(ErrorMessage = "El establecimiento es obligatorio.")]
+        [StringLength(100, ErrorMessage = "La dirección no puede superar los 100 caracteres.")]
+        public string EstableciminetoDespacho { get; set; }
         [Required(ErrorMessage = "La dirección es obligatoria.")]
         [StringLength(254, ErrorMessage = "La dirección no puede superar los 254 caracteres.")]
         public string DirreccionDespachoStreet { get; set; }
@@ -214,9 +177,6 @@ namespace Miluc.Shared.DTOs.Sap.Cliente
         [Required (ErrorMessage ="El departamento es obligatio")]
         [StringLength(100, ErrorMessage = "El departamento no puede superar los 100 caracteres.")]
         public string DireccionDespachoCounty { get; set; }
-
-
-
 
         public List<SapBPWithholdingTaxDto> BPWithholdingTaxCollection { get; set; } = new List<SapBPWithholdingTaxDto>();
 

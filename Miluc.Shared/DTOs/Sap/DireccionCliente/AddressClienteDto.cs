@@ -5,6 +5,8 @@ namespace Miluc.Shared.DTOs.Sap.DireccionCliente
     public class AddressClienteDto
     {
         public string AddressName { get; set; }
+
+        public string AddressName2 { get; set; }
         
         [Required(ErrorMessage = "La dirección es obligatoria.")]
         [StringLength(254, ErrorMessage = "La dirección no puede superar los 254 caracteres.")]

@@ -1,5 +1,6 @@
 ﻿using Miluc.Shared.DTOs.Sap.DireccionCliente;
 using Miluc.Shared.DTOs.Sap.Impuesto;
+using System.Text.Json.Serialization;
 
 namespace Miluc.Shared.DTOs.Sap.Cliente
 {
@@ -7,6 +8,7 @@ namespace Miluc.Shared.DTOs.Sap.Cliente
     {
         public string U_HBT_TipDoc { get; set; }
         public string CardCode { get; set; }
+       // public string ? NumAtCard { get; set; }
         public string ? CardName { get; set; }
         public string CardType { get; set; }
         public int GroupCode { get; set; }
@@ -54,6 +56,7 @@ namespace Miluc.Shared.DTOs.Sap.Cliente
         public string Valid { get; set; }
         public string Frozen { get; set; }
         public string ? FreeText { get; set; }
+
         //aca voy a llamar la clas de diorecciones del cliente 
         public List<AddressClienteDto>? BPAddresses { get; set; } = new List<AddressClienteDto>();
         public List<SapBPWithholdingTaxDto> BPWithholdingTaxCollection { get; set; } = new List<SapBPWithholdingTaxDto>();

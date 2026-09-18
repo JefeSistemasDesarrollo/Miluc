@@ -7,8 +7,8 @@ namespace Miluc.Shared.DTOs.Usuarios
     public class UsuarioCreateDto
     {
 
-        [Required(ErrorMessage = "El nombre de usuario es obligatorio")]
-        public string UserName { get; set; } = string.Empty;
+        //[Required(ErrorMessage = "El nombre de usuario es obligatorio")]
+        //public string UserName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El nombre es obligatorio")]
         public string Nombres { get; set; } = string.Empty;
@@ -43,8 +43,13 @@ namespace Miluc.Shared.DTOs.Usuarios
 
         public bool DebeCambiarPassword { get; set; } = false; // Cambiar contraseña en el próximo inicio de sesión
 
+        [Required(ErrorMessage ="La hora de inicio es requerida")]
+        public TimeOnly? HoraInicio { get; set; }
+        [Required(ErrorMessage ="La hora de fin es requerida")]
+        public TimeOnly? HoraFin { get; set; }
+    
 
-        public int ? CodVendedorSAP { get; set; } 
+        public int? CodVendedorSAP { get; set; }
         // Listas de IDs para las tablas intermedias (UsuarioRol y UsuarioTipoUsuario)
         public List<int> RolesIds { get; set; } = new();
         public List<int> TiposUsuarioIds { get; set; } = new();

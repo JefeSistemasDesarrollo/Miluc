@@ -5,6 +5,7 @@ using Miluc.Server.Interfaces.Sap.Ocrd;
 using Miluc.Server.Models.Sap;
 using Miluc.Shared.DTOs.Sap.Cliente;
 using Miluc.Shared.DTOs.Sap.DireccionCliente;
+using Miluc.Shared.DTOs.Sap.Factura;
 using Miluc.Shared.DTOs.Sap.Impuesto;
 using Newtonsoft.Json;
 using System.Text;
@@ -26,12 +27,19 @@ namespace Miluc.Server.Servicios.SapService
                 {
                     throw new ArgumentNullException($"El cliente es inválido {nameof(credenciales)}");
                 }
+
+                //var usuario =await _dbContext.Usuarios.FirstOrDefaultAsync(x=>x.IdUsuario==sapClienteCreateDto.IdUsuario);
+                //var horaActual = DateTime.Now.TimeOfDay;
+
+
+
                 // throw new ArgumentNullException($"El cliente es inválido {nameof(credenciales)}");
                 HttpClientHandler clientHandler = new()
                 {
                     ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
                 };
                 using var httpClient = new HttpClient(clientHandler);
+
 
                 if (credenciales.Valor == null)
                 {
@@ -63,6 +71,12 @@ namespace Miluc.Server.Servicios.SapService
                     throw new HttpRequestException($"SAP Service Layer rechazó la creación del cliente. Detalles: {mensajeErrorSap}");
                 }
                 var result = JsonConvert.DeserializeObject<SapClienteReaderDto>(content);
+                if (result == null)
+                {
+                    // Cerrar sesión antes de lanzar la excepción
+                    await _serviceConexion.LogoutAsync(credenciales.Valor.URLServiceLayer, credenciales.Valor.B1SESSION, credenciales.Valor.ROUTEID);
+                    throw new Exception("Respuesta inválida de SAP al crear el cliente.");
+                }
 
                 //aca vamos a editar las direciones 
                 httpClient.DefaultRequestHeaders.Add("B1S-ReplaceCollectionsOnPatch", "true");
@@ -111,8 +125,6 @@ namespace Miluc.Server.Servicios.SapService
             }
 
         }
-
-
         public async Task<SapClienteReaderDto> EditarClienteAsunc(SapClienteCreateEditDto sapClienteEditDto)
         {
             var credenciales = await _serviceConexion.ConexionSapService();
@@ -160,6 +172,7 @@ namespace Miluc.Server.Servicios.SapService
 
                     try
                     {
+
                         dynamic errorObj = JsonConvert.DeserializeObject(content);
                         mensajeErrorSap = errorObj?.error?.message?.value ?? content;
                     }
@@ -227,7 +240,6 @@ namespace Miluc.Server.Servicios.SapService
 
             }
         }
-
         public async Task<bool> EliminarClienteAsync(string cardCode)
         {
             var credenciales = await _serviceConexion.ConexionSapService();
@@ -256,7 +268,7 @@ namespace Miluc.Server.Servicios.SapService
 
                 using var httpClient = new HttpClient(clientHandler);
 
-                httpClient.DefaultRequestHeaders.Add("Cookie",$"B1SESSION={credenciales.Valor.B1SESSION}; RouteId={credenciales.Valor.ROUTEID}");
+                httpClient.DefaultRequestHeaders.Add("Cookie", $"B1SESSION={credenciales.Valor.B1SESSION}; RouteId={credenciales.Valor.ROUTEID}");
 
                 string url = $"{credenciales.Valor.URLServiceLayer}/BusinessPartners('{cardCode}')";
 
@@ -293,31 +305,54 @@ namespace Miluc.Server.Servicios.SapService
                 }
             }
         }
-        public async Task<(List<SapClienteReaderDto> Data, int TotalRegistros)> GetallClienteAsync(string? buscar = null, int ? pagina = null, int? cantidad = null, int ?codVendedorSAP = null)
+
+        public async Task<List<OinvReaderDto>> FacturasPendientesCliente(string cardcode)
+        {
+            try
+            {
+                var facturasPendientes = await _sapDbContext.OINV.AsNoTracking()
+                    .Where(c => c.CardCode == cardcode && c.CANCELED == 'N' && c.DocTotal > c.PaidToDate).Select(o=>new OinvReaderDto
+                    {
+                       CardCode=o.CardCode,
+                       CardName=o.CardName,
+                       DocNum=o.DocNum,
+                       DocEntry=o.DocEntry,
+                       PaidToDate=o.PaidToDate,
+                       DocTotal=o.DocTotal,
+                       DocStatus=o.DocStatus,
+                       CANCELED=o.CANCELED,
+                       DocDate=o.DocDate,
+                       DocDueDate=o.DocDueDate,
+                       SaldoPendiente=Convert.ToDecimal(o.DocTotal)-Convert.ToDecimal(o.PaidToDate),
+                       JrnlMemo=o.JrnlMemo
+                    }).ToListAsync();
+
+                return facturasPendientes;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error al consultar las facturas pendientes: {ex.Message}");
+            }
+        }
+        public async Task<(List<SapClienteReaderDto> Data, int TotalRegistros)> GetallClienteAsync(string? buscar = null, int? pagina = null, int? cantidad = null, int? codVendedorSAP = null)
         {
             try
             {
                 IQueryable<OcrdClienteSap> queryBusqueda = null;
-
-
                 if (!string.IsNullOrWhiteSpace(buscar))
                 {
                     buscar = buscar.Trim();
                 }
+                int pag = pagina ?? 1;
 
-               
-
-               int pag =pagina ?? 1;
-               
                 int codiVendedor = codVendedorSAP ?? -1;
-
 
                 if (codiVendedor == -1)
                 {
-                 queryBusqueda = _sapDbContext.OCRD.AsNoTracking()
-                   .Include(c => c.OCRG)
-                   .Where(c => c.CardType == "C")
-                   .AsQueryable();
+                    queryBusqueda = _sapDbContext.OCRD.AsNoTracking()
+                      .Include(c => c.OCRG)
+                      .Where(c => c.CardType == "C")
+                      .AsQueryable();
                 }
                 else if (codiVendedor != -1)
                 {
@@ -331,7 +366,7 @@ namespace Miluc.Server.Servicios.SapService
 
                 if (!string.IsNullOrEmpty(buscar))
                 {
-                    queryBusqueda = queryBusqueda.Where(c => c.CardCode.Contains(buscar) || c.CardName.Contains(buscar));
+                    queryBusqueda = queryBusqueda.Where(c => c.CardCode.Contains(buscar) || c.CardName.Contains(buscar) || c.CardFName.Contains(buscar));
                 }
                 int totalEncontrados = await queryBusqueda.CountAsync();
 
@@ -347,7 +382,7 @@ namespace Miluc.Server.Servicios.SapService
                         // City=C.CRD1.City,
                         City = C.City,
                         GroupCode = C.OCRG.GroupCode,
-                        GroupName = C.OCRG.GroupName,
+                        GroupName = C.OCRG.GroupName ?? "",
                         ListNum = C.OPLN.ListNum,//lista de precios 
                         ListName = C.OPLN.ListName,
                         LicTradNum = C.LicTradNum,
@@ -362,7 +397,6 @@ namespace Miluc.Server.Servicios.SapService
                         County = C.County,
                         E_Mail = C.E_Mail,
                         U_HBT_MailRecep_FE = C.U_HBT_MailRecep_FE,
-
                         QryGroup1 = C.QryGroup1,
                         QryGroup2 = C.QryGroup2,
                         QryGroup3 = C.QryGroup3,
@@ -390,14 +424,12 @@ namespace Miluc.Server.Servicios.SapService
                         PymntGroup = C.OCTG.PymntGroup,
                         PrioCode = C.OBPP != null ? C.OBPP.PrioCode : 0,
                         PrioDesc = C.OBPP != null ? C.OBPP.PrioDesc : null,
-                        //PrioCode = C.OBPP.PrioCode,
-                        //PrioDesc = C.OBPP.PrioDesc,
                         Block = C.Block,
                         Free_Text = C.Free_Text,
-                        // FreeText= C.FreeText,
                         DireccionPrincipal = C.Direcciones.Select(d => new DireccionesCrd1ReaderDto
                         {
                             Street = d.Street,
+                            Address2=d.Address2,
                             Block = d.Block,
                             ZipCode = d.ZipCode,
                             City = d.City,
@@ -410,20 +442,13 @@ namespace Miluc.Server.Servicios.SapService
                             AdresType = d.AdresType
                         }).ToList(),
                     }).ToListAsync();
-
-                //.Include(c => c.OCRG).
-
                 return (dataBusqueda, totalEncontrados);
-
             }
             catch (Exception ex)
             {
                 throw new Exception($"Error al listar los clientes: {ex.Message}");
             }
-
         }
-
-
         public async Task<SapClienteReaderDto> GetByIdClienteAsync(string? cardcode = null)
         {
             try
@@ -434,15 +459,15 @@ namespace Miluc.Server.Servicios.SapService
                 }
 
                 var Cliente = await _sapDbContext.OCRD.AsNoTracking()
-                    //.Include(c => c.HBT_REGIMTRIB)
-                    //.Include(c => c.HBT_TIPODOC)
-                    //.Include(c => c.HBT_MUNICIPIO)
-                    //.Include(c => c.HBT_TIPODOC)
-                    //.Include(c => c.OBPP)
-                    //.Include(c => c.HBT_ACTIVIDADECO)
-                    //.Include(c => c.HBT_REGIMENFISCAL)
-                    //.Include(c => c.HBT_RESPFISCAL)
-                    //.Include(c => c.CRD4)
+                    .Include(c => c.HBT_REGIMTRIB)
+                    .Include(c => c.HBT_TIPODOC)
+                    .Include(c => c.HBT_MUNICIPIO)
+                    .Include(c => c.HBT_TIPODOC)
+                    .Include(c => c.OBPP)
+                    .Include(c => c.HBT_ACTIVIDADECO)
+                    .Include(c => c.HBT_REGIMENFISCAL)
+                    .Include(c => c.HBT_RESPFISCAL)
+                    .Include(c => c.CRD4)
                     .Where(c => c.CardCode == cardcode)
                    .Select(C => new SapClienteReaderDto
                    {
@@ -456,7 +481,7 @@ namespace Miluc.Server.Servicios.SapService
                        ListNum = C.OPLN.ListNum,
                        City = C.City,
                        LicTradNum = C.LicTradNum,
-                       GroupName = C.OCRG.GroupName,
+                       GroupName = C.OCRG.GroupName ?? "",
                        ListName = C.OPLN.ListName,
                        U_HBT_RegTrib = C.HBT_REGIMTRIB.code, //regimen tributario 
                        U_HBT_TipDocName = C.HBT_TIPODOC.Name,
@@ -519,13 +544,14 @@ namespace Miluc.Server.Servicios.SapService
                        SlpName = C.OSLP.SlpName,
                        GroupNum = C.OCTG.GroupNum,
                        PymntGroup = C.OCTG.PymntGroup,
-                       PrioCode = C.OBPP !=null ? C.OBPP.PrioCode : 0,
-                       PrioDesc = C.OBPP !=null ? C.OBPP.PrioDesc : null,
+                       PrioCode = C.OBPP != null ? C.OBPP.PrioCode : 0,
+                       PrioDesc = C.OBPP != null ? C.OBPP.PrioDesc : null,
                        Block = C.Block,
                        Free_Text = C.Free_Text,
                        DireccionPrincipal = C.Direcciones.Select(d => new DireccionesCrd1ReaderDto
                        {
                            Street = d.Street,
+                           Address2=d.Address2,
                            Block = d.Block,
                            ZipCode = d.ZipCode,
                            City = d.City,
@@ -544,7 +570,7 @@ namespace Miluc.Server.Servicios.SapService
                        }).ToList()
                    }).FirstOrDefaultAsync();
 
-                return Cliente;
+                return Cliente ?? new SapClienteReaderDto();
 
             }
             catch (Exception ex)

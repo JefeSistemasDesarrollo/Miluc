@@ -82,9 +82,6 @@ namespace Miluc.Server.Servicios.SapService
                         CodeTaxcode=o.OITM.OSTC.Code,
                         Rate = o.OITM.OSTC.Rate,
                         TaxCode = o.OITM.OSTC.Name,
-                        
-                        //U_CantidadKg=(cantidad /o.OITM.SWeight1 ?? 0),
-                        //U_UnidadSal= ( cantidad * o.OITM.SWeight1)
 
                     }).FirstOrDefaultAsync();
                 if (preciosEspeciales != null)
@@ -136,9 +133,6 @@ namespace Miluc.Server.Servicios.SapService
                                                CodeTaxcode=item.OSTC.Code,
                                                Rate = item.OSTC.Rate,
                                                TaxCode = item.OSTC.Name,
-                                               // U_CantidadKg = (cantidad/ item.SWeight1),
-                                               //U_UnidadSal = ( cantidad* item.SWeight1)
-                                               //PriceAlternoEspecial = detItm.Price
 
                                            })).FirstOrDefaultAsync();
 

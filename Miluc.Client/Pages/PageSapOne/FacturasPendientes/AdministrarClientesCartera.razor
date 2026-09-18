@@ -1,0 +1,426 @@
+﻿@page "/administrar-clientesCartera"
+@using Miluc.Client.Interfaces.SapInterfaces.Cliente
+@using Miluc.Shared.DTOs.Sap.Cliente
+@inject IAuthClientService _authService
+@inject IAuthClientService _authClienteService
+@inject ISapOcrdClientService _sapClienteService
+@inject ILogClientService _logClienteService
+@inject IJSRuntime _jsrumtine
+@inject NavigationManager _nav
+
+
+<div class="cliente-page animate__animated animate__fadeIn p-3 p-md-4">
+
+    @* --- ENCABEZADO --- *@
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 border-bottom pb-3 gap-2">
+        <div>
+            <h2 class="fw-bold text-vinotinto m-0 d-flex align-items-center gap-2 fs-3">
+                <i class="bi bi-person-badge-fill"></i>
+                <span>Gestionar Clientes</span>
+            </h2>
+            <p class="m-0 text-muted small">Administración de Cartera - SAP Business One</p>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-secondary rounded-pill px-3 shadow-sm btn-sm-custom" @onclick="Volver">
+                <i class="bi bi-arrow-left me-1"></i>Volver
+            </button>
+        </div>
+    </div>
+
+    @* --- BARRA DE BÚSQUEDA Y CONTROLES --- *@
+    <div class="card shadow-sm border-0 mb-4 rounded-4 bg-white">
+        <div class="card-body p-3">
+            <div class="row g-3 align-items-center">
+                <div class="col-lg-8 col-md-7">
+                    @if (_authClienteService.HasPermission("Cliente.View"))
+                    {
+                        <div class="input-group search-group">
+                            <span class="input-group-text bg-light border-end-0 rounded-start-pill ps-3">
+                                <i class="bi bi-search text-muted"></i>
+                            </span>
+                            <input type="text" class="form-control bg-light border-start-0 shadow-none fs-6"
+                                   placeholder="Buscar por código, nombre o NIT..."
+                                   @bind="textoBusqueda" @bind:event="oninput" @onkeyup="HandleEnter" />
+                            <button class="btn btn-rojo rounded-end-pill px-4" @onclick="BuscarEnServidor">
+                                Buscar
+                            </button>
+                        </div>
+                    }
+                </div>
+
+                <div class="col-lg-4 col-md-5 text-md-end">
+                    <div class="d-inline-flex align-items-center bg-light px-3 py-1 rounded-pill border">
+                        <label class="me-2 x-small fw-bold text-muted text-uppercase">Mostrar</label>
+                        <select class="form-select form-select-sm rounded-pill border-0 bg-transparent fw-bold text-vinotinto py-0"
+                                style="width: 70px;"
+                                value="@cantidadPorPagina"
+                                @onchange="CambiarCantidadPagina">
+                            <option value="6">6</option>
+                            <option value="12" selected>12</option>
+                            <option value="24">24</option>
+                            <option value="48">48</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* --- LISTADO EN TARJETAS (GRID) --- *@
+    @if (cargando)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-vinotinto" role="status"></div>
+            <p class="text-muted mt-2 small">Cargando cartera de clientes...</p>
+        </div>
+    }
+    else if (!ListClientApi.Any())
+    {
+        <div class="card border-0 shadow-sm rounded-4 text-center py-5 my-3">
+            <div class="card-body">
+                <i class="bi bi-people text-muted display-4"></i>
+                <p class="text-muted mt-3 mb-0 fs-6">No se encontraron clientes para mostrar.</p>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row g-3">
+            @foreach (var cliente in ListClientApi)
+            {
+                <div class="col-12 col-md-6 col-xl-4">
+                    <div class="card cliente-card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative">
+                        <div class="card-body p-3 d-flex flex-column justify-content-between">
+
+                            @* Superior: Código, NIT y Estado *@
+                            <div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="badge bg-vinotinto-soft text-vinotinto fw-bold px-2 py-1 rounded-3 small">
+                                        <i class="bi bi-hash me-1"></i>@cliente.CardCode
+                                    </span>
+
+                                    @if (cliente.validFor == 'Y')
+                                    {
+                                        <span class="badge bg-amarillo-soft text-dark border border-warning rounded-pill px-2 py-1 x-small" title="Cliente Activo">
+                                            <i class="bi bi-check-circle-fill text-warning me-1"></i>Activo
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-muted border rounded-pill px-2 py-1 x-small" title="Cliente Inactivo">
+                                            <i class="bi bi-x-circle-fill text-danger me-1"></i>Inactivo
+                                        </span>
+                                    }
+                                </div>
+
+                                @* Nombre del cliente *@
+                                <h6 class="fw-bold text-dark text-truncate mb-1" title="@cliente.CardName">
+                                    @cliente.CardName
+                                </h6>
+
+                                @* NIT / Identificación *@
+                                <p class="text-muted x-small mb-3">
+                                    <i class="bi bi-card-heading me-1"></i>NIT: <b>@(string.IsNullOrWhiteSpace(cliente.LicTradNum) ? "N/A" : cliente.LicTradNum)</b>
+                                </p>
+                            </div>
+
+                            @* Inferior: Estado de Cuenta y Acciones *@
+                            <div class="pt-2 border-top">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="x-small text-muted fw-bold text-uppercase">Saldo de cuenta</span>
+                                    <span class="fw-bold fs-6 @(cliente.Balance > 0 ? "text-danger" : "text-dark")">
+                                        $ @Convert.ToDecimal(cliente.Balance).ToString("C", new System.Globalization.CultureInfo("es-Co"))
+                                    </span>
+                                </div>
+
+                                @* Botonera *@
+                                <div class="d-grid gap-2">
+                                    @* Botón preparado para integración posterior de facturas *@
+                                    <button class="btn btn-sm btn-outline-vinotinto rounded-pill fw-semibold w-100"
+                                            @onclick="() => VerFacturasPendientes(cliente.CardCode)">
+                                        <i class="bi bi-receipt-cutoff me-1"></i>Facturas Pendientes
+                                    </button>
+
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    @* --- PAGINADOR --- *@
+    <div class="pagination-footer d-flex justify-content-between align-items-center mt-4 pt-2">
+        <div class="text-muted x-small">
+            Página <b>@paginaActual</b> de <b>@totalPaginas</b> (@totalRegistros registros)
+        </div>
+        <div class="pagination-container p-1 bg-white border rounded-pill shadow-sm">
+            <button class="btn btn-sm rounded-circle text-rojo border-0 @(paginaActual <= 1 ? "disabled" : "")"
+                    @onclick="() => IrPagina(paginaActual - 1)">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+            <span class="mx-3 fw-bold text-vinotinto small">@paginaActual</span>
+            <button class="btn btn-sm rounded-circle text-rojo border-0 @(paginaActual >= totalPaginas ? "disabled" : "")"
+                    @onclick="() => IrPagina(paginaActual + 1)">
+                <i class="bi bi-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<SapClienteReaderDto> ListClientOriginal = new();
+    private List<SapClienteReaderDto> ListClientApi = new();
+    private bool cargando = false;
+    private int totalRegistros = 0;
+    private string _textoBusqueda = "";
+
+    private string textoBusqueda
+    {
+        get => _textoBusqueda;
+        set
+        {
+            _textoBusqueda = value;
+            FiltrarLocal();
+        }
+    }
+
+    private int totalPaginas
+    {
+        get
+        {
+            var total = string.IsNullOrWhiteSpace(_textoBusqueda) ? totalRegistros : ListClientApi.Count;
+            return (int)Math.Ceiling((double)total / cantidadPorPagina);
+        }
+    }
+
+    private void FiltrarLocal()
+    {
+        if (ListClientOriginal == null || !ListClientOriginal.Any())
+        {
+            ListClientApi = new List<SapClienteReaderDto>();
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(_textoBusqueda))
+        {
+            ListClientApi = ListClientOriginal.ToList();
+            return;
+        }
+        else
+        {
+            ListClientApi = ListClientOriginal
+                .Where(u => (u.CardCode?.Contains(_textoBusqueda, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                            (u.CardName?.Contains(_textoBusqueda, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                            (u.LicTradNum?.Contains(_textoBusqueda, StringComparison.OrdinalIgnoreCase) ?? false)).ToList();
+        }
+    }
+
+    private async Task HandleEnter(KeyboardEventArgs e)
+    {
+        if (_authClienteService.HasPermission("Cliente.View"))
+        {
+            if (e.Key == "Enter")
+            {
+                paginaActual = 1;
+                await BuscarEnServidor();
+            }
+        }
+        else
+        {
+            await _jsrumtine.InvokeVoidAsync("Swal.fire", new
+            {
+                icon = "error",
+                title = "Acceso denegado",
+                text = "No tienes permiso para ver los clientes.",
+                confirmButtonColor = "#6c1d1d"
+            });
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await CargarClientesSap();
+        }
+        catch (Exception ex)
+        {
+            await _logClienteService.GuardarErrorAsync(
+                ex.Message,
+                ex.StackTrace,
+                usuario: _authClienteService.CurrentSession?.UserName ?? "No encontrado",
+                metodo: nameof(OnInitializedAsync),
+                ruta: nameof(AdministrarClientesCartera),
+                origen: "Blazor Clientes Sap",
+                nivel: "error");
+        }
+    }
+
+    private async Task BuscarEnServidor()
+    {
+        if (_authClienteService.HasPermission("Cliente.View"))
+        {
+            paginaActual = 1;
+            cargando = true;
+
+            int CodigoVendedor = _authClienteService.CurrentSession?.CodVendedorSAP ?? -1;
+
+            var response = await _sapClienteService.GetallClienteAsync(_textoBusqueda, paginaActual, cantidadPorPagina, CodigoVendedor);
+
+            if (response.Valor != null)
+            {
+                ListClientOriginal = response.Valor;
+                ListClientApi = ListClientOriginal.ToList();
+                totalRegistros = response.CantRegistros;
+            }
+            else
+            {
+                ListClientApi = new List<SapClienteReaderDto>();
+                string errores = response.Errores != null && response.Errores.Any()
+                    ? string.Join("<br>", response.Errores)
+                    : "Ocurrió un error inesperado.";
+
+                await _jsrumtine.InvokeVoidAsync("Swal.fire", new
+                {
+                    icon = "error",
+                    title = $"Error al consultar usuarios {response.Mensaje}",
+                    text = $"{errores}",
+                    confirmButtonColor = "#6c1d1d"
+                });
+            }
+            cargando = false;
+        }
+        else
+        {
+            await _jsrumtine.InvokeVoidAsync("Swal.fire", new
+            {
+                icon = "error",
+                title = "Acceso denegado",
+                text = "No tienes permiso para ver los clientes.",
+                confirmButtonColor = "#6c1d1d"
+            });
+        }
+    }
+
+    private async Task CargarClientesSap()
+    {
+        try
+        {
+            if (!_authClienteService.HasPermission("Cliente.View"))
+            {
+                await _jsrumtine.InvokeVoidAsync("Swal.fire", new
+                {
+                    icon = "error",
+                    title = "Acceso denegado",
+                    text = "No tienes permiso para visualizar los clientes.",
+                    confirmButtonColor = "#6c1d1d"
+                });
+                return;
+            }
+
+            int CodigoVendedor = _authClienteService.CurrentSession?.CodVendedorSAP ?? -1;
+
+            cargando = true;
+            var response = await _sapClienteService.GetallClienteAsync(textoBusqueda, paginaActual, cantidadPorPagina, CodigoVendedor);
+            if (response != null)
+            {
+                ListClientOriginal = response.Valor ?? new();
+                ListClientApi = ListClientOriginal.ToList();
+                totalRegistros = response.CantRegistros;
+            }
+            cargando = false;
+        }
+        catch (Exception ex)
+        {
+            cargando = false;
+            await _logClienteService.GuardarErrorAsync(
+                ex.Message,
+                ex.StackTrace,
+                usuario: _authClienteService.CurrentSession?.UserName ?? "No encontrado",
+                metodo: nameof(CargarClientesSap),
+                ruta: nameof(AdministrarClientesCartera),
+                origen: "Blazor Clientes Sap",
+                nivel: "error");
+
+            await _jsrumtine.InvokeVoidAsync("Swal.fire", new
+            {
+                icon = "error",
+                title = "Error al cargar usuarios",
+                text = ex.Message,
+                confirmButtonColor = "#6c1d1d"
+            });
+        }
+    }
+
+    private int cantidadPorPagina = 12;
+    private int paginaActual = 1;
+
+    private async Task IrPagina(int nuevaPagina)
+    {
+        if (!_authClienteService.HasPermission("Cliente.View"))
+        {
+            await _jsrumtine.InvokeVoidAsync("Swal.fire", new
+            {
+                icon = "error",
+                title = "Acceso denegado",
+                text = "No tienes permiso para ver los clientes.",
+                confirmButtonColor = "#6c1d1d"
+            });
+            return;
+        }
+
+        if (nuevaPagina < 1 || nuevaPagina > totalPaginas)
+            return;
+
+        paginaActual = nuevaPagina;
+        if (string.IsNullOrWhiteSpace(_textoBusqueda))
+            await CargarClientesSap();
+        else
+            await BuscarEnServidor();
+    }
+
+    private async Task CambiarCantidadPagina(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int nuevaCantidad))
+        {
+            cantidadPorPagina = nuevaCantidad;
+            paginaActual = 1;
+            if (string.IsNullOrWhiteSpace(_textoBusqueda))
+                await CargarClientesSap();
+            else
+                await BuscarEnServidor();
+        }
+    }
+
+    private void IrACrear()
+    {
+        if (!_authClienteService.HasPermission("Cliente.Create"))
+        {
+            _jsrumtine.InvokeVoidAsync("Swal.fire", new
+            {
+                icon = "error",
+                title = "Acceso denegado",
+                text = "No tienes permiso para crear clientes.",
+                confirmButtonColor = "#6c1d1d"
+            });
+            return;
+        }
+
+        _nav.NavigateTo("/administrar-cliente/crear-socio");
+    }
+
+    private void Volver() => _nav.NavigateTo("/administrar-modulo-comercial");
+
+
+    // Método listo para la implementación de consulta de facturas pendientes
+    private void VerFacturasPendientes(string CardCode)
+    {
+        // TODO: Implementar lógica de navegación o modal de facturas pendientes por pagar
+        _nav.NavigateTo($"/administrar-facturas/pendientes/{CardCode}");
+    }
+
+   }

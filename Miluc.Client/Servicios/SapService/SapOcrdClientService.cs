@@ -1,16 +1,18 @@
 ﻿using Miluc.Client.Interfaces.SapInterfaces.Cliente;
 using Miluc.Shared.DTOs.Sap.Cliente;
+using Miluc.Shared.DTOs.Sap.Factura;
 using Miluc.Shared.DTOs.Sap.GrupoDeVenta;
 using Miluc.Shared.Models.Response;
+using System.ComponentModel;
 using System.Net.Http.Json;
 
 namespace Miluc.Client.Servicios.SapService
 {
     public class SapOcrdClientService(HttpClient _httpclient) : ISapOcrdClientService
     {
-        public async Task<ResponseAPI<SapClienteReaderDto>> ActualizarClienteAsync(string cardCode,SapClienteCreateEditDto sapClienteCreateDto)
+        public async Task<ResponseAPI<SapClienteReaderDto>> ActualizarClienteAsync(string cardCode, SapClienteCreateEditDto sapClienteCreateDto)
         {
-            var response = await _httpclient.PutAsJsonAsync($"api/Ocrd/{cardCode}",sapClienteCreateDto);
+            var response = await _httpclient.PutAsJsonAsync($"api/Ocrd/{cardCode}", sapClienteCreateDto);
 
             if (response.IsSuccessStatusCode)
             {
@@ -27,13 +29,12 @@ namespace Miluc.Client.Servicios.SapService
                 Mensaje = $"Error HTTP: {(int)response.StatusCode}"
             };
         }
-
         public async Task<ResponseAPI<SapClienteReaderDto>> CreatePedido(SapClienteCreateEditDto sapClienteCreateDto)
         {
             try
             {
                 //var request = new HttpRequestMessage(HttpMethod.Post, "https://localhost:7222/api/Ocrd");
-              //  var response = await _httpclient.PostAsJsonAsync("api/Ocrd", sapClienteCreateDto);
+                //  var response = await _httpclient.PostAsJsonAsync("api/Ocrd", sapClienteCreateDto);
 
                 var response = await _httpclient.PostAsJsonAsync("api/Ocrd", sapClienteCreateDto);
 
@@ -81,13 +82,45 @@ namespace Miluc.Client.Servicios.SapService
                     return erroresResult ?? new ResponseAPI<bool>();
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return new ResponseAPI<bool>
                 {
                     EsCorrecto = false,
                     CantRegistros = 0,
                     Mensaje = $"Error de red: {ex.Message}"
+                };
+            }
+        }
+
+        public async Task<ResponseAPI<List<OinvReaderDto>>> FacturasPendientes(string cardcode)
+        {
+            try
+            {
+
+                ResponseAPI<List<OinvReaderDto>> response = new ResponseAPI<List<OinvReaderDto>>();
+                //var request = new HttpRequestMessage(HttpMethod.Get, "https://localhost:7222/api/Ocrd/facturas-pendientes");
+                var result = await _httpclient.GetFromJsonAsync<ResponseAPI<List<OinvReaderDto>>>($"api/Ocrd/cliente-facturas/{cardcode}");
+                
+                if (result.Valor!=null)
+                {
+                    response.Valor=result.Valor;
+                    response.Mensaje=result.Mensaje;
+                    response.Errores = result.Errores;
+                    response.EsCorrecto = result.EsCorrecto;
+                }
+               
+                return response ?? new ResponseAPI<List<OinvReaderDto>>();
+
+            }
+            catch (Exception ex) 
+            {
+                return new ResponseAPI<List<OinvReaderDto>>
+                {
+                    EsCorrecto = false,
+                    Mensaje = $"Error al consultar facturas pendientes por cobrar {ex.Message}",
+                    Errores = [ex.Message]
+                    
                 };
             }
         }
@@ -128,56 +161,44 @@ namespace Miluc.Client.Servicios.SapService
                     CantRegistros = 0,
                     Mensaje = $"Error de red: {ex.Message}"
                 };
-
             }
         }
-
         public async Task<ResponseAPI<SapClienteReaderDto>> GetClienteByIdAsync(string cardcode)
         {
             try
             {
                 //var request = new HttpRequestMessage(HttpMethod.Get, "https://localhost:7222/api/Ocrd/{cardcode}");
-
-                ResponseAPI<SapClienteReaderDto> response =new ();
+                ResponseAPI<SapClienteReaderDto> response = new();
                 var result = await _httpclient.GetFromJsonAsync<ResponseAPI<SapClienteReaderDto>>($"api/Ocrd/{cardcode}");
-
                 if (result.Valor != null)
                 {
                     response.Valor = result.Valor;
                     response.EsCorrecto = result.EsCorrecto;
-                    response.Mensaje=result.Mensaje;
+                    response.Mensaje = result.Mensaje;
                     response.CantRegistros = result.CantRegistros;
-
                     return response.SuccessResponse(response.EsCorrecto, response.Mensaje, response.Valor, response.CantRegistros);
                 }
                 else
                 {
-                    return response.ErroresResponse(result.EsCorrecto, result.Mensaje,result.Errores);
+                    return response.ErroresResponse(result.EsCorrecto, result.Mensaje, result.Errores);
                 }
-
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
-
-                List<string>Errores = new List<string>();
+                List<string> Errores = new List<string>();
                 return new ResponseAPI<SapClienteReaderDto>
                 {
                     EsCorrecto = false,
                     Valor = null,
                     Mensaje = ex.Message,
                 };
-            
-            
             }
         }
-
         public async Task<ResponseAPI<List<BusinessPartnerGroupsDto>>> GetGrupoDeVentasAsync()
         {
             try
             {
-
                 var response = await _httpclient.GetFromJsonAsync<ResponseAPI<List<BusinessPartnerGroupsDto>>>("api/BusinessPartnerGroups");
-
                 if (response == null)
                 {
                     return new ResponseAPI<List<BusinessPartnerGroupsDto>>
@@ -187,28 +208,22 @@ namespace Miluc.Client.Servicios.SapService
                         CantRegistros = 0,
                         Mensaje = "Error al obtener datos"
                     };
-
                 }
                 else
                 {
                     return response;
-
                 }
-
             }
             catch (Exception ex)
             {
-
                 return new ResponseAPI<List<BusinessPartnerGroupsDto>>
                 {
-            EsCorrecto = false,
+                    EsCorrecto = false,
                     Valor = new List<BusinessPartnerGroupsDto>(),
                     CantRegistros = 0,
                     Mensaje = $"Error de red: {ex.Message}"
                 };
-
-
-}
+            }
         }
     }
 }

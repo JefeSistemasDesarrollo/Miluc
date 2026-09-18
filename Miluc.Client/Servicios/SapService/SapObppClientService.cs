@@ -12,18 +12,13 @@ namespace Miluc.Client.Servicios.SapService
             try
             {
                 //var request = new HttpRequestMessage(HttpMethod.Get, "https://localhost:7222/api/Obpp");
-
-
                 var response = await http.GetFromJsonAsync<ResponseAPI<List<SapObppDto>>>("api/Obpp");
-
-
-                return response;
-
+                return response ?? new ResponseAPI<List<SapObppDto>>();
             }
             catch (Exception ex)
             {
 
-                return null;
+                throw new Exception($"ERRO {ex.Message} ");
             }
         }
     }
