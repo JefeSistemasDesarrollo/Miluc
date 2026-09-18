@@ -7,8 +7,8 @@ namespace Miluc.Shared.DTOs.Usuarios
     public class UsuarioCreateDto
     {
 
-        [Required(ErrorMessage = "El nombre de usuario es obligatorio")]
-        public string UserName { get; set; } = string.Empty;
+        //[Required(ErrorMessage = "El nombre de usuario es obligatorio")]
+        //public string UserName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El nombre es obligatorio")]
         public string Nombres { get; set; } = string.Empty;

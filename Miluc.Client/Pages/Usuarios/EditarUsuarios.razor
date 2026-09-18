@@ -48,6 +48,14 @@
                             <small class="d-block text-muted mt-2">Formatos: JPG, PNG (Máx 2MB)</small>
                         </div>
                         <div class="row g-2">
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small text-secondary">Username (Login*)</label>
+                                <InputText class="form-control custom-input" @bind-Value="usuarioDto.Email" placeholder="correo@ejemplo.com" />
+                                <ValidationMessage For="@(() => usuarioDto.Email)" class="text-danger small" />
+                            </div>
+
+
                             <div class="col-6 mb-3">
                                 <label class="form-label fw-bold small text-secondary">Nombres*</label>
                                 <InputText class="form-control custom-input" @bind-Value="usuarioDto.Nombres" />
@@ -59,13 +67,6 @@
                                 <ValidationMessage For="@(() => usuarioDto.Apellidos)" class="text-danger small" />
                             </div>
                         </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small text-secondary">Email</label>
-                            <InputText class="form-control custom-input" @bind-Value="usuarioDto.Email" placeholder="correo@ejemplo.com" />
-                            <ValidationMessage For="@(() => usuarioDto.Email)" class="text-danger small" />
-                        </div>
-
                         <div class="mb-3">
                             <label class="form-label fw-bold small text-secondary">Teléfono</label>
                             <InputText class="form-control custom-input" @bind-Value="usuarioDto.Telefono" />

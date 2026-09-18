@@ -48,11 +48,19 @@
                             <small class="d-block text-muted mt-2">Formatos: JPG, PNG (Máx 2MB)</small>
                         </div>
 
-                        <div class="mb-3">
+                    @*     <div class="mb-3">
                             <label class="form-label fw-bold small text-secondary">Nombre de Usuario (Login)*</label>
                             <InputText class="form-control custom-input" @bind-Value="usuarioDto.UserName" placeholder="Nombre único para el ingreso" />
                             <ValidationMessage For="@(() => usuarioDto.UserName)" class="text-danger small" />
+                        </div> *@
+
+                           <div class="mb-3">
+                            <label class="form-label fw-bold small text-secondary">Email (Login)*</label>
+                            @* <label class="form-label fw-bold small text-secondary">Email</label> *@
+                            <InputText class="form-control custom-input" @bind-Value="usuarioDto.Email" placeholder="correo@ejemplo.com" />
+                            <ValidationMessage For="@(() => usuarioDto.Email)" class="text-danger small" />
                         </div>
+
 
                         <div class="row g-2">
                             <div class="col-6 mb-3">
@@ -67,11 +75,7 @@
                             </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small text-secondary">Email</label>
-                            <InputText class="form-control custom-input" @bind-Value="usuarioDto.Email" placeholder="correo@ejemplo.com" />
-                            <ValidationMessage For="@(() => usuarioDto.Email)" class="text-danger small" />
-                        </div>
+                     
 
                         <div class="mb-3">
                             <label class="form-label fw-bold small text-secondary">Teléfono</label>
@@ -235,7 +239,7 @@
             if (Auth.HasPermission("Usuario.Create"))
             {
 
-                usuarioDto.UserName = string.Empty;
+                // usuarioDto.UserName = string.Empty;
                 usuarioDto.Password=string.Empty;
                 usuarioDto.ConfirmarPassword = string.Empty;
 
@@ -344,6 +348,8 @@
                 return;
             }
             // Llamada al servicio que ya tienes configurado
+           // usuarioDto.UserName = usuarioDto.Email;
+
             var res = await _usuarioClientService.CrearUsuarioAsync(usuarioDto);
             if (res.EsCorrecto)
             {

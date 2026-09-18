@@ -15,8 +15,8 @@ namespace Miluc.Server.Servicios.Usuarios
                 throw new ArgumentNullException("El objeto del usuario viene vacío",nameof(dto));
          
             // 1. Validaciones de existencia (Username y Email)
-            if (await _context.Usuarios.AnyAsync(u => u.UserName.ToLower() == dto.UserName.ToLower()))
-                throw new InvalidOperationException("El nombre de usuario ya está registrado.");
+            //if (await _context.Usuarios.AnyAsync(u => u.UserName.ToLower() == dto.UserName.ToLower()))
+            //    throw new InvalidOperationException("El nombre de usuario ya está registrado.");
 
             if (await _context.Usuarios.AnyAsync(u => u.Email.ToLower() == dto.Email.ToLower()))
                 throw new InvalidOperationException("El correo electrónico ya está en uso.");
@@ -33,7 +33,7 @@ namespace Miluc.Server.Servicios.Usuarios
                 // 3. Mapeo de Entidad Principal
                 var usuario = new Usuario
                 {
-                    UserName = dto.UserName,
+                    UserName = dto.Email,
                     Nombres = dto.Nombres,  
                     Apellidos = dto.Apellidos,
                     Email = dto.Email,
@@ -130,6 +130,7 @@ namespace Miluc.Server.Servicios.Usuarios
             try
             {
                 //  datos de usuarios 
+                user.UserName = dto.Email;
                 user.Email = dto.Email;
                 user.Activo = dto.Activo;
                 user.Nombres = dto.Nombres;
