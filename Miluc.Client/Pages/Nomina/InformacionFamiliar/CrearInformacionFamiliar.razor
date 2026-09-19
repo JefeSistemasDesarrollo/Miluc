@@ -261,7 +261,7 @@
         var respuestaParentescos = await _parentescoService.GetAllParentescosAsync();
         if (respuestaParentescos.EsCorrecto) listParentescos = respuestaParentescos.Valor;
 
-        var respuestaEmpleados = await _empleadoService.GetEmpleadosAsync(null, 1, 1000);
+        var respuestaEmpleados = await _empleadoService.GetEmpleadosAsync(null, 1, 1000,"");
         if (respuestaEmpleados?.EsCorrecto == true) listEmpleados = respuestaEmpleados.Valor ?? new();
 
         await CargarFamiliaresExistentes();

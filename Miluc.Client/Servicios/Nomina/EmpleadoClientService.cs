@@ -147,14 +147,14 @@ namespace Miluc.Client.Servicios.Nomina
 
 
 
-        public async Task<ResponseAPI<List<EmpleadoReaderDto>>> GetEmpleadosAsync(string textoBusqueda, int paginaActual, int cantidadPorPagina)
+        public async Task<ResponseAPI<List<EmpleadoReaderDto>>> GetEmpleadosAsync(string textoBusqueda, int paginaActual, int cantidadPorPagina, string correo)
         {
             try
             {
                 //var request = new HttpRequestMessage(HttpMethod.Get, "https://localhost:7222/api/Empleado?filtro=&page=1&cantidad=");
 
 
-                var responsePeticion = await httpClient.GetAsync($"api/Empleado?filtro={textoBusqueda}&page={paginaActual}&cantidad={cantidadPorPagina} ");
+                var responsePeticion = await httpClient.GetAsync($"api/Empleado?filtro={textoBusqueda}&page={paginaActual}&cantidad={cantidadPorPagina}&correo={correo}");
 
                 if (!responsePeticion.IsSuccessStatusCode)
                 {

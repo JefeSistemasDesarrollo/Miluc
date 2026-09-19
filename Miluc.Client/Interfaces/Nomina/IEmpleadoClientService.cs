@@ -11,7 +11,9 @@ namespace Miluc.Client.Interfaces.Nomina
         Task<ResponseAPI<EmpleadoReaderDto>>createEmpleadosAsync(EmpleadoCreateDto dto);
         Task<ResponseAPI<EmpleadoReaderDto>>UpdateEmpleadosAsync(EmpleadoUpdateDto empleado);
         Task<ResponseAPI<EmpleadoReaderDto>> GetEmpleadoByIdAsync(int idempleado);
-        Task<ResponseAPI<List<EmpleadoReaderDto>>> GetEmpleadosAsync(string textoBusqueda, int paginaActual, int cantidadPorPagina);
+        //Task<ResponseAPI<List<EmpleadoReaderDto>>> GetEmpleadosAsync(string textoBusqueda, int paginaActual, int cantidadPorPagina, string textoBusqueda);
+        Task<ResponseAPI<List<EmpleadoReaderDto>>> GetEmpleadosAsync(string textoBusqueda, int paginaActual, int cantidadPorPagina, string correo);
+
         Task<ResponseAPI<bool>> DeleteEmpleadosAsync(int id);
     }
 }
