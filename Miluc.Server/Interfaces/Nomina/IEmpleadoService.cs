@@ -6,7 +6,7 @@ namespace Miluc.Server.Interfaces.Nomina
 {
     public interface IEmpleadoService
     {
-        Task<ResponseAPI<List<EmpleadoReaderDto>>> GetEmpleadosAsync(string? filtro = null, int page = 1, int? cantidad = null);
+        Task<ResponseAPI<List<EmpleadoReaderDto>>> GetEmpleadosAsync(string? filtro = null, int page = 1, int? cantidad = null,string ? correo=null);
         Task<EmpleadoReaderDto> GetEmpleadoByIdAsync(int id);
         Task<EmpleadoReaderDto> CreateEmpleadosAsync(EmpleadoCreateDto dto);
         Task<EmpleadoReaderDto> UpdateEmpleadosAsync(EmpleadoUpdateDto updateDto);
