@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Miluc.Shared.DTOs.Nomina.Cargos
 {
-    public class CargosDto
+    public class CargoDto
     {
         public int CargoId { get; set; }
         public string CargoNombre { get; set; }

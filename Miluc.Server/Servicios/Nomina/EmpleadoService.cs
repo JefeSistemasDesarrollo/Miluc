@@ -148,7 +148,7 @@ namespace Miluc.Server.Servicios.Nomina
 
       
 
-        public async Task<ResponseAPI<List<EmpleadoReaderDto>>> GetEmpleadosAsync(string? filtro = null, int page = 1, int? cantidad = null)
+        public async Task<ResponseAPI<List<EmpleadoReaderDto>>> GetEmpleadosAsync(string? filtro = null, int page = 1, int? cantidad = null, string? correo = null)
         {
             try
             {
@@ -163,7 +163,13 @@ namespace Miluc.Server.Servicios.Nomina
                 {
                     query = query.Where(e => e.Documento.Contains(filtro.Trim()) ||
                                              e.PrimerNombre.Contains(filtro.Trim()) ||
-                                             e.PrimerApellido.Contains(filtro.Trim()));
+                                             e.PrimerApellido.Contains(filtro.Trim()) );
+                }
+
+
+                if (correo != null)
+                {
+                    query = query.Where(e => e.CorreoElectronico.Contains(correo.Trim()));
                 }
 
                 var totalRegistros = query.Count();
