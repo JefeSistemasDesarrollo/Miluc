@@ -5,7 +5,7 @@
 @inject NavigationManager nav
 @inject IEmpleadoClientService _empleadoClientService
 @inject IJSRuntime js
-
+@inject IAuthClientService _autcliente
 <div class="empleados-page animate__animated animate__fadeIn p-4">
 
     @* ENCABEZADO DE LA PÁGINA: Título y Botón de Nuevo Empleado *@
@@ -35,26 +35,30 @@
             
             @* Barra de búsqueda *@
             <div class="col-lg-7">
-                <div class="input-group input-group-lg search-group">
-                    <span class="input-group-text bg-white border-end-0 rounded-start-pill ps-3">
-                        <i class="bi bi-search text-muted"></i>
-                    </span>
-                    
-                    @*
+                @if (_autcliente.HasPermission("Employee.Search"))
+                {
+                    <div class="input-group input-group-lg search-group">
+                        <span class="input-group-text bg-white border-end-0 rounded-start-pill ps-3">
+                            <i class="bi bi-search text-muted"></i>
+                        </span>
+
+                        @*
                         INPUT DE BÚSQUEDA EXPLICACIÓN:
                         - @bind: Vincula el valor escrito a la propiedad 'textoBusqueda'.
                         - @bind:event="oninput": Hace que el binding se actualice de forma inmediata tecla por tecla (en tiempo real).
                         - @onkeyup: Escucha cuando el usuario suelta una tecla para verificar si presionó 'Enter'.
                     *@
-                    <input type="text" class="form-control border-start-0 shadow-none fs-6"
-                           placeholder="Filtrar local o buscar en servidor..."
-                           @bind="textoBusqueda" @bind:event="oninput" @onkeyup="HandleEnter" />
+                        <input type="text" class="form-control border-start-0 shadow-none fs-6"
+                               placeholder="Filtrar local o buscar en servidor..."
+                               @bind="textoBusqueda" @bind:event="oninput" @onkeyup="HandleEnter" />
 
-                    @* Botón para forzar la búsqueda directamente en la Base de Datos del Servidor *@
-                    <button class="btn btn-rojo rounded-end-pill px-4" @onclick="BuscarEnServidor">
-                        <i class="bi bi-search me-2"></i>
-                    </button>
-                </div>
+                        @* Botón para forzar la búsqueda directamente en la Base de Datos del Servidor *@
+                        <button class="btn btn-rojo rounded-end-pill px-4" @onclick="BuscarEnServidor">
+                            <i class="bi bi-search me-2"></i>
+                        </button>
+                    </div>
+                }
+
             </div>
             
             @* Selector de paginación y Badge de Total *@
@@ -182,7 +186,7 @@
 
     // Variable interna de control para el buscador
     private string _textoBusqueda = "";
-
+    private string _correo = "";
     // Propiedad Completa (Full Property) para interceptar los cambios en el buscador en tiempo real
     private string textoBusqueda
     {
@@ -203,6 +207,12 @@
     // Ciclo de vida de Blazor: Se ejecuta de manera automática una sola vez al cargar el componente en pantalla
     protected override async Task OnInitializedAsync()
     {
+
+        if (_autcliente.HasPermission("Employee.FilterCorreo"))
+        {
+            _correo = _autcliente.CurrentSession.UserName;
+        }
+
         await cargarEmpleados(); // Solicita la primera tanda de empleados
     }
 
@@ -212,7 +222,7 @@
         cargando = true; // Muestra el Spinner de carga
 
         // Petición asíncrona enviando los parámetros de paginación actuales
-        var respuesta = await _empleadoClientService.GetEmpleadosAsync(textoBusqueda, paginaActual, cantidadPorPagina);
+        var respuesta = await _empleadoClientService.GetEmpleadosAsync(textoBusqueda, paginaActual, cantidadPorPagina,_correo);
 
         if (respuesta.EsCorrecto)
         {
@@ -252,7 +262,7 @@
         cargando = true;
 
         // CORRECCIÓN: Se reemplazó el número fijo '4' por la propiedad dinámica 'cantidadPorPagina'
-        var respuesta = await _empleadoClientService.GetEmpleadosAsync(textoBusqueda, paginaActual, cantidadPorPagina);
+        var respuesta = await _empleadoClientService.GetEmpleadosAsync(textoBusqueda, paginaActual, cantidadPorPagina,_correo);
 
         if (respuesta != null)
         {

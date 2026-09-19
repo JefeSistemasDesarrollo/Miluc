@@ -16,12 +16,13 @@ namespace Miluc.Server.Controllers.Nomina
     {
 
         [HttpGet]
-        public async Task<ActionResult<ResponseAPI<List<EmpleadoReaderDto>>>> GetEmpleadosAsync([FromQuery] string? filtro = null, [FromQuery] int page = 1, [FromQuery] int? cantidad = null)
+        public async Task<ActionResult<ResponseAPI<List<EmpleadoReaderDto>>>> 
+       GetEmpleadosAsync([FromQuery] string? filtro = null, [FromQuery] int page = 1, [FromQuery] int? cantidad = null, [FromQuery] string? correo= null)
         {
             try
             {
             
-                var response = await empleadoService.GetEmpleadosAsync(filtro, page, cantidad);
+                var response = await empleadoService.GetEmpleadosAsync(filtro, page, cantidad, correo);
                 var empleados = response?.Valor;
             
 
@@ -124,6 +125,23 @@ namespace Miluc.Server.Controllers.Nomina
         {
             try
             {
+
+                // 1. Procesar la Foto de Base64 a byte[]
+                if (!string.IsNullOrEmpty(dto.Usuario.FotoBase64))
+                {
+                    // Limpiar el encabezado data:image/jpeg;base64,
+                    var base64Data = dto.Usuario.FotoBase64.Contains(",") ? dto.Usuario.FotoBase64.Split(',')[1] : dto.Usuario.FotoBase64;
+                    dto.Usuario.Foto = Convert.FromBase64String(base64Data);
+                }
+                // 2. Asegurar que el IdTipoUsuario seleccionado se agregue a la lista que espera tu servicio
+                if (dto.Usuario.IdTipoUsuario > 0 && !dto.Usuario.TiposUsuarioIds.Contains(dto.Usuario.IdTipoUsuario))
+                {
+                    dto.Usuario.TiposUsuarioIds.Add(dto.Usuario.IdTipoUsuario);
+                }
+
+
+
+
                 var empleado = await empleadoService.CreateEmpleadosAsync(dto);
 
                 if (empleado == null)
@@ -171,6 +189,20 @@ namespace Miluc.Server.Controllers.Nomina
         [HttpPut("{id}")]
         public async Task<ActionResult<ResponseAPI<EmpleadoReaderDto>>> UpdateEmpleadosAsync(int id, [FromBody] EmpleadoUpdateDto empleadoUpdateDto)
         {
+
+
+            if (!string.IsNullOrEmpty(empleadoUpdateDto.Usuario.FotoBase64))
+            {
+                // Limpiar el encabezado data:image/jpeg;base64,
+                var base64Data = empleadoUpdateDto.Usuario.FotoBase64.Contains(",") ? empleadoUpdateDto.Usuario.FotoBase64.Split(',')[1] : empleadoUpdateDto.Usuario.FotoBase64;
+                empleadoUpdateDto.Usuario.Foto = Convert.FromBase64String(base64Data);
+            }
+            // 2. Asegurar que el IdTipoUsuario seleccionado se agregue a la lista que espera tu servicio
+            if (empleadoUpdateDto.Usuario.IdTipoUsuario > 0 && !empleadoUpdateDto.Usuario.TiposUsuarioIds.Contains(empleadoUpdateDto.Usuario.IdTipoUsuario))
+            {
+                empleadoUpdateDto.Usuario.TiposUsuarioIds.Add(empleadoUpdateDto.Usuario.IdTipoUsuario);
+            }
+
             // Validar null
             if (empleadoUpdateDto == null)
             {

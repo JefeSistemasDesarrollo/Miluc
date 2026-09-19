@@ -8,7 +8,7 @@
 @inject IAfSeguridadSocialClientService _afSeguridadSocialClientService
 @inject IEmpleadoClientService _empleadoService
 @inject IJSRuntime js
-
+@inject IAuthClientService _autcliente
 <div class="detalleAfiliacionesEmpleado-page p-4 animate__animated animate__fadeIn">
     <div class="container-fluid max-width-container">
 
@@ -123,49 +123,102 @@
 
     private AfiliacionSeguridadSocialreaderDto? afiliacionSeguridadSocial = null;
     private bool cargando = true;
+    public string _correo = "";
 
     private void Volver() => nav.NavigateTo("/afiliacionseguridadSocial/empleados");
 
-    protected override async Task OnInitializedAsync()
+protected override async Task OnInitializedAsync()
+{
+    try
     {
-        try
+        // 1. Validar permiso para visualizar empleados
+        if (!_autcliente.HasPermission("Employee.View"))
         {
-            if (idEmpleado <= 0)
+            nav.NavigateTo("/no-autorizado");
+            return;
+        }
+
+        // 2. Si tiene permiso de filtrar por correo,
+        //    usamos el usuario de la sesión
+        if (_autcliente.HasPermission("Employee.FilterCorreo"))
+        {
+            _correo = _autcliente.CurrentSession.UserName;
+        }
+
+        // 3. Validar el ID recibido por la URL
+        if (idEmpleado <= 0)
+        {
+            await js.InvokeVoidAsync(
+                "alert",
+                "ID de empleado no válido."
+            );
+
+            Volver();
+            return;
+        }
+
+        // 4. Consultar las afiliaciones
+        var respuestaListado =
+            await _afSeguridadSocialClientService
+                .GetAfSeguridadSocialAsync(
+                    string.Empty,
+                    1,
+                    100,
+                    _correo
+                );
+
+        // 5. Validar respuesta del API
+        if (respuestaListado != null &&
+            respuestaListado.EsCorrecto &&
+            respuestaListado.Valor != null)
+        {
+            // 6. Buscar la afiliación correspondiente
+            //    al empleado recibido por la URL
+            afiliacionSeguridadSocial =
+                respuestaListado.Valor
+                    .FirstOrDefault(x => x.EmpleadoId == idEmpleado);
+
+            // 7. Si no existe registro
+            if (afiliacionSeguridadSocial == null)
             {
-                await js.InvokeVoidAsync("alert", "ID de empleado no válido.");
+                await js.InvokeVoidAsync(
+                    "alert",
+                    "El empleado no cuenta con un registro de seguridad social."
+                );
+
                 Volver();
                 return;
             }
-
-            // Cambiamos la consulta directa por la búsqueda filtrada en el listado
-            var respuestaListado = await _afSeguridadSocialClientService.GetAfSeguridadSocialAsync(string.Empty, 1, 100);
-
-            if (respuestaListado != null && respuestaListado.EsCorrecto && respuestaListado.Valor != null)
-            {
-                // Buscamos exactamente la afiliación que corresponda al idEmpleado enviado por URL
-                afiliacionSeguridadSocial = respuestaListado.Valor.FirstOrDefault(x => x.EmpleadoId == idEmpleado);
-                
-                if (afiliacionSeguridadSocial == null)
-                {
-                    await js.InvokeVoidAsync("alert", "El empleado no cuenta con un registro de seguridad social activo.");
-                    Volver();
-                }
-            }
-            else
-            {
-                await js.InvokeVoidAsync("alert", "No se pudo obtener la información de seguridad social.");
-                Volver();
-            }
         }
-        catch (Exception ex)
+        else
         {
-            Console.WriteLine($"Error al consultar: {ex.Message}");
-            await js.InvokeVoidAsync("alert", "Error interno al recuperar el detalle.");
+            await js.InvokeVoidAsync(
+                "alert",
+                "No se pudo obtener la información de seguridad social."
+            );
+
             Volver();
-        }
-        finally
-        {
-            cargando = false;
+            return;
         }
     }
+    catch (Exception ex)
+    {
+        Console.WriteLine(
+            $"Error al consultar afiliación de seguridad social: {ex.Message}"
+        );
+
+        await js.InvokeVoidAsync(
+            "alert",
+            "Error interno al recuperar el detalle."
+        );
+
+        Volver();
+    }
+    finally
+    {
+        // Siempre quitar el spinner
+        cargando = false;
+    }
+}
+    
 }

@@ -174,6 +174,18 @@ namespace Miluc.Client.Servicios.Autorizacion
                     Mensaje = "Error del servidor"
                 };
         }
+        public async Task<ResponseAPI<bool>> CambiarPasswordCorreoAsync(CambiarPasswordRequest request)
+        {
+            var response = await _http.PostAsJsonAsync("api/auth/cambiar-password-correo", request);
+
+            return await response.Content
+                .ReadFromJsonAsync<ResponseAPI<bool>>()
+                ?? new ResponseAPI<bool>
+                {
+                    EsCorrecto = false,
+                    Mensaje = "Error del servidor"
+                };
+        }
 
 
         public async Task<ResponseAPI<UserSession>> VerifyOtp(VerifyOtpRequest request)
