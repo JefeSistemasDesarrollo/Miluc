@@ -55,5 +55,28 @@
             }
         };
     </script>
+    <script>
+window.descargarArchivo = (nombre, bytes) => {
+
+    const blob = new Blob(
+        [new Uint8Array(bytes)],
+        {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        });
+
+    const url = URL.createObjectURL(blob);
+
+    const enlace = document.createElement("a");
+
+    enlace.href = url;
+    enlace.download = nombre;
+
+    enlace.click();
+
+    URL.revokeObjectURL(url);
+};
+    </script>
+
+
 </body>
 </html>

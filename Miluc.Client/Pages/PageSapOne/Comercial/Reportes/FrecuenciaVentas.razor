@@ -1,0 +1,283 @@
+﻿@page "/frecuencia-ventas"
+@using Miluc.Client.Interfaces.SapInterfaces.Informes
+@using Miluc.Client.Interfaces.SapInterfaces.Oslp
+@using Miluc.Shared.DTOs.Sap.Vendedor
+
+@inject ISapFrecuenciaVentasClientService _frecuenciaVentasService
+@inject ISapOslpService _oslpService
+@inject IAuthClientService _authclienteService
+@inject ILogClientService _logErrores
+@inject NavigationManager _nav;
+@inject IJSRuntime _js
+
+<div class="frecuencia-container container-fluid py-4 px-3 px-md-4">
+    <!-- Encabezado -->
+    <div class="d-flex align-items-center mb-4 pb-2 border-bottom border-red-subtle">
+        <div class="icon-badge me-3">
+            <i class="bi bi-bar-chart-line-fill"></i>
+        </div>
+        <div>
+            <h3 class="title-brand m-0">Frecuencia de Ventas</h3>
+            <p class="subtitle-brand m-0">Generación de informes de SAP Business One</p>
+        </div>
+    </div>
+
+    <!-- Formulario / Card Principal -->
+    <div class="card card-brand shadow-sm">
+        <div class="card-body p-3 p-md-4">
+            <div class="row g-3 align-items-end">
+
+                <!-- Fecha Inicial -->
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <label class="form-label font-weight-bold">
+                        <i class="bi bi-calendar-event me-1 text-red"></i> Fecha inicial
+                    </label>
+                    <InputDate @bind-Value="fechaInicio" class="form-control input-brand" />
+                </div>
+
+                <!-- Fecha Final -->
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <label class="form-label font-weight-bold">
+                        <i class="bi bi-calendar-check me-1 text-red"></i> Fecha final
+                    </label>
+                    <InputDate @bind-Value="fechaFinal" class="form-control input-brand" />
+                </div>
+
+                <!-- Código de Vendedor -->
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <label class="form-label text-muted small fw-semibold">Grupo *</label>
+
+
+                    <InputSelect @bind-Value="slpCode" class="form-select form-select-sm">
+                                    @* <option value="@int.MinValue">Seleccione un vendedor</option> *@
+                                    @foreach (var slp in listSapVendedorReaderDtos)
+                                    {
+                                        <option value="@slp.SlpName">@slp.SlpName</option>
+                                    }
+                   </InputSelect>
+                    @* <ValidationMessage For="@(() => slp.SlpName)" class="text-danger small" /> *@
+
+
+                    @*  <label class="form-label font-weight-bold">
+                        <i class="bi bi-person-badge me-1 text-red"></i> Vendedor (SlpCode)
+                    </label>
+                    <InputNumber @bind-Value="slpCode" class="form-control input-brand" placeholder="Ej: -1 para todos" /> *@
+                </div>
+
+                <!-- Botón de Acción -->
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <button class="btn btn-red w-100 d-flex align-items-center justify-content-center"
+                            @onclick="DescargarExcel"
+                            disabled="@cargando">
+                        @if (cargando)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            <span>Generando...</span>
+                        }
+                        else
+                        {
+                            <i class="bi bi-file-earmark-excel-fill me-2"></i>
+                            <span>Descargar Excel</span>
+                        }
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Alertas y Mensajes -->
+    @if (!string.IsNullOrEmpty(mensaje))
+    {
+        <div class="alert alert-red-custom mt-4 d-flex align-items-center shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2"></i>
+            <div>@mensaje</div>
+        </div>
+    }
+</div>
+
+<style>
+    /* Variables de marca */
+    :root {
+        --brand-red: #D62F46;
+        --brand-red-dark: #b82236;
+        --brand-red-light: #fdf2f3;
+        --brand-red-border: #f8c2c8;
+        --text-main: #2b2b2b;
+        --text-muted: #6c757d;
+    }
+
+    /* Estilos del Contenedor */
+    .frecuencia-container {
+        max-width: 1200px;
+    }
+
+    .border-red-subtle {
+        border-color: var(--brand-red-border) !important;
+    }
+
+    .icon-badge {
+        width: 42px;
+        height: 42px;
+        background-color: var(--brand-red-light);
+        color: var(--brand-red);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+
+    .title-brand {
+        color: var(--brand-red);
+        font-weight: 700;
+        font-size: 1.5rem;
+    }
+
+    .subtitle-brand {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+    }
+
+    /* Estilos de Card y Formulario */
+    .card-brand {
+        background-color: #ffffff;
+        border: 1px solid #f0d0d4;
+        border-radius: 12px;
+    }
+
+    .form-label {
+        font-size: 0.875rem;
+        color: var(--text-main);
+        margin-bottom: 0.4rem;
+    }
+
+    .text-red {
+        color: var(--brand-red);
+    }
+
+    .input-brand {
+        border: 1px solid #e2cad0;
+        border-radius: 8px;
+        padding: 0.55rem 0.75rem;
+        font-size: 0.95rem;
+        transition: all 0.2s ease-in-out;
+        color: var(--text-main);
+    }
+
+    .input-brand:focus {
+        border-color: var(--brand-red);
+        box-shadow: 0 0 0 0.25rem rgba(214, 47, 70, 0.15);
+        outline: none;
+    }
+
+    /* Botón Rojo Principal */
+    .btn-red {
+        background-color: var(--brand-red);
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        padding: 0.6rem 1.2rem;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: background-color 0.2s ease, transform 0.1s ease;
+    }
+
+    .btn-red:hover:not(:disabled) {
+        background-color: var(--brand-red-dark);
+        color: #ffffff;
+    }
+
+    .btn-red:active:not(:disabled) {
+        transform: scale(0.98);
+    }
+
+    .btn-red:disabled {
+        background-color: #e88d99;
+        color: #ffffff;
+        opacity: 0.8;
+    }
+
+    /* Alerta Custom */
+    .alert-red-custom {
+        background-color: var(--brand-red-light);
+        border: 1px solid var(--brand-red-border);
+        color: var(--brand-red-dark);
+        border-radius: 8px;
+        font-size: 0.9rem;
+    }
+</style>
+
+@code {
+    private DateTime fechaInicio = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+    private DateTime fechaFinal = DateTime.Now;
+    private int slpCode = -1;
+    private bool cargando;
+    private string? mensaje;
+
+    private List<SapVendedorReaderDto> listSapVendedorReaderDtos = new List<SapVendedorReaderDto>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var listaVendedores = await _oslpService.GetListVendedoresAsync();
+
+            if (listaVendedores.Valor!=null)
+            {
+                listSapVendedorReaderDtos = listaVendedores.Valor;
+
+            }
+
+
+
+        }catch(Exception ex)
+        {
+            await _logErrores.GuardarErrorAsync
+          (
+              ex.Message,
+              ex.StackTrace,
+              usuario: _authclienteService.CurrentSession.UserName ?? "No encontrado",
+              metodo: nameof(OnInitializedAsync),
+              ruta: "/frecuencia-ventas",
+              origen: $"frecuencia de ventas icializar vendedor {ex.HelpLink}",
+              nivel: "error"
+
+          );
+            await _js.InvokeVoidAsync("Swal.fire", new
+            {
+                icon = "error",
+                title = "Error al cargar usuarios",
+                text = ex.Message
+            });
+        }
+    }
+
+    private async Task DescargarExcel()
+    {
+        try
+        {
+            cargando = true;
+            mensaje = null;
+
+            var resultado = await _frecuenciaVentasService
+                .DescargarFrecuanciaVentasService(
+                    fechaInicio,
+                    fechaFinal,
+                    slpCode);
+
+            if (!resultado)
+            {
+                mensaje = "No fue posible generar el archivo Excel o no existen registros con los filtros seleccionados.";
+            }
+        }
+        catch (Exception ex)
+        {
+            mensaje = $"Ocurrió un error inesperado: {ex.Message}";
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+}

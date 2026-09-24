@@ -17,12 +17,15 @@
         public string ? Almacen { get; set; }
         public string? SlpName { get; set; } 
         public string ? PrioDesc {  get; set; }
+        public string ? VendedorAsignado {  get; set; }
+        public string ? VendedorFactura {  get; set; }
         public string ? Telefono1 {  get; set; }
         public string ? Telefono2 {  get; set; }
         public decimal ? Quantity { get; set; }
         public decimal ? SWeight1 { get; set; }
         public decimal? LineTotal { get; set; }
-
+        public decimal? ValorTotal { get; set; }
+        public string? Correo { get; set; }
 
     }
 }
