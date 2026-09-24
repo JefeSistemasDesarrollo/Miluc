@@ -5,7 +5,9 @@ namespace TuProyecto.Client.Services
 {
     public interface IContratoLaboralClientService
     {
-        Task<ResponseAPI<List<ContratoLaboralreaderDto>>> GetContratoLaboralAsync(string textoBusqueda, int paginaActual, int cantidadPorPagina);
+        //Task<ResponseAPI<List<ContratoLaboralreaderDto>>> GetContratoLaboralAsync(string textoBusqueda, int paginaActual, int cantidadPorPagina);
+
+        Task<ResponseAPI<List<ContratoLaboralreaderDto>>> GetContratoLaboralAsync( string? filtro = null, int page = 1,int? cantidad = null,string? correo = null);
 
         Task<ResponseAPI<List<ContratoLaboralreaderDto>>> GetContratosPorEmpleadoAsync(int empleadoId);
 

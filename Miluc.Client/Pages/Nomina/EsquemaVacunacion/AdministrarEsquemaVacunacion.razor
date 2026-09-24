@@ -7,6 +7,7 @@
 @inject IEmpleadoClientService _empleadoClientService
 @inject IEsquemaVacunacionClientService _esquemaClienteService
 @inject IJSRuntime js
+@inject IAuthClientService _authClienteService
 
 <div class="afiliaciónEmpleados-page animate__animated animate__fadeIn p-4">
 
@@ -162,6 +163,7 @@
     private List<EsquemaVacunacionReaderDto> listempleadosAlservidor = new List<EsquemaVacunacionReaderDto>();
 
     private string _textoBusqueda = "";
+    private string _correo = "";
 
     private string textoBusqueda
     {
@@ -180,6 +182,17 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (!_authClienteService.HasPermission("Employee.View"))
+        {
+            nav.NavigateTo("/no-autorizado");
+            return;
+        }
+
+        if (_authClienteService.HasPermission("Employee.FilterCorreo"))
+        {
+            _correo = _authClienteService.CurrentSession.UserName;
+        }
+
         await cargarAfiliaciones();
     }
 
@@ -190,7 +203,7 @@
 
         try
         {
-            var respuesta = await _esquemaClienteService.GetEsquemasVacunacionAsync(textoBusqueda, paginaActual, cantidadPorPagina);
+            var respuesta = await _esquemaClienteService.GetEsquemasVacunacionAsync(textoBusqueda, paginaActual, cantidadPorPagina, _correo);
 
            
             if (respuesta != null && respuesta.EsCorrecto && respuesta.Valor != null)

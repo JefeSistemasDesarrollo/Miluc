@@ -17,7 +17,7 @@ namespace Miluc.Server.Servicios.Nomina
     public class AfiliacionSeguridadSocialService(NominaDbContext _context) : IAfiliacionSeguridadSocialService
     {
 
-        public async Task<(List<AfiliacionSeguridadSocialreaderDto> Data, int CantidadRegistros)> GetAfiliacionSeguridadSocialAsync(string? filtro = null, int page = 1, int? cantidad = null)
+        public async Task<(List<AfiliacionSeguridadSocialreaderDto> Data, int CantidadRegistros)> GetAfiliacionSeguridadSocialAsync(string? filtro = null, int page = 1, int? cantidad = null,string? correo= null)
         {
             try
             {
@@ -27,9 +27,14 @@ namespace Miluc.Server.Servicios.Nomina
 
                 query = AplicarFiltro(query, filtro);
 
+                if (!string.IsNullOrWhiteSpace(correo))
+                {
+                    query = query.Where(e => e.CorreoElectronico == correo.Trim());
+                }
+
                 var totalRegistros = await query.CountAsync();
 
-             
+
                 var datosIntermedios = await query
                     .Skip((page - 1) * cantidadtop)
                     .Take(cantidadtop)

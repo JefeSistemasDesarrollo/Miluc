@@ -7,6 +7,7 @@
 @inject IEmpleadoClientService _empleadoClientService
 @inject IAfSeguridadSocialClientService afSeguridadSocialClientService
 @inject IJSRuntime js
+@inject IAuthClientService _autclient
 
 <div class="afiliaciónEmpleados-page animate__animated animate__fadeIn p-4">
 
@@ -191,6 +192,7 @@
     private List<AfiliacionSeguridadSocialreaderDto> listempleadosAlservidor = new List<AfiliacionSeguridadSocialreaderDto>();
 
     private string _textoBusqueda = "";
+    public string _correo = "";
 
     private string textoBusqueda
     {
@@ -209,6 +211,17 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (!_autclient.HasPermission("Employee.View"))
+        {
+            nav.NavigateTo("/no-autorizado");
+            return;
+        }
+
+        if (_autclient.HasPermission("Employee.FilterCorreo"))
+        {
+            _correo = _autclient.CurrentSession.UserName;
+        }
+
         await cargarAfiliaciones();
     }
 
@@ -217,7 +230,7 @@
         cargando = true;
 
         // Invocación a tu servicio de seguridad social con paginación
-        var respuesta = await afSeguridadSocialClientService.GetAfSeguridadSocialAsync(textoBusqueda, paginaActual, cantidadPorPagina);
+        var respuesta = await afSeguridadSocialClientService.GetAfSeguridadSocialAsync(textoBusqueda, paginaActual, cantidadPorPagina, _correo);
 
         if (respuesta != null && respuesta.EsCorrecto)
         {
@@ -253,7 +266,7 @@
         paginaActual = 1;
         cargando = true;
 
-        var respuesta = await afSeguridadSocialClientService.GetAfSeguridadSocialAsync(textoBusqueda, paginaActual, cantidadPorPagina);
+        var respuesta = await afSeguridadSocialClientService.GetAfSeguridadSocialAsync(textoBusqueda, paginaActual, cantidadPorPagina, _correo);
 
         if (respuesta != null && respuesta.EsCorrecto)
         {

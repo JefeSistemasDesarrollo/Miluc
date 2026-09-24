@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Miluc.Shared.DTOs.Usuarios;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
@@ -69,6 +70,8 @@ namespace Miluc.Shared.DTOs.Nomina.EmpleadoDto
         public int CajaCompensacionId { get; set; }
         public bool Activo { get; set; }
         public DateTime? FechaCreacion { get; set; }
+
         public DateTime? FechaActualizacion { get; set; }
+        public UsuarioCreateDto Usuario { get; set; } = new UsuarioCreateDto();
     }
 }

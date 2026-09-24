@@ -20,7 +20,7 @@ namespace Miluc.Server.Controllers.Generales
             try
             {
                 var configuracion = await _contex.SisConfiguracionesGenerales
-                .FirstOrDefaultAsync(x => x.Modulo == "xxxSAPxxModificarxxx");
+                .FirstOrDefaultAsync(x => x.Modulo == "SAP");
 
                 if (configuracion == null)
                 {
