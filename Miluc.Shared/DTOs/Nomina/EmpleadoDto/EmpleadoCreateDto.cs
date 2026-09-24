@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using Miluc.Shared.DTOs;
+using Miluc.Shared.DTOs.Usuarios;
 
 
 namespace Miluc.Shared.DTOs.Nomina.EmpleadoDto
@@ -61,5 +62,7 @@ namespace Miluc.Shared.DTOs.Nomina.EmpleadoDto
         public int AfpId { get; set; }
         public int ArlId { get; set; }
         public int CajaCompensacionId { get; set; }
+
+        public UsuarioCreateDto Usuario { get; set; } = new UsuarioCreateDto();
     }
 }

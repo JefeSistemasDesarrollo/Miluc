@@ -6,6 +6,7 @@
 @using Miluc.Shared.DTOs.Nomina.MunicipioDto
 @using Miluc.Shared.DTOs.Nomina.TipoDocumento
 @using Syncfusion.Blazor.Calendars
+@using Miluc.Shared.DTOs.Usuarios
 
 @inject NavigationManager nav
 @inject IDepartamentosClientService _municipioClientService
@@ -448,6 +449,22 @@
         isProcessing = true;
         try
         {
+           
+
+            editarEmpleado.Usuario.Nombres = $"{editarEmpleado.PrimerNombre} {editarEmpleado.SegundoNombre}";
+            editarEmpleado.Usuario.Apellidos = $"{editarEmpleado.PrimerApellido} {editarEmpleado.SegundoApellido}";
+            editarEmpleado.Usuario.Email = editarEmpleado.CorreoElectronico;
+            editarEmpleado.Usuario.Telefono = editarEmpleado.Celular;
+            editarEmpleado.Usuario.Password = "ABC123abc*"; // PasswordGenerator();
+            editarEmpleado.Usuario.ConfirmarPassword = "ABC123abc*";
+            editarEmpleado.Usuario.DebeCambiarPassword = true;
+            editarEmpleado.Usuario.HoraInicio = TimeOnly.Parse("08:00 AM");
+            editarEmpleado.Usuario.HoraFin = TimeOnly.Parse("05:00 PM");
+            editarEmpleado.Usuario.CodVendedorSAP = -1;
+            editarEmpleado.Usuario.TwoFactorEnabled = false;
+            editarEmpleado.Usuario.TiposUsuarioIds = [2]; // Asignar un valor predeterminado para CodVendedorSAP
+            editarEmpleado.Usuario.RolesIds = [2]; // Asignar el rol de empleado (ID 2)
+            editarEmpleado.Usuario.IdTipoUsuario = 2; // Asignar el rol de empleado (ID 2)
 
 
 

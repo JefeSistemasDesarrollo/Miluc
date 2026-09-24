@@ -13,11 +13,11 @@ namespace Miluc.Server.Controllers.Nomina
     public class EsquemaVacunacionController(IEsquemaVacunacionService _esquemaService, ILogService _log) : Controller
     {
         [HttpGet("Esquemas")]
-        public async Task<ActionResult<ResponseAPI<List<EsquemaVacunacionReaderDto>>>> GetEsquemasVacunacion([FromQuery] string? filtro = null, [FromQuery] int page = 1, [FromQuery] int? cantidad = null)
+        public async Task<ActionResult<ResponseAPI<List<EsquemaVacunacionReaderDto>>>> GetEsquemasVacunacion([FromQuery] string? filtro = null, [FromQuery] int page = 1, [FromQuery] int? cantidad = null, [FromQuery] string? correo = null)
         {
             try
             {
-                var (esquemas, totalRegistros) = await _esquemaService.GetEsquemasVacunacionAsync(filtro, page, cantidad);
+                var (esquemas, totalRegistros) = await _esquemaService.GetEsquemasVacunacionAsync(filtro, page, cantidad, correo);
 
                 if (esquemas == null || esquemas.Count == 0)
                 {

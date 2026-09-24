@@ -80,7 +80,9 @@ builder.Services.AddScoped<IParentescoService, ParentescoService>();
 builder.Services.AddScoped<IInfoFamiliarService, InfoFamiliarService>();
 builder.Services.AddScoped<ITipoDocumentoService, TipoDocumentoService>();
 builder.Services.AddScoped<ITipoContratoService, TipoContratoService>();
+builder.Services.AddScoped<ICargoService, CargoService  >();
 builder.Services.AddScoped<IEmpresaService, EmpresaService>();
+
 builder.Services.AddScoped<IContratoLaboralService, ContratoLaboralService>();
 builder.Services.AddScoped<IContratoLaboralDetalleService, ContratoLaboralDetalleService>();
 builder.Services.AddScoped<IEstadoCivilService, EstadoCivilService>();

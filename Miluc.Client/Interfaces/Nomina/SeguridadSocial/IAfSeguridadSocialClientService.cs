@@ -5,7 +5,7 @@ namespace Miluc.Client.Interfaces.Nomina.SeguridadSocial
 {
     public interface IAfSeguridadSocialClientService
     {
-        Task<ResponseAPI<List<AfiliacionSeguridadSocialreaderDto>>> GetAfSeguridadSocialAsync(string textoBusqueda, int paginaActual, int cantidadPorPagina);
+        Task<ResponseAPI<List<AfiliacionSeguridadSocialreaderDto>>> GetAfSeguridadSocialAsync(string textoBusqueda, int paginaActual, int cantidadPorPagina,string correo);
         Task<ResponseAPI<AfiliacionSeguridadSocialreaderDto>> UpdateAfiliacionAsync(UpdateAFiliacionDto afiliacion);
         Task<ResponseAPI<AfiliacionSeguridadSocialreaderDto>> GetAfiliacionSeguridadSocialByIdAsync(int id);
         
