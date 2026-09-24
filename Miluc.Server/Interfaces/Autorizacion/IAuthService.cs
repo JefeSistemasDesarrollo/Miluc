@@ -12,6 +12,7 @@ namespace Miluc.Server.Interfaces.Autorizacion
 
         //cambiar contraseña 
         Task<ResponseAPI<bool>> CambiarPasswordAsync(CambiarPasswordRequest request);
+        Task<ResponseAPI<bool>> CambiarPasswordCorreoAsync(CambiarPasswordRequest request);
 
         // Método para cerrar sesión (si necesitas lógica extra en DB)
 

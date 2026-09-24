@@ -219,16 +219,6 @@ namespace Miluc.Server.Servicios.Usuarios
                 _context.Remove(deleteUser);
 
                  return await _context.SaveChangesAsync()>0;
-                //var user = await _context.Usuarios.FindAsync(id);
-                //// Si es NULL, no existe, por lo tanto retornamos false
-                ////validar si el usuario existe en la base de datos 
-                //if (user == null)
-                //    return false;
-
-                //user.Activo = false;
-                //user.FechaActualizacion = DateTime.Now;
-
-               // return await _context.SaveChangesAsync() > 0;
             }
             catch (Exception ex) 
             {
@@ -259,6 +249,7 @@ namespace Miluc.Server.Servicios.Usuarios
                           Telefono = u.Telefono,
                           Foto = u.Foto,
                           TwoFactorEnabled= u.TwoFactorEnabled,
+                          DebeCambiarPassword=u.DebeCambiarPassword,
                           Email = u.Email,
                           Activo = u.Activo,
                           HoraInicio = u.HoraInicio,

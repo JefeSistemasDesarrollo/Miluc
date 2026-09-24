@@ -4,6 +4,8 @@
 @inject IMatrizSociodemograficaClientService _matrizSociodemograficaService
 @inject NavigationManager nav
 @inject IJSRuntime jsRuntime
+@inject IAuthClientService _authClientService
+
 
  <div class="empleados-page animate__animated animate__fadeIn p-4">
 
@@ -87,7 +89,7 @@
                 {
                     @* ESTADO 1: Si la variable 'cargando' es verdadera, dibuja un spinner de carga *@
                     <tr>
-                        <td colspan="8" class="text-center py-5">
+                        <td colspan="6" class="text-center py-5">
                             <div class="spinner-border text-vinotinto"></div>
                         </td>
                     </tr>
@@ -170,7 +172,7 @@
     private List<MatrizSociodemograficaReaderDto> listmatrizSociodemograficaAlservidor = new List<MatrizSociodemograficaReaderDto>();
 
     private string _textoBusqueda = "";
-
+    private string _correoUsuario = "";
     // Propiedad pública usada en el enlace @bind="textoBusqueda"
     private string textoBusqueda
     {
@@ -190,13 +192,25 @@
 
     protected override async Task OnInitializedAsync()
     {
+
+        if (!_authClientService.HasPermission("Employee.View"))
+        {
+            nav.NavigateTo("/no-autorizado");
+            return;
+        }
+
+        if (_authClientService.HasPermission("Employee.FilterCorreo"))
+        {
+            _correoUsuario = _authClientService.CurrentSession.UserName;
+        }
+
         await CargarMatrizSociodemografica();
     }
     public async Task CargarMatrizSociodemografica()
     {
         cargando = true;
 
-        var respuesta = await _matrizSociodemograficaService.GetMatrizSociodemograficaAsync(textoBusqueda, paginaActual, cantidadPorPagina);
+        var respuesta = await _matrizSociodemograficaService.GetMatrizSociodemograficaAsync(textoBusqueda, paginaActual, cantidadPorPagina, _correoUsuario);
         if (respuesta != null && respuesta.EsCorrecto)
         {
             listmatrizSociodemograficaOrigen = respuesta.Valor ?? new List<MatrizSociodemograficaReaderDto>();

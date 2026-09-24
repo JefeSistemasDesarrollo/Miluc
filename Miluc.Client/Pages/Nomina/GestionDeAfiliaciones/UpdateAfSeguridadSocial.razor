@@ -199,6 +199,8 @@
     private List<AfpReaderDto> listaAfp = new();
     private List<ArlReaderDto> listaArl = new();
     private List<CajaCompensacionReaderDto> listaCajas = new();
+    public string _correo = "";
+
     
 
     protected override async Task OnInitializedAsync()
@@ -238,7 +240,7 @@
             }
 
             //  Buscamos en el listado general filtrando por el EmpleadoId actual
-            var respuestaListado = await AfiliacionService.GetAfSeguridadSocialAsync(string.Empty, 1, 100);
+            var respuestaListado = await AfiliacionService.GetAfSeguridadSocialAsync(string.Empty, 1, 100, _correo);
             
             AfiliacionSeguridadSocialreaderDto? datosActuales = null;
             if (respuestaListado?.EsCorrecto == true && respuestaListado.Valor != null)

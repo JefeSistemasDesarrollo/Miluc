@@ -394,167 +394,66 @@ namespace Miluc.Server.Servicios.Autorizacion
                 };
             }
         }
+        public async Task<ResponseAPI<bool>> CambiarPasswordCorreoAsync(CambiarPasswordRequest request)
+        {
+            try
+            {
+                if (request.Password != request.ConfirmarPassword)
+                {
+                    return new ResponseAPI<bool>
+                    {
+                        EsCorrecto = false,
+                        Mensaje = "Las contraseñas no coinciden"
+                    };
+                }
+
+                var usuario = await context.Usuarios
+                    .FirstOrDefaultAsync(x => x.Email == request.Correo);
+
+                if (usuario == null)
+                {
+                    return new ResponseAPI<bool>
+                    {
+                        EsCorrecto = false,
+                        Mensaje = "Usuario no encontrado"
+                    };
+                }
+
+                if (!string.IsNullOrWhiteSpace(request.Password))
+                {
+                    using var hmac = new System.Security.Cryptography.HMACSHA512();
+
+                    usuario.Salt = hmac.Key;
+                    usuario.PasswordHash = hmac.ComputeHash(
+                        System.Text.Encoding.UTF8.GetBytes(request.Password)
+                    );
+                }
+
+                usuario.DebeCambiarPassword = false;
+                usuario.FechaActualizacion = DateTime.UtcNow;
+
+                await context.SaveChangesAsync();
+
+                return new ResponseAPI<bool>
+                {
+                    EsCorrecto = true,
+                    Mensaje = "Contraseña actualizada correctamente",
+                    Valor = true
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseAPI<bool>
+                {
+                    EsCorrecto = false,
+                    Mensaje = ex.Message
+                };
+            }
+        }
 
         public Task<bool> RegisterAsync(string username, string password, string email)
         {
             throw new NotImplementedException();
         }
-
-        //public async Task<bool> RegisterAsync(string username, string password, string email)
-        //{
-        //    // 1. Validaciones de existencia (Evitar duplicados)
-        //    if (await context.Usuarios.AnyAsync(u => u.UserName.ToLower() == username.ToLower()))
-        //        return false;
-
-        //    if (await context.Usuarios.AnyAsync(u => u.Email.ToLower() == email.ToLower()))
-        //        return false;
-
-        //    // 2. Transacción para asegurar integridad si agregamos roles después
-        //    using var transaction = await context.Database.BeginTransactionAsync();
-        //    try
-        //    {
-        //        // 3. Generar Hash y Salt usando HMACSHA512
-        //        using var hmac = new System.Security.Cryptography.HMACSHA512();
-
-        //        var usuario = new Usuario
-        //        {
-        //            UserName = username,
-        //            Email = email,
-        //            // Inicializamos Nombres y Apellidos vacíos o con el username para evitar nulos en BD
-        //            Nombres = username,
-        //            Apellidos = string.Empty,
-        //            PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password)),
-        //            Salt = hmac.Key,
-        //            Activo = true,
-        //            FechaCreacion = DateTime.UtcNow
-        //        };
-
-        //        context.Usuarios.Add(usuario);
-        //        await context.SaveChangesAsync();
-
-        //        await transaction.CommitAsync();
-        //        return true;
-        //    }
-        //    catch (Exception)
-        //    {
-        //        await transaction.RollbackAsync();
-        //        return false;
-        //    }
-        //}
-
-
-
     }
 }
-
-
-
-//public async Task<ResponseAPI<UserSession?>> LoginAsync(LoginAccesoRequest request,string ipAddress,string userAgent)
-//{
-//    try
-//    {
-//        var usuario = await context.Usuarios
-//            .Include(u => u.UsuarioRoles)
-//                .ThenInclude(ur => ur.Rol)
-//                    .ThenInclude(r => r.RolPermisos)
-//                        .ThenInclude(rp => rp.Permiso)
-//            .FirstOrDefaultAsync(u => u.UserName == request.Usuario && u.Activo);
-
-//        if (usuario == null)
-//        {
-//            return new ResponseAPI<UserSession?>
-//            {
-//                EsCorrecto = false,
-//                Mensaje = "Usuario o contraseña incorrectos",
-//                Errores = new List<string> { "Usuario o contraseña incorrectos" }
-//            };
-//        }
-
-//        // Validar password
-//        if (!VerificarPasswordHash(request.Password, usuario.PasswordHash, usuario.Salt))
-//        {
-//            return new ResponseAPI<UserSession?>
-//            {
-//                EsCorrecto = false,
-//                Mensaje = "Usuario o contraseña incorrectos",
-//                Errores=new List<string> { "Usuario o contraseña incorrectos" }
-
-//            };
-//        }
-
-//        // OBTENER ROLES
-//        var roles = usuario.UsuarioRoles
-//            .Select(r => r.Rol.Nombre)
-//            .ToList();
-
-//        // OBTENER PERMISOS
-//        var permisos = usuario.UsuarioRoles
-//            .SelectMany(ur => ur.Rol.RolPermisos)
-//            .Select(rp => rp.Permiso.Nombre)
-//            .Distinct()
-//            .ToList();
-
-//        // EXPIRACION
-//        int AccessTokenExpirationMinutes =config.GetValue<int>("Jwt:AccessTokenExpirationMinutes");
-//        int RefreshTokenExpiration = config.GetValue<int>("Jwt:RefreshTokenExpiration");
-
-//        var fechaExpiracion =DateTime.UtcNow.AddMinutes(AccessTokenExpirationMinutes);
-//        //var fecharefreshTokenExpiration = DateTime.UtcNow.AddMinutes(RefreshTokenExpiration);
-
-//        // GENERAR JWT con permisos 
-//        var jwtToken = tokenService.GenerarToken(usuario, roles, permisos);
-
-
-//        // REFRESH TOKEN
-
-//        string refreshTokenPlano =Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
-
-//        var refreshTokenEntity = new RefreshToken
-//        {
-//            IdRefreshToken = Guid.NewGuid(),
-//            IdUsuario = usuario.IdUsuario,
-//            TokenHash = SHA256.HashData(
-//                Encoding.UTF8.GetBytes(refreshTokenPlano)),
-//            Created = DateTime.UtcNow,
-//            Expires = DateTime.UtcNow.AddMinutes(RefreshTokenExpiration),
-//            RemoteIpAddress = ipAddress,
-//            UserAgent = userAgent,
-//            Activo = true,
-//            FechaCreacion = DateTime.Now,
-//            FechaActualizacion = DateTime.Now,
-//        };
-
-//        context.RefreshTokens.Add(refreshTokenEntity);
-//        await context.SaveChangesAsync();
-
-
-//        // SESSION
-
-//        UserSession userSession = new UserSession
-//        {
-//            IdUsuario = usuario.IdUsuario,
-//            UserName = usuario.UserName,
-//            Email = usuario.Email,
-//            Token = jwtToken,
-//            RefreshToken = refreshTokenPlano,
-//            Roles = roles,
-//            Permisos = permisos,
-//            FechaExpiracion = fechaExpiracion
-//        };
-
-//        return new ResponseAPI<UserSession?>
-//        {
-//            Mensaje = "Usuario encontrado con éxito",
-//            EsCorrecto = true,
-//            Valor = userSession
-//        };
-//    }
-//    catch (Exception ex)
-//    {
-//        return new ResponseAPI<UserSession?>
-//        {
-//            EsCorrecto = false,
-//            Mensaje = ex.Message
-//        };
-//    }
-//}

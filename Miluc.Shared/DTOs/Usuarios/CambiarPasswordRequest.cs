@@ -10,6 +10,7 @@ namespace Miluc.Shared.DTOs.Usuarios
     {
         public int IdUsuario { get; set; }
 
+        public string ? Correo { get; set; }
 
 
         [OptionalStrongPassword]

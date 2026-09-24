@@ -8,12 +8,12 @@ namespace Miluc.Client.Servicios.Nomina
 {
     public class ContratoLaboralClientService(HttpClient _httpClient) : IContratoLaboralClientService
     {
-        public async Task<ResponseAPI<List<ContratoLaboralreaderDto>>> GetContratoLaboralAsync(string textoBusqueda, int paginaActual, int cantidadPorPagina)
+        public async Task<ResponseAPI<List<ContratoLaboralreaderDto>>> GetContratoLaboralAsync(string? filtro = null, int page = 1, int? cantidad = null,string? correo = null)
         {
             try
             {
                 // Ruta corregida: api/ContratoLaboral (sin el segmento duplicado)
-                var response = await _httpClient.GetAsync($"api/ContratoLaboral?filtro={textoBusqueda}&page={paginaActual}&cantidad={cantidadPorPagina}");
+                var response = await _httpClient.GetAsync($"api/ContratoLaboral?filtro={filtro}&page={page}&cantidad={cantidad}&correo={correo}");
 
                 if (!response.IsSuccessStatusCode)
                 {

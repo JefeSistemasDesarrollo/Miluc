@@ -8,11 +8,11 @@ namespace Miluc.Client.Servicios.Nomina
 {
     public class AfSeguridadSocialClientService(HttpClient _httpClient) : IAfSeguridadSocialClientService
     {
-        public async Task<ResponseAPI<List<AfiliacionSeguridadSocialreaderDto>>> GetAfSeguridadSocialAsync(string textoBusqueda, int paginaActual, int cantidadPorPagina)
+        public async Task<ResponseAPI<List<AfiliacionSeguridadSocialreaderDto>>> GetAfSeguridadSocialAsync(string textoBusqueda, int paginaActual, int cantidadPorPagina, string correo)
         {
             try
             {
-                var response = await _httpClient.GetAsync($"api/AfiliacionSeguridadSocial/AfiliacionSeguridadSocial?filtro={textoBusqueda}&page={paginaActual}&cantidad={cantidadPorPagina}");
+                var response = await _httpClient.GetAsync($"api/AfiliacionSeguridadSocial/AfiliacionSeguridadSocial?filtro={textoBusqueda}&page={paginaActual}&cantidad={cantidadPorPagina}&correo={correo}");
                 if (!response.IsSuccessStatusCode)
                 { // Manejar el error de la solicitud
                     return new ResponseAPI<List<AfiliacionSeguridadSocialreaderDto>>

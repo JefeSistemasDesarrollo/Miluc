@@ -8,7 +8,7 @@ namespace Miluc.Client.Interfaces.Nomina
 {
     public interface IEsquemaVacunacionClientService
     {
-        public Task<ResponseAPI<List<EsquemaVacunacionReaderDto>>> GetEsquemasVacunacionAsync(string textoBusqueda, int paginaActual, int cantidadPorPagina);
+        public Task<ResponseAPI<List<EsquemaVacunacionReaderDto>>> GetEsquemasVacunacionAsync(string textoBusqueda, int paginaActual, int cantidadPorPagina, string? correo);
         Task<ResponseAPI<List<EsquemaVacunacionReaderDto>>> GetEsquemaVacunacionByIdAsync(int id);
         Task<ResponseAPI<bool>> CreateEsquemaVacunacionAsync(List<CreateEsquemaVacunacionDto> esquemaVacunacion);
     }

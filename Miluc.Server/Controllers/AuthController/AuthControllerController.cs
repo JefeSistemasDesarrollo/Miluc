@@ -174,12 +174,42 @@ namespace Miluc.Server.Controllers.AuthController
 
         [AllowAnonymous]
         [HttpPost("cambiar-password")]
-        public async Task<ActionResult<ResponseAPI<bool>>> CambiarPassword(
-    [FromBody] CambiarPasswordRequest request)
+        public async Task<ActionResult<ResponseAPI<bool>>> CambiarPassword([FromBody] CambiarPasswordRequest request)
         {
             try
             {
                 var result = await authService.CambiarPasswordAsync(request);
+
+                if (!result.EsCorrecto)
+                    return BadRequest(result);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                await log.GuardarErrorAsync(
+                    message: ex.Message,
+                    StackTrace: ex.StackTrace,
+                    usuario: "Sistema",
+                    metodo: "HttpPost",
+                    ruta: "/api/auth/cambiar-password",
+                    ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
+                    origen: "AuthController.CambiarPassword");
+
+                return StatusCode(500, new ResponseAPI<bool>
+                {
+                    EsCorrecto = false,
+                    Mensaje = "Error interno del servidor"
+                });
+            }
+        }
+        [AllowAnonymous]
+        [HttpPost("cambiar-password-correo")]
+        public async Task<ActionResult<ResponseAPI<bool>>> CambiarPasswordCorreo([FromBody] CambiarPasswordRequest request)
+        {
+            try
+            {
+                var result = await authService.CambiarPasswordCorreoAsync(request);
 
                 if (!result.EsCorrecto)
                     return BadRequest(result);

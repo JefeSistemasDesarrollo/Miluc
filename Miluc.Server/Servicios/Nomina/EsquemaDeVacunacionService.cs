@@ -69,7 +69,7 @@ namespace Miluc.Server.Servicios.Nomina
             }
         }
 
-        public async Task<(List<EsquemaVacunacionReaderDto> Data, int CantidadRegistros)> GetEsquemasVacunacionAsync(string? filtro = null, int page = 1, int? cantidad = null)
+        public async Task<(List<EsquemaVacunacionReaderDto> Data, int CantidadRegistros)> GetEsquemasVacunacionAsync(string? filtro = null, int page = 1, int? cantidad = null, string? correo = null)
         {
             try
             {
@@ -85,6 +85,11 @@ namespace Miluc.Server.Servicios.Nomina
                                           || x.Documento.ToLower()
                                                         .Contains(filtroMinuscula));
                 }
+                
+                if (!string.IsNullOrEmpty(correo))
+                {
+                    query = query.Where(x => x.CorreoElectronico.ToLower().Contains(correo.ToLower()));
+                }   
 
                 var totalRegistros = await query.CountAsync();
 

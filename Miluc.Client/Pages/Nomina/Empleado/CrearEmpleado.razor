@@ -5,6 +5,7 @@
 @using Miluc.Shared.DTOs.Nomina.EstadoCivilDto
 @using Miluc.Shared.DTOs.Nomina.MunicipioDto
 @using Miluc.Shared.DTOs.Nomina.TipoDocumento
+@using Miluc.Shared.DTOs.Usuarios
 @using Syncfusion.Blazor.Calendars
 
 @inject NavigationManager nav
@@ -304,6 +305,7 @@
     private List<TipoDocumentoReaderDto> listDocumento = new();
     private List<EstadoCivilReaderDto> listEstadoCivil = new();
     private bool isProcessing = false;
+    // private UsuarioCreateDto usuarioCreateDto = new UsuarioCreateDto();
 
     private void Volver() => nav.NavigateTo("/Administrar/Empleado");
 
@@ -353,7 +355,25 @@
         isProcessing = true;
         try
         {
-            var respuesta = await _empleadoService.createEmpleadosAsync(nuevoEmpleado);
+
+            nuevoEmpleado.Usuario.Nombres = $"{nuevoEmpleado.PrimerNombre} {nuevoEmpleado.SegundoNombre}";
+            nuevoEmpleado.Usuario.Apellidos = $"{nuevoEmpleado.PrimerApellido} {nuevoEmpleado.SegundoApellido}";
+            nuevoEmpleado.Usuario.Email = nuevoEmpleado.CorreoElectronico;
+            nuevoEmpleado.Usuario.Telefono = nuevoEmpleado.Celular;
+            nuevoEmpleado.Usuario.Password = PasswordGenerator();
+            nuevoEmpleado.Usuario.ConfirmarPassword = nuevoEmpleado.Usuario.Password;
+            nuevoEmpleado.Usuario.DebeCambiarPassword = true;
+            nuevoEmpleado.Usuario.HoraInicio = TimeOnly.Parse("08:00 AM");
+            nuevoEmpleado.Usuario.HoraFin = TimeOnly.Parse("05:00 PM");
+            nuevoEmpleado.Usuario.CodVendedorSAP = -1;
+            nuevoEmpleado.Usuario.TwoFactorEnabled = false;
+            nuevoEmpleado.Usuario.TiposUsuarioIds = [2]; // Asignar un valor predeterminado para CodVendedorSAP
+             nuevoEmpleado.Usuario.RolesIds = [2]; // Asignar el rol de empleado (ID 2)
+            nuevoEmpleado.Usuario.IdTipoUsuario = 2; // Asignar el rol de empleado (ID 2)
+
+
+
+        var respuesta = await _empleadoService.createEmpleadosAsync(nuevoEmpleado);
             if (respuesta.EsCorrecto)
             {
                 await JS.InvokeVoidAsync("Swal.fire", "Éxito", "La información del empleado ha sido registrada correctamente.", "success");
@@ -374,6 +394,32 @@
         }
 
     }
+    public string PasswordGenerator()
+    {
+        const string minusculas = "abcdefghijklmnopqrstuvwxyz";
+        const string mayusculas = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const string numeros = "0123456789";
+        const string caracteresEspeciales = "!@#$%^&*()_+-=[]{}|;:,.<>?";
+
+        const int passwordLength = 8;
+         
+        var random = new Random();
+        var password = new char[passwordLength];
+        for (int i = 0; i < password.Length; i++)
+        {
+            if (i < 2)
+                password[i] = mayusculas[random.Next(mayusculas.Length)];
+            else if (i < 4)
+                password[i] = numeros[random.Next(numeros.Length)];
+            else if (i < 6)
+                password[i] = caracteresEspeciales[random.Next(caracteresEspeciales.Length)];
+            else
+                password[i] = minusculas[random.Next(minusculas.Length)];
+
+        }
+        return new string(password);
+    }
+
 
 }
 

@@ -8,7 +8,7 @@ namespace Miluc.Server.Interfaces.Nomina
     public interface IContratoLaboralService 
 
     {
-        public Task<(List<ContratoLaboralreaderDto>data, int CantidadDeRegistros)> GetContratoLaboralAsync(string? filtro = null, int ? page = null, int? cantidad = null);
+        public Task<(List<ContratoLaboralreaderDto>data, int CantidadDeRegistros)> GetContratoLaboralAsync(string? filtro = null, int ? page = null, int? cantidad = null,string? correo = null);
 
         public Task<List<ContratoLaboralreaderDto>> GetContratosPorEmpleadoAsync(int empleadoId);
         public Task<bool> CreateContratoLaboralAsync(CreateContratoLaboralDto contrato);

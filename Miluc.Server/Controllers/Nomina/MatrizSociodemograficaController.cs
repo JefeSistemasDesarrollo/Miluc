@@ -13,11 +13,11 @@ namespace Miluc.Server.Controllers.Nomina
     public class MatrizSociodemograficaController(IMatrizSociodemograficaService matrizSociodemograficaService, ILogService _log) : Controller
     {
         [HttpGet]
-        public async Task<ActionResult<ResponseAPI<List<MatrizSociodemograficaReaderDto>>>> GetMatrizSociodemograficaAsync([FromQuery] string? filtro = null, [FromQuery] int page = 1, [FromQuery] int? cantidad = null)
+        public async Task<ActionResult<ResponseAPI<List<MatrizSociodemograficaReaderDto>>>> GetMatrizSociodemograficaAsync([FromQuery] string? filtro = null, [FromQuery] int page = 1, [FromQuery] int? cantidad = null, [FromQuery] string? correo = null)
         {
             try
             {
-                var (matrizSociodemografica, totalRegistros) = await matrizSociodemograficaService.GetMatrizSocioDemograficasAsync(filtro, page, cantidad);
+                var (matrizSociodemografica, totalRegistros) = await matrizSociodemograficaService.GetMatrizSocioDemograficasAsync(filtro, page, cantidad, correo);
                 if (matrizSociodemografica == null || matrizSociodemografica.Count == 0)
                 {
                     return NotFound(new ResponseAPI<List<MatrizSociodemograficaReaderDto>>

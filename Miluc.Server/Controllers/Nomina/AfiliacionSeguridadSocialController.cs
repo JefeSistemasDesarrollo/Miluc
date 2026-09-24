@@ -19,14 +19,11 @@ namespace Miluc.Server.Controllers.Nomina
         public ILogService Log { get; } = _log;
 
         [HttpGet("AfiliacionSeguridadSocial")]
-        public async Task<ActionResult<ResponseAPI<List<AfiliacionSeguridadSocialreaderDto>>>> GetAfiliacionSeguridadSocialAsync([FromQuery] string? filtro = null,[FromQuery] int page = 1, [FromQuery] int cantidad = 10) 
+        public async Task<ActionResult<ResponseAPI<List<AfiliacionSeguridadSocialreaderDto>>>> GetAfiliacionSeguridadSocialAsync([FromQuery] string? filtro = null,[FromQuery] int page = 1, [FromQuery] int cantidad = 10,[FromQuery] string?correo = null) 
         {
             try
             {
-                (List<AfiliacionSeguridadSocialreaderDto> afiliaciones, int totalRegistros) = await AfiliacionSeguridadSocialService.GetAfiliacionSeguridadSocialAsync(filtro, page, cantidad);
-                
-               // (List<AfiliacionSeguridadSocialreaderDto> afiliaciones, int totalRegistros) =
-                    await AfiliacionSeguridadSocialService.GetAfiliacionSeguridadSocialAsync(filtro, page, cantidad);
+                (List<AfiliacionSeguridadSocialreaderDto> afiliaciones, int totalRegistros) = await AfiliacionSeguridadSocialService.GetAfiliacionSeguridadSocialAsync(filtro, page, cantidad, correo);
 
                 if (afiliaciones == null || afiliaciones.Count == 0)
                 {

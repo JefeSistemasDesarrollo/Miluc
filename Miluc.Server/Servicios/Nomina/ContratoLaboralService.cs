@@ -14,7 +14,7 @@ namespace Miluc.Server.Servicios.Nomina
     public class ContratoLaboralService(NominaDbContext _context) : IContratoLaboralService
     {
         // Obtiene una lista paginada y filtrada de contratos laborales asociados a los empleados
-        public async Task<(List<ContratoLaboralreaderDto> data, int CantidadDeRegistros)> GetContratoLaboralAsync(string? filtro = null, int? page = null, int? cantidad = null)
+        public async Task<(List<ContratoLaboralreaderDto> data, int CantidadDeRegistros)> GetContratoLaboralAsync(string? filtro = null, int? page = null, int? cantidad = null,string? correo = null)
         {
             try
             {
@@ -30,8 +30,14 @@ namespace Miluc.Server.Servicios.Nomina
                                           || x.PrimerApellido.ToLower().Contains(filtroMinuscula)
                                           || x.Documento.ToLower().Contains(filtroMinuscula));
                 }
-
+                
                 var totalRegistros = await query.CountAsync();
+
+                if (!string.IsNullOrEmpty(correo))
+                {
+                    string correoMinuscula = correo.Trim().ToLower();
+                    query = query.Where(x => x.CorreoElectronico.ToLower().Contains(correoMinuscula));
+                }
 
                 var datosIntermedios = await query
                     .Skip((paginador - 1) * cantidadtop)
