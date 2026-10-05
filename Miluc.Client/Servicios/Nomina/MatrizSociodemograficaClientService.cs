@@ -72,8 +72,7 @@ namespace Miluc.Client.Servicios.Nomina
                 };
             }
         }
-        public async Task<ResponseAPI<MatrizSociodemograficaReaderDto>>
-        GetMatrizPorEmpleadoIdAsync(int empleadoId)
+        public async Task<ResponseAPI<MatrizSociodemograficaReaderDto>>GetMatrizPorEmpleadoIdAsync(int empleadoId)
         {
             try
             {

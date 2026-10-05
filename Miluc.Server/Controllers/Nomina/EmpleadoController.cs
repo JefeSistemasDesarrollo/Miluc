@@ -16,8 +16,7 @@ namespace Miluc.Server.Controllers.Nomina
     {
 
         [HttpGet]
-        public async Task<ActionResult<ResponseAPI<List<EmpleadoReaderDto>>>> 
-       GetEmpleadosAsync([FromQuery] string? filtro = null, [FromQuery] int page = 1, [FromQuery] int? cantidad = null, [FromQuery] string? correo= null)
+        public async Task<ActionResult<ResponseAPI<List<EmpleadoReaderDto>>>>GetEmpleadosAsync([FromQuery] string? filtro = null, [FromQuery] int page = 1, [FromQuery] int? cantidad = null, [FromQuery] string? correo= null)
         {
             try
             {

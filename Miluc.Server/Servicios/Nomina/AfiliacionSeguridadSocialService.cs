@@ -82,6 +82,7 @@ namespace Miluc.Server.Servicios.Nomina
                     ArlId = x.ArlId,
                     NombreArl = x.NombreArl ?? "Sin Asignar",
 
+                    CajaCompensacionId = x.CajaCompensacionId, // ← FALTA ESTA LÍNEA
                     NombreCajaCompensacion = x.NombreCajaCompensacion ?? "Sin Asignar",
 
                     Activo = x.ActivoAfiliacion

@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Include="DTOs\Nomina\CargosDto\CargosReaderDto" />
+  </ItemGroup>
+
 </Project>

@@ -1,0 +1,93 @@
+﻿@page "/Card/Contratos"
+@inject IAuthClientService authClient
+@inject NavigationManager nav
+
+<div class="welcome-container animate__animated animate__fadeIn">
+    @* --- SALUDO  --- *@
+    <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
+        <div>
+            <h2 class="fw-extrabold text-rojo m-0 tracking-tight">
+                <i class="bi bi-person-plus-fill me-2 header-icon"></i>
+                Gestión de contratos
+            </h2>
+            <p class="text-muted mb-0 small mt-1">
+                Gestione la vinculación de Contratos y el registro de Empresas.
+            </p>
+        </div>
+
+        <button class="btn btn-rojo btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
+            <i class="bi bi-arrow-left me-2"></i> Volver
+        </button>
+    </div>
+
+
+    @* --- ACCESO RÁPIDO / RESUMEN --- *@
+
+    @* Agregamos justify-content-center para que se centre si solo hay 1 tarjeta *@
+    <div class="quick-stats row g-4 mt-2 justify-content-center">
+
+        @* TARJETA 1: Siempre visible *@
+        <div class="col-12 col-md-6 col-lg-5">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body card-miluc d-flex flex-column align-items-center justify-content-center p-4">
+                    <div class="icono-wrapper bg-rojo-suave mb-3 rounded-circle p-3">
+                        <i class="bi bi-people-fill fs-1 text-rojo"></i>
+                    </div>
+
+                    <h4 class="text-center mb-4">Gestión Contratos</h4>
+
+                    <a href="/Administrar/contratoLaboral" class="btn btn-rojo btn-miluc mt-auto px-4 rounded-pill">
+                        <span>Laborales</span>
+                        <i class="bi bi-arrow-right-short fs-5 align-middle"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        @* TARJETA 2: Solo visible si tiene permisos (Admin) *@
+        @if (authClient.HasPermission("business.management"))
+        {
+            <div class="col-12 col-md-6 col-lg-5">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body card-miluc-amarillo d-flex flex-column align-items-center justify-content-center p-4">
+                        <div class="icono-wrapper-amarillo bg-amarillo mb-3 rounded-circle p-3">
+                            <i class="bi bi-house-heart fs-1"></i>
+                        </div>
+
+                        <h4 class="text-center mb-4">Gestión Empresas</h4>
+
+                        <a href="/Administrar/Empresas" class="btn btn-amarillo btn-miluc-amarillo mt-auto px-4 rounded-pill">
+                            <span>Nueva Empresa</span>
+                            <i class="bi bi-arrow-right-short fs-5 align-middle"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+        @if (authClient.HasPermission("charges.management"))
+        {
+       
+            <div class="col-12 col-md-6 col-lg-5">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body card-miluc d-flex flex-column align-items-center justify-content-center p-4">
+                        <div class="icono-wrapper bg-rojo-suave mb-3 rounded-circle p-3">
+                            <i class="bi bi-people-fill fs-1 text-rojo"></i>
+                        </div>
+
+                        <h4 class="text-center mb-4">Gestión cargos</h4>
+
+                        <a href="/Administrar/cargos" class="btn btn-rojo btn-miluc-rojo mt-auto px-4 rounded-pill">
+                            <span>Nuevo cargo</span>
+                            <i class="bi bi-arrow-right-short fs-5 align-middle"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
+</div>
+
+@code {
+    private void Volver() => nav.NavigateTo("/administrar-Nomina");
+}
