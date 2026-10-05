@@ -28,6 +28,8 @@ using Miluc.Shared.DTOs.Nomina.AfiliacionSeguridadSocialDto;
 using Syncfusion.Blazor;
 using TuProyecto.Client.Services;
 using System.Globalization;
+using Miluc.Client.Interfaces.SapInterfaces.Informes;
+using Miluc.Client.Servicios.SapService.InformesComercial;
 
 var culture = new CultureInfo("es-CO");
 
@@ -49,9 +51,8 @@ builder.Services.AddScoped(sp =>
 
     return new HttpClient(handler)
     {
-        // BaseAddress = new Uri("https://avicolamiluc.ddns.net:91/")
-
-        BaseAddress = new Uri("https://localhost:7222/")
+       BaseAddress = new Uri("https://avicolamiluc.ddns.net:91/")
+     // BaseAddress = new Uri("https://localhost:7222/")
     };
 });
 //  AUTENTICACIÓN
@@ -81,6 +82,7 @@ builder.Services.AddScoped<ISapObppClientService, SapObppClientService>();
 builder.Services.AddScoped<ISapOctgClientService, SapOctgClientService>();
 builder.Services.AddScoped<ISapOplnClientService, SapOplnClientService>();
 builder.Services.AddScoped<ISapTrazabilidadPedidos, SapTrazabilidadClientServices>();
+builder.Services.AddScoped<ISapFrecuenciaVentasClientService, SapFrecuenciaVentasClientService>();
 //Nomina
 builder.Services.AddScoped<IEmpleadoClientService, EmpleadoClientService>();
 builder.Services.AddScoped<IDepartamentosClientService, DepartamentoClienteService>();

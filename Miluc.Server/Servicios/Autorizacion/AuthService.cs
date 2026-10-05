@@ -14,7 +14,6 @@ namespace Miluc.Server.Servicios.Autorizacion
 {
     public class AuthService(MilucDbContext context,IEmailService _emailService, ITokenService tokenService, IConfiguration config, IOtpService _otpService) : IAuthService
     {
-
         public async Task<ResponseAPI<UserSession?>> LoginAsync(LoginAccesoRequest request,string ipAddress,string userAgent)
         {
             try
@@ -24,7 +23,7 @@ namespace Miluc.Server.Servicios.Autorizacion
                         .ThenInclude(ur => ur.Rol)
                             .ThenInclude(r => r.RolPermisos)
                                 .ThenInclude(rp => rp.Permiso)
-                    .FirstOrDefaultAsync(u => u.UserName.ToLower() == request.Usuario.ToLower());  //&& u.Activo
+                                    .FirstOrDefaultAsync(u => u.UserName.ToLower() == request.Usuario.ToLower());  //&& u.Activo
 
                 if (usuario == null || !VerificarPasswordHash(request.Password, usuario.PasswordHash, usuario.Salt))
                 {
@@ -36,7 +35,7 @@ namespace Miluc.Server.Servicios.Autorizacion
                 }
                 if (usuario.Activo == false)
                 {
-                    // Asegúrese de que el servicio esté inyectado y el usuario no sea nulo
+                    // servicio esté inyectado y el usuario no sea nulo
                     await _emailService.SendAsync(
                         usuario.Email,
                         "Usuario Inactivo",
@@ -62,7 +61,6 @@ namespace Miluc.Server.Servicios.Autorizacion
                         }
                     };
                 }
-
                 // 2factor
                 if (usuario.TwoFactorEnabled)
                 {
@@ -80,9 +78,7 @@ namespace Miluc.Server.Servicios.Autorizacion
                             Requiere2FA = true
                         }
                     };
-
                 }
-
                 // LOGIN NORMAL SIN 2FA
                 return await GenerarSesionCompleta(usuario, ipAddress, userAgent);
             }
@@ -394,56 +390,84 @@ namespace Miluc.Server.Servicios.Autorizacion
                 };
             }
         }
-        public async Task<ResponseAPI<bool>> CambiarPasswordCorreoAsync(CambiarPasswordRequest request)
+        public async Task<ResponseAPI<int>> EnviarCodigoCorreoAsync(EnviarCodigoRequest request, string ipAddress, string userAgent)
         {
             try
             {
-                if (request.Password != request.ConfirmarPassword)
+
+                //if (request.Correo!= request.ConfirmarPassword)
+                //{
+                //    return new ResponseAPI<bool>
+                //    {
+                //        EsCorrecto = false,
+                //        Mensaje = "Las contraseñas no coinciden"
+                //    };
+                //}
+
+                if (request==null)
                 {
-                    return new ResponseAPI<bool>
+                    return new ResponseAPI<int>
                     {
                         EsCorrecto = false,
-                        Mensaje = "Las contraseñas no coinciden"
+                        Mensaje="El correo es obligatorio"
                     };
                 }
-
+                //busca si hay un usuario con ese correo 
                 var usuario = await context.Usuarios
                     .FirstOrDefaultAsync(x => x.Email == request.Correo);
 
                 if (usuario == null)
                 {
-                    return new ResponseAPI<bool>
+                    return new ResponseAPI<int>
                     {
                         EsCorrecto = false,
-                        Mensaje = "Usuario no encontrado"
+                        Mensaje = "Usuario no encontrado "
                     };
                 }
 
-                if (!string.IsNullOrWhiteSpace(request.Password))
-                {
-                    using var hmac = new System.Security.Cryptography.HMACSHA512();
+                //enviar correo con contraseña 
+                await _otpService.GenerarYEnviarOtpAsync(usuario.IdUsuario, usuario.Email, ipAddress, userAgent);
 
-                    usuario.Salt = hmac.Key;
-                    usuario.PasswordHash = hmac.ComputeHash(
-                        System.Text.Encoding.UTF8.GetBytes(request.Password)
-                    );
-                }
+                //return new ResponseAPI<UserSession?>
+                //{
+                //    EsCorrecto = true,
+                //    Mensaje = "Se envió código de verificación",
+                //    Valor = new UserSession
+                //    {
+                //        IdUsuario = usuario.IdUsuario,
+                //        UserName = usuario.UserName,
+                //        Email = usuario.Email,
+                //        Requiere2FA = true
+                //    }
+                //};
 
-                usuario.DebeCambiarPassword = false;
-                usuario.FechaActualizacion = DateTime.UtcNow;
 
-                await context.SaveChangesAsync();
 
-                return new ResponseAPI<bool>
+                //if (!string.IsNullOrWhiteSpace(request.Password))
+                //{
+                //    using var hmac = new System.Security.Cryptography.HMACSHA512();
+
+                //    usuario.Salt = hmac.Key;
+                //    usuario.PasswordHash = hmac.ComputeHash(
+                //        System.Text.Encoding.UTF8.GetBytes(request.Password)
+                //    );
+                //}
+
+                //usuario.DebeCambiarPassword = false;
+                //usuario.FechaActualizacion = DateTime.UtcNow;
+
+                //await context.SaveChangesAsync();
+
+                return new ResponseAPI<int>
                 {
                     EsCorrecto = true,
-                    Mensaje = "Contraseña actualizada correctamente",
-                    Valor = true
+                    Mensaje = "El codigo se envio correctamente",
+                    Valor = usuario.IdUsuario
                 };
             }
             catch (Exception ex)
             {
-                return new ResponseAPI<bool>
+                return new ResponseAPI<int>
                 {
                     EsCorrecto = false,
                     Mensaje = ex.Message
@@ -454,6 +478,53 @@ namespace Miluc.Server.Servicios.Autorizacion
         public Task<bool> RegisterAsync(string username, string password, string email)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<ResponseAPI<int?>> VerifyOtpCodigoCorreoAsync(int idUsuario, string codigo, string ipAddress, string userAgent)
+        {
+            try
+            {
+                var valido = await _otpService.ValidarOtpAsync(idUsuario, codigo, ipAddress, userAgent);
+
+                if (!valido)
+                {
+                    return new ResponseAPI<int?>
+                    {
+                        EsCorrecto = false,
+                        Mensaje = "Código inválido o expirado",
+                        Valor=idUsuario
+                    };
+                }
+                //var usuario = await context.Usuarios.
+                //               Include(x => x.UsuarioRoles)
+                //                    .ThenInclude(x => x.Rol)
+                //                    .ThenInclude(x => x.RolPermisos)
+                //                    .ThenInclude(x => x.Permiso)
+                //                    .FirstOrDefaultAsync(u => u.IdUsuario == idUsuario);
+
+                //if (usuario == null)
+                //{
+                //    return new ResponseAPI<int?>
+                //    {
+                //        EsCorrecto = false,
+                //        Mensaje = "Usuario no encontrado"
+                //    };
+                //}
+
+                return new ResponseAPI<int?>
+                {
+                    EsCorrecto = true,
+                    Mensaje="Codigo generado correctamente",
+                    Valor=idUsuario                
+                };
+
+               // return await GenerarSesionCompleta(usuario!, ipAddress, userAgent);
+
+            }
+            catch(Exception ex)
+            {
+                throw new Exception($"Error al verificar el codigo : {ex.Message}", ex);
+            }
         }
     }
 }

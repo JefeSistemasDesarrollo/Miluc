@@ -368,17 +368,22 @@
 
     [Parameter]
     public int idEmpleado { get; set; }
+    public int IdUsuario { get; set; }
 
     private EmpleadoUpdateDto editarEmpleado = new();
     private List<MunicipioReaderDto> listmunicipios = new();
-
+    private string correoTemporal = "";
     private List<TipoDocumentoReaderDto> listDocumento = new List<TipoDocumentoReaderDto>();
 
     private List<EstadoCivilReaderDto> listEstadoCivil = new List<EstadoCivilReaderDto>();
     private bool isProcessing = false;
 
+
+
     private void Volver() => nav.NavigateTo("/Administrar/Empleado");
     private DateTime MaxFechaNacimiento => DateTime.Today;
+
+
 
     [JSInvokable]
     public void ActualizarMunicipioDesdeJS(string codigo)
@@ -399,6 +404,11 @@
 
         if (empleado.Valor != null)
         {
+
+            correoTemporal = empleado.Valor.CorreoElectronico;
+
+            editarEmpleado.Usuario.IdUsuario = empleado.Valor.UsuarioId;
+
             editarEmpleado.EmpleadoId = empleado.Valor.EmpleadoId;
 
             editarEmpleado.PrimerNombre = empleado.Valor.PrimerNombre;
@@ -430,9 +440,6 @@
 
         var respuestaEstado = await _estadoCivil.GetEstadosCivilesAsync();
         if (respuestaEstado.EsCorrecto) listEstadoCivil = respuestaEstado.Valor;
-
-
-
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -443,32 +450,69 @@
             await JS.InvokeVoidAsync("inicializarSelect2", dotNetHelper);
         }
     }
+    public string PasswordGenerator()
+    {
+        const string minusculas = "abcdefghijklmnopqrstuvwxyz";
+        const string mayusculas = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const string numeros = "0123456789";
+        const string caracteresEspeciales = "!@#$%^&*()_+-=[]{}|;:,.<>?";
+
+        const int passwordLength = 8;
+
+        var random = new Random();
+        var password = new char[passwordLength];
+        for (int i = 0; i < password.Length; i++)
+        {
+            if (i < 2)
+                password[i] = mayusculas[random.Next(mayusculas.Length)];
+            else if (i < 4)
+                password[i] = numeros[random.Next(numeros.Length)];
+            else if (i < 6)
+                password[i] = caracteresEspeciales[random.Next(caracteresEspeciales.Length)];
+            else
+                password[i] = minusculas[random.Next(minusculas.Length)];
+
+        }
+        return new string(password);
+    }
 
     public async Task EjecutarGuardado()
     {
         isProcessing = true;
         try
         {
-           
 
-            editarEmpleado.Usuario.Nombres = $"{editarEmpleado.PrimerNombre} {editarEmpleado.SegundoNombre}";
-            editarEmpleado.Usuario.Apellidos = $"{editarEmpleado.PrimerApellido} {editarEmpleado.SegundoApellido}";
-            editarEmpleado.Usuario.Email = editarEmpleado.CorreoElectronico;
-            editarEmpleado.Usuario.Telefono = editarEmpleado.Celular;
-            editarEmpleado.Usuario.Password = "ABC123abc*"; // PasswordGenerator();
-            editarEmpleado.Usuario.ConfirmarPassword = "ABC123abc*";
-            editarEmpleado.Usuario.DebeCambiarPassword = true;
-            editarEmpleado.Usuario.HoraInicio = TimeOnly.Parse("08:00 AM");
-            editarEmpleado.Usuario.HoraFin = TimeOnly.Parse("05:00 PM");
-            editarEmpleado.Usuario.CodVendedorSAP = -1;
-            editarEmpleado.Usuario.TwoFactorEnabled = false;
-            editarEmpleado.Usuario.TiposUsuarioIds = [2]; // Asignar un valor predeterminado para CodVendedorSAP
-            editarEmpleado.Usuario.RolesIds = [2]; // Asignar el rol de empleado (ID 2)
-            editarEmpleado.Usuario.IdTipoUsuario = 2; // Asignar el rol de empleado (ID 2)
+            if (editarEmpleado.Usuario.IdUsuario > 0)
+            {
+                editarEmpleado.Usuario.IdUsuario = editarEmpleado.Usuario.IdUsuario;
+                editarEmpleado.Usuario.UserName = editarEmpleado.CorreoElectronico;
+                editarEmpleado.Usuario.Nombres = $"{editarEmpleado.PrimerNombre} {editarEmpleado.SegundoNombre}";
+                editarEmpleado.Usuario.Apellidos = $"{editarEmpleado.PrimerApellido} {editarEmpleado.SegundoApellido}";
+                editarEmpleado.Usuario.Email = editarEmpleado.CorreoElectronico;
+                editarEmpleado.Usuario.EmailTemporal=correoTemporal;
 
+                editarEmpleado.Usuario.Telefono = editarEmpleado.Celular;
 
+                if (correoTemporal != editarEmpleado.Usuario.Email)
+                {
+                    editarEmpleado.Usuario.Password = PasswordGenerator(); // PasswordGenerator();
+                    editarEmpleado.Usuario.ConfirmarPassword = editarEmpleado.Usuario.Password;     
+                }
+                editarEmpleado.Usuario.DebeCambiarPassword = true;
 
+                editarEmpleado.Usuario.HoraInicio = TimeOnly.Parse("08:00 AM");
+                editarEmpleado.Usuario.HoraFin = TimeOnly.Parse("05:00 PM");
+                editarEmpleado.Usuario.CodVendedorSAP = -1;
+                editarEmpleado.Usuario.TwoFactorEnabled = false;
+                editarEmpleado.Usuario.Activo= true;
+
+                editarEmpleado.Usuario.TiposUsuarioIds = [2]; // Asignar un valor predeterminado para CodVendedorSAP
+                editarEmpleado.Usuario.RolesIds = [2]; // Asignar el rol de empleado (ID 2)
+                                                       // editarEmpleado.Usuario.IdTipoUsuario = 2; // Asignar el rol de empleado (ID 2)
+
+            }           
             var respuesta = await _empleadoService.UpdateEmpleadosAsync(editarEmpleado);
+          
             if (respuesta.EsCorrecto)
             {
                 await JS.InvokeVoidAsync("Swal.fire", "¡Éxito!", "La información se actualizó correctamente.", "success");
@@ -486,6 +530,7 @@
         }
         finally { isProcessing = false; }
     }
+
 }
 
 @* --- LÓGICA JAVASCRIPT --- *@

@@ -190,17 +190,17 @@ namespace Miluc.Server.Controllers.Nomina
         {
 
 
-            if (!string.IsNullOrEmpty(empleadoUpdateDto.Usuario.FotoBase64))
-            {
-                // Limpiar el encabezado data:image/jpeg;base64,
-                var base64Data = empleadoUpdateDto.Usuario.FotoBase64.Contains(",") ? empleadoUpdateDto.Usuario.FotoBase64.Split(',')[1] : empleadoUpdateDto.Usuario.FotoBase64;
-                empleadoUpdateDto.Usuario.Foto = Convert.FromBase64String(base64Data);
-            }
-            // 2. Asegurar que el IdTipoUsuario seleccionado se agregue a la lista que espera tu servicio
-            if (empleadoUpdateDto.Usuario.IdTipoUsuario > 0 && !empleadoUpdateDto.Usuario.TiposUsuarioIds.Contains(empleadoUpdateDto.Usuario.IdTipoUsuario))
-            {
-                empleadoUpdateDto.Usuario.TiposUsuarioIds.Add(empleadoUpdateDto.Usuario.IdTipoUsuario);
-            }
+            ////if (!string.IsNullOrEmpty(empleadoUpdateDto.Usuario.FotoBase64))
+            ////{
+            ////    // Limpiar el encabezado data:image/jpeg;base64,
+            ////    var base64Data = empleadoUpdateDto.Usuario.FotoBase64.Contains(",") ? empleadoUpdateDto.Usuario.FotoBase64.Split(',')[1] : empleadoUpdateDto.Usuario.FotoBase64;
+            ////    empleadoUpdateDto.Usuario.Foto = Convert.FromBase64String(base64Data);
+            ////}
+            //// 2. Asegurar que el IdTipoUsuario seleccionado se agregue a la lista que espera tu servicio
+            //if (empleadoUpdateDto.Usuario.IdTipoUsuario > 0 && !empleadoUpdateDto.Usuario.TiposUsuarioIds.Contains(empleadoUpdateDto.Usuario.IdTipoUsuario))
+            //{
+            //    empleadoUpdateDto.Usuario.TiposUsuarioIds.Add(empleadoUpdateDto.Usuario.IdTipoUsuario);
+            //}
 
             // Validar null
             if (empleadoUpdateDto == null)

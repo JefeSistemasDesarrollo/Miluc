@@ -232,7 +232,7 @@ namespace Miluc.Server.Data
             // Relación: Rutas -> Cliente
             modelBuilder.Entity<OBPP>().HasMany(c => c.OCRD).WithOne(c => c.OBPP).HasForeignKey(c => c.Priority).IsRequired(false);
             // Relación: Condiciones de pago -> Cliente
-            modelBuilder.Entity<OCTG>().HasMany(c => c.OCRD).WithOne(g => g.OCTG).HasForeignKey(c => c.groupNum);
+            modelBuilder.Entity<OCTG>().HasMany(c => c.OCRD).WithOne(g => g.OCTG).HasForeignKey(c => c.GroupNum);
             // Relación: Cliente -> Direcciones
             modelBuilder.Entity<OcrdClienteSap>().HasMany(c => c.Direcciones).WithOne(d => d.OCRD).HasForeignKey(c => c.CardCode);
             // Relación: Ciudad Medios Magnéticos -> Direcciones

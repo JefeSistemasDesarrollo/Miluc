@@ -11,6 +11,7 @@ namespace Miluc.Shared.DTOs.Usuarios
         public int IdUsuario { get; set; }
 
         public string ? Correo { get; set; }
+        public string ? Codigo { get; set; }
 
 
         [OptionalStrongPassword]

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Sap.TrasabilidadOrdendeVenta;
 using Miluc.Shared.DTOs.Sap.Cliente;
@@ -13,14 +14,13 @@ namespace Miluc.Server.Controllers.SAPController
 {
     [ApiController]
     [Route("api/[Controller]")]
-   // [Authorize]
+    [Authorize]
     public class TrazabilidadController(ISapTrazabilidadPedido _sapTrazabilidadService, ILogService _log) : Controller
     {
 
- 
-[HttpGet("lista-trazabilidad")]
-public async Task<ActionResult<ResponseAPI<List<TrazabilidadOrdenReaderDto>>>>
-    ListaTrazabilidadVentas(string fechaInicial, string fechaFinal)
+
+        [HttpGet("lista-trazabilidad")]
+        public async Task<ActionResult<ResponseAPI<List<TrazabilidadOrdenReaderDto>>>>ListaTrazabilidadVentas(string fechaInicial, string fechaFinal)
         {
             try
             {
@@ -78,7 +78,7 @@ public async Task<ActionResult<ResponseAPI<List<TrazabilidadOrdenReaderDto>>>>
                     Valor = Trasabilidad
                 });
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 await _log.GuardarErrorAsync(message: ex.Message,
                   StackTrace: ex.StackTrace,
@@ -99,7 +99,7 @@ public async Task<ActionResult<ResponseAPI<List<TrazabilidadOrdenReaderDto>>>>
 
         }
 
-       
+
 
 
         [HttpGet("nota-detalle/{DocEntry:int}")]
@@ -184,6 +184,7 @@ public async Task<ActionResult<ResponseAPI<List<TrazabilidadOrdenReaderDto>>>>
                 });
             }
         }
+        
         [HttpGet("factura-detalle/{DocEntry:int}")]
         public async Task<ActionResult<ResponseAPI<List<Inv1DetalleReaderDto>>>> ObtenerDetalleFactura(int DocEntry)
         {
@@ -229,7 +230,7 @@ public async Task<ActionResult<ResponseAPI<List<TrazabilidadOrdenReaderDto>>>>
         {
             try
             {
-                var detalleNotaCredito= await _sapTrazabilidadService.ObtenerDetalleNotaCredito(DocEntry);
+                var detalleNotaCredito = await _sapTrazabilidadService.ObtenerDetalleNotaCredito(DocEntry);
                 if (detalleNotaCredito == null)
                 {
                     return NotFound(new ResponseAPI<List<Rin1DetalleNotaCredito>>
@@ -264,5 +265,8 @@ public async Task<ActionResult<ResponseAPI<List<TrazabilidadOrdenReaderDto>>>>
                 });
             }
         }
+
+
+
     }
 }
