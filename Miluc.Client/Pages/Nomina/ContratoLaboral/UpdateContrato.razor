@@ -1,6 +1,6 @@
 ﻿@page "/Administrar/Contrato/Editar/{idContrato:int}"
 @using Miluc.Client.Interfaces.Nomina
-@using Miluc.Shared.DTOs.Nomina.Cargos
+@using Miluc.Shared.DTOs.Nomina.CargosDto
 @using Miluc.Shared.DTOs.Nomina.ContratoLaboralDto
 @using Miluc.Shared.DTOs.Nomina.EmpresaDto
 @using Miluc.Shared.DTOs.Nomina.TipoContratoDto
@@ -177,7 +177,7 @@
 
     private List<EmpresaReaderDto> listaEmpresa = new();
     private List<TipoContratoReaderDto> listaTipoContrato = new();
-    private List<CargosDto> ListaCargos = new();
+    private List<CargosReaderDto> ListaCargos = new();
 
     private bool cargando = true;
     private bool isProcessing = false;
@@ -194,9 +194,9 @@
         try
         {
             // 1. CARGA EN PARALELO DE CATÁLOGOS Y DATOS (Optimización de velocidad)
-            var tareaEmpresas = _empresa.GetEmpresasAsync();
+            var tareaEmpresas = _empresa.GetEmpresasAsync( string.Empty,1,100);
             var tareaTipos = _tipoContrato.GetTipoContratoAsync(string.Empty, 1, 100);
-            var tareaCargos = _cargos.GetCargosAsyc(string.Empty, 1, 100);
+            var tareaCargos = _cargos.GetCargosAsync(string.Empty, 1, 100);
             var tareaContrato = _contratoService.GetContratoByIdAsync(idContrato);
 
             await Task.WhenAll(tareaEmpresas, tareaTipos, tareaCargos, tareaContrato);

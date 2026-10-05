@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Query;
 using Miluc.Server.Data;
 using Miluc.Server.Interfaces.Nomina;
 using Miluc.Server.Models.Nomina;
-using Miluc.Shared.DTOs.Nomina.Cargos;
+using Miluc.Shared.DTOs.Nomina.CargosDto;
 using Miluc.Shared.DTOs.Nomina.ContratoLaboralDto;
 using Miluc.Shared.DTOs.Nomina.EmpleadoDto;
 using Miluc.Shared.Models.Response;

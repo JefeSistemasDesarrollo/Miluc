@@ -9,9 +9,17 @@
 
   <ItemGroup>
     <Compile Remove="Interfaces\SapInterfaces\RegimenFiscal\**" />
+    <Compile Remove="obj\**" />
     <Content Remove="Interfaces\SapInterfaces\RegimenFiscal\**" />
+    <Content Remove="obj\**" />
     <EmbeddedResource Remove="Interfaces\SapInterfaces\RegimenFiscal\**" />
+    <EmbeddedResource Remove="obj\**" />
     <None Remove="Interfaces\SapInterfaces\RegimenFiscal\**" />
+    <None Remove="obj\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Pages\Nomina\ContratoLaboral\CardContratos.razor" />
   </ItemGroup>
 
   <ItemGroup>

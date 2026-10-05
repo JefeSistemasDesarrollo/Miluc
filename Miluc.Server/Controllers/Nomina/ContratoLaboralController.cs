@@ -3,7 +3,7 @@ using Miluc.Client.Interfaces.Nomina;
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Nomina;
 using Miluc.Server.Servicios.Nomina;
-using Miluc.Shared.DTOs.Nomina.Cargos;
+using Miluc.Shared.DTOs.Nomina.CargosDto;
 using Miluc.Shared.DTOs.Nomina.ContratoLaboralDetalleDto;
 using Miluc.Shared.DTOs.Nomina.ContratoLaboralDto;
 using Miluc.Shared.DTOs.Nomina.EmpresaDto;
@@ -14,11 +14,7 @@ namespace Miluc.Server.Controllers.Nomina
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ContratoLaboralController(ITipoContratoService tipoContratoService,
-        ICargoService cargoService,
-        IEmpresaService empresaService,
-        IContratoLaboralService contratoLaboralService,
-        IContratoLaboralDetalleService contratoLaboralDetalleService,
+    public class ContratoLaboralController(ITipoContratoService tipoContratoService,IContratoLaboralService contratoLaboralService,IContratoLaboralDetalleService contratoLaboralDetalleService,
         ILogService _log) : Controller
     {
 
@@ -69,102 +65,9 @@ namespace Miluc.Server.Controllers.Nomina
                 });
             }
         }
-        //Empresa
-        [HttpGet("Empresa")]
-        public async Task<ActionResult<ResponseAPI<List<EmpresaReaderDto>>>> GetAllEmpresasAsync()
-        {
-            try
-            {
-                var empresas = await empresaService.GetEmpresasAsync();
-                if (empresas == null || empresas.Count == 0)
-                {
-                    return NotFound(new ResponseAPI<List<EmpresaReaderDto>>
-                    {
-                        EsCorrecto = false,
-                        Valor = null,
-                        Mensaje = "No se encontraron empresas.",
-                        CantRegistros = 0
-                    });
-                }
-                return Ok(new ResponseAPI<List<EmpresaReaderDto>>
-                {
-                    EsCorrecto = true,
-                    Valor = empresas,
-                    Mensaje = "Empresas obtenidas correctamente.",
-                    CantRegistros = empresas.Count
-                });
-            }
-            catch (Exception ex)
-            {
+       
 
-
-                await _log.GuardarErrorAsync(
-              message: ex.Message,
-              StackTrace: ex.StackTrace,
-              usuario: User.Identity?.Name ?? "Sistema",
-              metodo: nameof(GetAllEmpresasAsync),
-              ruta: HttpContext.Request.Path,
-              ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
-              origen: nameof(ContratoLaboralController));
-
-                return StatusCode(500, new ResponseAPI<List<EmpresaReaderDto>>
-                {
-                    EsCorrecto = false,
-                    Valor = null,
-                    Mensaje = "Ocurrió un error al obtener las empresas.",
-                    CantRegistros = 0
-                });
-            }
-        }
-
-        [HttpGet("Cargos")]
-        public async Task<ActionResult<ResponseAPI<List<CargosDto>>>> GetCargosAsyc([FromQuery] string? filtro = null, [FromQuery] int page = 1, [FromQuery] int? cantidad = null)
-        {
-            try
-            {
-                var (cargo, totalRegistros) = await cargoService.GetCargosAsyc(filtro, page, cantidad);
-
-                // Si la lista es nula o vacía, devolvemos OK con lista vacía y 0 registros (no 404)
-                if (cargo == null || cargo.Count == 0)
-                {
-                    return Ok(new ResponseAPI<List<CargosDto>> // CORREGIDO: List<CargosDto>
-                    {
-                        EsCorrecto = true,
-                        Valor = [],
-                        Mensaje = "No se encontraron cargos.", // CORREGIDO
-                        CantRegistros = 0
-                    });
-                }
-
-                return Ok(new ResponseAPI<List<CargosDto>>
-                {
-                    EsCorrecto = true,
-                    Valor = cargo,
-                    Mensaje = "Cargos obtenidos correctamente.", // CORREGIDO
-                    CantRegistros = totalRegistros
-                });
-            }
-            catch (Exception ex)
-            {
-                await _log.GuardarErrorAsync(
-                    message: ex.Message,
-                    StackTrace: ex.StackTrace,
-                    usuario: User.Identity?.Name ?? "Sistema",
-                    metodo: nameof(GetCargosAsyc),
-                    ruta: HttpContext.Request.Path,
-                    ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
-                    origen: "cargos");
-
-                return StatusCode(500, new ResponseAPI<List<CargosDto>>
-                {
-                    EsCorrecto = false,
-                    Valor = [],
-                    Mensaje = "Ocurrió un error al obtener los cargos.",
-                    CantRegistros = 0
-                });
-            }
-        }
-
+       
         [HttpGet("ContratoLaboralDetalle")]
         public async Task<ActionResult<ResponseAPI<List<ContratoLaboralDetalleDto>>>> GetAllContratoLaboralDetallesAsync()
         {

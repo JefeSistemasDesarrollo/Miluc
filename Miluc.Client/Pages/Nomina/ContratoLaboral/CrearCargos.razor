@@ -1,0 +1,213 @@
+﻿@page "/Administrar/Cargos/Crear"
+@page "/Administrar/Cargos/Editar/{Id:int?}"
+
+@using Microsoft.AspNetCore.Components
+@using Miluc.Client.Interfaces.Nomina
+@using Miluc.Shared.DTOs.Nomina.CargosDto
+
+@inject NavigationManager nav
+@inject ICargosClientService _cargosService
+@inject IJSRuntime JS
+
+<div class="empleado-page p-4 animate__animated animate__fadeIn">
+    <div class="container-fluid max-width-container">
+
+        @* --- CABECERA DINÁMICA --- *@
+        <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
+            <div>
+                <h2 class="fw-extrabold text-black m-0 tracking-tight">
+                    <i class="bi bi-buildings-fill me-2 header-icon"></i>
+                    @(EsEdicion ? "Editar Cargo" : "Crear Nuevo Cargo")
+                </h2>
+                <p class="text-muted mb-0 small mt-1">
+                    @(EsEdicion ? "Actualice la información general y el estado del cargo." : "Diligencie los datos para registrar un nuevo cargo.")
+                    Los campos marcados con (<span class="text-danger">*</span>) son obligatorios.
+                </p>
+            </div>
+
+            <button class="btn btn-rojo btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
+                <i class="bi bi-arrow-left me-2"></i> Volver al listado
+            </button>
+        </div>
+
+        @* --- FORMULARIO PRINCIPAL --- *@
+        <EditForm Model="upsertCargoDto" OnValidSubmit="EjecutarGuardado">
+            <DataAnnotationsValidator />
+
+            <div class="row g-4">
+                @* --- BLOQUE: DATOS DEL CARGO --- *@
+                <div class="col-12">
+                    <div class="card card-custom border-0 shadow-sm rounded-4">
+                        <div class="card-body p-4">
+                            <div class="section-title-container mb-4">
+                                <span class="badge bg-rojo-light text-vinotinto rounded-pill mb-2 px-3 py-2 fw-bold text-uppercase tracking-wider">Información Básica</span>
+                                <h5 class="fw-bold text-dark m-0">Datos del Cargo</h5>
+                            </div>
+
+                            <div class="row g-4 align-items-center">
+                                @* Nombre del Cargo *@
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">
+                                        <i class="bi bi-briefcase me-1"></i> Nombre Cargo<span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group-custom">
+                                        <InputText class="form-control input-custom" @bind-Value="upsertCargoDto.CargoNombre" placeholder="Ej: Gerente de Ventas" />
+                                    </div>
+                                    <ValidationMessage For="@(() => upsertCargoDto.CargoNombre)" class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
+
+
+                                @* Estado Activo/Inactivo *@
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom text-muted-custom">Estado<span class="text-danger">*</span></label>
+                                    <div class="card card-custom border-0 shadow-sm rounded-4">
+                                        <div class="card-body p-2 d-flex align-items-center justify-content-between">
+                                            <div class="form-check form-switch switch-lg mb-0 ps-5">
+                                                <InputCheckbox class="form-check-input" @bind-Value="upsertCargoDto.Activo" id="activoSwitch" />
+                                                <label class="form-check-label ms-2 fw-semibold" for="activoSwitch">
+                                                    @(upsertCargoDto.Activo ? "Activo" : "Inactivo")
+                                                </label>
+                                            </div>
+                                            <div>
+                                                @if (upsertCargoDto.Activo)
+                                                {
+                                                    <i class="bi bi-check2-circle fs-4 text-success"></i>
+                                                }
+                                                else
+                                                {
+                                                    <i class="bi bi-x-circle fs-4 text-rojo"></i>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* --- BANNER INFORMATIVO --- *@
+                <div class="col-12">
+                    <div class="card card-info-banner border-0 shadow-sm rounded-4 p-4 position-relative overflow-hidden">
+                        <div class="position-relative z-index-2 d-flex flex-column justify-content-center">
+                            <h5 class="fw-bold text-rojo mb-2">
+                                <i class="bi bi-shield-lock-fill me-2"></i>Validación de Registro
+                            </h5>
+                            <p class="small mb-0 lh-lg">
+                                Asegúrese de que el nombre del cargo corresponda a la estructura organizacional de la empresa. Esta información será utilizada para la administración de empleados y contratos laborales.
+                            </p>
+                        </div>
+                        <div class="decorative-circle"></div>
+                    </div>
+                </div>
+            </div>
+
+            @* --- ACCIONES --- *@
+            <div class="card-footer bg-light p-4 d-flex justify-content-end gap-3 rounded-bottom-4 border-0 mt-4">
+                <button type="button" class="btn btn-light-custom rounded-pill px-4 py-2.5 fw-semibold" @onclick="Volver">
+                    Cancelar
+                </button>
+
+                <button type="submit" class="btn btn-rojo rounded-pill px-4" disabled="@isProcessing">
+                    @if (isProcessing)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        <span>Guardando...</span>
+                    }
+                    else
+                    {
+                        <span>@(EsEdicion ? "Guardar Cambios" : "Guardar Cargo")</span>
+                    }
+                </button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+
+    private UpsertCargos upsertCargoDto = new();
+    private bool isProcessing = false;
+
+    // Propiedad calculada para saber si estamos editando o creando
+    private bool EsEdicion => Id.HasValue && Id.Value > 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (EsEdicion)
+        {
+            await CargarCargo();
+        }
+        else
+        {
+            // Si es un registro nuevo, asignamos valores por defecto
+            upsertCargoDto = new UpsertCargos
+            {
+                CargoId = 0,
+                Activo = true
+            };
+        }
+    }
+
+
+    private async Task CargarCargo()
+    {
+        try
+        {
+            var respuesta = await _cargosService.GetCargoByIdAsync(Id!.Value);
+
+            if (respuesta != null && respuesta.EsCorrecto && respuesta.Valor != null)
+            {
+                upsertCargoDto = new UpsertCargos
+                {
+                    CargoId = respuesta.Valor.CargoId,
+                    CargoNombre = respuesta.Valor.CargoNombre,
+                    Activo = respuesta.Valor.Activo
+                };
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("Swal.fire", "Error", "No se encontró el cargo solicitado.", "error");
+                Volver();
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("Swal.fire", "Error", $"Error al cargar cargo: {ex.Message}", "error");
+        }
+    }
+
+    public async Task EjecutarGuardado()
+    {
+        isProcessing = true;
+
+        try
+        {
+            var respuesta = await _cargosService.UpsertCargoAsync(upsertCargoDto);
+
+            if (respuesta != null && respuesta.EsCorrecto)
+            {
+                string mensajeExito = EsEdicion ? "El cargo se actualizó correctamente." : "El cargo fue registrado con éxito.";
+                await JS.InvokeVoidAsync("Swal.fire", "¡Éxito!", mensajeExito, "success");
+                Volver();
+            }
+            else
+            {
+                string mensajeError = respuesta?.Mensaje ?? "Error al procesar la solicitud en el servidor.";
+                await JS.InvokeVoidAsync("Swal.fire", "Atención", mensajeError, "warning");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("Swal.fire", "Error", ex.Message, "error");
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private void Volver() => nav.NavigateTo("/Administrar/Cargos");
+}

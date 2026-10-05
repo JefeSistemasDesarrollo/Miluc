@@ -1,7 +1,7 @@
 ﻿@page "/api/ContratoLaboral/CreateContratoLaboral{idempleado:int}"
 @using Miluc.Client.Interfaces.Nomina
 @using Miluc.Client.Interfaces.Nomina.SeguridadSocial
-@using Miluc.Shared.DTOs.Nomina.Cargos
+@using Miluc.Shared.DTOs.Nomina.CargosDto
 @using Miluc.Shared.DTOs.Nomina.ContratoLaboralDetalleDto
 @using Miluc.Shared.DTOs.Nomina.ContratoLaboralDto
 @using Miluc.Shared.DTOs.Nomina.EmpresaDto
@@ -139,12 +139,12 @@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-calendar-event"></i></span> Fecha de Inicio<span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
-                                         <SfDatePicker TValue="DateTime?"
-                                                  @bind-Value="createContratoDto.FechaInicio"
-                                                  Format="dd/MM/yyyy"
-                                                  Placeholder="dd/mm/aaaa"
-                                                  Width="100%">
-                                    </SfDatePicker>
+                                        <SfDatePicker TValue="DateTime?"
+                                                      @bind-Value="createContratoDto.FechaInicio"
+                                                      Format="dd/MM/yyyy"
+                                                      Placeholder="dd/mm/aaaa"
+                                                      Width="100%">
+                                        </SfDatePicker>
                                     </div>
                                     <ValidationMessage For="@(() => createContratoDto.FechaInicio)" class="text-danger small mt-1 d-block fw-medium" />
                                 </div>
@@ -200,17 +200,17 @@
     private bool isProcessing = false;
 
     private List<EmpresaReaderDto> listaEmpresa = new();
-    private List<CargosDto> ListaCargos = new();
+    private List<CargosReaderDto> ListaCargos = new();
     private List<TipoContratoReaderDto> listaTipoContrato = new();
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            var tareaEmpresas = _empresaService.GetEmpresasAsync();
+            var tareaEmpresas = _empresaService.GetEmpresasAsync(string.Empty, 1, 100);
             var tareaTipos = _tipoContratoService.GetTipoContratoAsync(string.Empty, 1, 100);
             var tareaEmpleado = EmpleadoService.GetEmpleadoByIdAsync(idempleado);
-            var tareaCargos = _cargoService.GetCargosAsyc(string.Empty, 1, 100);
+            var tareaCargos = _cargoService.GetCargosAsync(string.Empty, 1, 100);
 
             // 1. Esperamos todas las tareas en paralelo
             await Task.WhenAll(tareaEmpresas, tareaTipos, tareaEmpleado, tareaCargos);

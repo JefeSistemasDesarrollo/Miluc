@@ -92,9 +92,10 @@
         <table class="table table-striped table-hover mb-0">
             <thead class="bg-vinotinto text-white">
                 <tr>
+                    
+                    <th class="text-lg-center text-center">Nombre</th>
+                    <th class="text-lg-center text-center">Apellidos</th>
                     <th class="text-lg-center text-center">Documento</th>
-                    <th class="ps-4 py-3 text-center">Nombre</th>
-                    <th class="text-center ">Apellidos</th>
              
                 </tr>
             </thead>
@@ -124,14 +125,15 @@
                     @foreach (var em in listempleadosAlservidor)
                     {
                         <tr>
+                           
                             <td>
-                                <div class="text-muted x-small text-center">@em.Documento</div>
+                                <div class=" x-small text-uppercase text-center">@em.PrimerNombre @em.SegundoNombre</div>
                             </td>
                             <td>
-                                <div class="text-muted x-small text-uppercase text-center">@em.PrimerNombre @em.SegundoNombre</div>
+                                <div class=" x-small text-uppercase text-center">@em.PrimerApellido @em.SegundoApellido</div>
                             </td>
                             <td>
-                                <div class="text-muted x-small text-uppercase text-center">@em.PrimerApellido @em.SegundoApellido</div>
+                                <div class=" x-small text-center">@em.Documento</div>
                             </td>
                      
                             <td class="text-center pe-4">

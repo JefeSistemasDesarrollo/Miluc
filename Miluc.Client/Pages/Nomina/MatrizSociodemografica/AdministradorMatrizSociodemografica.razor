@@ -30,24 +30,26 @@
             
             
             <div class="col-lg-7">
-                <div class="input-group input-group-lg search-group">
-                    <span class="input-group-text bg-white border-end-0 rounded-start-pill ps-3">
-                        <i class="bi bi-search text-muted"></i>
-                    </span>
+                @if (_authClientService.HasPermission("Employee.Search"))
+                {
+                    <div class="input-group input-group-lg search-group">
+                        <span class="input-group-text bg-white border-end-0 rounded-start-pill ps-3">
+                            <i class="bi bi-search text-muted"></i>
+                        </span>
 
-                    <input type="text" class="form-control border-start-0 shadow-none fs-6"
-                           placeholder="Filtrar local o buscar en servidor..."
-                           @bind="textoBusqueda" @bind:event="oninput" @onkeyup="HandleEnter" />
+                        <input type="text" class="form-control border-start-0 shadow-none fs-6"
+                        placeholder="Filtrar local o buscar en servidor..."
+                        @bind="textoBusqueda" @bind:event="oninput" @onkeyup="HandleEnter" />
 
-                     
-                    <button class="btn btn-rojo rounded-end-pill px-4" @onclick="BuscarEnServidor">
-                        <i class="bi bi-search me-2"></i>
-                    </button>
-                </div>
+
+                        <button class="btn btn-rojo rounded-end-pill px-4" @onclick="BuscarEnServidor">
+                            <i class="bi bi-search me-2"></i>
+                        </button>
+                    </div>
+                }
             </div> 
             <div class="col-lg-5 text-lg-end">
                 <div class="d-inline-flex align-items-center bg-light p-2 rounded-pill border">
-
                     <label class="mx-3 small fw-bold text-muted text-uppercase">Mostrar</label>
                     <select class="form-select form-select-sm rounded-pill border-0 bg-transparent fw-bold"
                             style="width: 80px;"
@@ -70,16 +72,16 @@
 
 <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
     <div class="table-responsive">
-        <table class="table table-striped table-hover text-uppercase mb-0">
-            <thead class="bg-rojo text-white">
+        <table class="table table-striped table-hover mb-0">
+            <thead class="bg-vinotinto text-white">
                 <tr>
                     
                     
-                            <th scope="col">Nombre Empleado</th>
-                            <th scope="col">Título Obtenido</th>
-                            <th scope="col">Nacionalidad</th>
-                            <th scope="col">Género</th>
-                            <th scope="col" class="text-center pe-4">Acciones</th>
+                            <th  class="text-lg-center text-center">Nombre Empleado</th>
+                            <th class="text-lg-center text-center">Título Obtenido</th>
+                            <th scope="col" class="text-lg-center text-center">Nacionalidad</th>
+                            <th scope="col" class="text-lg-center text-center">Género</th>
+                            <th scope="col" class="text-lg-center text-center">Acciones</th>
                         </tr>
                     </thead>
               
@@ -109,10 +111,12 @@
                     {
                         <tr>
                            
-                            <td>@item.NombreEmpleado</td>
-                            <td>@item.TituloObtenido</td>
-                            <td>@item.Nacionalidad</td>
-                            <td>@item.NombreGenero</td>
+                            <td> <div class="text-muted x-small text-uppercase text-center">@item.NombreEmpleado</div> </td>
+                            <td> <div class="text-muted x-small text-uppercase text-center">@item.TituloObtenido </div> </td>
+                            <td> <div class="text-muted x-small text-uppercase text-center">@item.Nacionalidad </div> </td>
+                            <td> <div class="text-muted x-small text-uppercase text-center">@item.NombreGenero </div> </td>
+
+                           
                            
                            
                             <td class="text-center pe-4">
