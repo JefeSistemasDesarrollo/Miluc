@@ -2,17 +2,19 @@
 
 @using Miluc.Client.Interfaces.Nomina
 @using Miluc.Shared.DTOs.Nomina.EmpleadoDto
+@using Miluc.Shared.DTOs.Nomina.EmpresaDto
 @using Miluc.Shared.DTOs.Nomina.EstadoCivilDto
 @using Miluc.Shared.DTOs.Nomina.MunicipioDto
 @using Miluc.Shared.DTOs.Nomina.TipoDocumento
-@using Syncfusion.Blazor.Calendars
 @using Miluc.Shared.DTOs.Usuarios
+@using Syncfusion.Blazor.Calendars
 
 @inject NavigationManager nav
 @inject IDepartamentosClientService _municipioClientService
 @inject ITipoDocumentoClienteService _tipoDocumentoClientService
 @inject IEmpleadoClientService _empleadoService
 @inject IEstadoCivilClientService _estadoCivil
+@inject IEmpresaClientSevice _empresaClientSevice
 @inject IJSRuntime JS
 
 <div class="empleado-page p-4 animate__animated animate__fadeIn">
@@ -22,7 +24,7 @@
         <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
             <div>
                 <h2 class="fw-extrabold text-black m-0 tracking-tight">
-                    <i class="bi bi-pen"></i>
+                    <i class="bi bi-pen me-2"></i>
                     Editar Empleado
                 </h2>
                 <p class="text-muted mb-0 small mt-1">
@@ -51,16 +53,12 @@
                             </div>
 
                             <div class="row g-4">
-
-
-
                                 <div class="col-md-4">
                                     <label class="form-label label-custom">Primer Nombre <span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
                                         <span class="input-icon"><i class="bi bi-person"></i></span>
                                         <InputText class="form-control input-custom" @bind-Value="editarEmpleado.PrimerNombre" placeholder="Ej: Juan" />
                                     </div>
-                                    @* esto es para hacer las validaciones  que esta en el dto  *@
                                     <ValidationMessage For="@(() => editarEmpleado.PrimerNombre)" class="text-danger small mt-1 d-block fw-medium" />
                                 </div>
 
@@ -77,12 +75,9 @@
                                     <div class="input-group-custom">
                                         <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
                                         <InputText class="form-control input-custom" @bind-Value="editarEmpleado.PrimerApellido" placeholder="Primer Apellido" />
-                                        <ValidationMessage For="@(() => editarEmpleado.PrimerApellido)" class="text-danger small mt-1 d-block fw-medium" />
-
                                     </div>
+                                    <ValidationMessage For="@(() => editarEmpleado.PrimerApellido)" class="text-danger small mt-1 d-block fw-medium" />
                                 </div>
-
-
 
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom">Segundo Apellido</label>
@@ -91,29 +86,23 @@
                                         <InputText class="form-control input-custom" @bind-Value="editarEmpleado.SegundoApellido" placeholder="Segundo apellido" />
                                     </div>
                                 </div>
+
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom">Fecha nacimiento<span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
-                                        <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
-
                                         <SfDatePicker TValue="DateTime?"
                                                       @bind-Value="editarEmpleado.FechaNacimiento"
                                                       Format="dd/MM/yyyy"
                                                       Placeholder="dd/mm/aaaa"
                                                       Width="100%">
                                         </SfDatePicker>
-                   
                                         <ValidationMessage For="@(() => editarEmpleado.FechaNacimiento)" class="text-danger small mt-1 d-block fw-medium" />
                                     </div>
                                 </div>
 
-
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom">Tipo de documento<span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
-                                        <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
-
-
                                         <InputSelect @bind-Value="editarEmpleado.TipoDocumentoId" class="form-control input-custom">
                                             <option value="">Seleccionar tipo de documento</option>
                                             @foreach (var m in listDocumento)
@@ -121,9 +110,8 @@
                                                 <option value="@m.TipoDocumentoId">@m.Nombre</option>
                                             }
                                         </InputSelect>
-
-                                     
                                     </div>
+                                    <ValidationMessage For="@(() => editarEmpleado.TipoDocumentoId)" class="text-danger small mt-1 d-block fw-medium" />
                                 </div>
 
                                 <div class="col-md-4">
@@ -138,9 +126,7 @@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom">Fecha Expedición Documento<span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
-                                        <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
-
-                                       <SfDatePicker TValue="DateTime?"
+                                        <SfDatePicker TValue="DateTime?"
                                                       @bind-Value="editarEmpleado.FechaExpedicionDoc"
                                                       Format="dd/MM/yyyy"
                                                       Placeholder="dd/mm/aaaa"
@@ -153,11 +139,7 @@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom">Estado Civil<span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
-                                        <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
-
-
                                         <div class="select2-wrapper">
-
                                             <InputSelect @bind-Value="editarEmpleado.EstadoCivilId" class="form-control input-custom">
                                                 <option value="">Seleccionar estado civil</option>
                                                 @foreach (var estado in listEstadoCivil)
@@ -165,185 +147,146 @@
                                                     <option value="@estado.EstadoCivilId">@estado.Nombre</option>
                                                 }
                                             </InputSelect>
-
-                                          
                                         </div>
                                     </div>
+                                    <ValidationMessage For="@(() => editarEmpleado.EstadoCivilId)" class="text-danger small mt-1 d-block fw-medium" />
                                 </div>
 
-                               
- 
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom">Celular</label>
                                     <div class="input-group-custom">
-                                        <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
-
                                         <InputText class="form-control input-custom" @bind-Value="editarEmpleado.Celular" placeholder="Celular" />
-                                        <ValidationMessage For="@(() => editarEmpleado.Celular)" class="text-danger small mt-1 d-block fw-medium" />
-                                        @* <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.SegundoApellido" placeholder="Segundo apellido" /> *@
                                     </div>
+                                    <ValidationMessage For="@(() => editarEmpleado.Celular)" class="text-danger small mt-1 d-block fw-medium" />
                                 </div>
-
 
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom">Celular Alterno</label>
                                     <div class="input-group-custom">
-                                        <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
-
                                         <InputText class="form-control input-custom" @bind-Value="editarEmpleado.CelularAlterno" placeholder="Celular Alterno" />
-                                        <ValidationMessage For="@(() => editarEmpleado.CelularAlterno)" class="text-danger small mt-1 d-block fw-medium" />
-                                        @* <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.SegundoApellido" placeholder="Segundo apellido" /> *@
                                     </div>
+                                    <ValidationMessage For="@(() => editarEmpleado.CelularAlterno)" class="text-danger small mt-1 d-block fw-medium" />
                                 </div>
+
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom">Correo<span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
-                                        <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
-
                                         <InputText class="form-control input-custom" @bind-Value="editarEmpleado.CorreoElectronico" placeholder="Correo" />
-                                        <ValidationMessage For="@(() => editarEmpleado.CorreoElectronico)" class="text-danger small mt-1 d-block fw-medium" />
-                                        @* <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.SegundoApellido" placeholder="Segundo apellido" /> *@
                                     </div>
+                                    <ValidationMessage For="@(() => editarEmpleado.CorreoElectronico)" class="text-danger small mt-1 d-block fw-medium" />
                                 </div>
+
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom">Dirección</label>
                                     <div class="input-group-custom">
-                                        <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
-
                                         <InputText class="form-control input-custom" @bind-Value="editarEmpleado.Direccion" placeholder="Direccion" />
-                                        <ValidationMessage For="@(() => editarEmpleado.Direccion)" class="text-danger small mt-1 d-block fw-medium" />
-                                        @* <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.SegundoApellido" placeholder="Segundo apellido" /> *@
                                     </div>
+                                    <ValidationMessage For="@(() => editarEmpleado.Direccion)" class="text-danger small mt-1 d-block fw-medium" />
                                 </div>
+
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom">Barrio</label>
                                     <div class="input-group-custom">
-                                        <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
-
                                         <InputText class="form-control input-custom" @bind-Value="editarEmpleado.Barrio" placeholder="Barrio" />
-                                        <ValidationMessage For="@(() => editarEmpleado.Barrio)" class="text-danger small mt-1 d-block fw-medium" />
-                                        @* <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.SegundoApellido" placeholder="Segundo apellido" /> *@
                                     </div>
+                                    <ValidationMessage For="@(() => editarEmpleado.Barrio)" class="text-danger small mt-1 d-block fw-medium" />
                                 </div>
-                           
-                                <div class="col-md-4 ">
 
-                                    <label class="form-label label-custom text-muted-custom">Estado</label>
+                                @* Empresa *@
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">Seleccione la empresa <span class="text-danger">*</span></label>
+                                    <div class="select2-wrapper">
+                                        <InputSelect @bind-Value="editarEmpleado.EmpresaId" class="form-control input-custom">
+                                            <option value="">Seleccionar empresa</option>
+                                            @foreach (var empresa in listEmpresas)
+                                            {
+                                                <option value="@empresa.EmpresaId">@empresa.EmpresaId - @empresa.NombreEmpresa</option>
+                                            }
+                                        </InputSelect>
+                                    </div>
+                                    <ValidationMessage For="@(() => editarEmpleado.EmpresaId)" class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
 
-
-
-                                    <div class="input-group-custom">
-                                        <div class=" card card-custom border-0 shadow-sm rounded-4">
-                                            <div class="card-body input-custom">                                           
-                                           
-                                                <div class="input-group-custom ">                                             
-                                                    <div class="form-check form-switch switch-lg ">
-                                                        <InputCheckbox class=" form-check-input form-control " @bind-Value="editarEmpleado.Activo"> </InputCheckbox>
-                                                        @if (editarEmpleado.Activo) {
-                                                           
-                                                                        
-                                                            <i class="bi  text-black bi-check2-circle"></i>
-
-                                                        }
-                                                        else
-                                                        {
-                                                            <i class="bi text-rojo bi-x-circle"></i>
-                                                        }
-
-                                                    </div>
-
-                                                    
-                                                </div>
-                                            </div>
-
+                                @* Estado (Switch) *@
+                                <div class="col-md-4 d-flex align-items-center">
+                                    <div class="w-100">
+                                        <label class="form-label label-custom">Estado</label>
+                                        <div class="form-check form-switch switch-lg d-flex align-items-center gap-2 mt-2">
+                                            <InputCheckbox class="form-check-input" @bind-Value="editarEmpleado.Activo" id="editarActivoSwitch" style="transform: scale(1.3); cursor: pointer;" />
+                                            <label class="form-check-label fw-semibold" for="editarActivoSwitch" style="cursor: pointer;">
+                                                @if (editarEmpleado.Activo)
+                                                {
+                                                    <span class="text-black"><i class="bi bi-check2-circle me-1"></i> </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-danger"><i class="bi bi-x-circle me-1"></i> </span>
+                                                }
+                                            </label>
                                         </div>
                                     </div>
-
-
-                                   
-                                  
                                 </div>
-                     
-                                
+
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            @* --- BLOQUE 2: UBICACIÓN --- *@
-           <div class="row">
 
-                <div class="col-12 col-lg-6 col-md-8 col-sm-12">
+            </div>
+
+            @* --- BLOQUE 2: UBICACIÓN Y BANNER --- *@
+            <div class="row g-4 mt-2">
+                <div class="col-12 col-lg-6">
                     <div class="card card-custom border-0 shadow-sm rounded-4 h-100">
                         <div class="card-body p-4 d-flex flex-column justify-content-between">
                             <div>
                                 <div class="section-title-container mb-4">
                                     <span class="badge bg-rojo-light text-rojo rounded-pill mb-2 px-3 py-2 fw-bold text-uppercase tracking-wider">Paso 2</span>
                                     <h5 class="fw-bold text-rojo m-0">Ubicación y Residencia</h5>
+                                </div>
 
-                                    @*munucipio*@
-                                    <div class="mb-2">
-                                        <label class="form-label label-custom">Seleccione el municipio <span class="text-danger">*</span></label>
-                                        <div class="select2-wrapper">
-
-                                            <div class="col-12 col-lg-8">
-                                                <label class="form-label label-custom text-muted-custom"> Municipio</label>
-                                                <div class="input-group-custom">
-                                                    <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
-                                            
-
-                                                
-
-
-                                                    <div class="select2-wrapper">
-                                                        <select id="municipiosSelect"@bind="editarEmpleado.CodigoMunicipio"  class="form-select input-custom">
-                                                            <option value="">Buscar municipio...</option>
-                                                            @foreach (var m in listmunicipios)
-                                                            {
-                                                                <option value="@m.Codigo">@m.Nombre - @m.NombreDepartamento</option>
-                                                            }
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                <div class="mb-3">
+                                    <label class="form-label label-custom">Seleccione el municipio <span class="text-danger">*</span></label>
+                                    <div class="select2-wrapper">
+                                        <select id="municipiosSelect" class="form-select input-custom">
+                                            <option value="">Buscar municipio...</option>
+                                            @foreach (var m in listmunicipios)
+                                            {
+                                                if (m.Codigo == editarEmpleado.CodigoMunicipio)
+                                                {
+                                                    <option value="@m.Codigo" selected>@m.Nombre - @m.NombreDepartamento</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@m.Codigo">@m.Nombre - @m.NombreDepartamento</option>
+                                                }
+                                            }
+                                        </select>
                                     </div>
+                                    <ValidationMessage For="@(() => editarEmpleado.CodigoMunicipio)" class="text-danger small mt-1 d-block fw-medium" />
                                 </div>
                             </div>
                         </div>
-
-                    
                     </div>
                 </div>
 
-              
-
-                    
-                    @* --- INFORMACIÓN EXTRA ILUSTRATIVA / COMPLEMENTARIA --- *@
-                <div class="col-12 col-lg-6 col-md-4 col-sm-12">
-                        <div class="card card-info-banner border-0 shadow-sm rounded-4 h-100 p-4 position-relative overflow-hidden">
-                            <div class="position-relative z-index-2 d-flex flex-column h-100 justify-content-center">
-                                <h5 class="fw-bold text-rojo mb-2"><i class="bi bi-shield-lock-fill me-2"></i>Seguridad de los datos</h5>
-                                <p class="text-secondary small mb-0 lh-lg">
-                                    Al actualizar la información de un colaborador, confirme que el número de identificación y demás datos coincidan con los documentos oficiales. Esta verificación garantiza la correcta gestión de afiliaciones y trámites de seguridad social.
-                                </p>
-                            </div>
-                            <div class="decorative-circle"></div>
+                @* --- INFORMACIÓN EXTRA ILUSTRATIVA / COMPLEMENTARIA --- *@
+                <div class="col-12 col-lg-6">
+                    <div class="card card-info-banner border-0 shadow-sm rounded-4 h-100 p-4 position-relative overflow-hidden">
+                        <div class="position-relative z-index-2 d-flex flex-column h-100 justify-content-center">
+                            <h5 class="fw-bold text-rojo mb-2"><i class="bi bi-shield-lock-fill me-2"></i>Seguridad de los datos</h5>
+                            <p class="text-secondary small mb-0 lh-lg">
+                                Al actualizar la información de un colaborador, confirme que el número de identificación y demás datos coincidan con los documentos oficiales. Esta verificación garantiza la correcta gestión de afiliaciones y trámites de seguridad social.
+                            </p>
                         </div>
+                        <div class="decorative-circle"></div>
                     </div>
-           </div>
-
-            
-                
-            
-
-
-           
-
+                </div>
+            </div>
 
             @* --- BARRA DE ACCIONES / BOTÓN GUARDAR --- *@
             <div class="mt-5 pt-3 border-top d-flex justify-content-end gap-3">
-                <button type="button" class="btn btn-rojo-custom rounded-pill px-4 py-2.5 fw-semibold transition-all" @onclick="Volver">
+                <button type="button" class="btn btn-light-custom rounded-pill px-4 py-2.5 fw-semibold transition-all" @onclick="Volver">
                     Cancelar
                 </button>
                 <button type="submit" class="btn btn-rojo btn-lg px-5 rounded-pill shadow-sm fw-bold transition-all d-flex align-items-center" disabled="@isProcessing">
@@ -354,8 +297,8 @@
                     }
                     else
                     {
-                        <i class="bi  bi-check-circle-fill me-2"></i>
-                        <span>Guardar</span>
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        <span>Guardar Cambios</span>
                     }
                 </button>
             </div>
@@ -363,22 +306,19 @@
     </div>
 </div>
 
-
 @code {
-
     [Parameter]
     public int idEmpleado { get; set; }
 
     private EmpleadoUpdateDto editarEmpleado = new();
     private List<MunicipioReaderDto> listmunicipios = new();
-
-    private List<TipoDocumentoReaderDto> listDocumento = new List<TipoDocumentoReaderDto>();
-
-    private List<EstadoCivilReaderDto> listEstadoCivil = new List<EstadoCivilReaderDto>();
+    private List<TipoDocumentoReaderDto> listDocumento = new();
+    private List<EstadoCivilReaderDto> listEstadoCivil = new();
+    private List<EmpresaReaderDto> listEmpresas = new();
+    private string correoTemporal = "";
     private bool isProcessing = false;
 
     private void Volver() => nav.NavigateTo("/Administrar/Empleado");
-    private DateTime MaxFechaNacimiento => DateTime.Today;
 
     [JSInvokable]
     public void ActualizarMunicipioDesdeJS(string codigo)
@@ -386,53 +326,72 @@
         editarEmpleado.CodigoMunicipio = codigo;
         StateHasChanged();
     }
-    //cuando se inicializala aplicacion por primera vez
-    //aca vamos acargar todos las tablas dependientes paara crear empleados
 
     protected override async Task OnInitializedAsync()
     {
-
-
-        //aca vamos a consultar el empleado por id empleado que estamos capturando
-
-        var empleado = await _empleadoService.GetEmpleadoByIdAsync(idEmpleado);
-
-        if (empleado.Valor != null)
+        try
         {
-            editarEmpleado.EmpleadoId = empleado.Valor.EmpleadoId;
+            var tareaEmpleado = _empleadoService.GetEmpleadoByIdAsync(idEmpleado);
+            var tareaMunicipios = _municipioClientService.GetMunicipiosAsync();
+            var tareaTiposDoc = _tipoDocumentoClientService.GetTipoDocumentosAsync();
+            var tareaEstados = _estadoCivil.GetEstadosCivilesAsync();
+            var tareaEmpresas = _empresaClientSevice.GetEmpresasAsync(string.Empty, 1, 100);
 
-            editarEmpleado.PrimerNombre = empleado.Valor.PrimerNombre;
-            editarEmpleado.SegundoNombre = empleado.Valor.SegundoNombre;
-            editarEmpleado.PrimerApellido = empleado.Valor.PrimerApellido;
-            editarEmpleado.SegundoApellido = empleado.Valor.SegundoApellido;
-            editarEmpleado.FechaNacimiento = empleado.Valor.FechaNacimiento;
-            editarEmpleado.FechaExpedicionDoc = empleado.Valor.FechaExpedicionDoc;
-            editarEmpleado.TipoDocumentoId = empleado.Valor.TipoDocumentoId;
-            editarEmpleado.Documento = empleado.Valor.Documento;
-            editarEmpleado.EstadoCivilId = empleado.Valor.EstadoCivilId;
-            editarEmpleado.Celular = empleado.Valor.Celular;
-            editarEmpleado.CelularAlterno = empleado.Valor.CelularAlterno;
-            editarEmpleado.CorreoElectronico = empleado.Valor.CorreoElectronico;
-            editarEmpleado.Direccion = empleado.Valor.Direccion;
-            editarEmpleado.Barrio = Convert.ToString(empleado.Valor.Barrio);
-            editarEmpleado.CodigoMunicipio = empleado.Valor.CodigoMunicipio;
-            editarEmpleado.Activo = empleado.Valor.Activo;
+            await Task.WhenAll(tareaEmpleado, tareaMunicipios, tareaTiposDoc, tareaEstados, tareaEmpresas);
 
+            var respuestaEmpleado = await tareaEmpleado;
+            var respuestaMunicipios = await tareaMunicipios;
+            var respuestaTipoDocumento = await tareaTiposDoc;
+            var respuestaEstado = await tareaEstados;
+            var respuestaEmpresas = await tareaEmpresas;
+
+            if (respuestaMunicipios?.EsCorrecto == true)
+                listmunicipios = respuestaMunicipios.Valor ?? new();
+
+            if (respuestaTipoDocumento?.EsCorrecto == true)
+                listDocumento = respuestaTipoDocumento.Valor ?? new();
+
+            if (respuestaEstado?.EsCorrecto == true)
+                listEstadoCivil = respuestaEstado.Valor ?? new();
+
+            if (respuestaEmpresas?.EsCorrecto == true)
+                listEmpresas = respuestaEmpresas.Valor ?? new();
+
+            if (respuestaEmpleado?.Valor != null)
+            {
+                var emp = respuestaEmpleado.Valor;
+                correoTemporal = emp.CorreoElectronico ?? string.Empty;
+
+                editarEmpleado.Usuario ??= new UsuarioUpdateDto();
+
+                editarEmpleado.Usuario.IdUsuario = emp.UsuarioId;
+                editarEmpleado.Usuario.Email = emp.CorreoElectronico;
+                editarEmpleado.Usuario.EmailTemporal = emp.CorreoElectronico;
+
+                editarEmpleado.EmpleadoId = emp.EmpleadoId;
+                editarEmpleado.PrimerNombre = emp.PrimerNombre;
+                editarEmpleado.SegundoNombre = emp.SegundoNombre;
+                editarEmpleado.PrimerApellido = emp.PrimerApellido;
+                editarEmpleado.SegundoApellido = emp.SegundoApellido;
+                editarEmpleado.FechaNacimiento = emp.FechaNacimiento;
+                editarEmpleado.FechaExpedicionDoc = emp.FechaExpedicionDoc;
+                editarEmpleado.TipoDocumentoId = emp.TipoDocumentoId;
+                editarEmpleado.Documento = emp.Documento;
+                editarEmpleado.EstadoCivilId = emp.EstadoCivilId;
+                editarEmpleado.Celular = emp.Celular;
+                editarEmpleado.CelularAlterno = emp.CelularAlterno;
+                editarEmpleado.CorreoElectronico = emp.CorreoElectronico;
+                editarEmpleado.Direccion = emp.Direccion;
+                editarEmpleado.Barrio = emp.Barrio;
+                editarEmpleado.CodigoMunicipio = emp.CodigoMunicipio;
+                editarEmpleado.EmpresaId = emp.EmpresaId;
+                editarEmpleado.Activo = emp.Activo;
+            }
         }
-
-        var respuestaMunicipios = await _municipioClientService.GetMunicipiosAsync();
-        if (respuestaMunicipios.EsCorrecto) listmunicipios = respuestaMunicipios.Valor;
-
-        // //aca vamos a caragar el tipo de documento para mostrarlo en el select
-        var respuestaTipoDocumento = await _tipoDocumentoClientService.GetTipoDocumentosAsync();
-        if (respuestaTipoDocumento.EsCorrecto)
-            listDocumento = respuestaTipoDocumento.Valor;
-
-        var respuestaEstado = await _estadoCivil.GetEstadosCivilesAsync();
-        if (respuestaEstado.EsCorrecto) listEstadoCivil = respuestaEstado.Valor;
-
-
-
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("Swal.fire", "Error", ex.Message, "error");
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -444,47 +403,119 @@
         }
     }
 
+    public string PasswordGenerator()
+    {
+        const string minusculas = "abcdefghijklmnopqrstuvwxyz";
+        const string mayusculas = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const string numeros = "0123456789";
+        const string caracteresEspeciales = "!@#$%^&*()_+-=[]{}|;:,.<>?";
+
+        const int passwordLength = 8;
+        var random = new Random();
+        var password = new char[passwordLength];
+        for (int i = 0; i < password.Length; i++)
+        {
+            if (i < 2)
+                password[i] = mayusculas[random.Next(mayusculas.Length)];
+            else if (i < 4)
+                password[i] = numeros[random.Next(numeros.Length)];
+            else if (i < 6)
+                password[i] = caracteresEspeciales[random.Next(caracteresEspeciales.Length)];
+            else
+                password[i] = minusculas[random.Next(minusculas.Length)];
+        }
+        return new string(password);
+    }
+
     public async Task EjecutarGuardado()
     {
         isProcessing = true;
+
         try
         {
-           
+            editarEmpleado.Usuario ??= new UsuarioUpdateDto();
 
-            editarEmpleado.Usuario.Nombres = $"{editarEmpleado.PrimerNombre} {editarEmpleado.SegundoNombre}";
-            editarEmpleado.Usuario.Apellidos = $"{editarEmpleado.PrimerApellido} {editarEmpleado.SegundoApellido}";
+            editarEmpleado.Usuario.IdUsuario = editarEmpleado.Usuario.IdUsuario;
+            editarEmpleado.Usuario.UserName = editarEmpleado.CorreoElectronico;
+            editarEmpleado.Usuario.Nombres =
+                $"{editarEmpleado.PrimerNombre} {editarEmpleado.SegundoNombre}".Trim();
+
+            editarEmpleado.Usuario.Apellidos =
+                $"{editarEmpleado.PrimerApellido} {editarEmpleado.SegundoApellido}".Trim();
+
             editarEmpleado.Usuario.Email = editarEmpleado.CorreoElectronico;
+            editarEmpleado.Usuario.EmailTemporal = correoTemporal;
             editarEmpleado.Usuario.Telefono = editarEmpleado.Celular;
-            editarEmpleado.Usuario.Password = "ABC123abc*"; // PasswordGenerator();
-            editarEmpleado.Usuario.ConfirmarPassword = "ABC123abc*";
-            editarEmpleado.Usuario.DebeCambiarPassword = true;
-            editarEmpleado.Usuario.HoraInicio = TimeOnly.Parse("08:00 AM");
-            editarEmpleado.Usuario.HoraFin = TimeOnly.Parse("05:00 PM");
+
+            var correoCambio = !string.Equals(
+                correoTemporal?.Trim(),
+                editarEmpleado.CorreoElectronico?.Trim(),
+                StringComparison.OrdinalIgnoreCase);
+
+            // Solo generar contraseña si cambió el correo
+            if (correoCambio)
+            {
+                editarEmpleado.Usuario.Password = PasswordGenerator();
+                editarEmpleado.Usuario.ConfirmarPassword = editarEmpleado.Usuario.Password;
+                editarEmpleado.Usuario.DebeCambiarPassword = true;
+            }
+            else
+            {
+                editarEmpleado.Usuario.Password = string.Empty;
+                editarEmpleado.Usuario.ConfirmarPassword = string.Empty;
+                editarEmpleado.Usuario.DebeCambiarPassword = false;
+            }
+
+            editarEmpleado.Usuario.HoraInicio = TimeOnly.Parse("08:00");
+            editarEmpleado.Usuario.HoraFin = TimeOnly.Parse("17:00");
             editarEmpleado.Usuario.CodVendedorSAP = -1;
             editarEmpleado.Usuario.TwoFactorEnabled = false;
-            editarEmpleado.Usuario.TiposUsuarioIds = [2]; // Asignar un valor predeterminado para CodVendedorSAP
-            editarEmpleado.Usuario.RolesIds = [2]; // Asignar el rol de empleado (ID 2)
-            editarEmpleado.Usuario.IdTipoUsuario = 2; // Asignar el rol de empleado (ID 2)
+            editarEmpleado.Usuario.Activo = true;
 
-
+            editarEmpleado.Usuario.TiposUsuarioIds = [2];
+            editarEmpleado.Usuario.RolesIds = [2];
 
             var respuesta = await _empleadoService.UpdateEmpleadosAsync(editarEmpleado);
-            if (respuesta.EsCorrecto)
+
+            if (respuesta != null)
             {
-                await JS.InvokeVoidAsync("Swal.fire", "¡Éxito!", "La información se actualizó correctamente.", "success");
+                var mensaje = correoCambio
+                    ? "La información se actualizó correctamente y se envió una nueva contraseña al correo."
+                    : "La información se actualizó correctamente.";
+
+                await JS.InvokeVoidAsync(
+                    "Swal.fire",
+                    "¡Éxito!",
+                    mensaje,
+                    "success");
+
+                await Task.Delay(1500);
                 Volver();
             }
             else
             {
-                // Solo pasamos respuesta.Mensaje sin agregar "No se pudo actualizar:"
-                await JS.InvokeVoidAsync("Swal.fire", "Error", respuesta.Mensaje, "error");
+                await JS.InvokeVoidAsync(
+                    "Swal.fire",
+                    "Error",
+                    "No fue posible actualizar la información.",
+                    "error");
             }
         }
         catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("Swal.fire", "Fatal Error", $"Exception Interna :{ex.Message}", "error");
+            var mensaje = ex.InnerException?.Message ?? ex.Message;
+
+            await JS.InvokeVoidAsync(
+                "Swal.fire",
+                "Error",
+                mensaje,
+                "error");
         }
-        finally { isProcessing = false; }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
     }
 }
 
@@ -493,16 +524,16 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     window.inicializarSelect2 = (dotNetHelper) => {
-    const select = $('#municipiosSelect');
+        const select = $('#municipiosSelect');
 
-    select.select2({
-    placeholder: "Buscar municipio...",
-    allowClear: true,
-    width: '100%'
-    });
+        select.select2({
+            placeholder: "Buscar municipio...",
+            allowClear: true,
+            width: '100%'
+        });
 
-    select.on('change', function () {
-    dotNetHelper.invokeMethodAsync('ActualizarMunicipioDesdeJS', $(this).val());
-    });
+        select.on('change', function () {
+            dotNetHelper.invokeMethodAsync('ActualizarMunicipioDesdeJS', $(this).val());
+        });
     };
 </script>

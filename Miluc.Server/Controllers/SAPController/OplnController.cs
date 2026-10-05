@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.Sap.Opln;
 using Miluc.Server.Models.Sap;
 using Miluc.Shared.DTOs.Sap.Opln;
@@ -8,6 +9,7 @@ namespace Miluc.Server.Controllers.SAPController
 {
     [ApiController]
     [Route("api/[Controller]")]
+    [Authorize]
     public class OplnController (ISapOplnService sapOplnService): Controller
     {
         [HttpGet]

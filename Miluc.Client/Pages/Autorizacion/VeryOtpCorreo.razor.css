@@ -1,0 +1,35 @@
+﻿.bg-rojo {
+    background-color: #D62F46 !important;
+}
+
+.text-rojo {
+    color: #D62F46 !important;
+}
+
+.btn-rojo {
+    background-color: #D62F46;
+    color: white;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+    .btn-rojo:hover {
+        background-color: #600018;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+.custom-input:focus {
+    border-color: #D62F46;
+    box-shadow: none;
+}
+
+.search-group .input-group-text {
+    border: 1px solid #dee2e6;
+}
+
+/* Efecto de entrada para el icono */
+.bi-shield-lock-fill {
+    display: inline-block;
+    animation: pulse-lock 2s infinite;
+}

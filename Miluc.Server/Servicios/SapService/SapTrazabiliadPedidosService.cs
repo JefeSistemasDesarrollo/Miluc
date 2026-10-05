@@ -14,10 +14,7 @@ namespace Miluc.Server.Servicios.SapService
 {
     public class SapTrazabiliadPedidosService(SapDbContex _sapDbContex) : ISapTrazabilidadPedido
     {
-        public Task<List<FrecuienciaDeVentasReaderDto>> FrecuenciaPorVendedorDetalle(int DocEntry)
-        {
-            throw new NotImplementedException();
-        }
+   
 
         public async Task<ResponseAPI<List<TrazabilidadOrdenReaderDto>>> ListaTrazabilidad(
        string fechaInicial,

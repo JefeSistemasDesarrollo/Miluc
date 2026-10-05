@@ -30,7 +30,7 @@ namespace Miluc.Server.Servicios.SapService
             }
             catch (Exception ex) 
             {
-                throw new Exception("Ocurrió un error al obtener los grupos de socios comerciales: {ex.Message}");
+                throw new Exception($"Ocurrió un error al obtener los grupos de socios comerciales: {ex.Message}");
 
             }
         }

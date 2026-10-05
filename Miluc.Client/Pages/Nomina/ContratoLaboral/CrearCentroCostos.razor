@@ -1,0 +1,402 @@
+﻿@page "/Administrar/centroCostos/Crear"
+@page "/Administrar/centroCostos/Editar/{Id:int?}"
+
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.JSInterop
+@using Miluc.Client.Interfaces.Nomina
+@using Miluc.Shared.DTOs.Nomina.CentroDeCostos
+
+@inject NavigationManager nav
+@inject ICentroCostoClienteService _centroCostosService
+@inject IJSRuntime JS
+
+<div class="empleado-page p-4 animate__animated animate__fadeIn">
+    <div class="container-fluid max-width-container">
+
+      
+        <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
+            <div>
+                <h2 class="fw-extrabold text-black m-0 tracking-tight">
+                    <i class="bi bi-buildings-fill me-2 header-icon"></i>
+                    @(EsEdicion ? "Editar Centro de Costo" : "Crear Nuevo Centro de Costo")
+                </h2>
+
+                <p class="text-muted mb-0 small mt-1">
+                    @(EsEdicion
+                        ? "Actualice la información general y el estado del centro de costo."
+                        : "Diligencie los datos para registrar un nuevo centro de costo.")
+                    Los campos marcados con (<span class="text-danger">*</span>) son obligatorios.
+                </p>
+            </div>
+
+            <button type="button"
+                    class="btn btn-rojo btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold"
+                    @onclick="Volver">
+                <i class="bi bi-arrow-left me-2"></i>
+                Volver
+            </button>
+        </div>
+
+
+    
+        <EditForm Model="upsertCentroCostoDto" OnValidSubmit="EjecutarGuardado">
+
+            <DataAnnotationsValidator />
+
+            <div class="row g-4">
+
+                <div class="col-12">
+
+                    <div class="card card-custom border-0 shadow-sm rounded-4">
+
+                        <div class="card-body p-4">
+
+                            <div class="section-title-container mb-4">
+
+                                <span class="badge bg-rojo-light text-vinotinto rounded-pill mb-2 px-3 py-2 fw-bold text-uppercase tracking-wider">
+                                    Información Básica
+                                </span>
+
+                                <h5 class="fw-bold text-dark m-0">
+                                    Datos del Centro de Costo
+                                </h5>
+
+                            </div>
+
+
+
+                            <div class="row g-4 align-items-start">
+
+                                @* NOMBRE *@
+                                <div class="col-md-4">
+
+                                    <label for="nombreCentroCosto" class="form-label label-custom">
+                                        <i class="bi bi-briefcase me-1"></i>
+                                        Nombre Centro de Costo
+                                        <span class="text-danger">*</span>
+                                    </label>
+
+                                    <div class="input-group-custom">
+                                        <InputText id="nombreCentroCosto"
+                                                   class="form-control input-custom"
+                                                   @bind-Value="upsertCentroCostoDto.Nombre"
+                                                   placeholder="Ej: Sistemas"
+                                                   disabled="@isProcessing" />
+                                    </div>
+
+                                    <ValidationMessage For="@(() => upsertCentroCostoDto.Nombre)"
+                                                       class="text-danger small mt-1 d-block fw-medium" />
+
+                                </div>
+
+
+                                
+                                <div class="col-md-4">
+
+                                    <label for="codigoCentroCosto" class="form-label label-custom">
+                                        <i class="bi bi-upc-scan me-1"></i>
+                                        Código
+                                        <span class="text-danger">*</span>
+                                    </label>
+
+                                    <div class="input-group-custom">
+                                        <InputText id="codigoCentroCosto"
+                                                   class="form-control input-custom"
+                                                   @bind-Value="upsertCentroCostoDto.Codigo"
+                                                   placeholder="Ej: 0001"
+                                                   disabled="@isProcessing" />
+                                    </div>
+
+                                   
+                                    <ValidationMessage For="@(() => upsertCentroCostoDto.Codigo)"
+                                                       class="text-danger small mt-1 d-block fw-medium" />
+
+                                </div>
+
+
+                                
+                                <div class="col-md-4">
+
+                                    <label class="form-label label-custom text-muted-custom">
+                                        Estado
+                                        <span class="text-danger">*</span>
+                                    </label>
+
+                                    <div class="card card-custom border-0 shadow-sm rounded-4">
+
+                                        <div class="card-body p-2 d-flex align-items-center justify-content-between">
+
+                                            <div class="form-check form-switch switch-lg mb-0 ps-5">
+
+                                                <InputCheckbox id="activoSwitch"
+                                                               class="form-check-input"
+                                                               @bind-Value="upsertCentroCostoDto.Activo"
+                                                               disabled="@isProcessing" />
+
+                                                <label class="form-check-label ms-2 fw-semibold"
+                                                       for="activoSwitch">
+                                                    @(upsertCentroCostoDto.Activo ? "Activo" : "Inactivo")
+                                                </label>
+
+                                            </div>
+
+                                            <div class="pe-2">
+
+                                                @if (upsertCentroCostoDto.Activo)
+                                                {
+                                                    <i class="bi bi-check2-circle fs-4 text-success"></i>
+                                                }
+                                                else
+                                                {
+                                                    <i class="bi bi-x-circle fs-4 text-rojo"></i>
+                                                }
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+              
+                <div class="col-12">
+
+                    <div class="card card-info-banner border-0 shadow-sm rounded-4 p-4 position-relative overflow-hidden">
+
+                        <div class="position-relative z-index-2 d-flex flex-column justify-content-center">
+
+                            <h5 class="fw-bold text-rojo mb-2">
+                                <i class="bi bi-shield-lock-fill me-2"></i>
+                                Validación de Registro
+                            </h5>
+
+                            <p class="small mb-0 lh-lg">
+                                Asegúrese de que el nombre y código del centro de costo
+                                correspondan a la estructura organizacional de la empresa.
+                                Esta información será utilizada para la administración de
+                                empleados y contratos laborales.
+                            </p>
+
+                        </div>
+
+                        <div class="decorative-circle"></div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="card-footer bg-light p-4 d-flex justify-content-end gap-3 rounded-bottom-4 border-0 mt-4">
+
+                <button type="button"
+                        class="btn btn-light-custom rounded-pill px-4 py-2.5 fw-semibold"
+                        @onclick="Volver"
+                        disabled="@isProcessing">
+                    Cancelar
+                </button>
+
+                <button type="submit"
+                        class="btn btn-rojo rounded-pill px-4"
+                        disabled="@isProcessing">
+
+                    @if (isProcessing)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2"
+                              role="status"
+                              aria-hidden="true">
+                        </span>
+
+                        <span>Guardando...</span>
+                    }
+                    else
+                    {
+                        <span>
+                            @(EsEdicion
+                                ? "Guardar Cambios"
+                                : "Guardar Centro de Costo")
+                        </span>
+                    }
+
+                </button>
+
+            </div>
+
+        </EditForm>
+
+    </div>
+</div>
+
+
+@code {
+
+  
+
+    [Parameter]
+    public int? Id { get; set; }
+
+
+
+
+    private UpsertCentroCostosDto upsertCentroCostoDto = new();
+
+    private bool isProcessing = false;
+
+
+   
+
+    private bool EsEdicion =>
+        Id.HasValue && Id.Value > 0;
+
+
+ 
+
+    protected override async Task OnParametersSetAsync()
+    {
+        // Reiniciamos el estado antes de cargar la información.
+        isProcessing = false;
+
+        if (EsEdicion)
+        {
+            await CargarCentroCosto();
+        }
+        else
+        {
+            // Registro nuevo.
+            upsertCentroCostoDto = new UpsertCentroCostosDto
+            {
+                CentroCostoId = 0,
+                
+                Activo = true
+            };
+        }
+    }
+
+
+   
+
+    private async Task CargarCentroCosto()
+    {
+        try
+        {
+            var respuesta =
+                await _centroCostosService.GetCentroCostosByIdAsync(Id!.Value);
+
+            if (respuesta != null &&
+                respuesta.EsCorrecto &&
+                respuesta.Valor != null)
+            {
+                upsertCentroCostoDto = new UpsertCentroCostosDto
+                {
+                    CentroCostoId = respuesta.Valor.CentroCostoId,
+                    Nombre = respuesta.Valor.Nombre,
+                    Codigo = respuesta.Valor.Codigo,
+                    Activo = respuesta.Valor.Activo
+                };
+            }
+            else
+            {
+                await MostrarAlerta(
+                    "Error",
+                    "No se encontró el centro de costo solicitado.",
+                    "error");
+
+                Volver();
+            }
+        }
+        catch (Exception ex)
+        {
+            await MostrarAlerta(
+                "Error",
+                $"Error al cargar el centro de costo: {ex.Message}",
+                "error");
+        }
+    }
+
+
+   
+
+    private async Task EjecutarGuardado()
+    {
+        // Evita ejecuciones repetidas.
+        if (isProcessing)
+            return;
+
+        isProcessing = true;
+
+        try
+        {
+            var respuesta =
+                await _centroCostosService.UpsertCentroCostosAsync(
+                    upsertCentroCostoDto);
+
+            if (respuesta != null && respuesta.EsCorrecto)
+            {
+                string mensajeExito = EsEdicion
+                    ? "El centro de costo se actualizó correctamente."
+                    : "El centro de costo fue registrado con éxito.";
+
+                await MostrarAlerta(
+                    "¡Éxito!",
+                    mensajeExito,
+                    "success");
+
+                Volver();
+            }
+            else
+            {
+                string mensajeError =
+                    respuesta?.Mensaje ??
+                    "Error al procesar la solicitud en el servidor.";
+
+                await MostrarAlerta(
+                    "Atención",
+                    mensajeError,
+                    "warning");
+            }
+        }
+        catch (Exception ex)
+        {
+            await MostrarAlerta(
+                "Error",
+                $"Ocurrió un error al guardar el centro de costo: {ex.Message}",
+                "error");
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private async Task MostrarAlerta(
+        string titulo,
+        string mensaje,
+        string tipo)
+    {
+        await JS.InvokeVoidAsync(
+            "Swal.fire",
+            titulo,
+            mensaje,
+            tipo);
+    }
+
+
+    
+    private void Volver()
+    {
+        nav.NavigateTo("/Administrar/CentroCostos");
+    }
+}
+```

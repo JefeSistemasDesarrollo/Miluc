@@ -11,8 +11,7 @@ namespace Miluc.Server.Controllers.SAPController
 {
     [ApiController]
     [Route("api/[Controller]")]
-   [Authorize]
-
+    [Authorize]
     public class OcrdController(ISapOcrdService _sapClienteService, ILogService _log) : Controller
     {
         [HttpGet]

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Usuarios;
@@ -9,6 +10,7 @@ namespace Miluc.Server.Controllers.Usuarios
 {
     [ApiController]
     [Route("api/[Controller]")]
+    [Authorize]
     public class TipoUsuarioController(ITipoUsuario _tipoService, ILogService log) : Controller
     {
         [HttpGet]

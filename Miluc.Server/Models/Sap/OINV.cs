@@ -10,7 +10,7 @@
         public char ?DocStatus { get; set; }
         public DateTime ?DocDate { get; set; }
         public DateTime ?DocDueDate { get; set; }
-        public string ? CardCode { get; set; }
+        public string ?  CardCode { get; set; }
         public string ?CardName { get; set; }
         public string ?Address { get; set; }
         public string ? NumAtCard { get; set; }

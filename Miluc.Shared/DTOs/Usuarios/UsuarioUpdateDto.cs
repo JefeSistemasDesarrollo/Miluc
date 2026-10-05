@@ -24,6 +24,7 @@ namespace Miluc.Shared.DTOs.Usuarios
         [Required(ErrorMessage = "El correo es obligatorio")]
         [EmailAddress]
         public string Email { get; set; } = string.Empty;
+        public string ?EmailTemporal{ get; set; } = string.Empty;
 
         public string Telefono { get; set; }= string.Empty;
 

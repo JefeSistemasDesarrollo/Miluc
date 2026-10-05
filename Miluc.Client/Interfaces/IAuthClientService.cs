@@ -8,8 +8,9 @@ namespace Miluc.Client.Interfaces
     {
         Task<ResponseAPI<UserSession>> Login(LoginAccesoRequest loginRequest);
         Task<ResponseAPI<UserSession>> VerifyOtp(VerifyOtpRequest request);
+        Task<ResponseAPI<int>> VerifyOtpCodigoCorreo(VerifyOtpRequest request);
         Task<ResponseAPI<bool>> CambiarPassword(CambiarPasswordRequest request);
-        Task<ResponseAPI<bool>> CambiarPasswordCorreoAsync(CambiarPasswordRequest request);
+        Task<ResponseAPI<int>> EnviarCodigoCorreoAsync(EnviarCodigoRequest request);
 
         UserSession? CurrentSession { get; }
         Task InitializeAsync();

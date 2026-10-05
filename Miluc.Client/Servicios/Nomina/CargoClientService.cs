@@ -69,35 +69,31 @@ namespace Miluc.Client.Servicios.Nomina
                 var responsePeticion = await httpClient.PutAsJsonAsync($"/api/Cargos/{cargoUpdateDto.CargoId}", cargoUpdateDto);
                 if (!responsePeticion.IsSuccessStatusCode)
                 {
-                    return new ResponseAPI<bool>
+                    var errorApi =
+                        await responsePeticion.Content.ReadFromJsonAsync<ResponseAPI<bool>>();
+
+                    return errorApi ?? new ResponseAPI<bool>
                     {
                         EsCorrecto = false,
-                        Mensaje = $"Error al guardar el cargo: {responsePeticion.ReasonPhrase}",
-                        Valor = false,
-                        CantRegistros = 0
+                        Mensaje = "Ocurrió un error inesperado."
                     };
                 }
-                var resultado = await responsePeticion.Content.ReadFromJsonAsync<ResponseAPI<bool>>();
-                if (resultado == null)
+
+                var resultado =
+                    await responsePeticion.Content.ReadFromJsonAsync<ResponseAPI<bool>>();
+
+                return resultado ?? new ResponseAPI<bool>
                 {
-                    return new ResponseAPI<bool>
-                    {
-                        EsCorrecto = false,
-                        Mensaje = "Error al guardar el cargo: respuesta nula",
-                        Valor = false,
-                        CantRegistros = 0
-                    };
-                }
-                return resultado;
+                    EsCorrecto = false,
+                    Mensaje = "No se recibió respuesta válida del servidor."
+                };
             }
             catch (Exception ex)
             {
                 return new ResponseAPI<bool>
                 {
                     EsCorrecto = false,
-                    Mensaje = $"Error al guardar el cargo: {ex.Message}",
-                    Valor = false,
-                    CantRegistros = 0
+                    Mensaje = $"Error de red: {ex.Message}"
                 };
             }
         }

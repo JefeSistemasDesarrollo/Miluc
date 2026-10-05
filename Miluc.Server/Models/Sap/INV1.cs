@@ -14,6 +14,7 @@ namespace Miluc.Server.Models.Sap
         public string ? ItemCode { get; set; }
         public string ? Dscription { get; set; }
         public decimal ? Quantity { get; set; }
+        public decimal ? SWeight1 { get; set; }
         public decimal ? Price { get; set; }
         public string ? Currency { get; set; }
         public decimal ? Rate { get; set; }

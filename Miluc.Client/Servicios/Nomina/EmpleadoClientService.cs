@@ -49,20 +49,11 @@ namespace Miluc.Client.Servicios.Nomina
                     CantRegistros = 0
                 };
             }
-        }
-        
-
-        
-
-
-
-
+        } 
         public async Task<ResponseAPI<EmpleadoReaderDto>> GetEmpleadoByIdAsync(int idempleado)
         {
-
             try
             {
-
                 ResponseAPI<EmpleadoReaderDto> responseAPI = new ResponseAPI<EmpleadoReaderDto>();
             var response = await httpClient.GetFromJsonAsync<ResponseAPI<EmpleadoReaderDto>>($"api/Empleado/{idempleado}");
 
@@ -77,7 +68,6 @@ namespace Miluc.Client.Servicios.Nomina
             }
             catch (Exception ex)
             {
-
                 return new ResponseAPI<EmpleadoReaderDto>
                 {
                     Errores = new List<string> { $"Error {ex}" },

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.Sap.Oitm;
 using Miluc.Shared.DTOs.Sap.Articulos;
 using Miluc.Shared.Models.Response;
@@ -8,6 +9,7 @@ namespace Miluc.Server.Controllers.SAPController
     
     [ApiController]
     [Route("api/[Controller]")]
+    //[Authorize]
     public class OitmController(ISapOitmService oitmService) : Controller
     {
 

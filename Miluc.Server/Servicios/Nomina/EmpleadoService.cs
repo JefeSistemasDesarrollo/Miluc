@@ -1,18 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 using Miluc.Server.Data;
 using Miluc.Server.Interfaces.Autorizacion;
 using Miluc.Server.Interfaces.Nomina;
 using Miluc.Server.Models;
 using Miluc.Server.Models.Nomina;
-using Miluc.Shared.DTOs.Nomina.AfiliacionSeguridadSocialDto;
 using Miluc.Shared.DTOs.Nomina.EmpleadoDto;
 using Miluc.Shared.Models.Response;
-using System.Diagnostics.Eventing.Reader;
-using System.Linq.Expressions;
-using System.Transactions;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
-using static System.Net.WebRequestMethods;
 
 namespace Miluc.Server.Servicios.Nomina
 {
@@ -51,18 +44,20 @@ namespace Miluc.Server.Servicios.Nomina
                         Documento = documentoLimpio,
                         FechaExpedicionDoc = dto.FechaExpedicionDoc.Value,
 
-                        PrimerNombre = dto.PrimerNombre.Trim(),
-                        SegundoNombre = dto.SegundoNombre?.Trim(),
-                        PrimerApellido = dto.PrimerApellido.Trim(),
-                        SegundoApellido = dto.SegundoApellido?.Trim(),
+                        PrimerNombre = dto.PrimerNombre.Trim().ToUpper(),
+                        SegundoNombre = dto.SegundoNombre?.Trim().ToUpper(),
+                        PrimerApellido = dto.PrimerApellido.Trim().ToUpper(),
+                        SegundoApellido = dto.SegundoApellido?.Trim().ToUpper(),
                         FechaNacimiento = dto.FechaNacimiento.Value,
                         EstadoCivilId = dto.EstadoCivilId ?? 0,
                         Celular = dto.Celular,
                         CelularAlterno = dto.CelularAlterno,
-                        CorreoElectronico = dto.CorreoElectronico.Trim(),
+                        CorreoElectronico = dto.CorreoElectronico.Trim().ToUpper(),
+                      
+                        EmpresaId = dto.EmpresaId,
 
-                        Direccion = dto.Direccion.Trim(),
-                        Barrio = dto.Barrio.Trim(),
+                        Direccion = dto.Direccion.Trim().ToUpper(),
+                        Barrio = dto.Barrio.Trim().ToUpper(),
                         FechaCreacion = DateTime.Now,
                         FechaActualizacion = DateTime.Now,
                         Activo = true
@@ -127,9 +122,8 @@ namespace Miluc.Server.Servicios.Nomina
                     await _emailService.SendAsync(
                            dto.Usuario.Email,
                           "Bienvenido a Miluc",
-                          $"Su cuenta ha sido creada exitosamente ingrese a la platforma: <b>{"https://localhost:7198/login"}</b>. su usuarios {dto.Usuario.Email} su contraseña es  {dto.Usuario.Password} ",
+                          $"Su cuenta ha sido creada exitosamente ingrese a la platforma: <b>{"https://avicolamiluc.ddns.net:92/login"}</b>. su usuarios {dto.Usuario.Email} su contraseña es  {dto.Usuario.Password} ",
                           true);
-
 
                     // 6. Confirmamos cambios
                     await transaction.CommitAsync();
@@ -166,7 +160,6 @@ namespace Miluc.Server.Servicios.Nomina
 
             throw new ArgumentNullException(nameof(dto));
         }
-
         public async Task<bool> DeleteEmpleadoAsync(int id)
         {
             try
@@ -190,41 +183,53 @@ namespace Miluc.Server.Servicios.Nomina
                 throw new Exception(ex.ToString());
             }
         }
-
         public async Task<EmpleadoReaderDto> GetEmpleadoByIdAsync(int id)
         {
             try
             {
-                var empleado = await _context.Empleado.AsNoTracking()
-                    .Include(e => e.Municipio)
-                    .Include(e => e.TipoDocumento)
-                    .Include(e => e.EstadoCivil)
-                    .Where(e => e.EmpleadoId == id)
-                    .Select(e => new EmpleadoReaderDto
-                    {
-                        EmpleadoId = e.EmpleadoId,
-                        CodigoMunicipio = e.Municipio.Codigo,
-                        NombreMunicipio = e.Municipio.Nombre,
-                        TipoDocumentoId = e.TipoDocumento.TipoDocumentoId,
-                        Documento = e.Documento,
-                        FechaExpedicionDoc = e.FechaExpedicionDoc,
-                        PrimerNombre = e.PrimerNombre,
-                        SegundoNombre = e.SegundoNombre,
-                        PrimerApellido = e.PrimerApellido,
-                        SegundoApellido = e.SegundoApellido,
-                        FechaNacimiento = e.FechaNacimiento,
-                        EstadoCivilId = e.EstadoCivil.EstadoCivilId,
-                        Celular = e.Celular,
-                        CelularAlterno = e.CelularAlterno,
-                        CorreoElectronico = e.CorreoElectronico,
-                        Direccion = e.Direccion,
-                        Barrio = e.Barrio,
-                        FechaCreacion = e.FechaCreacion,
-                        FechaActualizacion = e.FechaActualizacion,
-                        Activo = e.Activo
-                    })
+                var empleado = await _context.Empleado
+        .AsNoTracking()
+        .Include(e => e.Municipio)
+        .Include(e => e.TipoDocumento)
+        .Include(e => e.EstadoCivil)
+        .Include(e => e.Empresa)
+        .Where(e => e.EmpleadoId == id)
+        .Select(e => new EmpleadoReaderDto
+        {
+            EmpleadoId = e.EmpleadoId,
+            CodigoMunicipio = e.Municipio.Codigo,
+            NombreMunicipio = e.Municipio.Nombre,
+            TipoDocumentoId = e.TipoDocumento.TipoDocumentoId,
 
-                    .FirstOrDefaultAsync();
+            EmpresaId = e.EmpresaId,
+            NombreEmpresa = e.Empresa != null
+                ? e.Empresa.NombreEmpresa
+                : string.Empty,
+
+            Documento = e.Documento,
+            FechaExpedicionDoc = e.FechaExpedicionDoc,
+            PrimerNombre = e.PrimerNombre,
+            SegundoNombre = e.SegundoNombre,
+            PrimerApellido = e.PrimerApellido,
+            SegundoApellido = e.SegundoApellido,
+            FechaNacimiento = e.FechaNacimiento,
+            EstadoCivilId = e.EstadoCivil.EstadoCivilId,
+            Celular = e.Celular,
+            CelularAlterno = e.CelularAlterno,
+            CorreoElectronico = e.CorreoElectronico,
+            Direccion = e.Direccion,
+            Barrio = e.Barrio,
+            FechaCreacion = e.FechaCreacion,
+            FechaActualizacion = e.FechaActualizacion,
+            Activo = e.Activo
+        })
+        .FirstOrDefaultAsync();
+
+                var usuarioexiste = await _milucDbContext.Usuarios.Where(x => x.Email == empleado.CorreoElectronico).FirstOrDefaultAsync();
+                if (usuarioexiste!=null)
+                {
+                    empleado.UsuarioId = usuarioexiste.IdUsuario;
+                }
 
                 if (empleado == null) throw new Exception("Empleado no encontrado.");
 
@@ -235,8 +240,6 @@ namespace Miluc.Server.Servicios.Nomina
                 throw new Exception($"Error al obtener el empleado: {ex.Message}");
             }
         }
-
-
 
         public async Task<ResponseAPI<List<EmpleadoReaderDto>>> GetEmpleadosAsync(string? filtro = null, int page = 1, int? cantidad = null, string? correo = null)
         {
@@ -284,6 +287,8 @@ namespace Miluc.Server.Servicios.Nomina
 
                        FechaNacimiento = e.FechaNacimiento,
                        EstadoCivilId = e.EstadoCivilId,
+                       EmpresaId = e.EmpresaId,
+                       NombreEmpresa = e.Empresa != null ? e.Empresa.NombreEmpresa : string.Empty,
 
                        Celular = e.Celular ?? string.Empty,
                        CelularAlterno = e.CelularAlterno ?? string.Empty,
@@ -325,169 +330,181 @@ namespace Miluc.Server.Servicios.Nomina
                 throw new Exception($"Error al obtener los empleados: {ex.Message}");
             }
         }
-
         public async Task<EmpleadoReaderDto> UpdateEmpleadosAsync(EmpleadoUpdateDto dto)
         {
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
 
-            // Iniciamos la transacción solo en _context, igual que en CreateEmpleadosAsync
             using var transaction = await _context.Database.BeginTransactionAsync();
 
             try
             {
-                // Buscar empleado existente
                 var empleado = await _context.Empleado
                     .FirstOrDefaultAsync(e => e.EmpleadoId == dto.EmpleadoId);
 
                 if (empleado == null)
                     throw new Exception("Empleado no existe.");
 
-                // Validar unicidad de documento
                 var existeDocumento = await _context.Empleado
-                    .AnyAsync(e => e.Documento.ToLower() == dto.Documento.ToLower() && e.EmpleadoId != dto.EmpleadoId);
+                    .AnyAsync(e =>
+                        e.Documento.ToLower() == dto.Documento.ToLower() &&
+                        e.EmpleadoId != dto.EmpleadoId);
 
                 if (existeDocumento)
                     throw new Exception("Ya existe un empleado con ese documento.");
 
-                // Actualizar propiedades del Empleado
+                var correoExistente = await _context.Empleado
+                    .AnyAsync(e =>
+                        e.CorreoElectronico.ToLower() == dto.CorreoElectronico.ToLower() &&
+                        e.EmpleadoId != dto.EmpleadoId);
+
+                if (correoExistente)
+                    throw new Exception("Ya existe un empleado con ese correo electrónico.");
+
+                // EMPLEADO
                 empleado.CodigoMunicipio = dto.CodigoMunicipio;
                 empleado.TipoDocumentoId = dto.TipoDocumentoId;
                 empleado.Documento = dto.Documento;
                 empleado.FechaExpedicionDoc = dto.FechaExpedicionDoc.Value;
 
-                empleado.PrimerNombre = dto.PrimerNombre.ToUpper();
-                empleado.SegundoNombre = dto.SegundoNombre?.ToUpper();
-                empleado.PrimerApellido = dto.PrimerApellido.ToUpper();
-                empleado.SegundoApellido = dto.SegundoApellido?.ToUpper();
+                empleado.PrimerNombre = dto.PrimerNombre.Trim().ToUpper();
+                empleado.SegundoNombre = dto.SegundoNombre?.Trim().ToUpper();
+                empleado.PrimerApellido = dto.PrimerApellido.Trim().ToUpper();
+                empleado.SegundoApellido = dto.SegundoApellido?.Trim().ToUpper();
 
                 empleado.FechaNacimiento = dto.FechaNacimiento.Value;
                 empleado.EstadoCivilId = dto.EstadoCivilId.Value;
+                empleado.EmpresaId = dto.EmpresaId;
 
                 empleado.Celular = dto.Celular;
                 empleado.CelularAlterno = dto.CelularAlterno;
+                empleado.CorreoElectronico = dto.CorreoElectronico.Trim().ToUpper();
 
-                empleado.CorreoElectronico = dto.CorreoElectronico.ToLower();
-                empleado.Direccion = dto.Direccion;
-                empleado.Barrio = dto.Barrio;
+                empleado.Direccion = dto.Direccion?.Trim().ToUpper();
+                empleado.Barrio = dto.Barrio?.Trim().ToUpper();
 
                 empleado.FechaActualizacion = DateTime.Now;
                 empleado.Activo = dto.Activo;
 
                 _context.Empleado.Update(empleado);
-                await _context.SaveChangesAsync(); // Guardamos el primer contexto
+                await _context.SaveChangesAsync();
 
-                // Lógica de Usuario: Buscar si ya existe o crear uno nuevo
-                if (dto.Usuario != null)
+                // USUARIO
+                if (dto.Usuario != null && dto.Usuario.IdUsuario > 0)
                 {
-                    var usuario = await _milucDbContext.Usuarios
-                        .FirstOrDefaultAsync(u => u.Email.ToLower() == dto.Usuario.Email.ToLower());
+                    var usuarioUpdate = await _milucDbContext.Usuarios
+                        .FirstOrDefaultAsync(u => u.IdUsuario == dto.Usuario.IdUsuario);
 
-                    if (usuario == null)
+                    if (usuarioUpdate == null)
+                        throw new Exception("El usuario asociado al empleado no existe.");
+
+                    var correoUsuarioExiste = await _milucDbContext.Usuarios
+                        .AnyAsync(u =>
+                            u.Email.ToLower() == dto.Usuario.Email.ToLower() &&
+                            u.IdUsuario != dto.Usuario.IdUsuario);
+
+                    if (correoUsuarioExiste)
+                        throw new Exception(
+                            $"Ya existe un usuario registrado con el correo {dto.Usuario.Email}.");
+
+                    var correoAnterior = usuarioUpdate.Email;
+
+                    var correoCambio = !string.Equals(
+                        correoAnterior?.Trim(),
+                        dto.Usuario.Email?.Trim(),
+                        StringComparison.OrdinalIgnoreCase);
+
+                    usuarioUpdate.UserName = dto.Usuario.Email;
+                    usuarioUpdate.Nombres = dto.Usuario.Nombres;
+                    usuarioUpdate.Apellidos = dto.Usuario.Apellidos;
+                    usuarioUpdate.Email = dto.Usuario.Email;
+                    usuarioUpdate.Telefono = dto.Usuario.Telefono;
+                    usuarioUpdate.Foto = dto.Usuario.Foto;
+                    usuarioUpdate.TwoFactorEnabled = dto.Usuario.TwoFactorEnabled;
+                    usuarioUpdate.FechaActualizacion = DateTime.Now;
+                    usuarioUpdate.Activo = true;
+
+                    // SOLO SI CAMBIA EL CORREO
+                    if (correoCambio)
                     {
-                        // Crear nuevo usuario si no existe
                         if (string.IsNullOrWhiteSpace(dto.Usuario.Password))
-                            throw new InvalidOperationException("La contraseña es obligatoria para un usuario nuevo.");
+                            throw new Exception(
+                                "Debe generar una contraseña temporal cuando cambie el correo electrónico.");
 
                         using var hmac = new System.Security.Cryptography.HMACSHA512();
 
-                        if (usuario.Email != dto.Usuario.Email)
-                        {
-                            await _emailService.SendAsync(
-                                 dto.Usuario.Email,
-                                "Bienvenido a Miluc",
-                                $"Su cuenta ha sido creada exitosamente ingrese a la platforma: <b>{"https://localhost:7198/login"}</b>. su usuarios {dto.Usuario.Email} su contraseña es  {dto.Usuario.Password} .",
-                                true);
-                        }
+                        usuarioUpdate.PasswordHash =
+                            hmac.ComputeHash(
+                                System.Text.Encoding.UTF8.GetBytes(dto.Usuario.Password));
 
-                        usuario = new Usuario
-                        {
-                            UserName = dto.Usuario.Email,
-                            Nombres = dto.Usuario.Nombres,
-                            Apellidos = dto.Usuario.Apellidos,
-                            Email = dto.Usuario.Email,
-                            Telefono = dto.Usuario.Telefono,
-                            Foto = dto.Usuario.Foto,
-                            TwoFactorEnabled = dto.Usuario.TwoFactorEnabled,
-                            DebeCambiarPassword = true,
-                            PasswordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(dto.Usuario.Password)),
-                            Salt = hmac.Key,
-                            Activo = true,
-                            HoraInicio = dto.Usuario.HoraInicio,
-                            HoraFin = dto.Usuario.HoraFin,
-                            CodVendedorSAP = dto.Usuario.CodVendedorSAP ?? -1,
-                            FechaCreacion = DateTime.Now,
-                            FechaActualizacion = DateTime.Now
-                        };
+                        usuarioUpdate.Salt = hmac.Key;
+                        usuarioUpdate.DebeCambiarPassword = true;
 
-                        await _milucDbContext.Usuarios.AddAsync(usuario);
-                        await _milucDbContext.SaveChangesAsync();
-                    }
-                    else
-                    {
-                        // Actualizar datos básicos del usuario existente si corresponde
-                        usuario.Nombres = dto.Usuario.Nombres;
-                        usuario.Apellidos = dto.Usuario.Apellidos;
-                        usuario.Telefono = dto.Usuario.Telefono;
-                        usuario.HoraInicio = dto.Usuario.HoraInicio;
-                        usuario.HoraFin = dto.Usuario.HoraFin;
-                        usuario.CodVendedorSAP = dto.Usuario.CodVendedorSAP ?? usuario.CodVendedorSAP;
-                        usuario.FechaActualizacion = DateTime.Now;
+                        await _emailService.SendAsync(
+                            dto.Usuario.Email,
+                            "Actualización de acceso a Miluc",
+                            $@"
+                    Su cuenta ha sido actualizada exitosamente.<br/><br/>
 
-                        // Si viene contraseña nueva, actualizar hash
-                        if (!string.IsNullOrWhiteSpace(dto.Usuario.Password))
-                        {
-                            using var hmac = new System.Security.Cryptography.HMACSHA512();
-                            usuario.PasswordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(dto.Usuario.Password));
-                            usuario.Salt = hmac.Key;
-                        }
+                    Usuario: {dto.Usuario.Email}<br/>
+                    Contraseña temporal: {dto.Usuario.Password}<br/><br/>
 
-                        _milucDbContext.Usuarios.Update(usuario);
-                        await _milucDbContext.SaveChangesAsync();
+                    Ingrese a:
+                    https://avicolamiluc.ddns.net:92/login
+                        https://avicolamiluc.ddns.net:92/login
+                    </a>
+
+                    <br/><br/>
+                    Por seguridad deberá cambiar su contraseña al iniciar sesión.",
+                            true);
                     }
 
-                    // Actualizar Roles (Limpiar e Insertar)
+                    _milucDbContext.Usuarios.Update(usuarioUpdate);
+                    await _milucDbContext.SaveChangesAsync();
+
+                    // ROLES
                     if (dto.Usuario.RolesIds != null)
                     {
-                        var rolesExistentes = _milucDbContext.UsuarioRoles.Where(r => r.IdUsuario == usuario.IdUsuario);
+                        var rolesExistentes = _milucDbContext.UsuarioRoles
+                            .Where(r => r.IdUsuario == usuarioUpdate.IdUsuario);
+
                         _milucDbContext.UsuarioRoles.RemoveRange(rolesExistentes);
 
                         if (dto.Usuario.RolesIds.Any())
                         {
-                            var userRoles = dto.Usuario.RolesIds.Select(rolId => new UsuarioRol
+                            var nuevosRoles = dto.Usuario.RolesIds.Select(rolId => new UsuarioRol
                             {
-                                IdUsuario = usuario.IdUsuario,
+                                IdUsuario = usuarioUpdate.IdUsuario,
                                 IdRol = rolId
                             });
-                            await _milucDbContext.UsuarioRoles.AddRangeAsync(userRoles);
+
+                            await _milucDbContext.UsuarioRoles.AddRangeAsync(nuevosRoles);
                         }
                     }
 
-                    // Actualizar Tipos de Usuario (Limpiar e Insertar)
+                    // TIPOS USUARIO
                     if (dto.Usuario.TiposUsuarioIds != null)
                     {
-                        var tiposExistentes = _milucDbContext.UsuarioTipoUsuario.Where(t => t.IdUsuario == usuario.IdUsuario);
+                        var tiposExistentes = _milucDbContext.UsuarioTipoUsuario
+                            .Where(t => t.IdUsuario == usuarioUpdate.IdUsuario);
+
                         _milucDbContext.UsuarioTipoUsuario.RemoveRange(tiposExistentes);
 
                         if (dto.Usuario.TiposUsuarioIds.Any())
                         {
-                            var userTipos = dto.Usuario.TiposUsuarioIds.Select(tipoId => new UsuarioTipoUsuario
+                            var nuevosTipos = dto.Usuario.TiposUsuarioIds.Select(tipoId => new UsuarioTipoUsuario
                             {
-                                IdUsuario = usuario.IdUsuario,
+                                IdUsuario = usuarioUpdate.IdUsuario,
                                 IdTipoUsuario = tipoId
                             });
-                            await _milucDbContext.UsuarioTipoUsuario.AddRangeAsync(userTipos);
+
+                            await _milucDbContext.UsuarioTipoUsuario.AddRangeAsync(nuevosTipos);
                         }
                     }
 
-                    // Guardar los cambios de las tablas intermedias
                     await _milucDbContext.SaveChangesAsync();
                 }
 
-
-
-
-                // Commit global para el contexto de Empleado
                 await transaction.CommitAsync();
 
                 return new EmpleadoReaderDto
@@ -503,6 +520,8 @@ namespace Miluc.Server.Servicios.Nomina
                     SegundoApellido = empleado.SegundoApellido,
                     FechaNacimiento = empleado.FechaNacimiento,
                     EstadoCivilId = empleado.EstadoCivilId,
+                    EmpresaId = empleado.EmpresaId,
+                    NombreEmpresa = empleado.Empresa?.NombreEmpresa ?? string.Empty,
                     Celular = empleado.Celular,
                     CelularAlterno = empleado.CelularAlterno,
                     CorreoElectronico = empleado.CorreoElectronico,
@@ -513,13 +532,14 @@ namespace Miluc.Server.Servicios.Nomina
                     Activo = empleado.Activo
                 };
             }
-            catch (Exception ex)
+            catch
             {
                 await transaction.RollbackAsync();
-                throw new Exception($"Error actualizando empleado: {ex.Message}", ex);
+                throw;
             }
         }
     }
 }
+
 
 

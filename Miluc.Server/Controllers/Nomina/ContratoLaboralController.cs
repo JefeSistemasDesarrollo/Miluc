@@ -216,7 +216,7 @@ namespace Miluc.Server.Controllers.Nomina
                 {
                     EsCorrecto = false,
                     Valor = false,
-                    Mensaje = $"Error interno al registrar el contrato: {ex.Message}",
+                    Mensaje = ex.Message,
                     CantRegistros = 0
                 });
             }
@@ -354,6 +354,27 @@ namespace Miluc.Server.Controllers.Nomina
                     Valor = resultado,
                     Mensaje = "Estado del contrato actualizado correctamente.",
                     CantRegistros = 1
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new ResponseAPI<ContratoLaboralreaderDto>
+                {
+                    EsCorrecto = false,
+                    Valor = null,
+                    Mensaje = ex.Message,
+                    CantRegistros = 0
+                });
+            }
+
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new ResponseAPI<ContratoLaboralreaderDto>
+                {
+                    EsCorrecto = false,
+                    Valor = null,
+                    Mensaje = ex.Message,
+                    CantRegistros = 0
                 });
             }
             catch (Exception ex)

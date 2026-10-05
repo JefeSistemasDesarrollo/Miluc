@@ -129,63 +129,72 @@ namespace Miluc.Client.Servicios.Nomina
             }
         }
 
-        public async Task<ResponseAPI<bool>> CreateContratoLaboralAsync(CreateContratoLaboralDto contratoLaboral)
+       public async Task<ResponseAPI<bool>> CreateContratoLaboralAsync(CreateContratoLaboralDto contratoLaboral)
+{
+    try
+    {
+        var response = await _httpClient.PostAsJsonAsync(
+            "api/ContratoLaboral",
+            contratoLaboral);
+
+        if (!response.IsSuccessStatusCode)
         {
-            try
+            var errorApi =
+                await response.Content.ReadFromJsonAsync<ResponseAPI<bool>>();
+
+            return errorApi ?? new ResponseAPI<bool>
             {
-                var response = await _httpClient.PostAsJsonAsync("api/ContratoLaboral", contratoLaboral);
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    var error = await response.Content.ReadAsStringAsync();
-                    return new ResponseAPI<bool>
-                    {
-                        EsCorrecto = false,
-                        Mensaje = $"Error API ({response.StatusCode}): {(string.IsNullOrWhiteSpace(error) ? response.ReasonPhrase : error)}",
-                        Valor = false,
-                        CantRegistros = 0
-                    };
-                }
-
-                var resultado = await response.Content.ReadFromJsonAsync<ResponseAPI<bool>>();
-
-                return resultado ?? new ResponseAPI<bool>
-                {
-                    EsCorrecto = false,
-                    Mensaje = "La API no devolvió información.",
-                    Valor = false,
-                    CantRegistros = 0
-                };
-            }
-            catch (Exception ex)
-            {
-                return new ResponseAPI<bool>
-                {
-                    EsCorrecto = false,
-                    Mensaje = $"Error al crear el contrato: {ex.Message}",
-                    Valor = false,
-                    CantRegistros = 0
-                };
-            }
+                EsCorrecto = false,
+                Mensaje = "Ocurrió un error inesperado.",
+                Valor = false,
+                CantRegistros = 0
+            };
         }
+
+        var resultado =
+            await response.Content.ReadFromJsonAsync<ResponseAPI<bool>>();
+
+        return resultado ?? new ResponseAPI<bool>
+        {
+            EsCorrecto = false,
+            Mensaje = "La API no devolvió información.",
+            Valor = false,
+            CantRegistros = 0
+        };
+    }
+    catch (Exception ex)
+    {
+        return new ResponseAPI<bool>
+        {
+            EsCorrecto = false,
+            Mensaje = $"Error al crear el contrato: {ex.Message}",
+            Valor = false,
+            CantRegistros = 0
+        };
+    }
+}
 
         public async Task<ResponseAPI<ContratoLaboralreaderDto>> UpdateContratoLaboralAsync(UpdateContratoDto update)
         {
             try
             {
-                var response = await _httpClient.PutAsJsonAsync($"api/ContratoLaboral/{update.ContratoLaboralId}", update);
+                var response = await _httpClient.PutAsJsonAsync( $"api/ContratoLaboral/{update.ContratoLaboralId}",
+                    update);
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    var errorContenido = await response.Content.ReadAsStringAsync();
-                    return new ResponseAPI<ContratoLaboralreaderDto>
+                    var errorApi =
+                        await response.Content.ReadFromJsonAsync<ResponseAPI<ContratoLaboralreaderDto>>();
+
+                    return errorApi ?? new ResponseAPI<ContratoLaboralreaderDto>
                     {
                         EsCorrecto = false,
-                        Mensaje = $"Error servidor ({response.StatusCode}): {(string.IsNullOrWhiteSpace(errorContenido) ? response.ReasonPhrase : errorContenido)}"
+                        Mensaje = "Ocurrió un error inesperado."
                     };
                 }
 
-                var resultado = await response.Content.ReadFromJsonAsync<ResponseAPI<ContratoLaboralreaderDto>>();
+                var resultado =
+                    await response.Content.ReadFromJsonAsync<ResponseAPI<ContratoLaboralreaderDto>>();
 
                 return resultado ?? new ResponseAPI<ContratoLaboralreaderDto>
                 {

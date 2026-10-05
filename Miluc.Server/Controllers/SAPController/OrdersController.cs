@@ -8,9 +8,10 @@ using Miluc.Shared.Models.Response;
 
 namespace Miluc.Server.Controllers.SAPController
 {
-   [Authorize]
+  
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class OrdersController(ISapOrdrService _sapOrdrService, ILogService _log) : Controller
     {
         [HttpPost]
@@ -20,7 +21,7 @@ namespace Miluc.Server.Controllers.SAPController
             try
             {
                 var response = await _sapOrdrService.CreatePedidoAsyc(pedidoCreateDto);
-
+               
                 if (response == null)
                 {
                     return NotFound(new ResponseAPI<OrdersReaderDto>

@@ -12,6 +12,7 @@ namespace Miluc.Server.Models.Nomina
         public bool Activo { get; set; }
 
          public ICollection<ContratoLaboral> ContratoLaboralModel { get; set; } // Navigation a ContratoLaboral
-       
+        public ICollection<Empleado>Empleados { get; set; } // Navigation a ContratoLaboral
+
     }
 }

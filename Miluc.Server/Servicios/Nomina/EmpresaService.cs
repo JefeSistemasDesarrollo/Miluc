@@ -65,7 +65,7 @@ namespace Miluc.Server.Servicios.Nomina
 
                 if (nitExiste)
                 {
-                    throw new Exception("Ya existe una empresa con ese NIT.");
+                    throw new ArgumentException("Ya existe una empresa con este  NIT.");
                 }
 
                 if (empresaExiste == null)
@@ -73,7 +73,7 @@ namespace Miluc.Server.Servicios.Nomina
                     var newEmpresa = new Empresa
                     {
                         Nit = empresaUpdateDto.Nit,
-                        NombreEmpresa = empresaUpdateDto.NombreEmpresa,
+                        NombreEmpresa = empresaUpdateDto.NombreEmpresa.Trim().ToUpper(),
                         FechaCreacion = DateTime.Now,
                         FechaActualizacion = DateTime.Now,
                         Activo = empresaUpdateDto.Activo
@@ -84,19 +84,23 @@ namespace Miluc.Server.Servicios.Nomina
                 else
                 {
                     empresaExiste.Nit = empresaUpdateDto.Nit;
-                    empresaExiste.NombreEmpresa = empresaUpdateDto.NombreEmpresa;
+                    empresaExiste.NombreEmpresa = empresaUpdateDto.NombreEmpresa.Trim().ToUpper();
                     empresaExiste.FechaActualizacion = DateTime.Now;
                     empresaExiste.Activo = empresaUpdateDto.Activo;
                 }
 
                 return await _context.SaveChangesAsync() > 0;
             }
+            catch (ArgumentException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
-                throw new Exception($"Error al guardar la empresa: {ex.Message}");
+                var errorReal = ex.InnerException?.Message ?? ex.Message;
+                throw new Exception($"Error de BD: {errorReal}", ex);
             }
         }
-        
 
         public async Task<EmpresaReaderDto> GetEmpresaByIdAsync(int empresaId)
         {

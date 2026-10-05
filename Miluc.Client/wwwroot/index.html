@@ -47,13 +47,13 @@
     <!-- Scripts Personalizados -->
     <script src="js/CrearPedido.js"></script>
     <script>
-        window.idleHelper = {
-            registerActivity: function (dotnetHelper) {
-                document.addEventListener("mousemove", () => dotnetHelper.invokeMethodAsync("ResetTimer"));
-                document.addEventListener("keydown", () => dotnetHelper.invokeMethodAsync("ResetTimer"));
-                document.addEventListener("click", () => dotnetHelper.invokeMethodAsync("ResetTimer"));
-            }
-        };
+                window.idleHelper = {
+                    registerActivity: function (dotnetHelper) {
+                        document.addEventListener("mousemove", () => dotnetHelper.invokeMethodAsync("ResetTimer"));
+                        document.addEventListener("keydown", () => dotnetHelper.invokeMethodAsync("ResetTimer"));
+                        document.addEventListener("click", () => dotnetHelper.invokeMethodAsync("ResetTimer"));
+                    }
+                };
     </script>
 </body>
 </html>

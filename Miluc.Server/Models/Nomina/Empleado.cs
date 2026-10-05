@@ -17,6 +17,8 @@ namespace Miluc.Server.Models.Nomina
         public string PrimerApellido { get; set; }    
         public string? SegundoApellido { get; set; }
         public DateTime FechaNacimiento {  get; set; }
+        public int EmpresaId { get; set; }
+        
         public int EstadoCivilId { get; set; }
         public string Celular {  get; set; }
         public  string? CelularAlterno { get; set; }
@@ -33,7 +35,8 @@ namespace Miluc.Server.Models.Nomina
         public EstadoCivil EstadoCivil { get; set; }// Navigation a municipio
         public TipoDocumento TipoDocumento { get; set; }
         public Municipio Municipio { get; set; }// Navigation a municipio
-        
+        public Empresa Empresa { get; set; } // Navigation a empresa
+
 
 
         public ICollection< ContratoLaboral >ContratoLaboral { get; set; } // Navigation a ContratoLaboral
@@ -44,6 +47,7 @@ namespace Miluc.Server.Models.Nomina
         
         public ICollection<InformacionFamiliar> InformacionFamiliar {  get; set; }
         public ICollection<EsquemaVacunacion> EsquemaVacunacion { get; set; }
+        
 
 
 

@@ -193,6 +193,12 @@
 
     protected override async Task OnInitializedAsync()
     {
+
+        if (!_autcliente.HasPermission("Card.Contracts"))
+        {
+            nav.NavigateTo("/no-autorizado");
+            return;
+        }
         await CargarCargosAsync();
     }
 
@@ -410,6 +416,6 @@
     // --- REDIRECCIONES ---
     private void IrACrearCargo() => nav.NavigateTo("/Administrar/Cargos/Crear");
     private void EditarCargo(int id) => nav.NavigateTo($"/Administrar/Cargos/Editar/{id}");
-    private void Volver() => nav.NavigateTo("/administrar-Nomina");
+    private void Volver() => nav.NavigateTo("/Card/Contratos");
     private void VerDetalle(int id) => nav.NavigateTo($"/Administrar/Cargos/Detalle/{id}");
 }

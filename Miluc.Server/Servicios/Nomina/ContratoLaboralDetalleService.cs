@@ -20,7 +20,6 @@ namespace Miluc.Server.Servicios.Nomina
                     FechaFinalizacion = DateTime.Now,
                     CargoId = d.CargoId,
                     Observacion = d.Observacion,
-                    CentroCosto = d.CentroCosto,
                     Salario = d.Salario
                 }).ToListAsync();
                 return detalles;

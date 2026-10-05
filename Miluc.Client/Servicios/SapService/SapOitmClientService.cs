@@ -59,8 +59,7 @@ namespace Miluc.Client.Servicios.SapService
         }
 
 
-        public async Task<ResponseAPI<ArticuloPorListaDePreciosDto>>
-    GetOitmCarcodeItemcodeAsync(string cardcode, string itemCode, int? cantidad = null)
+        public async Task<ResponseAPI<ArticuloPorListaDePreciosDto>>GetOitmCarcodeItemcodeAsync(string cardcode, string itemCode, int? cantidad = null)
         {
             try
             {

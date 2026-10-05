@@ -18,21 +18,22 @@ namespace Miluc.Server.Servicios.Nomina
 
                 foreach (var fam in familiar)
                 {
-                    var infoFamiliar = new InfoFamiliarCreateDto
+                    var infoFamiliar = new InformacionFamiliar
                     {
                         EmpleadoId = fam.EmpleadoId,
                         Documento = fam.Documento,
                         NombreCompleto = fam.NombreCompleto?.ToUpper().Trim(),
-                        ParentescoId = fam.ParentescoId.GetValueOrDefault(),
-                        FechaNacimiento = fam.FechaNacimiento.GetValueOrDefault(),
-                        ViveConEmpleado = fam.ViveConEmpleado.GetValueOrDefault(),
-                        DependeEconomicamente = fam.DependeEconomicamente.GetValueOrDefault(),
-                        PersonaaCargo = fam.PersonaaCargo.GetValueOrDefault(),
+                        ParentescoId = fam.ParentescoId.Value,
+                        FechaNacimiento = fam.FechaNacimiento.Value,
+                        ViveConEmpleado = fam.ViveConEmpleado.Value,
+                        DependeEconomicamente = fam.DependeEconomicamente.Value,
+                        PersonaaCargo = fam.PersonaaCargo.Value,
                         Activo = true,
                         FechaCreacion = DateTime.Now,
                         FechaActualizacion = DateTime.Now
                     };
-                    await _context.AddAsync(infoFamiliar);
+
+                    await _context.InformacionFamiliar.AddAsync(infoFamiliar);
                 }
 
                 await _context.SaveChangesAsync();
@@ -57,14 +58,14 @@ namespace Miluc.Server.Servicios.Nomina
                 if (familiar == null)
                     throw new Exception("Familiar no encontrado.");
 
-                    //throw new Exception("Familiar no encontrado");
-            else 
-            {
-                _context.InformacionFamiliar.Remove(familiar);
-                await _context.SaveChangesAsync();
-                return true;
+                //throw new Exception("Familiar no encontrado");
+                else
+                {
+                    _context.InformacionFamiliar.Remove(familiar);
+                    await _context.SaveChangesAsync();
+                    return true;
+                }
             }
-        }
             catch (Exception ex)
             {
                 throw new Exception($"Error al eliminar el familiar: {ex.Message}");

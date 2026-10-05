@@ -4,6 +4,8 @@ namespace Miluc.Shared.DTOs.Sap.Pedidos
 {
     public class PedidoCreateDto
     {
+        //IdSolicitud
+      
         public string CardCode { get; set; } = string.Empty;
 
         public string NumAtCard {  get; set; } = string.Empty;
@@ -23,7 +25,14 @@ namespace Miluc.Shared.DTOs.Sap.Pedidos
 
         public decimal U_UnidadSal { get; set; }
 
-       // public string ? Printed {  get; set; }
+        public string ? U_WUID { get; set; }
+
+
+        //[JsonIgnore]
+        //  public Guid IdSolicitud { get; set; }
+
+
+        // public string ? Printed {  get; set; }
 
         //[JsonIgnore]
         //public int IdUsuario { get; set; }

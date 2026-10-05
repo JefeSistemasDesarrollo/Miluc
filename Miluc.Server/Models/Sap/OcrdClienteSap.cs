@@ -26,7 +26,7 @@ namespace Miluc.Server.Models.Sap
         public string? MailAddres { get; set; } //CORREO ELECTRONICO PRINCIPAL DEL CLIENTE
         public string? Phone1 { get; set; } //TELEFONO PRINCIPAL DEL CLIENTE
         public string? Phone2 { get; set; } //TELEFONO SECUNDARIO DEL CLIENTE
-        public Int16? groupNum { get; set; }  //FK OCTG - Condicion de pago
+        public Int16 ?GroupNum { get; set; }  //FK OCTG - Condicion de pago
         public char? VatStatus { get; set; }//ESTADO DE IVA DEL CLIENTE
         public int? SlpCode { get; set; } //FK OSLP - Vendedor asignado al cliente
         public string? Currency { get; set; } //moneda del cliente

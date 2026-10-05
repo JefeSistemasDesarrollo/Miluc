@@ -29,8 +29,9 @@ namespace Miluc.Shared.DTOs.Nomina.EmpleadoDto
         public string PrimerApellido { get; set; } = string.Empty;
 
         public string? SegundoApellido { get; set; }
+        public int EmpresaId { get; set; }
 
-        
+
         [Required(ErrorMessage = "La fecha de nacimiento es obligatoria.")]
         public DateTime? FechaNacimiento { get; set; }
 
@@ -60,7 +61,7 @@ namespace Miluc.Shared.DTOs.Nomina.EmpleadoDto
         public int? EstadoCivilId { get; set; }
 
         // Tabla: ContratoLaboral
-        public int EmpresaId { get; set; }
+       
         public int TipoContratoId { get; set; }
 
         // Tabla: AfiliacionSeguridadSocial
@@ -72,6 +73,6 @@ namespace Miluc.Shared.DTOs.Nomina.EmpleadoDto
         public DateTime? FechaCreacion { get; set; }
 
         public DateTime? FechaActualizacion { get; set; }
-        public UsuarioCreateDto Usuario { get; set; } = new UsuarioCreateDto();
+        public UsuarioUpdateDto ?Usuario { get; set; } = new UsuarioUpdateDto();
     }
 }

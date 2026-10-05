@@ -12,7 +12,7 @@ namespace Miluc.Server.Interfaces.Autorizacion
 
         //cambiar contraseña 
         Task<ResponseAPI<bool>> CambiarPasswordAsync(CambiarPasswordRequest request);
-        Task<ResponseAPI<bool>> CambiarPasswordCorreoAsync(CambiarPasswordRequest request);
+        Task<ResponseAPI<int>> EnviarCodigoCorreoAsync(EnviarCodigoRequest request, string ipAddress, string userAgent);
 
         // Método para cerrar sesión (si necesitas lógica extra en DB)
 
@@ -23,6 +23,7 @@ namespace Miluc.Server.Interfaces.Autorizacion
 
         Task<bool> RegisterAsync(string username, string password, string email);
         Task<ResponseAPI<UserSession?>> VerifyOtpAsync(int idUsuario, string codigo, string ipAddress, string userAgent);
+        Task<ResponseAPI<int?>> VerifyOtpCodigoCorreoAsync(int idUsuario, string codigo, string ipAddress, string userAgent);
 
         //bool HasPermission(string permiso);
 

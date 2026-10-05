@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.Sap.CiudadMM;
 
 namespace Miluc.Server.Controllers.SAPController
 {
     [ApiController]
     [Route("api/[controller]")]
+    //[Authorize]
     public class CiudadMediosMagneticosController(ISapCiudadMMService sapCiudadMMService) : Controller
     {
         [HttpGet]

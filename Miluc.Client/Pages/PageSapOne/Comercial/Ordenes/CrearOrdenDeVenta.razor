@@ -538,6 +538,7 @@
     // private int cantidadPorPaginaArticulo = 10;
     private string _textoBusquedaArticulo = "";
     private string _textoBusquedaCliente = "";
+    private Guid guid;
 
     private string textoBusquedaCliente
     {
@@ -559,6 +560,9 @@
     }
     private async Task InicializarFormulario()
     {
+
+          guid = Guid.NewGuid();
+
         clienteSeleccionado = new();
         ArticuloSeleccionado = new();
         lineasPedido.Clear();
@@ -1081,11 +1085,10 @@
                     RecalcularLinea(line);
 
                 }
-
                 PedidoCreateDto pedidoCreateDto = new PedidoCreateDto
                 {
+                    U_WUID = guid.ToString(),
                     CardCode = clienteSeleccionado.CardCode,
-                    
                     NumAtCard=clienteSeleccionado.NumAtCard??"",
                     DocDate = fechaContabilizacion,
                     DocDueDate = fechaEntrega,
@@ -1104,8 +1107,6 @@
                         U_CantidadKg = Convert.ToDecimal(x.U_CantidadKg),
                         U_UnidadSal = Convert.ToDecimal(x.U_UnidadSal),
                         UnitPrice = Convert.ToDecimal(x.PriceAcobrar),
-                      
-                       
                     }).ToList()
                 };
 
@@ -1125,7 +1126,7 @@
                             "Correcto",
                             $"Pedido creado correctamente. Número de documento: {response.Valor.DocNum}", "success");
 
-                        nav.NavigateTo("/administrar-pedido/pedidos", forceLoad: true);
+                       nav.NavigateTo("/administrar-pedido/pedidos", forceLoad: true);
                     }
                     else
                     {

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.Sap.Octg;
 using Miluc.Shared.DTOs.Sap.Credito;
 using Miluc.Shared.Models.Response;
@@ -8,7 +9,7 @@ namespace Miluc.Server.Controllers.SAPController
 
     [ApiController]
     [Route("api/[Controller]")]
-
+    [Authorize]
     public class OctgController (ISapOctgService _octgService): Controller
     {
        [HttpGet]
@@ -21,9 +22,7 @@ namespace Miluc.Server.Controllers.SAPController
                 if (result == null)
                 {
                     return NotFound("No se encontraron grupos de socios comerciales.");
-
                 }
-
                 return Ok(new ResponseAPI<List<DiasCreditoDto>>
                 {
                     EsCorrecto = true,
