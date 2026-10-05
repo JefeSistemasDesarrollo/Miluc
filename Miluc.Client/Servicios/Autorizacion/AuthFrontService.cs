@@ -174,16 +174,17 @@ namespace Miluc.Client.Servicios.Autorizacion
                     Mensaje = "Error del servidor"
                 };
         }
-        public async Task<ResponseAPI<bool>> CambiarPasswordCorreoAsync(CambiarPasswordRequest request)
+        public async Task<ResponseAPI<int>> EnviarCodigoCorreoAsync(EnviarCodigoRequest request)
         {
-            var response = await _http.PostAsJsonAsync("api/auth/cambiar-password-correo", request);
+            var response = await _http.PostAsJsonAsync("api/auth/enviar-codigo-correo", request);
 
             return await response.Content
-                .ReadFromJsonAsync<ResponseAPI<bool>>()
-                ?? new ResponseAPI<bool>
+                .ReadFromJsonAsync<ResponseAPI<int>>()
+                ?? new ResponseAPI<int>
                 {
                     EsCorrecto = false,
                     Mensaje = "Error del servidor"
+                    
                 };
         }
 
@@ -218,6 +219,44 @@ namespace Miluc.Client.Servicios.Autorizacion
             catch (Exception ex)
             {
                 return new ResponseAPI<UserSession>
+                {
+                    EsCorrecto = false,
+                    Mensaje = ex.Message
+                };
+            }
+
+        }
+        public async Task<ResponseAPI<int>> VerifyOtpCodigoCorreo(VerifyOtpRequest request)
+        {
+
+            try
+            {
+                var response = await _http.PostAsJsonAsync("api/auth/verify-otp-codigo-correo", request);
+
+                var result = await response.Content.ReadFromJsonAsync<ResponseAPI<int>>();
+
+                if (result != null && result.EsCorrecto)
+                {
+
+                    //CurrentSession = result.Valor;
+
+                    //if (_authStateProvider is CustomAuthStateProvider customProvider)
+                    //{
+                    //    customProvider.NotifyAuthenticationStateChanged();
+                    //}
+
+                    return result;
+                }
+
+                return result ?? new ResponseAPI<int>
+                {
+                    EsCorrecto = false,
+                    Mensaje = "Error al verificar el codigo"
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseAPI<int>
                 {
                     EsCorrecto = false,
                     Mensaje = ex.Message

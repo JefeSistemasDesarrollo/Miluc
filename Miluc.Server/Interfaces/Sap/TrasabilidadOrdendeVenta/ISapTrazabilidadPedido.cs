@@ -23,6 +23,6 @@ namespace Miluc.Server.Interfaces.Sap.TrasabilidadOrdendeVenta
         Task<List<Rin1DetalleNotaCredito>> ObtenerDetalleNotaCredito(int DocEntry);
 
         //frecuencia de ventas 
-        Task<List<FrecuienciaDeVentasReaderDto>> FrecuenciaPorVendedorDetalle(int DocEntry);
+        //Task<List<FrecuienciaDeVentasReaderDto>> FrecuenciaUltimaCompra(DateTime fechaIn);
     }
 }

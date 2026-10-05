@@ -1,4 +1,5 @@
 ﻿using Azure;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Sap.Itm1Sap;
@@ -11,6 +12,7 @@ namespace Miluc.Server.Controllers.SAPController
 
     [ApiController]
     [Route("api/[Controller]")]
+    //[Authorize]
     public class Itm1Controller(ISapItm1Service itm1Service, ILogService log) : Controller
     {
         [HttpGet]

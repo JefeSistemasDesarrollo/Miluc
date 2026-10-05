@@ -72,6 +72,6 @@ namespace Miluc.Shared.DTOs.Nomina.EmpleadoDto
         public DateTime? FechaCreacion { get; set; }
 
         public DateTime? FechaActualizacion { get; set; }
-        public UsuarioCreateDto Usuario { get; set; } = new UsuarioCreateDto();
+        public UsuarioUpdateDto ?Usuario { get; set; } = new UsuarioUpdateDto();
     }
 }

@@ -14,7 +14,7 @@ namespace Miluc.Server.Controllers.Permisos
     [Authorize]
     public class PermisosController(ILogService log, IPermisosService _permisoService) : Controller
     {
-        //
+ 
         [HttpGet]
         [PermissionAuthorize("Permiso.View")]
         public async Task<ActionResult<ResponseAPI<List<PermisosReadDto>>>> GetPermisosAsync(

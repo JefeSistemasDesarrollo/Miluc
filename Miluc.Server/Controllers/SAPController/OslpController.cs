@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Sap.Oslp;
 using Miluc.Shared.DTOs.Sap.Vendedor;
@@ -9,6 +10,7 @@ namespace Miluc.Server.Controllers.SAPController
 
     [ApiController]
     [Route("api/[Controller]")]
+    [Authorize]
     public class OslpController(ISapOslpService _oslpService, ILogService log) : Controller
     {
 

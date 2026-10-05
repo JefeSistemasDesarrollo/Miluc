@@ -14,6 +14,7 @@ using Miluc.Server.Interfaces.Roles;
 using Miluc.Server.Interfaces.Sap.BussnesParnerGrup;
 using Miluc.Server.Interfaces.Sap.CiudadMM;
 using Miluc.Server.Interfaces.Sap.ConexionSap;
+using Miluc.Server.Interfaces.Sap.Informes.InformeComercial;
 using Miluc.Server.Interfaces.Sap.Itm1Sap;
 using Miluc.Server.Interfaces.Sap.LocalizacionSap;
 using Miluc.Server.Interfaces.Sap.Obpp;
@@ -71,6 +72,7 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IEstadoCivilService, EstadoCivilService>();
 builder.Services.AddScoped<ILocalizacionSapCliente, SapLocalizacionClienteService>();
 builder.Services.AddScoped<ISapOctgService, SapOctgService>();
+builder.Services.AddScoped<ISapFrecuenciaVentasService, SapFrecuenciaVentasService>();
 
 //nomina 
 builder.Services.AddScoped<IVacunaService, VacunaService>();
@@ -187,8 +189,8 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("BlazorCors", policy =>
     {
-        //policy.WithOrigins("https://avicolamiluc.ddns.net:92")
-        policy.WithOrigins("https://localhost:7198")
+        policy.WithOrigins("https://avicolamiluc.ddns.net:92")
+      //  policy.WithOrigins("https://localhost:7198")
          .AllowAnyHeader()
          .AllowAnyMethod()
        .AllowCredentials(); // OBLIGATORIO para enviar cookies

@@ -7,7 +7,7 @@ namespace Miluc.Shared.DTOs.Nomina.EmpleadoDto
     public class EmpleadoReaderDto
     {
         public int EmpleadoId { get; set; }
-
+        public int UsuarioId { get; set; }
         public string CodigoMunicipio { get; set; }//fk a municipio
         public string NombreMunicipio { get;set;  }
         public int TipoDocumentoId { get; set; }//fk
@@ -23,6 +23,7 @@ namespace Miluc.Shared.DTOs.Nomina.EmpleadoDto
         public string Celular { get; set; }
         public string? CelularAlterno { get; set; }
         public string CorreoElectronico { get; set; } = string.Empty;
+        //public string CorreoElectronicoTemporal { get; set; } = string.Empty;
         public string Direccion { get; set; } = string.Empty;
         public string Barrio { get; set; }= string.Empty;
         public DateTime? FechaCreacion { get; set; }

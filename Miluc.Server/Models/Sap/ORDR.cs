@@ -19,8 +19,8 @@
         public decimal? DocTotal { get; set; }
         public decimal? PaidToDate { get; set; }
 
-        public decimal? U_CantidadKg { get; set; }  //cantidad de kg por unidad de medida de compra
-        public decimal? U_UnidadSal { get; set; } //equivalentes de unidades de medida de venta por unidad de medida de compra
+        //public decimal? U_CantidadKg { get; set; }  //cantidad de kg por unidad de medida de compra
+        //public decimal? U_UnidadSal { get; set; } //equivalentes de unidades de medida de venta por unidad de medida de compra
 
         public string? Ref1 { get; set; }
         public string? Ref2 { get; set; }
@@ -29,6 +29,9 @@
         public int? SlpCode { get; set; } //FK OSLP - Vendedor asignado al cliente
         public DateTime CreateDate { get; set; }
         public int? U_Picking { get; set; }
+
+        public string? U_WUID { get; set; }
+
         public string ? U_PLACAS { get; set; } //fk de piking
         public Int16? U_OrigenPedido { get; set; } 
         public OK1_PICK_TPLACAS? piking { get; set; }
