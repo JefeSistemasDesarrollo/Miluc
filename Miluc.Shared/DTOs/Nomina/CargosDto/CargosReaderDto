@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Miluc.Shared.DTOs.Nomina.Cargos
+namespace Miluc.Shared.DTOs.Nomina.CargosDto
 {
-    public class CargosDto
+    public class CargosReaderDto
     {
         public int CargoId { get; set; }
         public string CargoNombre { get; set; }

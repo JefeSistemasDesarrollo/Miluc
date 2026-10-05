@@ -14,6 +14,7 @@
 @inject IEmpleadoClientService _empleadoService
 @inject IEstadoCivilClientService _estadoCivil
 @inject IJSRuntime JS
+@inject IAuthClientService _authClientServic
 
 <div class="empleado-page p-4 animate__animated animate__fadeIn">
     <div class="container-fluid max-width-container">
@@ -305,6 +306,8 @@
     private List<TipoDocumentoReaderDto> listDocumento = new();
     private List<EstadoCivilReaderDto> listEstadoCivil = new();
     private bool isProcessing = false;
+    
+    public string _correo = "";
     // private UsuarioCreateDto usuarioCreateDto = new UsuarioCreateDto();
 
     private void Volver() => nav.NavigateTo("/Administrar/Empleado");
@@ -319,27 +322,42 @@
     //cuando se inicializala aplicacion por primera vez
     //aca vamos acargar todos las tablas dependientes paara crear empleados
 
-    protected override async Task OnInitializedAsync()
+  protected override async Task OnInitializedAsync()
+{
+    _correo = _authClientServic.CurrentSession.UserName;
+
+    // Los funcionarios con filtro por correo no pueden crear
+    if (_authClientServic.HasPermission("Employee.FilterCorreo"))
     {
-        var respuestaMunicipios = await _municipioClientService.GetMunicipiosAsync();
-        if (respuestaMunicipios.Valor != null)
-            listmunicipios = respuestaMunicipios.Valor;
-
-        // //aca vamos a caragar el tipo de documento para mostrarlo en el select
-        var respuestaTipoDocumento = await _tipoDocumentoClientService.GetTipoDocumentosAsync();
-        if (respuestaTipoDocumento.Valor != null)
-            listDocumento = respuestaTipoDocumento.Valor;
-
-        var respuestaEstado = await _estadoCivil.GetEstadosCivilesAsync();
-        if (respuestaEstado.EsCorrecto)
-            listEstadoCivil = respuestaEstado.Valor;
-
-        // Deja que arranquen en null para que el [Required] funcione en la UI
-        nuevoEmpleado.FechaNacimiento = null;
-        nuevoEmpleado.FechaExpedicionDoc = null;
-
-
+        nav.NavigateTo("/no-autorizado");
+        return;
     }
+
+    // Cargas normales
+    var respuestaMunicipios = await _municipioClientService.GetMunicipiosAsync();
+    if (respuestaMunicipios.Valor != null)
+        listmunicipios = respuestaMunicipios.Valor;
+
+    var respuestaTipoDocumento = await _tipoDocumentoClientService.GetTipoDocumentosAsync();
+    if (respuestaTipoDocumento.Valor != null)
+        listDocumento = respuestaTipoDocumento.Valor;
+
+    var respuestaEstado = await _estadoCivil.GetEstadosCivilesAsync();
+    if (respuestaEstado.EsCorrecto)
+        listEstadoCivil = respuestaEstado.Valor;
+
+    nuevoEmpleado.FechaNacimiento = null;
+    nuevoEmpleado.FechaExpedicionDoc = null;
+
+        
+        return;
+    
+
+
+}
+
+
+    
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
