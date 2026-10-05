@@ -1,4 +1,4 @@
-﻿@page "/verify-otp/{IdUsuario:int}"
+﻿@page "/verify-otpCorreo/{IdUsuario:int}"
 @attribute [AllowAnonymous]
 
 @using Miluc.Shared.DTOs.Autorizacion
@@ -23,7 +23,7 @@
                 Hemos enviado un código de seguridad a su correo electrónico registrado. Por favor, ingréselo a continuación.
             </p>
 
-            <EditForm Model="model" OnValidSubmit="VerificarCodigo">
+            <EditForm Model="model" OnValidSubmit="VerificarCodigoCorreo">
                 <DataAnnotationsValidator />
 
                 <div class="mb-4">
@@ -65,7 +65,8 @@
     </div>
 </div>
 @code {
-    [Parameter] public int IdUsuario { get; set; }
+    [Parameter] 
+    public int IdUsuario { get; set; }
     private VerifyOtpRequest model = new();
     private bool loading = false;
 
@@ -74,14 +75,14 @@
         model.IdUsuario = IdUsuario;
     }
 
-    private async Task VerificarCodigo()
+    private async Task VerificarCodigoCorreo()
     {
         if (string.IsNullOrWhiteSpace(model.Codigo)) return;
         
         loading = true;
         try
         {
-            var result = await AuthService.VerifyOtp(model);
+            var result = await AuthService.VerifyOtpCodigoCorreo(model);
 
             if (result.EsCorrecto && result.Valor != null)
             {
@@ -92,7 +93,7 @@
                     confirmButtonColor = "#800020"
                 });
 
-                Nav.NavigateTo("/");
+                Nav.NavigateTo($"/cambiar-password/{IdUsuario}");
             }
             else
             {

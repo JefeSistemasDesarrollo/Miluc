@@ -13,11 +13,10 @@ namespace Miluc.Server.Controllers.AuthController
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+   // [Authorize]
     public class AuthController(IAuthService authService, IConfiguration config, ILogService log) : Controller
     {
         [HttpGet("me")]
-
         public async Task<ActionResult<ResponseAPI<UserSession>>> GetCurrentUser()
         {
             try
@@ -136,16 +135,13 @@ namespace Miluc.Server.Controllers.AuthController
                 string ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
                 string userAgent = Request.Headers["User-Agent"].ToString();
 
-                var response = await authService.VerifyOtpAsync(
-                    request.IdUsuario,
-                    request.Codigo,
-                    ip,
-                    userAgent);
+                var response = await authService.VerifyOtpAsync(request.IdUsuario,request.Codigo,ip,userAgent);
 
                 if (!response.EsCorrecto || response.Valor == null)
                 {
                     return Unauthorized(response);
                 }
+
 
                 await CrearCookies(response.Valor);
 
@@ -171,10 +167,51 @@ namespace Miluc.Server.Controllers.AuthController
                 });
             }
         }
+        [AllowAnonymous]
+        [HttpPost("verify-otp-codigo-correo")]
+        public async Task<ActionResult<ResponseAPI<int>>> VerifyOtpCodigoCorreo([FromBody] VerifyOtpRequest request)
+        {
+            try
+            {
+                string ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                string userAgent = Request.Headers["User-Agent"].ToString();
+
+                var response = await authService.VerifyOtpCodigoCorreoAsync(request.IdUsuario,request.Codigo,ip,userAgent);
+
+                //if (!response.EsCorrecto || response.Valor == null)
+                //{
+                //    return Unauthorized(response);
+                //}
+
+
+                //await CrearCookies(response.Valor);
+
+                //response.Valor.RefreshToken = null;
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                await log.GuardarErrorAsync(
+                    message: ex.Message,
+                    StackTrace: ex.StackTrace,
+                    usuario: "Sistema",
+                    metodo: "HttpPost",
+                    ruta: "/api/Auth/verify-otp",
+                    ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
+                    origen: "AuthController.VerifyOtp");
+
+                return StatusCode(500, new ResponseAPI<int>
+                {
+                    EsCorrecto = false,
+                    Mensaje = "Error interno"
+                });
+            }
+        }
 
         [AllowAnonymous]
         [HttpPost("cambiar-password")]
-        public async Task<ActionResult<ResponseAPI<bool>>> CambiarPassword([FromBody] CambiarPasswordRequest request)
+        public async Task<ActionResult<ResponseAPI<bool>>> CambiarPassword([FromBody] CambiarPasswordRequest request )
         {
             try
             {
@@ -204,12 +241,18 @@ namespace Miluc.Server.Controllers.AuthController
             }
         }
         [AllowAnonymous]
-        [HttpPost("cambiar-password-correo")]
-        public async Task<ActionResult<ResponseAPI<bool>>> CambiarPasswordCorreo([FromBody] CambiarPasswordRequest request)
+        [HttpPost("enviar-codigo-correo")]
+        public async Task<ActionResult<ResponseAPI<int>>> EnviarCodigoCorreo([FromBody] EnviarCodigoRequest request)
         {
             try
             {
-                var result = await authService.CambiarPasswordCorreoAsync(request);
+
+                string ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                string userAgent = Request.Headers["User-Agent"].ToString();
+
+
+
+                var result = await authService.EnviarCodigoCorreoAsync(request, ip, userAgent);
 
                 if (!result.EsCorrecto)
                     return BadRequest(result);
@@ -223,9 +266,9 @@ namespace Miluc.Server.Controllers.AuthController
                     StackTrace: ex.StackTrace,
                     usuario: "Sistema",
                     metodo: "HttpPost",
-                    ruta: "/api/auth/cambiar-password",
+                    ruta: "/api/auth/enviar-codigo-correo",
                     ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
-                    origen: "AuthController.CambiarPassword");
+                    origen: "AuthController.EnviarCodigoCorreo");
 
                 return StatusCode(500, new ResponseAPI<bool>
                 {

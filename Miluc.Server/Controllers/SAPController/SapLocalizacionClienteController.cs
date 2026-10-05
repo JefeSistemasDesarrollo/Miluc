@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Sap.LocalizacionSap;
 using Miluc.Shared.DTOs.Sap.ActividadEconomica;
@@ -12,6 +13,7 @@ namespace Miluc.Server.Controllers.SAPController
 {
     [ApiController]
     [Route("api/[Controller]")]
+    [Authorize]
     public class SapLocalizacionClienteController(ILocalizacionSapCliente _sapService, ILogService log) : Controller
     {
 

@@ -21,15 +21,13 @@ namespace Miluc.Server.Servicios.SapService
                     }).
                     ToListAsync();
 
-                
-
 
                 return listar;
             }
             catch (Exception ex)
             {
 
-                throw new Exception("RUTAS");
+                throw new Exception($"RUTAS {ex.Message}");
             }
         }
     }

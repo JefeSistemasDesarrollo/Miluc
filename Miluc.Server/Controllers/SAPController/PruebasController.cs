@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Miluc.Server.Data;
 using Miluc.Server.Models.Sap;
@@ -9,6 +10,7 @@ namespace Miluc.Server.Controllers.SAPController
 {
     [ApiController]
     [Route("api/[Controller]")]
+    [Authorize]
     public class PruebasController(SapDbContex _context) : Controller
     {
 
@@ -78,17 +80,17 @@ namespace Miluc.Server.Controllers.SAPController
 
                     select new FrecuienciaDeVentasReaderDto
                     {
-                        CardCode = cli.CardCode,
-                        CardName= cli.CardName,
-                        CardFName= cli.CardFName ?? "SIN SUCURSAL",
-                         PrioDesc= suc.PrioDesc,
+                        CodigoCliente = cli.CardCode,
+                        NombreArticulo= cli.CardName,
+                        Sucursal= cli.CardFName ?? "SIN SUCURSAL",
+                         Ruta= suc.PrioDesc,
                         Telefono1 = cli.Phone1,
                         Telefono2 = cli.Phone2,
 
-                        DocNum = fac.DocNum,
+                        Documento = fac.DocNum,
                        // VendedorFactura = venFact.SlpName,
-                        SlpName= venCli.SlpName,
-                        DocDate= fac.DocDate,
+                        Vendedor= venCli.SlpName,
+                        FechaContabilizacion= fac.DocDate,
                         ValorTotal = fac.DocTotal
                     };
 

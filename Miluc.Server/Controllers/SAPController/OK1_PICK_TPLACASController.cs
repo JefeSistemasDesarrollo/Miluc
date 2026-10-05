@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Miluc.Server.Data;
 
@@ -6,6 +7,7 @@ namespace Miluc.Server.Controllers.SAPController
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class OK1_PICK_TPLACASController(SapDbContex sapDbContex) : Controller
     {
         [HttpGet]
