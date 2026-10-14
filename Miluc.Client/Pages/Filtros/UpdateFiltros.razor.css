@@ -1,0 +1,129 @@
+﻿.text-title {
+    color: #000000;
+}
+
+.bg-maroon {
+    background-color: #D62F46 !important;
+}
+
+.btn-miluc {
+    background-color: #D62F46;
+    color: white;
+    border: none;
+}
+
+    .btn-miluc:hover {
+        background-color: #D62F46;
+        color: white;
+    }
+
+.btn-outline-maroon {
+    border: 1px solid #D62F46;
+    color: #D62F46;
+}
+
+    .btn-outline-maroon:hover {
+        background-color: #D62F46;
+        color: white;
+    }
+
+.bg-soft-maroon {
+    background-color: #D62F46;
+}
+
+.border-maroon {
+    border-color: #D62F46 !important;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.card {
+    border-radius: 12px;
+}
+/* Header del Modal con gradiente vinotinto */
+.bg-maroon-modal {
+    background: white !important;
+    color: #D62F46 !important;
+    padding: 1rem 1.25rem;
+    margin-left: 2px;
+    border-bottom: 3px solid #D62F46;
+}
+
+.bg-maroon h5,
+.bg-maroon svg {
+    color: #ffffff !important;
+    fill: #ffffff !important;
+}
+
+/* Botón Principal (Buscar / Acciones) */
+.btn-marron-modal {
+    background-color: #D62F46 !important;
+    border-color: #D62F46 !important;
+    color: #ffffff !important;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+}
+
+    .btn-marron-modal:hover,
+    .btn-marron-modal:focus {
+        background-color: #800020 !important;
+        border-color: #D62F46 !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 10px rgba(107, 15, 26, 0.3);
+    }
+
+/* Texto de código/destacados en la lista */
+.text-maroon {
+    color: #D62F46 !important;
+    font-weight: 600;
+}
+
+/* Hover suave en los elementos seleccionables de la lista */
+.list-group-item-action:hover {
+    background-color: #fdf2f4 !important;
+    border-left: 4px solid #D62F46 !important;
+}
+
+/* Botón activo del paginador (Página actual) */
+.btn-maroon.text-white {
+    background-color: #D62F46 !important;
+    border-color: #D62F46 !important;
+    color: #ffffff !important;
+}
+
+.btn-maroon {
+    background-color: #D62F46 !important;
+    border-color: #D62F46 !important;
+    color: #ffffff !important;
+}
+
+/* Personalización del Scrollbar interno */
+.list-group::-webkit-scrollbar {
+    width: 6px;
+}
+
+.list-group::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.list-group::-webkit-scrollbar-thumb {
+    background: #D62F46;
+    border-radius: 4px;
+}
+
+    .list-group::-webkit-scrollbar-thumb:hover {
+        background: #D62F46;
+    }
+
+.pedido-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 100;
+    padding: 15px 20px;
+    background: #fff;
+    border-top: 1px solid #dee2e6;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+}

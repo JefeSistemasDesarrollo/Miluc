@@ -6,6 +6,7 @@ using Miluc.Server.Models;
 using Miluc.Server.Models.AutorizacionModel;
 using Miluc.Shared.DTOs.Autorizacion;
 using Miluc.Shared.DTOs.Usuarios;
+using Miluc.Shared.DTOs.Usuarios.AsignarFiltrosDto;
 using Miluc.Shared.Models.Response;
 using System.Security.Cryptography;
 using System.Text;
@@ -19,6 +20,7 @@ namespace Miluc.Server.Servicios.Autorizacion
             try
             {
                 var usuario = await context.Usuarios
+                    .Include(u => u.AsignarFiltros)
                     .Include(u => u.UsuarioRoles)
                         .ThenInclude(ur => ur.Rol)
                             .ThenInclude(r => r.RolPermisos)
@@ -104,6 +106,16 @@ namespace Miluc.Server.Servicios.Autorizacion
                 .Distinct()
                 .ToList();
 
+            var filtros = usuario.AsignarFiltros
+                .Select(f => new AsignarFiltrosReaderDto
+                {
+                    
+                    NombreModulo = f.NombreModulo,
+                    Filtro=f.Filtro
+
+                })
+                .ToList();
+
 
             // EXPIRACION
             int AccessTokenExpirationMinutes = config.GetValue<int>("Jwt:AccessTokenExpirationMinutes");
@@ -113,7 +125,7 @@ namespace Miluc.Server.Servicios.Autorizacion
             //var fecharefreshTokenExpiration = DateTime.UtcNow.AddMinutes(RefreshTokenExpiration);
 
             // GENERAR JWT con permisos 
-            var jwtToken = tokenService.GenerarToken(usuario, roles, permisos);
+            var jwtToken = tokenService.GenerarToken(usuario, roles, permisos, filtros);
 
             // REFRESH TOKEN
             //string refreshTokenPlano = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
@@ -148,6 +160,7 @@ namespace Miluc.Server.Servicios.Autorizacion
                 RefreshToken = refreshTokenPlano,
                 Roles = roles,
                 Permisos = permisos,
+                Filtros = filtros, 
                 FechaExpiracion = fechaExpiracion,
                 CodVendedorSAP = usuario.CodVendedorSAP ?? -1,
                 Requiere2FA = false
@@ -231,12 +244,21 @@ namespace Miluc.Server.Servicios.Autorizacion
                     .Distinct()
                     .ToList();
 
+                var filtros = refreshTokenEntity.Usuario.AsignarFiltros
+                    .Select(f => new AsignarFiltrosReaderDto
+                    {
+                        NombreModulo = f.NombreModulo,
+                        Filtro = f.Filtro
+                    })
+                    .ToList();
+
                 // NUEVO JWT
-  
+
                 var jwtToken = tokenService.GenerarToken(
                     refreshTokenEntity.Usuario,
                     roles,
-                    permisos);
+                    permisos,
+                    filtros);
 
                 var fechaExpiracionUserSession =DateTime.UtcNow.AddMinutes(AccessTokenExpirationMinutes);
 

@@ -15,7 +15,7 @@ namespace Miluc.Server.Servicios.Nomina
         {
             //if (dto != null) 
             if (dto == null)
-                throw new ArgumentNullException("El objeto del viene vacío", nameof(dto));
+                throw new ArgumentNullException(nameof(dto), "El objeto del viene vacío");
             if (await _milucDbContext.Usuarios.AnyAsync(u => u.Email.ToLower() == dto.Usuario.Email.ToLower()))
                 throw new InvalidOperationException("El correo electrónico ya está en uso.");
 
@@ -96,7 +96,7 @@ namespace Miluc.Server.Servicios.Nomina
                     await _milucDbContext.SaveChangesAsync();
 
                     // 4. Asignación de Roles (Tabla Intermedia)
-                    if (dto.Usuario.RolesIds != null && dto.Usuario.RolesIds.Any())
+                    if (dto.Usuario.RolesIds != null && dto.Usuario.RolesIds.Count != 0)
                     {
                         var userRoles = dto.Usuario.RolesIds.Select(rolId => new UsuarioRol
                         {
@@ -107,7 +107,7 @@ namespace Miluc.Server.Servicios.Nomina
                     }
 
                     // 5. Asignación de Tipos de Usuario (Tabla Intermedia)
-                    if (dto.Usuario.TiposUsuarioIds != null && dto.Usuario.TiposUsuarioIds.Any())
+                    if (dto.Usuario.TiposUsuarioIds != null && dto.Usuario.TiposUsuarioIds.Count != 0)
                     {
                         var userTipos = dto.Usuario.TiposUsuarioIds.Select(tipoId => new UsuarioTipoUsuario
                         {
@@ -245,12 +245,14 @@ namespace Miluc.Server.Servicios.Nomina
         {
             try
             {
+
+
+
+
+
                 int cantidadTop = cantidad ?? 20;
 
-                if (filtro == null)
-                {
-                    filtro = string.Empty;
-                }
+                filtro ??= string.Empty;
 
                 var query = _context.Empleado.AsNoTracking().AsQueryable();
                 if (!string.IsNullOrEmpty(filtro))
@@ -340,10 +342,7 @@ namespace Miluc.Server.Servicios.Nomina
             try
             {
                 var empleado = await _context.Empleado
-                    .FirstOrDefaultAsync(e => e.EmpleadoId == dto.EmpleadoId);
-
-                if (empleado == null)
-                    throw new Exception("Empleado no existe.");
+                    .FirstOrDefaultAsync(e => e.EmpleadoId == dto.EmpleadoId) ?? throw new Exception("Empleado no existe.");
 
                 var existeDocumento = await _context.Empleado
                     .AnyAsync(e =>
@@ -395,68 +394,49 @@ namespace Miluc.Server.Servicios.Nomina
                     var usuarioUpdate = await _milucDbContext.Usuarios
                         .FirstOrDefaultAsync(u => u.IdUsuario == dto.Usuario.IdUsuario);
 
-                    if (usuarioUpdate == null)
-                        throw new Exception("El usuario asociado al empleado no existe.");
+                    using var hmac = new System.Security.Cryptography.HMACSHA512();
 
-                    var correoUsuarioExiste = await _milucDbContext.Usuarios
-                        .AnyAsync(u =>
-                            u.Email.ToLower() == dto.Usuario.Email.ToLower() &&
-                            u.IdUsuario != dto.Usuario.IdUsuario);
-
-                    if (correoUsuarioExiste)
-                        throw new Exception(
-                            $"Ya existe un usuario registrado con el correo {dto.Usuario.Email}.");
-
-                    var correoAnterior = usuarioUpdate.Email;
-
-                    var correoCambio = !string.Equals(
-                        correoAnterior?.Trim(),
-                        dto.Usuario.Email?.Trim(),
-                        StringComparison.OrdinalIgnoreCase);
-
-                    usuarioUpdate.UserName = dto.Usuario.Email;
-                    usuarioUpdate.Nombres = dto.Usuario.Nombres;
-                    usuarioUpdate.Apellidos = dto.Usuario.Apellidos;
-                    usuarioUpdate.Email = dto.Usuario.Email;
-                    usuarioUpdate.Telefono = dto.Usuario.Telefono;
-                    usuarioUpdate.Foto = dto.Usuario.Foto;
-                    usuarioUpdate.TwoFactorEnabled = dto.Usuario.TwoFactorEnabled;
-                    usuarioUpdate.FechaActualizacion = DateTime.Now;
-                    usuarioUpdate.Activo = true;
-
-                    // SOLO SI CAMBIA EL CORREO
-                    if (correoCambio)
+                    if (usuarioUpdate != null)
                     {
-                        if (string.IsNullOrWhiteSpace(dto.Usuario.Password))
-                            throw new Exception(
-                                "Debe generar una contraseña temporal cuando cambie el correo electrónico.");
+                        // Crear nuevo usuario si no existe
+                        //if (dto.Usuario.Password != null)
+                        //    throw new InvalidOperationException("La contraseña es obligatoria para un usuario nuevo.");
 
-                        using var hmac = new System.Security.Cryptography.HMACSHA512();
+                        if (dto.Usuario.Password != null)
+                        {
+                            usuarioUpdate.DebeCambiarPassword = dto.Usuario.DebeCambiarPassword;
+                            usuarioUpdate.PasswordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(dto.Usuario.Password));
+                            usuarioUpdate.Salt = hmac.Key;
+                        }
+                           
+
 
                         usuarioUpdate.PasswordHash =
                             hmac.ComputeHash(
                                 System.Text.Encoding.UTF8.GetBytes(dto.Usuario.Password));
 
-                        usuarioUpdate.Salt = hmac.Key;
-                        usuarioUpdate.DebeCambiarPassword = true;
-
-                        await _emailService.SendAsync(
-                            dto.Usuario.Email,
-                            "Actualización de acceso a Miluc",
-                            $@"
-                    Su cuenta ha sido actualizada exitosamente.<br/><br/>
-
-                    Usuario: {dto.Usuario.Email}<br/>
-                    Contraseña temporal: {dto.Usuario.Password}<br/><br/>
-
-                    Ingrese a:
-                    https://avicolamiluc.ddns.net:92/login
-                        https://avicolamiluc.ddns.net:92/login
-                    </a>
-
-                    <br/><br/>
-                    Por seguridad deberá cambiar su contraseña al iniciar sesión.",
-                            true);
+                        usuarioUpdate.UserName = dto.Usuario.Email;
+                        usuarioUpdate.Nombres= dto.Usuario.Nombres;
+                        usuarioUpdate.Apellidos= dto.Usuario.Apellidos;
+                        usuarioUpdate.Email = dto.Usuario.Email;
+                        usuarioUpdate.Telefono = dto.Usuario.Telefono;
+                        usuarioUpdate.Foto = dto.Usuario.Foto;
+                        usuarioUpdate.TwoFactorEnabled = dto.Usuario.TwoFactorEnabled;
+                    
+                      
+                        usuarioUpdate.FechaActualizacion = DateTime.Now;
+                        usuarioUpdate.Activo = true;
+                  
+                        if (dto.Usuario.EmailTemporal != dto.Usuario.Email)
+                        {
+                            await _emailService.SendAsync(
+                                 dto.Usuario.Email,
+                                "Bienvenido a Miluc",
+                                $"Su cuenta ha sido actualizada exitosamente ingrese a la platforma: <b>{"https://avicolamiluc.ddns.net:92/login"}</b>. su usuarios {dto.Usuario.Email} su contraseña es  {dto.Usuario.Password} .",
+                                true);
+                        }
+                        _milucDbContext.Usuarios.Update(usuarioUpdate);
+                        await _milucDbContext.SaveChangesAsync();
                     }
 
                     _milucDbContext.Usuarios.Update(usuarioUpdate);
@@ -470,7 +450,7 @@ namespace Miluc.Server.Servicios.Nomina
 
                         _milucDbContext.UsuarioRoles.RemoveRange(rolesExistentes);
 
-                        if (dto.Usuario.RolesIds.Any())
+                        if (dto.Usuario.RolesIds.Count != 0)
                         {
                             var nuevosRoles = dto.Usuario.RolesIds.Select(rolId => new UsuarioRol
                             {
@@ -490,7 +470,7 @@ namespace Miluc.Server.Servicios.Nomina
 
                         _milucDbContext.UsuarioTipoUsuario.RemoveRange(tiposExistentes);
 
-                        if (dto.Usuario.TiposUsuarioIds.Any())
+                        if (dto.Usuario.TiposUsuarioIds.Count != 0)
                         {
                             var nuevosTipos = dto.Usuario.TiposUsuarioIds.Select(tipoId => new UsuarioTipoUsuario
                             {

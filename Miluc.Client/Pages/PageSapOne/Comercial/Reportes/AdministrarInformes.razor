@@ -1,0 +1,115 @@
+﻿@page "/reportes/descargas"
+@inject IJSRuntime JS
+@inject HttpClient Http
+@inject NavigationManager nav
+@inject IAuthClientService _auth
+<div class="container-fluid py-5 bg-light-gradient min-vh-100 animate__animated animate__fadeIn">
+
+    <div class="mb-5 text-center">
+        <span class="text-uppercase small fw-bold text-muted tracking-wider d-block mb-1">Módulo reportes</span>
+        <h1 class="fw-black text-dark m-0 d-flex align-items-center justify-content-center gap-3">
+            <i class="i bi-bar-chart-line text-rojo"></i>
+            Administración de Reportes
+        </h1>
+        <p class="text-muted mt-2 mb-0 mx-auto col-12 col-md-8 p-0 small">
+            Gestión integral del proceso comercial y sincronización con SAP. Incluye reportes de ventas detallados y trazabilidad de extremo a extremo.
+        </p>
+    </div>
+    <div class="row g-4 justify-content-center">
+        <div class="col-12 col-sm-6 col-md-6 col-xl-4">
+            <div class="card h-100 shadow-sm border-0 border-top border-4 border-rojo text-center rounded-4 custom-hover-card alert-dark" style="cursor: pointer;" @onclick='() => nav.NavigateTo("/frecuencia-ventas")'>
+                <div class="card-body p-4 d-flex flex-column align-items-center justify-content-between">
+                    <div class="w-100">
+                        <div class="p-3 bg-rojo-suave text-rojo fs-3 rounded-circle mx-auto mb-3 icon-box">
+                            <i class="bi-calendar2-check"></i>
+                        </div>
+                        <span class="badge bg-rojo-suave text-dark border rounded-pill px-3 mb-2 small fw-bold">Ventas</span>
+
+                        <h4 class="fw-bold text-dark mb-2 fs-5">Frecuencia de ventas  </h4>
+                        <p class="text-muted small mb-0">
+                            Análisis del comportamiento del cliente y regularidad de las transacciones.
+                        </p>
+                    </div>
+                    <button class="btn btn-rojo rounded-pill py-2 w-100 fw-semibold mt-4 shadow-sm"
+                            @onclick='() => nav.NavigateTo("/frecuencia-ventas")'>
+                        <span>Ventas</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-md-6 col-xl-4">
+            <div class="card h-100 shadow-sm border-0 border-top border-4 border-amarillo text-center rounded-4 custom-hover-card">
+                <div class="card-body p-4 d-flex flex-column align-items-center justify-content-between cursor-pointer" style="cursor: pointer;" @onclick='() => nav.NavigateTo("/cartera-vencida")'>
+                    <div class="w-100">
+                        <div class="p-3 bg-amarillo-suave text-amarillo fs-3 rounded-circle mx-auto mb-3 icon-box">
+                            <i class="bi bi-shield-slash"></i>
+                        </div>
+                        <span class="badge bg-amarillo-suave text-amarillo border border-amarillo-subtle rounded-pill px-3 mb-2 small fw-bold">Cartera</span>
+                        <h4 class="fw-bold text-dark mb-2 fs-5">Antigüedad de Saldos </h4>
+                        <p class="text-muted small mb-0">
+                            Clasificación de la deuda por periodos de tiempo (30, 60, 90, 120+ días).
+                        </p>
+                    </div>
+                    <button class="btn btn-amarillo rounded-pill py-2 w-100 fw-semibold mt-4 shadow-sm"
+                            @onclick='() => nav.NavigateTo("/cartera-vencida")'>
+                        <span>Cartera</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+        @if (_auth.HasPermission("AccountsReceivable.View"))
+        {
+            <div class="col-12 col-sm-6 col-md-6 col-xl-4">
+                <div class="card h-100 shadow-sm border-0 border-top border-4 border-rojo text-center rounded-4 custom-hover-card alert-dark" style="cursor: pointer;" @onclick='() => nav.NavigateTo("/administrar-clientesCartera")'>
+                    <div class="card-body p-4 d-flex flex-column align-items-center justify-content-between">
+                        <div class="w-100">
+                            <div class="p-3 bg-rojo-suave text-rojo fs-3 rounded-circle mx-auto mb-3 icon-box">
+                                <i class="bi-exclamation-octagon"></i>
+                            </div>
+                            <span class="badge bg-rojo-suave text-dark border rounded-pill px-3 mb-2 small fw-bold">Cartera</span>
+
+                            <h4 class="fw-bold text-dark mb-2 fs-5">Adminsitrar Cartera </h4>
+                            <p class="text-muted small mb-0">
+                                Gestión de clientes, facturas pendientes, saldos y seguimiento de cartera.
+                            </p>
+                        </div>
+                        <button class="btn btn-rojo rounded-pill py-2 w-100 fw-semibold mt-4 shadow-sm"
+                                @onclick='() => nav.NavigateTo("/administrar-clientesCartera")'>
+                            <span>Clientes</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+
+           <div class="col-12 col-sm-6 col-md-6 col-xl-4">
+                <div class="card h-100 shadow-sm border-0 border-top border-4 border-rojo text-center rounded-4 custom-hover-card alert-dark" style="cursor: pointer;" @onclick='() => nav.NavigateTo("/administrar-clientesCartera")'>
+                    <div class="card-body p-4 d-flex flex-column align-items-center justify-content-between">
+                        <div class="w-100">
+                            <div class="p-3 bg-rojo-suave text-rojo fs-3 rounded-circle mx-auto mb-3 icon-box">
+                                <i class="bi-exclamation-octagon"></i>
+                            </div>
+                            <span class="badge bg-rojo-suave text-dark border rounded-pill px-3 mb-2 small fw-bold">Canal de Distribución</span>
+
+                            <h4 class="fw-bold text-dark mb-2 fs-5">Administrar canal de distribución  </h4>
+                            <p class="text-muted small mb-0">
+                                Gestión de canales de distribución, grupos de venta y asignación de vendedores.
+                            </p>
+                        </div>
+                        <button class="btn btn-rojo rounded-pill py-2 w-100 fw-semibold mt-4 shadow-sm"
+                                @onclick='() => nav.NavigateTo("/canal-de-distribucion")'>
+                            <span>Clientes</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+
+    </div>
+</div>
+@code {
+
+}

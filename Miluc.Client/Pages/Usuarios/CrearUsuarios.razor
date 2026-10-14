@@ -74,9 +74,6 @@
                                 <ValidationMessage For="@(() => usuarioDto.Apellidos)" class="text-danger small" />
                             </div>
                         </div>
-
-                     
-
                         <div class="mb-3">
                             <label class="form-label fw-bold small text-secondary">Teléfono</label>
                             <InputText class="form-control custom-input" @bind-Value="usuarioDto.Telefono" />
@@ -107,7 +104,6 @@
                                 <label class="form-label fw-bold small text-secondary">Lista vendedores</label>
                                 <InputSelect class="form-select form-select-sm" @bind-Value="usuarioDto.CodVendedorSAP">
 
-                                   
                                     @if (listOspSap != null)
                                     {
                                         @foreach (var vendedor in listOspSap)
@@ -133,7 +129,6 @@
                                 <label class="form-check-label fw-bold small cursor-pointer" for="chkPass">Obligar cambio de clave al entrar</label>
                             </div>
                         </div>
-
                     </div>
                 </div>
 
@@ -237,7 +232,6 @@
         {
             if (Auth.HasPermission("Usuario.Create"))
             {
-
                 // usuarioDto.UserName = string.Empty;
                 usuarioDto.Password=string.Empty;
                 usuarioDto.ConfirmarPassword = string.Empty;
@@ -265,7 +259,6 @@
                 nav.NavigateTo("/no-autorizado");
                 return;
             }
-
         }
         catch (Exception ex)
         {

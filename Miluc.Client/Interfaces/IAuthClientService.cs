@@ -17,6 +17,7 @@ namespace Miluc.Client.Interfaces
         Task Logout();
         Task<ResponseAPI<UserSession>> RefreshSession();
         bool HasPermission(string permiso);
+        bool HasFiltro(string filtro);
 
 
     }

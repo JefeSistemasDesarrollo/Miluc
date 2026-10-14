@@ -73,7 +73,7 @@ builder.Services.AddScoped<IEstadoCivilService, EstadoCivilService>();
 builder.Services.AddScoped<ILocalizacionSapCliente, SapLocalizacionClienteService>();
 builder.Services.AddScoped<ISapOctgService, SapOctgService>();
 builder.Services.AddScoped<ISapFrecuenciaVentasService, SapFrecuenciaVentasService>();
-
+builder.Services.AddScoped<IFiltrosUsuarios, FiltrosUsuariosService>();
 //nomina 
 builder.Services.AddScoped<IVacunaService, VacunaService>();
 builder.Services.AddScoped<IEsquemaVacunacionService, EsquemaDeVacunacionService>();
@@ -192,7 +192,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("BlazorCors", policy =>
     {
-       // policy.WithOrigins("https://avicolamiluc.ddns.net:92")
+      // policy.WithOrigins("https://avicolamiluc.ddns.net:92")
        policy.WithOrigins("https://localhost:7198")
          .AllowAnyHeader()
          .AllowAnyMethod()

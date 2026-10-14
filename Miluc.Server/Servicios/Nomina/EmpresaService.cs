@@ -146,6 +146,7 @@ namespace Miluc.Server.Servicios.Nomina
                 throw new Exception($"Error al eliminar la empresa: {ex.Message}");
             }
         }
+
     }
     }
 

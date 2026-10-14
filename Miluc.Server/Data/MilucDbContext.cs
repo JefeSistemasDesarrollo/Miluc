@@ -25,7 +25,9 @@ namespace Miluc.Server.Data
         public DbSet<UsuarioTipoUsuario> UsuarioTipoUsuario => Set<UsuarioTipoUsuario>();
         public DbSet<LogsErrores> LogsErrores => Set<LogsErrores>();
         public DbSet<UsuarioOTP> UsuarioOTP => Set<UsuarioOTP>();
-    
+        public DbSet<AsignarFiltros> AsignarFiltros => Set<AsignarFiltros>();
+        
+        
 
         public DbSet<SisConfiguracionesGenerales> SisConfiguracionesGenerales => Set<SisConfiguracionesGenerales>();
 
@@ -85,7 +87,16 @@ namespace Miluc.Server.Data
             .WithMany(u => u.UsuarioOTP)
             .HasForeignKey(o => o.IdUsuario)
             .OnDelete(DeleteBehavior.Cascade);
-          
+
+            modelBuilder.Entity<AsignarFiltros>().ToTable("AsignarFiltros").HasKey(a => a.AsignarFiltrosId);
+
+            modelBuilder.Entity<AsignarFiltros>()
+                .HasOne(a => a.Usuario)
+                .WithMany(u => u.AsignarFiltros)
+                .HasForeignKey(a => a.IdUsuario)
+                .OnDelete(DeleteBehavior.Cascade);
+
+
             modelBuilder.Entity<SisConfiguracionesGenerales>()
           .ToTable("SisConfiguracionesGenerales").HasKey(c => c.ConfiguracionesGeneralesId);
 
