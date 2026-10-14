@@ -1,6 +1,7 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using Miluc.Server.Interfaces.Autorizacion;
 using Miluc.Server.Models;
+using Miluc.Shared.DTOs.Usuarios;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -50,7 +51,7 @@ namespace Miluc.Server.Servicios.Autorizacion
 
         //    return tokenHandler.WriteToken(token);
         //}
-        public string GenerarToken(Usuario usuario, List<string> roles, List<string> permisos)
+        public string GenerarToken(Usuario usuario, List<string> roles, List<string> permisos, List<AsignarFiltrosReaderDto> filtros)
         {
             var claims = new List<Claim>
            {
@@ -69,10 +70,24 @@ namespace Miluc.Server.Servicios.Autorizacion
             // Permisos
             if (permisos != null && permisos.Any())
             {
-                claims.AddRange(
-                    permisos.Select(p => new Claim("Permiso", p))
-                );
+                claims.AddRange(permisos.Select(p => new Claim("Permiso", p)));
+             //   claims.AddRange(filtro.Select(p => new Claim("filtro", p)));
+
             }    // Llave
+
+            if (filtros != null && filtros.Any())
+            {
+                claims.AddRange(filtros.Select(f => new Claim("Filtro", f.Filtro)));
+                claims.AddRange(filtros.Select(f => new Claim("NombreModulo", f.NombreModulo)));    
+            }
+
+            //if (filtros != null && filtros.Any())
+            //{
+            //    claims.AddRange(filtros.Select(f => new Claim("Filtro", f.Filtro)));
+            //    claims.AddRange(filtros.Select(f => new Claim("NombreModulo", f.NombreModulo)));
+
+            //}
+            
             var key = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(config["Jwt:Key"]!)
             );

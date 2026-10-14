@@ -8,7 +8,7 @@ using System.Net.Http.Json;
 
 namespace Miluc.Client.Servicios.Autorizacion
 {
-    public class AuthFrontService(HttpClient http,AuthenticationStateProvider authStateProvider,NavigationManager navigation) : IAuthClientService
+    public class AuthFrontService(HttpClient http, AuthenticationStateProvider authStateProvider, NavigationManager navigation) : IAuthClientService
     {
         private readonly HttpClient _http = http;
         public UserSession? CurrentSession { get; private set; }
@@ -164,7 +164,7 @@ namespace Miluc.Client.Servicios.Autorizacion
 
         public async Task<ResponseAPI<bool>> CambiarPassword(CambiarPasswordRequest request)
         {
-            var response = await _http.PostAsJsonAsync("api/auth/cambiar-password",request);
+            var response = await _http.PostAsJsonAsync("api/auth/cambiar-password", request);
 
             return await response.Content
                 .ReadFromJsonAsync<ResponseAPI<bool>>()
@@ -184,7 +184,7 @@ namespace Miluc.Client.Servicios.Autorizacion
                 {
                     EsCorrecto = false,
                     Mensaje = "Error del servidor"
-                    
+
                 };
         }
 
@@ -263,6 +263,18 @@ namespace Miluc.Client.Servicios.Autorizacion
                 };
             }
 
+        }
+
+        public bool HasFiltro(string filtro)
+        {
+           
+                if(CurrentSession == null)
+                    return false;
+                if (CurrentSession.Filtros == null)
+                    return false;
+
+
+                return CurrentSession.Filtros.Select(f => f.NombreModulo).Contains(filtro);
         }
     }
 }

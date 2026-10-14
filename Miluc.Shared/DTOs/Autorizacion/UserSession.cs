@@ -1,4 +1,6 @@
-﻿namespace Miluc.Shared.DTOs.Autorizacion
+﻿using Miluc.Shared.DTOs.Usuarios;
+
+namespace Miluc.Shared.DTOs.Autorizacion
 {
     public class UserSession
     {
@@ -14,5 +16,6 @@
         public int? CodVendedorSAP { get; set; }
         public List<string> Roles { get; set; } = new();
         public List<string> Permisos { get; set; } = new();
+        public List<AsignarFiltrosReaderDto> Filtros { get; set; } = new();
     }
 }

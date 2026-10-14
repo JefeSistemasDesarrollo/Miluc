@@ -192,7 +192,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("BlazorCors", policy =>
     {
-       // policy.WithOrigins("https://avicolamiluc.ddns.net:92")
+      // policy.WithOrigins("https://avicolamiluc.ddns.net:92")
        policy.WithOrigins("https://localhost:7198")
          .AllowAnyHeader()
          .AllowAnyMethod()
