@@ -48,6 +48,7 @@ namespace Miluc.Shared.DTOs.Nomina.EmpleadoDto
         public string CorreoElectronico { get; set; } = string.Empty;
         public string Direccion { get; set; } = string.Empty;
         public string? Barrio { get; set; } = string.Empty;
+        public bool Activo { get; set; }
 
         //SELECCIONAR ESTADO CIVIL OBLIGATORIO
         [Required(ErrorMessage = "Estado civil es obligatorio")]

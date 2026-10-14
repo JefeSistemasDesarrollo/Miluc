@@ -10,6 +10,7 @@
 @inject IEsquemaVacunacionClientService _esquemaVacunacionService
 @inject IVacunaClientService _vacunaService
 @inject IJSRuntime JS
+@inject IAuthClientService _authClienteService
 
 <div class="empleado-page p-4 animate__animated animate__fadeIn">
     <div class="container-fluid max-width-container">
@@ -167,6 +168,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (!_authClienteService.HasPermission("Edit.schema"))
+        {
+            nav.NavigateTo("/no-autorizado");
+            return;
+        }
         ResetFormulario();
         await CargarDatosIniciales();
     }
@@ -219,7 +225,7 @@
             EmpleadoId = idempleado,
             VacunaId = createEsquema.VacunaId,
             NombreVacuna = vacunaSeleccionada?.VacunaName ?? "Vacuna Seleccionada",
-            FechaVacuna = createEsquema.FechaVacuna ?? DateTime.Today
+            FechaVacuna = createEsquema.FechaVacuna ?? null
         };
 
         listaesquema.Add(nuevoItem);
@@ -273,7 +279,7 @@
             EmpleadoId = idempleado,
             VacunaId = 0,
             NombreVacuna = null,
-            FechaVacuna = DateTime.Today
+            FechaVacuna = null
         };
     }
 

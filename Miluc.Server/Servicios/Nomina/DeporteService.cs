@@ -16,7 +16,7 @@ namespace Miluc.Server.Servicios.Nomina
                 {
 
                     DeporteId = d.DeporteId,
-                    Nombre = d.Nombre,
+                    Nombre = d.Nombre.Trim().ToUpper(),
 
                 }).ToListAsync();
                 return deporte;

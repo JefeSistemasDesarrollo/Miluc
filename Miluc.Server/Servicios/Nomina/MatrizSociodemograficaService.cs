@@ -38,30 +38,31 @@ namespace Miluc.Server.Servicios.Nomina
                     MatrizSociodemograficaId = x.m != null ? x.m.MatrizSociodemograficaId : 0,
                     ConsentimientoInformado = x.m != null ? x.m.ConSentimientoInformado : false,
                     Edad = x.m != null ? x.m.Edad : 0,
-                    Nacionalidad = x.m != null ? x.m.Nacionalidad : "Sin asignar",
+                    NacionalidadId = x.m != null ? x.m.NacionalidadId : 0,
+                    NombreNacionalidad =x.m != null && x.m.Nacionalidad != null ? x.m.Nacionalidad.NacionalidadNombre : "Sin asignar".Trim().ToUpper(),
                     PaisNacimientoId = x.m != null ? x.m.PaisNacimientoId : 0,
-                    NombrePais = x.m != null && x.m.Pais != null ? x.m.Pais.pais : "Sin asignar",
+                    NombrePais = x.m != null && x.m.Pais != null ? x.m.Pais.pais : "Sin asignar".Trim().ToUpper(),
                     GeneroId = x.m != null ? x.m.GeneroId : 0,
-                    NombreGenero = x.m != null && x.m.Genero != null ? x.m.Genero.Nombre : "Sin asignar",
+                    NombreGenero = x.m != null && x.m.Genero != null ? x.m.Genero.Nombre : "Sin asignar".Trim().ToUpper(),
                     Fuma = x.m != null ? x.m.Fuma : false,
                     FumaVecesAlMes = x.m != null ? x.m.FumaVecesAlMes : 0,
                     Alcohol = x.m != null ? x.m.Alcohol : false,
                     BebeVecesAlAño = x.m != null ? x.m.BebeVecesAlAño : 0,
                     DeporteId = x.m != null ? x.m.DeporteId : 0,
-                    NombreDeporte = x.m != null && x.m.Deporte != null ? x.m.Deporte.Nombre : "Sin asignar",
+                    NombreDeporte = x.m != null && x.m.Deporte != null ? x.m.Deporte.Nombre : "Sin asignar".Trim().ToUpper(),
                     CondicionMedicaId = x.m != null ? x.m.CondicionMedicaId : 0,
-                    NombreCondicionMedica = x.m != null && x.m.CondicionMedica != null ? x.m.CondicionMedica.Nombre : "Sin asignar",
-                    Hobbies = x.m != null ? x.m.Hobbies : "Sin asignar",
+                    NombreCondicionMedica = x.m != null && x.m.CondicionMedica != null ? x.m.CondicionMedica.Nombre : "Sin asignar".Trim().ToUpper(),
+                    Hobbies = x.m != null ? x.m.Hobbies : "Sin asignar".Trim().ToUpper(),
                     MedioDeTransporteId = x.m != null ? x.m.MedioTransporteId : 0,
-                    NombreMedioDeTransporte = x.m != null && x.m.MedioTransporte != null ? x.m.MedioTransporte.Nombre : "Sin asignar",
+                    NombreMedioDeTransporte = x.m != null && x.m.MedioTransporte != null ? x.m.MedioTransporte.Nombre : "Sin asignar".Trim().ToUpper(),
                     ClaseDeViviendaId = x.m != null ? x.m.ClaseDeViviendaId : 0,
-                    NombreClaseVivienda = x.m != null && x.m.ClaseVivienda != null ? x.m.ClaseVivienda.Nombre : "Sin asignar",
+                    NombreClaseVivienda = x.m != null && x.m.ClaseVivienda != null ? x.m.ClaseVivienda.Nombre : "Sin asignar".Trim().ToUpper(),
                     TipoDeViviendaId = x.m != null ? x.m.TipoViviendaId : 0,
-                    NombreTipoDeVivienda = x.m != null && x.m.TipoVivienda != null ? x.m.TipoVivienda.Nombre : "Sin asignar",
+                    NombreTipoDeVivienda = x.m != null && x.m.TipoVivienda != null ? x.m.TipoVivienda.Nombre : "Sin asignar".Trim().ToUpper(),
                     NivelAcademicoId = x.m != null ? x.m.NivelAcademicoId : 0,
-                    NombreNivelAcademico = x.m != null && x.m.NivelAcademico != null ? x.m.NivelAcademico.Nombre : "Sin asignar",
+                    NombreNivelAcademico = x.m != null && x.m.NivelAcademico != null ? x.m.NivelAcademico.Nombre : "Sin asignar".Trim().ToUpper(),
                     AñoFinalizacionEducacion = x.m != null ? x.m.AñoFinalizacionEducacion : null,
-                    EntidadEducativa = x.m != null ? x.m.EntidadEducativa : "Sin asignar",
+                    EntidadEducativa = x.m != null ? x.m.EntidadEducativa : "Sin asignar".Trim().ToUpper(),
                     TituloObtenido = x.m != null ? x.m.TituloObtenido : "Sin asignar",
                     UltimaEmpresaTrabajo = x.m != null ? x.m.UltimaEmpresaTrabajo : "Sin asignar",
                     FechaUltimoEmpleo = x.m != null ? x.m.FechaUltimoEmpleo : null,
@@ -124,23 +125,24 @@ namespace Miluc.Server.Servicios.Nomina
                         MatrizSociodemograficaId = x.m != null ? x.m.MatrizSociodemograficaId : 0,
 
                         // Textos: Si no hay matriz, devolvemos "Sin asignar"
-                        Nacionalidad = x.m != null ? x.m.Nacionalidad : "Sin asignar",
-                        NombrePais = x.m != null && x.m.Pais != null ? x.m.Pais.pais : "Sin asignar",
-                        NombreGenero = x.m != null && x.m.Genero != null ? x.m.Genero.Nombre : "Sin asignar",
-                        NombreDeporte = x.m != null && x.m.Deporte != null ? x.m.Deporte.Nombre : "Sin asignar",
-                        NombreCondicionMedica = x.m != null && x.m.CondicionMedica != null ? x.m.CondicionMedica.Nombre : "Sin asignar",
-                        Hobbies = x.m != null && !string.IsNullOrEmpty(x.m.Hobbies) ? x.m.Hobbies : "Sin asignar",
-                        NombreMedioDeTransporte = x.m != null && x.m.MedioTransporte != null ? x.m.MedioTransporte.Nombre : "Sin asignar",
-                        NombreClaseVivienda = x.m != null && x.m.ClaseVivienda != null ? x.m.ClaseVivienda.Nombre : "Sin asignar",
-                        NombreTipoDeVivienda = x.m != null && x.m.TipoVivienda != null ? x.m.TipoVivienda.Nombre : "Sin asignar",
-                        NombreNivelAcademico = x.m != null && x.m.NivelAcademico != null ? x.m.NivelAcademico.Nombre : "Sin asignar",
-                        EntidadEducativa = x.m != null && !string.IsNullOrEmpty(x.m.EntidadEducativa) ? x.m.EntidadEducativa : "Sin asignar",
-                        TituloObtenido = x.m != null && !string.IsNullOrEmpty(x.m.TituloObtenido) ? x.m.TituloObtenido : "Sin asignar",
-                        UltimaEmpresaTrabajo = x.m != null && !string.IsNullOrEmpty(x.m.UltimaEmpresaTrabajo) ? x.m.UltimaEmpresaTrabajo : "Sin asignar",
-                        CargoDesempeñado = x.m != null && !string.IsNullOrEmpty(x.m.CargoDesempeñado) ? x.m.CargoDesempeñado : "Sin asignar",
-                        PersonaEnCasoDeEmergencia = x.m != null && !string.IsNullOrEmpty(x.m.PersonaEnCasoDeEmergencia) ? x.m.PersonaEnCasoDeEmergencia : "Sin asignar",
+                        NacionalidadId = x.m != null ? x.m.NacionalidadId : 0,
+                        NombreNacionalidad = x.m != null ? x.m.Nacionalidad.NacionalidadNombre:"Sin asignar".Trim().ToUpper(),
+                        NombrePais = x.m != null && x.m.Pais != null ? x.m.Pais.pais : "Sin asignar".Trim().ToUpper(),
+                        NombreGenero = x.m != null && x.m.Genero != null ? x.m.Genero.Nombre : "Sin asignar".Trim().ToUpper(),
+                        NombreDeporte = x.m != null && x.m.Deporte != null ? x.m.Deporte.Nombre : "Sin asignar".Trim().ToUpper(),
+                        NombreCondicionMedica = x.m != null && x.m.CondicionMedica != null ? x.m.CondicionMedica.Nombre : "Sin asignar".Trim().ToUpper(),
+                        Hobbies = x.m != null && !string.IsNullOrEmpty(x.m.Hobbies) ? x.m.Hobbies : "Sin asignar".Trim().ToUpper(),
+                        NombreMedioDeTransporte = x.m != null && x.m.MedioTransporte != null ? x.m.MedioTransporte.Nombre : "Sin asignar".Trim().ToUpper(),
+                        NombreClaseVivienda = x.m != null && x.m.ClaseVivienda != null ? x.m.ClaseVivienda.Nombre : "Sin asignar".Trim().ToUpper(),
+                        NombreTipoDeVivienda = x.m != null && x.m.TipoVivienda != null ? x.m.TipoVivienda.Nombre : "Sin asignar".Trim().ToUpper(),
+                        NombreNivelAcademico = x.m != null && x.m.NivelAcademico != null ? x.m.NivelAcademico.Nombre : "Sin asignar".Trim().ToUpper(),
+                        EntidadEducativa = x.m != null && !string.IsNullOrEmpty(x.m.EntidadEducativa) ? x.m.EntidadEducativa : "Sin asignar".Trim().ToUpper(),
+                        TituloObtenido = x.m != null && !string.IsNullOrEmpty(x.m.TituloObtenido) ? x.m.TituloObtenido : "Sin asignar".Trim().ToUpper(),
+                        UltimaEmpresaTrabajo = x.m != null && !string.IsNullOrEmpty(x.m.UltimaEmpresaTrabajo) ? x.m.UltimaEmpresaTrabajo : "Sin asignar".Trim().ToUpper(),
+                        CargoDesempeñado = x.m != null && !string.IsNullOrEmpty(x.m.CargoDesempeñado) ? x.m.CargoDesempeñado : "Sin asignar".Trim().ToUpper(),
+                        PersonaEnCasoDeEmergencia = x.m != null && !string.IsNullOrEmpty(x.m.PersonaEnCasoDeEmergencia) ? x.m.PersonaEnCasoDeEmergencia : "Sin asignar".Trim().ToUpper(),
                         TelefonoEmergencia = x.m != null && !string.IsNullOrEmpty(x.m.TelefonoEmergencia) ? x.m.TelefonoEmergencia : "Sin asignar",
-                        DireccionPersonaEmergencia = x.m != null && !string.IsNullOrEmpty(x.m.DireccionPersonaEmergencia) ? x.m.DireccionPersonaEmergencia : "Sin asignar",
+                        DireccionPersonaEmergencia = x.m != null && !string.IsNullOrEmpty(x.m.DireccionPersonaEmergencia) ? x.m.DireccionPersonaEmergencia : "Sin asignar".Trim().ToUpper(),
 
                         // Valores numéricos o booleanos (Asignamos 0 o false si no hay matriz)
                         ConsentimientoInformado = x.m != null ? x.m.ConSentimientoInformado : false,
@@ -193,7 +195,7 @@ namespace Miluc.Server.Servicios.Nomina
                         EmpleadoId = dto.EmpleadoId,
                         ConSentimientoInformado = dto.ConsentimientoInformado,
                         Edad = dto.Edad,
-                        Nacionalidad = dto.Nacionalidad,
+                        NacionalidadId = dto.NacionalidadId,
                         PaisNacimientoId = dto.PaisNacimientoId,
                         GeneroId = dto.GeneroId,
                         Fuma = dto.Fuma ?? false,
@@ -202,20 +204,20 @@ namespace Miluc.Server.Servicios.Nomina
                         BebeVecesAlAño = dto.BebeVecesAlAño,
                         DeporteId = dto.DeporteId,
                         CondicionMedicaId = dto.CondicionMedicaId,
-                        Hobbies = dto.Hobbies,
+                        Hobbies = dto.Hobbies.Trim().ToUpper(),
                         MedioTransporteId = dto.MedioDeTransporteId,
                         ClaseDeViviendaId = dto.ClaseDeViviendaId,
                         TipoViviendaId = dto.TipoDeViviendaId,
                         NivelAcademicoId = dto.NivelAcademicoId,
-                        EntidadEducativa = dto.EntidadEducativa,
-                        TituloObtenido = dto.TituloObtenido,
-                        UltimaEmpresaTrabajo = dto.UltimaEmpresaTrabajo,
+                        EntidadEducativa = dto.EntidadEducativa.Trim().ToUpper(),
+                        TituloObtenido = dto.TituloObtenido.Trim().ToUpper(),
+                        UltimaEmpresaTrabajo = dto.UltimaEmpresaTrabajo.Trim().ToUpper(),
                         FechaUltimoEmpleo = dto.FechaUltimoEmpleo,
-                        CargoDesempeñado = dto.CargoDesempeñado,
+                        CargoDesempeñado = dto.CargoDesempeñado.Trim().ToUpper(),
                         UltimoSalario = dto.UltimoSalario,
-                        PersonaEnCasoDeEmergencia = dto.PersonaEnCasoDeEmergencia,
+                        PersonaEnCasoDeEmergencia = dto.PersonaEnCasoDeEmergencia.Trim().ToUpper(),
                         TelefonoEmergencia = dto.TelefonoEmergencia,
-                        DireccionPersonaEmergencia = dto.DireccionPersonaEmergencia,
+                        DireccionPersonaEmergencia = dto.DireccionPersonaEmergencia.Trim().ToUpper(),
 
                         // Extrae el entero del año si la fecha no es nula
                         AñoFinalizacionEducacion = dto.AñoFinalizacionEducacion,
@@ -232,7 +234,7 @@ namespace Miluc.Server.Servicios.Nomina
                     // En caso de que ya exista, actualizamos
                     matrizExistente.ConSentimientoInformado = dto.ConsentimientoInformado;
                     matrizExistente.Edad = dto.Edad;
-                    matrizExistente.Nacionalidad = dto.Nacionalidad;
+                    matrizExistente.NacionalidadId = dto.NacionalidadId;
                     matrizExistente.PaisNacimientoId = dto.PaisNacimientoId;
                     matrizExistente.GeneroId = dto.GeneroId;
                     matrizExistente.Fuma = dto.Fuma ?? false;
@@ -241,7 +243,7 @@ namespace Miluc.Server.Servicios.Nomina
                     matrizExistente.BebeVecesAlAño = dto.BebeVecesAlAño;
                     matrizExistente.DeporteId = dto.DeporteId;
                     matrizExistente.CondicionMedicaId = dto.CondicionMedicaId;
-                    matrizExistente.Hobbies = dto.Hobbies;
+                    matrizExistente.Hobbies = dto.Hobbies.Trim().ToUpper();
                     matrizExistente.MedioTransporteId = dto.MedioDeTransporteId;
                     matrizExistente.ClaseDeViviendaId = dto.ClaseDeViviendaId;
                     matrizExistente.TipoViviendaId = dto.TipoDeViviendaId;
@@ -250,15 +252,15 @@ namespace Miluc.Server.Servicios.Nomina
                     // Extrae el entero del año o asigna 0 si viene nulo
                     matrizExistente.AñoFinalizacionEducacion = dto.AñoFinalizacionEducacion;
 
-                    matrizExistente.EntidadEducativa = dto.EntidadEducativa;
-                    matrizExistente.TituloObtenido = dto.TituloObtenido;
-                    matrizExistente.UltimaEmpresaTrabajo = dto.UltimaEmpresaTrabajo;
+                    matrizExistente.EntidadEducativa = dto.EntidadEducativa.Trim().ToUpper();
+                    matrizExistente.TituloObtenido = dto.TituloObtenido.Trim().ToUpper();
+                    matrizExistente.UltimaEmpresaTrabajo = dto.UltimaEmpresaTrabajo.Trim().ToUpper();
                     matrizExistente.FechaUltimoEmpleo = dto.FechaUltimoEmpleo;
-                    matrizExistente.CargoDesempeñado = dto.CargoDesempeñado;
+                    matrizExistente.CargoDesempeñado = dto.CargoDesempeñado.Trim().ToUpper();
                     matrizExistente.UltimoSalario = dto.UltimoSalario;
-                    matrizExistente.PersonaEnCasoDeEmergencia = dto.PersonaEnCasoDeEmergencia;
+                    matrizExistente.PersonaEnCasoDeEmergencia = dto.PersonaEnCasoDeEmergencia.Trim().ToUpper();
                     matrizExistente.TelefonoEmergencia = dto.TelefonoEmergencia;
-                    matrizExistente.DireccionPersonaEmergencia = dto.DireccionPersonaEmergencia;
+                    matrizExistente.DireccionPersonaEmergencia = dto.DireccionPersonaEmergencia.Trim().ToUpper();
                     matrizExistente.FechaActualizacion = DateTime.Now;
                 }
 

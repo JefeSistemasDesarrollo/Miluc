@@ -59,12 +59,15 @@ namespace Miluc.Server.Servicios.Nomina
                                 c.FechaCreacion,
                                 c.Activo,
                                 c.EmpresaId,
+                                
 
                                 NombreEmpresa = c.Empresa != null ? c.Empresa.NombreEmpresa : null,
                                 Nit = c.Empresa != null ? c.Empresa.Nit : null,
 
                                 c.TipoContratoId,
                                 NombreTipoContrato = c.TipoContrato != null ? c.TipoContrato.NombreContrato : null,
+                                c.CentroCostoId,
+                                NombreCentroCosto = c.CentroCostos != null ? c.CentroCostos.Nombre : null,
 
                                 Detalle = c.ContratoLaboralDetalle
                                     .OrderByDescending(d => d.FechaInicio)
@@ -75,9 +78,9 @@ namespace Miluc.Server.Servicios.Nomina
                                         d.FechaFinalizacion,
                                         d.FechaTerminacion,
                                         d.CargoId,
-                                        NombreCargo = d.Cargo != null ? d.Cargo.CargoNombre : null,
-                                        d.CentroCosto,
                                         d.Salario,
+                                        NombreCargo = d.Cargo != null ? d.Cargo.CargoNombre : null,
+                                                                            
                                         d.Observacion
                                     })
                                     .FirstOrDefault()
@@ -101,6 +104,8 @@ namespace Miluc.Server.Servicios.Nomina
 
                     TipoContratoId = x.Contrato?.TipoContratoId ?? 0,
                     NombreTipoContrato = x.Contrato?.NombreTipoContrato ?? "Sin Asignar",
+                    CentroCostoId = x.Contrato?.CentroCostoId ?? 0,
+                    NombreCentroCosto = x.Contrato?.NombreCentroCosto ?? "Sin Asignar",
 
                     ContratoLaboralDetalleId = x.Contrato?.Detalle?.ContratoLaboralDetalleId ?? 0,
                     FechaInicio = x.Contrato?.Detalle?.FechaInicio ?? DateTime.MinValue,
@@ -110,8 +115,8 @@ namespace Miluc.Server.Servicios.Nomina
                     CargoId = x.Contrato?.Detalle?.CargoId ?? 0,
                     NombreCargo = x.Contrato?.Detalle?.NombreCargo ?? "Sin Asignar",
 
-                    CentroCosto = x.Contrato?.Detalle?.CentroCosto,
-                    Salario = x.Contrato?.Detalle?.Salario ?? 0,
+
+                    Salario = x.Contrato?.Detalle?.Salario ?? 0m,
                     Observacion = x.Contrato?.Detalle?.Observacion,
 
                     Activo = x.Contrato?.Activo ?? false
@@ -148,6 +153,8 @@ namespace Miluc.Server.Servicios.Nomina
 
                         TipoContratoId = c.TipoContratoId,
                         NombreTipoContrato = c.TipoContrato != null ? c.TipoContrato.NombreContrato : "Sin Asignar",
+                        CentroCostoId = c.CentroCostoId,
+                        NombreCentroCosto = c.CentroCostos != null ? c.CentroCostos.Nombre : "Sin Asignar",
 
                         ContratoLaboralDetalleId = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault() != null
                             ? c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault().ContratoLaboralDetalleId : 0,
@@ -169,9 +176,7 @@ namespace Miluc.Server.Servicios.Nomina
                             ? c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault().Cargo.CargoNombre
                             : "Sin Asignar",
 
-                        CentroCosto = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault() != null
-                            ? c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault().CentroCosto : string.Empty,
-
+                       
                         Salario = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault() != null
                             ? c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault().Salario : 0,
 
@@ -199,18 +204,64 @@ namespace Miluc.Server.Servicios.Nomina
 
             try
             {
-                var contratoActivo = await _context.ContratoLaboral
-                    .AnyAsync(x => x.EmpleadoId == contratoDto.EmpleadoId && x.Activo == true);
+                // Validar si el empleado ya tiene un contrato activo
+                bool contratoActivo = await _context.ContratoLaboral
+                    .AnyAsync(x => x.EmpleadoId == contratoDto.EmpleadoId &&
+                                   x.Activo == true);
 
                 if (contratoActivo)
                 {
-                    throw new ArgumentException("No se puede crear el contrato al empleado, ya que existe un contrato activo actualmente");
+                    throw new ArgumentException(
+                        "No se puede crear el contrato al empleado, ya que existe un contrato activo actualmente.");
                 }
 
+                // Obtener empleado
+                var empleado = await _context.Empleado
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(x => x.EmpleadoId == contratoDto.EmpleadoId);
+
+                if (empleado == null)
+                {
+                    throw new ArgumentException("Empleado no encontrado.");
+                }
+
+                if (empleado.EmpresaId <= 0)
+                {
+                    throw new ArgumentException(
+                        "El empleado no tiene una empresa asociada.");
+                }
+
+                // Obtener tipo de contrato
+                var tipoContrato = await _context.TipoContrato
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(x => x.TipoContratoId == contratoDto.TipoContratoId);
+
+                if (tipoContrato == null)
+                {
+                    throw new ArgumentException("Tipo de contrato no encontrado.");
+                }
+
+                // Validar fecha finalización según tipo de contrato
+                DateTime? fechaFinalizacion = contratoDto.FechaFinalizacion;
+
+                if (tipoContrato.NombreContrato.Equals(
+                        "INDEFINIDO",
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    fechaFinalizacion = null;
+                }
+                else if (!fechaFinalizacion.HasValue)
+                {
+                    throw new ArgumentException(
+                        "Debe ingresar una fecha de finalización para este tipo de contrato.");
+                }
+
+                // Crear cabecera del contrato
                 var cabeceraContrato = new ContratoLaboral
                 {
-                    EmpresaId = contratoDto.EmpresaId,
+                    EmpresaId = empleado.EmpresaId,
                     EmpleadoId = contratoDto.EmpleadoId,
+                    CentroCostoId = contratoDto.CentroCostoId,
                     TipoContratoId = contratoDto.TipoContratoId,
                     FechaCreacion = DateTime.Now,
                     Activo = true
@@ -219,13 +270,14 @@ namespace Miluc.Server.Servicios.Nomina
                 await _context.ContratoLaboral.AddAsync(cabeceraContrato);
                 await _context.SaveChangesAsync();
 
+                // Crear detalle del contrato
                 var detalleContrato = new ContratoLaboralDetalle
                 {
                     ContratoLaboralId = cabeceraContrato.ContratoLaboralId,
                     FechaInicio = contratoDto.FechaInicio ?? DateTime.Today,
-                    FechaFinalizacion = contratoDto.FechaFinalizacion,
+                    FechaFinalizacion = fechaFinalizacion,
+                    FechaTerminacion = null,
                     CargoId = contratoDto.CargoId,
-                    CentroCosto = contratoDto.CentroCosto,
                     Salario = contratoDto.Salario ?? 0m,
                     Observacion = string.Empty
                 };
@@ -235,13 +287,21 @@ namespace Miluc.Server.Servicios.Nomina
 
                 return true;
             }
+            catch (ArgumentException)
+            {
+                throw;
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 var errorReal = ex.InnerException?.Message ?? ex.Message;
+
                 throw new Exception($"Error de BD: {errorReal}", ex);
             }
         }
-
         // Obtiene la lista completa de contratos asociados a un empleado por su EmpleadoId (Para la tabla de Historial)
         public async Task<List<ContratoLaboralreaderDto>> GetContratosPorEmpleadoAsync(int empleadoId)
         {
@@ -265,6 +325,8 @@ namespace Miluc.Server.Servicios.Nomina
 
                         TipoContratoId = c.TipoContratoId,
                         NombreTipoContrato = c.TipoContrato != null ? c.TipoContrato.NombreContrato : "Sin Asignar",
+                        CentroCostoId = c.CentroCostoId,
+                        NombreCentroCosto = c.CentroCostos != null ? c.CentroCostos.Nombre : "Sin Asignar",
 
                         ContratoLaboralDetalleId = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault() != null
                             ? c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault().ContratoLaboralDetalleId : 0,
@@ -286,9 +348,7 @@ namespace Miluc.Server.Servicios.Nomina
                             ? c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault().Cargo.CargoNombre
                             : "Sin Asignar",
 
-                        CentroCosto = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault() != null
-                            ? c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault().CentroCosto : string.Empty,
-
+                        
                         Salario = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault() != null
                             ? c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault().Salario : 0,
 
@@ -311,6 +371,7 @@ namespace Miluc.Server.Servicios.Nomina
         {
             try
             {
+                // 1. Obtener la cabecera del contrato
                 var contratoDb = await _context.ContratoLaboral
                     .FirstOrDefaultAsync(x => x.ContratoLaboralId == update.ContratoLaboralId);
 
@@ -323,10 +384,39 @@ namespace Miluc.Server.Servicios.Nomina
                 {
                     throw new InvalidOperationException("No se pueden modificar contratos que se encuentran inactivos.");
                 }
+                var tipoContrato = await _context.TipoContrato
+                  .FirstOrDefaultAsync(x => x.TipoContratoId == update.TipoContratoId);
 
+                // Validar que el tipo de contrato exista en base de datos
+                if (tipoContrato == null)
+                {
+                    throw new ArgumentException("Tipo de contrato no encontrado.");
+                }
+                
+
+                // Tomar la fecha de finalización enviada desde el formulario
+                DateTime? fechaFinalizacion = update.FechaFinalizacion;
+
+                // Si el contrato es INDEFINIDO no debe tener fecha de finalización
+                if (tipoContrato.NombreContrato.Equals(
+                        "INDEFINIDO",
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    fechaFinalizacion = null;
+                }
+                // Para cualquier otro tipo de contrato la fecha es obligatoria
+                else if (!fechaFinalizacion.HasValue)
+                {
+                    throw new ArgumentException(
+                        "Debe ingresar una fecha de finalización para este tipo de contrato.");
+                }
+
+                // 2. Actualizar las propiedades de la cabecera (incluyendo la FK de Centro de Costo)
                 contratoDb.EmpresaId = update.EmpresaId;
                 contratoDb.TipoContratoId = update.TipoContratoId;
+                contratoDb.CentroCostoId = update.CentroCostoId; // <--- Relación directa con ContratoLaboral
 
+                // 3. Obtener el detalle más reciente
                 var detalleDb = await _context.ContratoLaboralDetalle
                     .OrderByDescending(d => d.FechaInicio)
                     .FirstOrDefaultAsync(d => d.ContratoLaboralId == update.ContratoLaboralId);
@@ -334,42 +424,48 @@ namespace Miluc.Server.Servicios.Nomina
                 if (detalleDb != null)
                 {
                     detalleDb.FechaInicio = update.FechaInicio ?? detalleDb.FechaInicio;
-                    detalleDb.FechaFinalizacion = update.FechaFinalizacion;
+                    detalleDb.FechaFinalizacion = fechaFinalizacion;
                     detalleDb.CargoId = update.CargoId;
-                    detalleDb.CentroCosto = update.CentroCosto;
                     detalleDb.Salario = update.Salario ?? detalleDb.Salario;
-
-                    _context.ContratoLaboralDetalle.Update(detalleDb);
+                    // CentroCosto ya no se toca en el detalle
                 }
 
-                _context.ContratoLaboral.Update(contratoDb);
+                // 4. Guardar en base de datos (EF Core detecta las propiedades modificadas)
                 await _context.SaveChangesAsync();
 
-                var contratoDto = new ContratoLaboralreaderDto
+                // 5. Mapear al DTO de lectura
+                return new ContratoLaboralreaderDto
                 {
                     ContratoLaboralId = contratoDb.ContratoLaboralId,
                     EmpresaId = contratoDb.EmpresaId,
                     TipoContratoId = contratoDb.TipoContratoId,
+                    CentroCostoId = contratoDb.CentroCostoId, // <--- Se asigna directamente desde la cabecera
                     CargoId = detalleDb?.CargoId ?? 0,
-                    CentroCosto = detalleDb?.CentroCosto,
                     Salario = detalleDb?.Salario ?? 0,
                     FechaInicio = detalleDb?.FechaInicio ?? DateTime.MinValue,
                     FechaFinalizacion = detalleDb?.FechaFinalizacion,
                     Activo = contratoDb.Activo
                 };
-
-                return contratoDto;
             }
-            catch (Exception ex) when (ex is KeyNotFoundException || ex is InvalidOperationException)
+            catch (ArgumentException)
             {
+
                 throw;
             }
+            catch (InvalidOperationException)
+            {
+
+                throw;
+            }
+           
             catch (Exception ex)
             {
-                throw new Exception($"Error al actualizar el contrato: {ex.Message}");
+
+                var errorReal = ex.InnerException?.Message ?? ex.Message;
+
+                throw new Exception($"Error de BD: {errorReal}", ex);
             }
         }
-
         // Inhabilita o termina un contrato registrando una observación y fecha de terminación
         public async Task<bool> InhabilitarContratoAsync(InhabilitarContratoDto dto)
         {
@@ -398,7 +494,7 @@ namespace Miluc.Server.Servicios.Nomina
                 }
 
                 contratoLaboral.Activo = dto.Activo;
-                contratoDetalle.Observacion = dto.Observacion;
+                contratoDetalle.Observacion = dto.Observacion.Trim().ToUpper();
                 contratoDetalle.FechaTerminacion = dto.FechaTerminacion;
 
                 await _context.SaveChangesAsync();

@@ -39,8 +39,8 @@ namespace Miluc.Server.Servicios.Nomina
 
                 var arl = new Arl
                 {
-                    Nombre = arlCreateDto.Nombre,
-                    Codigo = arlCreateDto.Codigo,
+                    Nombre = arlCreateDto.Nombre.Trim().ToUpper(),
+                    Codigo = arlCreateDto.Codigo.Trim().ToUpper(),
 
                     FechaCreacion = DateTime.UtcNow,
                     Activo = arlCreateDto.Activo,
@@ -50,8 +50,8 @@ namespace Miluc.Server.Servicios.Nomina
                 return new ArlReaderDto
                 {
                     ArlId = arl.ArlId,
-                    Nombre = arl.Nombre,
-                    Codigo = arl.Codigo,
+                    Nombre = arl.Nombre.Trim().ToUpper(),
+                    Codigo = arl.Codigo.Trim().ToUpper(),
 
                     FechaCreacion = arl.FechaCreacion,
                     Activo = arl.Activo
@@ -87,8 +87,8 @@ namespace Miluc.Server.Servicios.Nomina
                     .Select(c => new ArlReaderDto
                     {
                         ArlId = c.ArlId,
-                        Nombre = c.Nombre,
-                        Codigo = c.Codigo,
+                        Nombre = c.Nombre.Trim().ToUpper(),
+                        Codigo = c.Codigo.Trim().ToUpper(),
 
                         FechaCreacion = c.FechaCreacion,
                         FechaActualizacion = c.FechaActualizacion,
@@ -125,8 +125,8 @@ namespace Miluc.Server.Servicios.Nomina
                     .Select(a => new ArlReaderDto
                     {
                         ArlId = a.ArlId,
-                        Nombre = a.Nombre,
-                        Codigo = a.Codigo,
+                        Nombre = a.Nombre.Trim().ToUpper(),
+                        Codigo = a.Codigo.Trim().ToUpper(),
                         FechaActualizacion = a.FechaActualizacion,
                         FechaCreacion = a.FechaCreacion,
                         Activo = a.Activo
@@ -178,8 +178,8 @@ namespace Miluc.Server.Servicios.Nomina
                 if (existeArl)
                     throw new Exception("Ya existe otra ARL con el mismo nombre o código.");
 
-                arl.Nombre = arlUpdate.Nombre;
-                arl.Codigo = arlUpdate.Codigo;
+                arl.Nombre = arlUpdate.Nombre.Trim().ToUpper();
+                arl.Codigo = arlUpdate.Codigo.Trim().ToUpper();
                 arl.FechaActualizacion = DateTime.Now;
                 arl.Activo = arlUpdate.Activo;
 
@@ -188,8 +188,8 @@ namespace Miluc.Server.Servicios.Nomina
                 return new ArlReaderDto
                 {
                     ArlId = arl.ArlId,
-                    Nombre = arl.Nombre,
-                    Codigo = arl.Codigo,
+                    Nombre = arl.Nombre.Trim().ToUpper(),
+                    Codigo = arl.Codigo.Trim().ToUpper(),
                     FechaActualizacion = arl.FechaActualizacion,
                     Activo = arl.Activo
                 };

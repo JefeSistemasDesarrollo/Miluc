@@ -131,9 +131,11 @@
                                     <button class="btn btn-sm px-3" title="Ver Detalle" @onclick="() => VerDetalle(em.EmpleadoId)">
                                         <i class="bi bi-eye text-black"></i>
                                     </button>
+                                   
                                     <button class="btn btn-white btn-sm px-3" title="Crear Esquema de Vacunación" @onclick="() => CrearEsquemaVacunacion(em.EmpleadoId)">
                                         <i class="bi bi-pencil-square text-primary"></i>
                                     </button>
+                                    
                                 </div>
                             </td>
                         </tr>
@@ -195,6 +197,8 @@
         {
             _correo = _authClienteService.CurrentSession.UserName;
         }
+       
+      
 
         await cargarAfiliaciones();
     }

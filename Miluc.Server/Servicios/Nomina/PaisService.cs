@@ -17,13 +17,14 @@ namespace Miluc.Server.Servicios.Nomina
 
 
                 var pais = await _context.Pais.AsNoTracking()
-           .Select(p => new PaisReaderDto
+                    
+                    .Select(p => new PaisReaderDto
            {
                PaisId = p.PaisId,
                Codigo = p.Codigo,
                pais = p.pais
 
-           }).ToListAsync();
+           }).OrderBy(x=>x.pais).ToListAsync();
 
 
                 return pais;

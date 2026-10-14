@@ -16,7 +16,7 @@ namespace Miluc.Server.Servicios.Nomina
                     Select(v => 
                     new VacunaReaderDto 
                     { VacunaId = v.VacunaId,
-                        VacunaName = v.VacunaName, 
+                        VacunaName = v.VacunaName.Trim().ToUpper(), 
                         })
                     .ToListAsync();
              

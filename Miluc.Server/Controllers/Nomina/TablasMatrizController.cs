@@ -8,6 +8,7 @@ using Miluc.Shared.DTOs.Nomina.CondicionMedica;
 using Miluc.Shared.DTOs.Nomina.DeporteRederDto;
 using Miluc.Shared.DTOs.Nomina.GeneroDto;
 using Miluc.Shared.DTOs.Nomina.MedioTransporteDto;
+using Miluc.Shared.DTOs.Nomina.NacionalidadDto;
 using Miluc.Shared.DTOs.Nomina.NivelAcademico;
 using Miluc.Shared.DTOs.Nomina.PaisDto;
 using Miluc.Shared.DTOs.Nomina.TipoVivienda;
@@ -18,7 +19,7 @@ namespace Miluc.Server.Controllers.Nomina
     [ApiController]
     [Route("api/[controller]")]
     public class TablasMatrizController(IGeneroService generoService, IPaisService paisService, IDeporteService deporteService, ICondicionMedicaService condicionMedicaService, INivelAcademicoService nivelAcademicoService,
-        IMedioTransporteService medioTransporteService, ITipoViviendaService tipoViviendaService, IClaseViviendaService claseViviendaService, ILogService _log) : Controller
+        IMedioTransporteService medioTransporteService, ITipoViviendaService tipoViviendaService, IClaseViviendaService claseViviendaService, INacionalidadService nacionalidadService, ILogService _log) : Controller
     {
         [HttpGet("Genero")]
         public async Task<ActionResult<ResponseAPI<List<GeneroReaderDto>>>> GetGeneroAsync()
@@ -113,6 +114,59 @@ namespace Miluc.Server.Controllers.Nomina
                     EsCorrecto = false,
                     Valor = null,
                     Mensaje = "Ocurrió un error al obtener los pais.",
+                    CantRegistros = 0
+                });
+
+
+            }
+        }
+        [HttpGet("Nacionalidad")]
+        public async Task<ActionResult<ResponseAPI<List<NacionalidadReaderDto>>>> GetNacionalidadAsync()
+        {
+
+
+            try
+            {
+                var nacionalidad = await nacionalidadService.GetNacionalidadesAsync();
+
+                if (nacionalidad == null || nacionalidad.Count == 0)
+                {
+                    return NotFound(new ResponseAPI<List<NacionalidadReaderDto>>
+                    {
+                        EsCorrecto = false,
+                        Valor = null,
+                        Mensaje = "No se encontraron nacionalidades",
+                        CantRegistros = 0
+                    });
+                }
+                return Ok(new ResponseAPI<List<NacionalidadReaderDto>>
+                {
+                    EsCorrecto = true,
+                    Valor = nacionalidad,
+                    Mensaje = "Se encontraron nacionalidades correctamente",
+                    CantRegistros = nacionalidad.Count
+
+
+                });
+
+            }
+
+            catch (Exception ex)
+            {
+                await _log.GuardarErrorAsync(
+                message: ex.Message,
+                StackTrace: ex.StackTrace,
+                 usuario: User.Identity?.Name ?? "Sistema",
+                 metodo: "HttpGet",
+                ruta: $"/api/Nacionalidad",
+                ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
+                 origen: "NacionalidadController");
+
+                return StatusCode(500, new ResponseAPI<List<NacionalidadReaderDto>>
+                {
+                    EsCorrecto = false,
+                    Valor = null,
+                    Mensaje = "Ocurrió un error al obtener las nacionalidades.",
                     CantRegistros = 0
                 });
 

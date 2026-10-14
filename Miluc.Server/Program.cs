@@ -106,6 +106,9 @@ builder.Services.AddScoped<INivelAcademicoService, NivelAcademicoService>();
 builder.Services.AddScoped<IMatrizSociodemograficaService, MatrizSociodemograficaService>();
 builder.Services.AddScoped<IEmpleadoService, EmpleadoService>();
 builder.Services.AddScoped<ISapTrazabilidadPedido,SapTrazabiliadPedidosService>();
+builder.Services.AddScoped<INacionalidadService, NacionalidadService>();
+builder.Services.AddScoped<ICentroCostosService, CentroCostosService>();
+
 ////sap
 builder.Services.AddScoped<IBusinessPartnerGroups, BusinessPartnerGroupsService>();
 builder.Services.AddScoped<ISapOcrdService, SapOcrdService>();
@@ -189,8 +192,8 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("BlazorCors", policy =>
     {
-        policy.WithOrigins("https://avicolamiluc.ddns.net:92")
-      //  policy.WithOrigins("https://localhost:7198")
+       // policy.WithOrigins("https://avicolamiluc.ddns.net:92")
+       policy.WithOrigins("https://localhost:7198")
          .AllowAnyHeader()
          .AllowAnyMethod()
        .AllowCredentials(); // OBLIGATORIO para enviar cookies

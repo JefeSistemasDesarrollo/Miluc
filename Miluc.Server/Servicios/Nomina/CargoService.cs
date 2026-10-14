@@ -36,8 +36,10 @@ namespace Miluc.Server.Servicios.Nomina
                     {
                         CargoId = c.CargoId,
                         CargoNombre = c.CargoNombre,
+                        FechaCreacion = DateTime.Now,
+                        FechaActualizacion =DateTime.Now,
                         Activo = c.Activo
-                    })
+                    }).OrderBy(c => c.CargoNombre )
                     .Skip((page - 1) * cantidadTop)
                     .Take(cantidadTop)
                     .ToListAsync();
@@ -55,6 +57,8 @@ namespace Miluc.Server.Servicios.Nomina
         {
             try
             {
+                var nombreCargo = cargoUpdateDto.CargoNombre.Trim().ToUpper();
+
                 var cargoExistente = await _context.Cargos
                     .FirstOrDefaultAsync(c => c.CargoId == cargoUpdateDto.CargoId);
 
@@ -62,14 +66,16 @@ namespace Miluc.Server.Servicios.Nomina
                 {
                     // Validar nombre duplicado
                     bool existeNombre = await _context.Cargos
-                        .AnyAsync(c => c.CargoNombre == cargoUpdateDto.CargoNombre);
+                        .AnyAsync(c => c.CargoNombre == nombreCargo);
 
                     if (existeNombre)
-                        throw new Exception("Ya existe un cargo con ese nombre.");
+                        throw new ArgumentException("Ya existe un cargo con ese nombre.");
 
                     var newCargo = new Cargo
                     {
-                        CargoNombre = cargoUpdateDto.CargoNombre,
+                        CargoNombre = nombreCargo,
+                        FechaCreacion = DateTime.Now,
+                        FechaActualizacion = DateTime.Now,
                         Activo = cargoUpdateDto.Activo
                     };
 
@@ -80,23 +86,28 @@ namespace Miluc.Server.Servicios.Nomina
                     // Validar que otro registro no tenga ese nombre
                     bool existeNombre = await _context.Cargos.AnyAsync(c =>
                         c.CargoId != cargoUpdateDto.CargoId &&
-                        c.CargoNombre == cargoUpdateDto.CargoNombre);
+                        c.CargoNombre == nombreCargo);
 
                     if (existeNombre)
-                        throw new Exception("Ya existe un cargo con ese nombre.");
+                        throw new ArgumentException("Ya existe un cargo con ese nombre.");
 
-                    cargoExistente.CargoNombre = cargoUpdateDto.CargoNombre;
+                    cargoExistente.CargoNombre = nombreCargo;
+                    cargoExistente.FechaActualizacion = DateTime.Now;
                     cargoExistente.Activo = cargoUpdateDto.Activo;
                 }
 
                 return await _context.SaveChangesAsync() > 0;
             }
+            catch (ArgumentException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
-                throw new Exception($"Error al guardar el cargo: {ex.Message}");
+                var valorReal = ex.InnerException?.Message ?? ex.Message;
+                throw new Exception($"Error al guardar el cargo: {valorReal}");
             }
         }
-
         public async Task<CargosReaderDto> GetCargoByIdAsync(int cargoId)
         {
             var cargo = await _context.Cargos
@@ -110,6 +121,8 @@ namespace Miluc.Server.Servicios.Nomina
             {
                 CargoId = cargo.CargoId,
                 CargoNombre = cargo.CargoNombre,
+                FechaCreacion = cargo.FechaCreacion,
+                FechaActualizacion = cargo.FechaActualizacion,
                 Activo = cargo.Activo
             };
         }

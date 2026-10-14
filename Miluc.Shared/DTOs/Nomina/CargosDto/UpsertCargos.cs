@@ -10,6 +10,8 @@ namespace Miluc.Shared.DTOs.Nomina.CargosDto
         public int CargoId { get; set; }
         [Required(ErrorMessage = "El nombre del cargo es obligatorio.")]
         public string CargoNombre { get; set; }
+        public DateTime? FechaCreacion { get; set; }
+        public DateTime? FechaActualizacion { get; set; }    
         public bool Activo { get; set; }
     }
 }

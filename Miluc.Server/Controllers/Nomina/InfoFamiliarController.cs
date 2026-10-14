@@ -86,6 +86,27 @@ namespace Miluc.Server.Controllers.Nomina
                     CantRegistros = infoFamiliar.Count
                 });
             }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new ResponseAPI<bool>
+                {
+                    EsCorrecto = false,
+                    Valor = false,
+                    Mensaje = ex.Message,
+                    CantRegistros = 0
+                });
+            }
+
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new ResponseAPI<bool>
+                {
+                    EsCorrecto = false,
+                    Valor = false,
+                    Mensaje = ex.Message,
+                    CantRegistros = 0
+                });
+            }
             catch (Exception ex)
             {
                 await _log.GuardarErrorAsync(

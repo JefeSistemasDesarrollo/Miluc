@@ -1,7 +1,9 @@
 ﻿@page "/api/ContratoLaboral/CreateContratoLaboral{idempleado:int}"
+
 @using Miluc.Client.Interfaces.Nomina
 @using Miluc.Client.Interfaces.Nomina.SeguridadSocial
 @using Miluc.Shared.DTOs.Nomina.CargosDto
+@using Miluc.Shared.DTOs.Nomina.CentroDeCostos
 @using Miluc.Shared.DTOs.Nomina.ContratoLaboralDetalleDto
 @using Miluc.Shared.DTOs.Nomina.ContratoLaboralDto
 @using Miluc.Shared.DTOs.Nomina.EmpresaDto
@@ -9,13 +11,13 @@
 @using Syncfusion.Blazor.Calendars
 @using TuProyecto.Client.Services
 
-
 @inject NavigationManager nav
 @inject IContratoLaboralClientService _contratoService
 @inject IEmpresaClientSevice _empresaService
 @inject ITipoContratoClientService _tipoContratoService
 @inject IEmpleadoClientService EmpleadoService
 @inject ICargosClientService _cargoService
+@inject ICentroCostoClienteService _centroCostosService
 @inject IJSRuntime JS
 
 <div class="empleado-page p-4 animate__animated animate__fadeIn">
@@ -59,20 +61,20 @@
                                 <h5 class="fw-bold text-dark m-0">Detalles del Contrato</h5>
                             </div>
 
-                            <div class="row g-3">
-                                @* Empresa *@
+                            <div class="row g-4">
+                                @* Empresa (Solo lectura) *@
                                 <div class="col-md-6">
-                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-building"></i></span> Empresa<span class="text-danger">*</span></label>
+                                    <label class="form-label label-custom">
+                                        <span class="input-icon">
+                                            <i class="bi bi-building"></i>
+                                        </span>
+                                        Empresa
+                                    </label>
                                     <div class="input-group-custom">
-                                        <InputSelect @bind-Value="createContratoDto.EmpresaId" class="form-control input-custom">
-                                            <option value="0">-- Seleccionar empresa --</option>
-                                            @foreach (var empresa in listaEmpresa)
-                                            {
-                                                <option value="@empresa.EmpresaId">@empresa.NombreEmpresa (@empresa.Nit)</option>
-                                            }
-                                        </InputSelect>
+                                        <input class="form-control input-custom"
+                                               value="@NombreEmpresa"
+                                               readonly />
                                     </div>
-                                    <ValidationMessage For="@(() => createContratoDto.EmpresaId)" class="text-danger small mt-1 d-block fw-medium" />
                                 </div>
 
                                 @* Tipo de Contrato *@
@@ -95,24 +97,29 @@
                                     <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-file-text"></i></span> Cargo<span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
                                         <InputSelect @bind-Value="createContratoDto.CargoId" class="form-control input-custom">
-                                            <option value="0">-- Seleccionar  --</option>
+                                            <option value="0">-- Seleccionar --</option>
                                             @foreach (var tipo in ListaCargos)
                                             {
                                                 <option value="@tipo.CargoId">@tipo.CargoNombre</option>
                                             }
                                         </InputSelect>
                                     </div>
-                                    <ValidationMessage For="@(() => createContratoDto.TipoContratoId)" class="text-danger small mt-1 d-block fw-medium" />
+                                    <ValidationMessage For="@(() => createContratoDto.CargoId)" class="text-danger small mt-1 d-block fw-medium" />
                                 </div>
-
 
                                 @* Centro de Costo *@
                                 <div class="col-md-6">
                                     <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-diagram-3"></i></span> Centro de Costo</label>
                                     <div class="input-group-custom">
-                                        <InputText class="form-control input-custom" @bind-Value="createContratoDto.CentroCosto" placeholder="Ej. Tecnología" />
+                                        <InputSelect @bind-Value="createContratoDto.CentroCostoId" class="form-control input-custom">
+                                            <option value="0">-- Seleccionar --</option>
+                                            @foreach (var centro in listaCentrosCosto)
+                                            {
+                                                <option value="@centro.CentroCostoId">@centro.Nombre</option>
+                                            }
+                                        </InputSelect>
                                     </div>
-                                    <ValidationMessage For="@(() => createContratoDto.CentroCosto)" class="text-danger small mt-1 d-block fw-medium" />
+                                    <ValidationMessage For="@(() => createContratoDto.CentroCostoId)" class="text-danger small mt-1 d-block fw-medium" />
                                 </div>
 
                                 @* Salario *@
@@ -123,14 +130,12 @@
                                         </span>
                                         Salario<span class="text-danger">*</span>
                                     </label>
-
                                     <div class="input-group-custom">
                                         <InputText class="form-control input-custom"
                                                    @bind-Value="salarioFormateado"
                                                    @oninput="FormatearSalario"
                                                    placeholder="Ej. 2.000.000" />
                                     </div>
-
                                     <ValidationMessage For="@(() => createContratoDto.Salario)"
                                                        class="text-danger small mt-1 d-block fw-medium" />
                                 </div>
@@ -194,7 +199,9 @@
     public int idempleado { get; set; }
 
     private CreateContratoLaboralDto createContratoDto = new();
+
     private string nombreEmpleado = string.Empty;
+    private string NombreEmpresa = string.Empty;
 
     private bool cargando = true;
     private bool isProcessing = false;
@@ -202,115 +209,167 @@
     private List<EmpresaReaderDto> listaEmpresa = new();
     private List<CargosReaderDto> ListaCargos = new();
     private List<TipoContratoReaderDto> listaTipoContrato = new();
+    private List<CentroCostosReaderDto> listaCentrosCosto = new();
+
+    private string salarioFormateado = "";
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            var tareaEmpresas = _empresaService.GetEmpresasAsync(string.Empty, 1, 100);
             var tareaTipos = _tipoContratoService.GetTipoContratoAsync(string.Empty, 1, 100);
             var tareaEmpleado = EmpleadoService.GetEmpleadoByIdAsync(idempleado);
             var tareaCargos = _cargoService.GetCargosAsync(string.Empty, 1, 100);
+            var tareaCentroCostos = _centroCostosService.GetCentroCostosAsync(string.Empty, 1, 100);
 
-            // 1. Esperamos todas las tareas en paralelo
-            await Task.WhenAll(tareaEmpresas, tareaTipos, tareaEmpleado, tareaCargos);
+            await Task.WhenAll(
+                tareaTipos,
+                tareaEmpleado,
+                tareaCargos,
+                tareaCentroCostos);
 
-            // 2. Asignamos Empresas
-            if (tareaEmpresas.Result?.EsCorrecto == true && tareaEmpresas.Result.Valor != null)
-                listaEmpresa = tareaEmpresas.Result.Valor;
+            var responseTipos = await tareaTipos;
+            var responseEmpleado = await tareaEmpleado;
+            var responseCargos = await tareaCargos;
+            var responseCentroCostos = await tareaCentroCostos;
 
-            // 3. Asignamos Tipos de Contrato
-            if (tareaTipos.Result?.EsCorrecto == true && tareaTipos.Result.Valor != null)
-                listaTipoContrato = tareaTipos.Result.Valor;
+            if (responseTipos?.EsCorrecto == true)
+                listaTipoContrato = responseTipos.Valor ?? new();
 
-            // 4. Asignamos Cargos (Independiente de los demás)
-            if (tareaCargos.Result?.EsCorrecto == true && tareaCargos.Result.Valor != null)
-                ListaCargos = tareaCargos.Result.Valor;
+            if (responseCargos?.EsCorrecto == true)
+                ListaCargos = responseCargos.Valor ?? new();
 
-            // 5. Obtenemos el nombre del empleado correctamente
-            var responseEmpleado = tareaEmpleado.Result;
-            if (responseEmpleado != null && responseEmpleado.EsCorrecto && responseEmpleado.Valor != null)
+            if (responseCentroCostos?.EsCorrecto == true)
+                listaCentrosCosto = responseCentroCostos.Valor ?? new();
+
+            if (responseEmpleado?.EsCorrecto == true &&
+                responseEmpleado.Valor != null)
             {
                 var emp = responseEmpleado.Valor;
-                nombreEmpleado = $"{emp.PrimerNombre} {emp.SegundoNombre ?? ""} {emp.PrimerApellido} {emp.SegundoApellido ?? ""}".Replace("  ", " ").Trim();
+
+                nombreEmpleado =
+                    $"{emp.PrimerNombre} {emp.SegundoNombre ?? ""} {emp.PrimerApellido} {emp.SegundoApellido ?? ""}"
+                    .Replace("  ", " ")
+                    .Trim();
+
+                NombreEmpresa = emp.NombreEmpresa ?? "Sin empresa asignada";
+
+                // IMPORTANTE
+                createContratoDto.EmpleadoId = emp.EmpleadoId;
+                createContratoDto.EmpresaId = emp.EmpresaId;
+                createContratoDto.NombreEmpledo = nombreEmpleado;
             }
             else
             {
                 nombreEmpleado = $"Colaborador #{idempleado}";
+                NombreEmpresa = "Sin empresa asignada";
             }
 
-            createContratoDto.EmpleadoId = idempleado;
             createContratoDto.FechaInicio = null;
             createContratoDto.FechaFinalizacion = null;
         }
         catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("Swal.fire", "Error", $"Error al inicializar el formulario: {ex.Message}", "error");
+            await JS.InvokeVoidAsync(
+                "Swal.fire",
+                "Error",
+                ex.Message,
+                "error");
         }
         finally
         {
             cargando = false;
-            StateHasChanged();
         }
     }
+
     public async Task EjecutarGuardado()
     {
+        if (isProcessing)
+            return;
+
         isProcessing = true;
 
         try
         {
             createContratoDto.EmpleadoId = idempleado;
-
-            
             createContratoDto.NombreEmpledo = nombreEmpleado;
 
-            var respuesta = await _contratoService.CreateContratoLaboralAsync(createContratoDto);
-            if (respuesta != null && respuesta.EsCorrecto)
+            if (createContratoDto.FechaInicio == null)
             {
-                await JS.InvokeVoidAsync("Swal.fire", "¡Éxito!", "La información del contrato ha sido registrada correctamente.", "success");
-                await Task.Delay(1500);
+                await JS.InvokeVoidAsync(
+                    "Swal.fire",
+                    "Validación",
+                    "Debe seleccionar una fecha de inicio.",
+                    "warning");
+
+                return;
+            }
+
+            // DEBUG TEMPORAL
+            Console.WriteLine(
+                System.Text.Json.JsonSerializer.Serialize(createContratoDto));
+
+            var respuesta =
+                await _contratoService.CreateContratoLaboralAsync(createContratoDto);
+
+            if (respuesta?.EsCorrecto == true)
+            {
+                await JS.InvokeVoidAsync(
+                    "Swal.fire",
+                    "¡Éxito!",
+                    "La información del contrato ha sido registrada correctamente.",
+                    "success");
+
                 Volver();
             }
             else
             {
-                var mensajeError = respuesta?.Mensaje ?? "Error al procesar la solicitud en el servidor.";
-                await JS.InvokeVoidAsync("Swal.fire", "Error", mensajeError, "error");
+                await JS.InvokeVoidAsync(
+                    "Swal.fire",
+                    "Error",
+                    respuesta?.Mensaje ?? "No fue posible guardar el contrato.",
+                    "error");
             }
         }
         catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("Swal.fire", "Fatal Error", $"Ocurrió un error inesperado: {ex.Message}", "error");
+            await JS.InvokeVoidAsync(
+                "Swal.fire",
+                "Error",
+                ex.Message,
+                "error");
         }
         finally
         {
             isProcessing = false;
         }
     }
-    // valor decimal para salario
-    private string salarioFormateado = "";
 
     private void FormatearSalario(ChangeEventArgs e)
     {
         var valor = e.Value?.ToString() ?? "";
 
-        // Dejar únicamente números
         valor = new string(valor.Where(char.IsDigit).ToArray());
 
-        if (string.IsNullOrEmpty(valor))
+        if (string.IsNullOrWhiteSpace(valor))
         {
             salarioFormateado = "";
             createContratoDto.Salario = 0;
             return;
         }
 
-        if (decimal.TryParse(valor, out decimal salario))
+        if (decimal.TryParse(valor, out var salario))
         {
             createContratoDto.Salario = salario;
 
-            salarioFormateado = salario.ToString("N0",
+            salarioFormateado = salario.ToString(
+                "N0",
                 System.Globalization.CultureInfo.GetCultureInfo("es-CO"));
         }
     }
 
-    private void Volver() => nav.NavigateTo($"/Administrar/contratoLaboral");
+    private void Volver()
+    {
+        nav.NavigateTo("/Administrar/contratoLaboral");
+    }
 }

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Miluc.Shared.Validations;
+using System.ComponentModel.DataAnnotations;
 
 namespace Miluc.Shared.DTOs.Nomina.ContratoLaboralDto
 {
@@ -12,6 +13,8 @@ namespace Miluc.Shared.DTOs.Nomina.ContratoLaboralDto
 
         [Range(1, int.MaxValue, ErrorMessage = "Seleccione un tipo de contrato")]
         public int TipoContratoId { get; set; }
+        public int CentroCostoId { get; set; } //fk de centro de costo
+        public string NombreCentroCosto { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "La fecha de inicio es obligatoria")]
         [DataType(DataType.Date)]
@@ -19,13 +22,13 @@ namespace Miluc.Shared.DTOs.Nomina.ContratoLaboralDto
 
         // Si la fecha de finalización es opcional (para contratos indefinidos), quita el [Required]
         [DataType(DataType.Date)]
+        [FechaNoAnteriorHoy(ErrorMessage = "La fecha de finalización no puede ser anterior a la fecha de inicio")]
         public DateTime? FechaFinalizacion { get; set; }
 
         [Range(1, int.MaxValue, ErrorMessage = "Seleccione un cargo")]
         public int CargoId { get; set; }
 
-        [Required(ErrorMessage = "Agregar un centro de costo")]
-        public string CentroCosto { get; set; } = string.Empty;
+      
 
         [Required(ErrorMessage = "El salario es obligatorio")]
         public decimal? Salario { get; set; }

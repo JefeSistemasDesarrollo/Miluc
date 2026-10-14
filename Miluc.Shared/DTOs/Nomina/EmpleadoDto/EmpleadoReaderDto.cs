@@ -19,6 +19,8 @@ namespace Miluc.Shared.DTOs.Nomina.EmpleadoDto
         public string PrimerApellido { get; set; } = string.Empty;
         public string SegundoApellido { get; set; } = string.Empty;
         public DateTime FechaNacimiento { get; set; }
+        public int EmpresaId { get; set; }
+        public string NombreEmpresa { get; set; }
         public int EstadoCivilId { get; set; }//fk
         public string Celular { get; set; }
         public string? CelularAlterno { get; set; }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Miluc.Shared.Validations;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Miluc.Shared.DTOs.Nomina.ContratoLaboralDto
@@ -11,6 +12,9 @@ namespace Miluc.Shared.DTOs.Nomina.ContratoLaboralDto
         public string Observacion { get; set; }
         [Required(ErrorMessage = "La fecha de terminación es requerida.")]
         [DataType(DataType.Date)]
+        [PastOrPresentDate(ErrorMessage = "La fecha de nacimiento no puede ser futura")]
+
+
         public DateTime? FechaTerminacion { get; set; }
     }
 }

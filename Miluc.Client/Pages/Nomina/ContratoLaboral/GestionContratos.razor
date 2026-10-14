@@ -219,7 +219,15 @@
         {
             _correo = _authClient.CurrentSession.UserName;
         }
-
+          
+    
+        if (!_authClient.HasPermission("Card.Contracts"))
+        {
+            nav.NavigateTo("/no-autorizado");
+            return;
+        }
+      
+    
         await cargarAfiliaciones();
     }
 
@@ -354,5 +362,5 @@
         nav.NavigateTo($"/api/ContratoLaboral/CreateContratoLaboral{idempleado}");
     }
 
-    private void Volver() => nav.NavigateTo("/administrar-Nomina");
+    private void Volver() => nav.NavigateTo("/Card/Contratos");
 }

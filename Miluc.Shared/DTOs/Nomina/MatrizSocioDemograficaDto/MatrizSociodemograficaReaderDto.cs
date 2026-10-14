@@ -15,7 +15,8 @@ namespace Miluc.Shared.DTOs.Nomina.MatrizSocioDemograficaDto
         public string NombreEmpleado { get; set; } = string.Empty;
         
         public int Edad { get; set; }
-        public string Nacionalidad { get; set; } = string.Empty;
+        public int NacionalidadId { get; set; } 
+        public string NombreNacionalidad { get; set; } = string.Empty;
         public int PaisNacimientoId { get; set; }
         public string NombrePais { get; set; } = string.Empty;
         public int GeneroId { get; set; }

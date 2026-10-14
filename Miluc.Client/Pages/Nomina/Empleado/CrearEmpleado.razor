@@ -2,6 +2,7 @@
 
 @using Miluc.Client.Interfaces.Nomina
 @using Miluc.Shared.DTOs.Nomina.EmpleadoDto
+@using Miluc.Shared.DTOs.Nomina.EmpresaDto
 @using Miluc.Shared.DTOs.Nomina.EstadoCivilDto
 @using Miluc.Shared.DTOs.Nomina.MunicipioDto
 @using Miluc.Shared.DTOs.Nomina.TipoDocumento
@@ -14,6 +15,7 @@
 @inject IEmpleadoClientService _empleadoService
 @inject IEstadoCivilClientService _estadoCivil
 @inject IJSRuntime JS
+@inject IEmpresaClientSevice _empresaClientSevice
 @inject IAuthClientService _authClientServic
 
 <div class="empleado-page p-4 animate__animated animate__fadeIn">
@@ -52,23 +54,17 @@
                             </div>
 
                             <div class="row g-4">
-
-
-
                                 <div class="col-md-4">
                                     <label class="form-label label-custom"><i class="bi bi-person-fill-add"></i> Primer Nombre<span class="text-danger">*</span> </label>
                                     <div class="input-group-custom">
-
                                         <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.PrimerNombre" placeholder="Ej: Juan" />
                                     </div>
-                                    @* esto es para hacer las validaciones  que esta en el dto  *@
                                     <ValidationMessage For="@(() => nuevoEmpleado.PrimerNombre)" class="text-danger small mt-1 d-block fw-medium" />
                                 </div>
 
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom"><i class="bi bi-person-fill-add"></i> Segundo Nombre</label>
                                     <div class="input-group-custom">
-
                                         <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.SegundoNombre" placeholder="Opcional" />
                                     </div>
                                 </div>
@@ -76,19 +72,14 @@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom"> <i class="bi bi-person-fill-add"></i> Primer Apellido<span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
-
                                         <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.PrimerApellido" placeholder="Primer Apellido" />
                                         <ValidationMessage For="@(() => nuevoEmpleado.PrimerApellido)" class="text-danger small mt-1 d-block fw-medium" />
-
                                     </div>
                                 </div>
-
-
 
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom"> <i class="bi bi-person-fill-add"></i> Segundo Apellido</label>
                                     <div class="input-group-custom">
-
                                         <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.SegundoApellido" placeholder="Segundo apellido" />
                                     </div>
                                 </div>
@@ -96,25 +87,19 @@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom"> <i class="bi bi-calendar-date"></i> Fecha nacimiento<span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
-
-                                     
                                         <SfDatePicker TValue="DateTime?"
                                                       @bind-Value="nuevoEmpleado.FechaNacimiento"
                                                       Format="dd/MM/yyyy"
                                                       Placeholder="dd/mm/aaaa"
                                                       Width="100%">
                                         </SfDatePicker>
-                   
                                         <ValidationMessage For="@(() => nuevoEmpleado.FechaNacimiento)" class="text-danger small mt-1 d-block fw-medium" />
                                     </div>
                                 </div>
 
-
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom"> <i class="bi bi-person-vcard"></i> Tipo de documento<span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
-
-                                      
                                         <InputSelect @bind-Value="nuevoEmpleado.TipoDocumentoId" class="form-control input-custom">
                                             <option value="">Seleccionar tipo de documento</option>
                                             @foreach (var m in listDocumento)
@@ -122,15 +107,13 @@
                                                 <option value="@m.TipoDocumentoId">@m.Nombre</option>
                                             }
                                         </InputSelect>
-
-                                 
+                                        <ValidationMessage For="@(() => nuevoEmpleado.TipoDocumentoId)" class="text-danger small mt-1 d-block fw-medium" />
                                     </div>
                                 </div>
 
                                 <div class="col-md-4">
                                     <label class="form-label label-custom"><i class="bi bi-person-vcard"></i> Número de Documento <span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
-
                                         <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.Documento" placeholder="Ej: 100023456" />
                                     </div>
                                     <ValidationMessage For="@(() => nuevoEmpleado.Documento)" class="text-danger small mt-1 d-block fw-medium" />
@@ -152,10 +135,7 @@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom"> <i class="bi bi-person-hearts"></i> Estado Civil<span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
-
-                                    
                                         <div class="select2-wrapper">
-
                                             <InputSelect @bind-Value="nuevoEmpleado.EstadoCivilId" class="form-control input-custom">
                                                 <option value="">Seleccionar estado civil</option>
                                                 @foreach (var estado in listEstadoCivil)
@@ -163,7 +143,6 @@
                                                     <option value="@estado.EstadoCivilId">@estado.Nombre</option>
                                                 }
                                             </InputSelect>
-
                                         </div>
                                     </div>
                                     <ValidationMessage For="@(() => nuevoEmpleado.EstadoCivilId)" class="text-danger small mt-1 d-block fw-medium" />
@@ -172,59 +151,78 @@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom"> <i class="bi bi-phone"></i> Celular</label>
                                     <div class="input-group-custom">
-                                        @*<span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>*@
-
                                         <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.Celular" placeholder="Celular" />
                                         <ValidationMessage For="@(() => nuevoEmpleado.Celular)" class="text-danger small mt-1 d-block fw-medium" />
-                                        @* <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.SegundoApellido" placeholder="Segundo apellido" /> *@
                                     </div>
                                 </div>
-
 
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom"><i class="bi bi-phone"></i> Celular Alterno</label>
                                     <div class="input-group-custom">
-
                                         <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.CelularAlterno" placeholder="Celular Alterno" />
                                         <ValidationMessage For="@(() => nuevoEmpleado.CelularAlterno)" class="text-danger small mt-1 d-block fw-medium" />
-                                        @* <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.SegundoApellido" placeholder="Segundo apellido" /> *@
                                     </div>
                                 </div>
 
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom"><i class="bi bi-envelope-at"></i> Correo<span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
-
                                         <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.CorreoElectronico" placeholder="Correo" />
                                         <ValidationMessage For="@(() => nuevoEmpleado.CorreoElectronico)" class="text-danger small mt-1 d-block fw-medium" />
-                                        @* <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.SegundoApellido" placeholder="Segundo apellido" /> *@
                                     </div>
                                 </div>
 
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom"> <i class="bi bi-person-dash text-muted"></i> Dirección</label>
                                     <div class="input-group-custom">
-
-                                        
                                         <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.Direccion" placeholder="Direccion" />
                                         <ValidationMessage For="@(() => nuevoEmpleado.Direccion)" class="text-danger small mt-1 d-block fw-medium" />
-                                        @* <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.SegundoApellido" placeholder="Segundo apellido" /> *@
                                     </div>
                                 </div>
 
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom"> <i class="bi bi-person-dash text-muted"></i> Barrio</label>
                                     <div class="input-group-custom">
-
                                         <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.Barrio" placeholder="Barrio" />
                                         <ValidationMessage For="@(() => nuevoEmpleado.Barrio)" class="text-danger small mt-1 d-block fw-medium" />
-                                        @* <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.SegundoApellido" placeholder="Segundo apellido" /> *@
                                     </div>
                                 </div>
 
+                                @* Empresa *@
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">Seleccione la empresa <span class="text-danger">*</span></label>
+                                    <div class="select2-wrapper">
+                                        <InputSelect @bind-Value="nuevoEmpleado.EmpresaId" class="form-control input-custom">
+                                            <option value="">Seleccionar empresa</option>
+                                            @foreach (var empresa in listEmpresas)
+                                            {
+                                                <option value="@empresa.EmpresaId">@empresa.EmpresaId - @empresa.NombreEmpresa</option>
+                                            }
+                                        </InputSelect>
+                                    </div>
+                                    <ValidationMessage For="@(() => nuevoEmpleado.EmpresaId)" class="text-danger small mt-1 d-block fw-medium" />
+                                </div>
 
+                                @* Estado Activo (Switch con icono dinámico) *@
+                                <div class="col-md-4 d-flex align-items-center">
+                                    <div class="w-100">
+                                        <label class="form-label label-custom">Estado del Empleado</label>
+                                        <div class="form-check form-switch switch-lg d-flex align-items-center gap-2 mt-2">
+                                            <InputCheckbox class="form-check-input" @bind-Value="nuevoEmpleado.Activo" id="activoSwitch" style="transform: scale(1.3); cursor: pointer;" />
+                                            <label class="form-check-label fw-semibold" for="activoSwitch" style="cursor: pointer;">
+                                                @if (nuevoEmpleado.Activo)
+                                                {
+                                                    <span class="text-black"><i class="bi bi-check2-circle me-1"></i> </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-danger"><i class="bi bi-x-circle me-1"></i> </span>
+                                                }
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
 
-                                
                             </div>
                         </div>
                     </div>
@@ -236,17 +234,14 @@
                         <div class="card-body p-4 d-flex flex-column justify-content-between">
                             <div>
                                 <div class="section-title-container mb-4">
-                                    <span class="badge bg-vinotinto-light text-vinotinto rounded-pill mb-2 px-3 py-2 fw-bold text-uppercase tracking-wider"></span>
-                                    <h5 class="fw-bold text-rojo m-0">Ubicación y Residencia</h5>
+                                    <span class="badge bg-vinotinto-light text-vinotinto rounded-pill mb-2 px-3 py-2 fw-bold text-uppercase tracking-wider">Paso 2</span>
+                                    <h5 class="fw-bold text-rojo m-0">Ubicación y Empresa</h5>
                                 </div>
-                                @*munucipio*@
-                                <div class="mb-2">
+
+                                @* Municipio (Select2 con JS) *@
+                                <div class="mb-3">
                                     <label class="form-label label-custom">Seleccione el municipio <span class="text-danger">*</span></label>
                                     <div class="select2-wrapper">
-
-                                        
-                                         
-
                                         <select id="municipiosSelect" class="form-select input-custom">
                                             <option value="">Buscar municipio...</option>
                                             @foreach (var m in listmunicipios)
@@ -267,7 +262,7 @@
                     <div class="card card-info-banner border-0 shadow-sm rounded-4 h-100 p-4 position-relative overflow-hidden">
                         <div class="position-relative z-index-2 d-flex flex-column h-100 justify-content-center">
                             <h5 class="fw-bold text-rojo mb-2"><i class="bi bi-shield-lock-fill me-2"></i>Seguridad de los datos</h5>
-                            <p class="text-secondary  text-dark small mb-0 lh-lg">
+                            <p class="text-secondary text-dark small mb-0 lh-lg">
                                 Al registrar un nuevo colaborador, asegúrese de validar que el número de identificación coincida exactamente con el documento en físico para mitigar errores en las futuras afiliaciones de seguridad social.
                             </p>
                         </div>
@@ -299,19 +294,16 @@
     </div>
 </div>
 
-
 @code {
     private EmpleadoCreateDto nuevoEmpleado = new();
     private List<MunicipioReaderDto> listmunicipios = new();
     private List<TipoDocumentoReaderDto> listDocumento = new();
     private List<EstadoCivilReaderDto> listEstadoCivil = new();
+    private List<EmpresaReaderDto> listEmpresas = new();
     private bool isProcessing = false;
-    
     public string _correo = "";
-    // private UsuarioCreateDto usuarioCreateDto = new UsuarioCreateDto();
 
     private void Volver() => nav.NavigateTo("/Administrar/Empleado");
-
 
     [JSInvokable]
     public void ActualizarMunicipioDesdeJS(string codigo)
@@ -319,45 +311,36 @@
         nuevoEmpleado.CodigoMunicipio = codigo;
         StateHasChanged();
     }
-    //cuando se inicializala aplicacion por primera vez
-    //aca vamos acargar todos las tablas dependientes paara crear empleados
 
-  protected override async Task OnInitializedAsync()
-{
-    _correo = _authClientServic.CurrentSession.UserName;
-
-    // Los funcionarios con filtro por correo no pueden crear
-    if (_authClientServic.HasPermission("Employee.FilterCorreo"))
+    protected override async Task OnInitializedAsync()
     {
-        nav.NavigateTo("/no-autorizado");
-        return;
+        _correo = _authClientServic.CurrentSession.UserName;
+
+        if (_authClientServic.HasPermission("Employee.FilterCorreo"))
+        {
+            nav.NavigateTo("/no-autorizado");
+            return;
+        }
+
+        var respuestaMunicipios = await _municipioClientService.GetMunicipiosAsync();
+        if (respuestaMunicipios.Valor != null)
+            listmunicipios = respuestaMunicipios.Valor;
+
+        var respuestaTipoDocumento = await _tipoDocumentoClientService.GetTipoDocumentosAsync();
+        if (respuestaTipoDocumento.Valor != null)
+            listDocumento = respuestaTipoDocumento.Valor;
+
+        var respuestaEstado = await _estadoCivil.GetEstadosCivilesAsync();
+        if (respuestaEstado.EsCorrecto)
+            listEstadoCivil = respuestaEstado.Valor;
+
+        var respuestaEmpresas = await _empresaClientSevice.GetEmpresasAsync(string.Empty, 1, 100);
+        if (respuestaEmpresas.EsCorrecto)
+            listEmpresas = respuestaEmpresas.Valor;
+
+        nuevoEmpleado.FechaNacimiento = null;
+        nuevoEmpleado.FechaExpedicionDoc = null;
     }
-
-    // Cargas normales
-    var respuestaMunicipios = await _municipioClientService.GetMunicipiosAsync();
-    if (respuestaMunicipios.Valor != null)
-        listmunicipios = respuestaMunicipios.Valor;
-
-    var respuestaTipoDocumento = await _tipoDocumentoClientService.GetTipoDocumentosAsync();
-    if (respuestaTipoDocumento.Valor != null)
-        listDocumento = respuestaTipoDocumento.Valor;
-
-    var respuestaEstado = await _estadoCivil.GetEstadosCivilesAsync();
-    if (respuestaEstado.EsCorrecto)
-        listEstadoCivil = respuestaEstado.Valor;
-
-    nuevoEmpleado.FechaNacimiento = null;
-    nuevoEmpleado.FechaExpedicionDoc = null;
-
-        
-        return;
-    
-
-
-}
-
-
-    
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -373,7 +356,6 @@
         isProcessing = true;
         try
         {
-
             nuevoEmpleado.Usuario.Nombres = $"{nuevoEmpleado.PrimerNombre} {nuevoEmpleado.SegundoNombre}";
             nuevoEmpleado.Usuario.Apellidos = $"{nuevoEmpleado.PrimerApellido} {nuevoEmpleado.SegundoApellido}";
             nuevoEmpleado.Usuario.Email = nuevoEmpleado.CorreoElectronico;
@@ -385,13 +367,11 @@
             nuevoEmpleado.Usuario.HoraFin = TimeOnly.Parse("05:00 PM");
             nuevoEmpleado.Usuario.CodVendedorSAP = -1;
             nuevoEmpleado.Usuario.TwoFactorEnabled = false;
-            nuevoEmpleado.Usuario.TiposUsuarioIds = [2]; // Asignar un valor predeterminado para CodVendedorSAP
-             nuevoEmpleado.Usuario.RolesIds = [2]; // Asignar el rol de empleado (ID 2)
-            nuevoEmpleado.Usuario.IdTipoUsuario = 2; // Asignar el rol de empleado (ID 2)
+            nuevoEmpleado.Usuario.TiposUsuarioIds = [2];
+            nuevoEmpleado.Usuario.RolesIds = [2];
+            nuevoEmpleado.Usuario.IdTipoUsuario = 2;
 
-
-
-        var respuesta = await _empleadoService.createEmpleadosAsync(nuevoEmpleado);
+            var respuesta = await _empleadoService.createEmpleadosAsync(nuevoEmpleado);
             if (respuesta.EsCorrecto)
             {
                 await JS.InvokeVoidAsync("Swal.fire", "Éxito", "La información del empleado ha sido registrada correctamente.", "success");
@@ -410,8 +390,8 @@
         {
             isProcessing = false;
         }
-
     }
+
     public string PasswordGenerator()
     {
         const string minusculas = "abcdefghijklmnopqrstuvwxyz";
@@ -420,7 +400,6 @@
         const string caracteresEspeciales = "!@#$%^&*()_+-=[]{}|;:,.<>?";
 
         const int passwordLength = 8;
-         
         var random = new Random();
         var password = new char[passwordLength];
         for (int i = 0; i < password.Length; i++)
@@ -433,12 +412,9 @@
                 password[i] = caracteresEspeciales[random.Next(caracteresEspeciales.Length)];
             else
                 password[i] = minusculas[random.Next(minusculas.Length)];
-
         }
         return new string(password);
     }
-
-
 }
 
 @* --- LÓGICA JAVASCRIPT --- *@

@@ -1,8 +1,10 @@
 ﻿@page "/Administrar/Contrato/Editar/{idContrato:int}"
+
 @using Miluc.Client.Interfaces.Nomina
 @using Miluc.Shared.DTOs.Nomina.CargosDto
+@using Miluc.Shared.DTOs.Nomina.CentroDeCostos
 @using Miluc.Shared.DTOs.Nomina.ContratoLaboralDto
-@using Miluc.Shared.DTOs.Nomina.EmpresaDto
+
 @using Miluc.Shared.DTOs.Nomina.TipoContratoDto
 @using TuProyecto.Client.Services
 
@@ -10,8 +12,8 @@
 @inject IContratoLaboralClientService _contratoService
 @inject IJSRuntime js
 @inject ICargosClientService _cargos
-@inject IEmpresaClientSevice _empresa
 @inject ITipoContratoClientService _tipoContrato
+@inject ICentroCostoClienteService _centroCosto
 
 <div class="empleado-page p-4 animate__animated animate__fadeIn">
     <div class="container-fluid max-width-container">
@@ -54,20 +56,20 @@
                                 <h5 class="fw-bold text-dark m-0">Detalles del Contrato</h5>
                             </div>
 
-                            <div class="row g-3">
-                                @* Empresa *@
+                            <div class="row g-4">
+                                @* Empresa (Solo lectura) *@
                                 <div class="col-md-6">
-                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-building"></i></span> Empresa<span class="text-danger">*</span></label>
+                                    <label class="form-label label-custom">
+                                        <span class="input-icon">
+                                            <i class="bi bi-building"></i>
+                                        </span>
+                                        Empresa
+                                    </label>
                                     <div class="input-group-custom">
-                                        <InputSelect @bind-Value="update.EmpresaId" class="form-control input-custom">
-                                            <option value="0">-- Seleccionar empresa --</option>
-                                            @foreach (var empresa in listaEmpresa)
-                                            {
-                                                <option value="@empresa.EmpresaId">@empresa.NombreEmpresa (@empresa.Nit)</option>
-                                            }
-                                        </InputSelect>
+                                        <input class="form-control input-custom"
+                                               value="@NombreEmpresa"
+                                               readonly />
                                     </div>
-                                    <ValidationMessage For="@(() => update.EmpresaId)" class="text-danger small mt-1 d-block fw-medium" />
                                 </div>
 
                                 @* Tipo de Contrato *@
@@ -104,12 +106,18 @@
                                 <div class="col-md-6">
                                     <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-diagram-3"></i></span> Centro de Costo<span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
-                                        <InputText class="form-control input-custom" @bind-Value="update.CentroCosto" placeholder="Ej. Tecnología" />
+                                        <InputSelect @bind-Value="update.CentroCostoId" class="form-control input-custom">
+                                            <option value="0">-- Seleccionar --</option>
+                                            @foreach (var centro in listaCentrosCosto)
+                                            {
+                                                <option value="@centro.CentroCostoId">@centro.Nombre</option>
+                                            }
+                                        </InputSelect>
                                     </div>
-                                    <ValidationMessage For="@(() => update.CentroCosto)" class="text-danger small mt-1 d-block fw-medium" />
+                                    <ValidationMessage For="@(() => update.CentroCostoId)" class="text-danger small mt-1 d-block fw-medium" />
                                 </div>
 
-                                @* Salario - Corregido sin @bind-Value para evitar conflicto de eventos *@
+                                @* Salario *@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom">
                                         <span class="input-icon"><i class="bi bi-currency-dollar"></i></span>
@@ -175,14 +183,15 @@
 
     private UpdateContratoDto update = new();
 
-    private List<EmpresaReaderDto> listaEmpresa = new();
     private List<TipoContratoReaderDto> listaTipoContrato = new();
     private List<CargosReaderDto> ListaCargos = new();
+    private List<CentroCostosReaderDto> listaCentrosCosto = new();
 
     private bool cargando = true;
     private bool isProcessing = false;
     private string nombreEmpleado = string.Empty;
     private string salarioFormateado = string.Empty;
+    private string NombreEmpresa = string.Empty;
 
     private readonly System.Globalization.CultureInfo _culture = System.Globalization.CultureInfo.GetCultureInfo("es-CO");
 
@@ -193,21 +202,17 @@
         cargando = true;
         try
         {
-            // 1. CARGA EN PARALELO DE CATÁLOGOS Y DATOS (Optimización de velocidad)
-            var tareaEmpresas = _empresa.GetEmpresasAsync( string.Empty,1,100);
             var tareaTipos = _tipoContrato.GetTipoContratoAsync(string.Empty, 1, 100);
             var tareaCargos = _cargos.GetCargosAsync(string.Empty, 1, 100);
             var tareaContrato = _contratoService.GetContratoByIdAsync(idContrato);
+            var tareaCentrosCosto = _centroCosto.GetCentroCostosAsync(string.Empty, 1, 100);
 
-            await Task.WhenAll(tareaEmpresas, tareaTipos, tareaCargos, tareaContrato);
+            await Task.WhenAll(tareaTipos, tareaCargos, tareaContrato, tareaCentrosCosto);
 
-            var respuestaEmpresas = await tareaEmpresas;
             var respuestaTipos = await tareaTipos;
             var respuestaCargos = await tareaCargos;
             var respuestaContrato = await tareaContrato;
-
-            if (respuestaEmpresas?.EsCorrecto == true && respuestaEmpresas.Valor != null)
-                listaEmpresa = respuestaEmpresas.Valor;
+            var respuestaCentrosCosto = await tareaCentrosCosto;
 
             if (respuestaTipos?.EsCorrecto == true && respuestaTipos.Valor != null)
                 listaTipoContrato = respuestaTipos.Valor;
@@ -215,7 +220,9 @@
             if (respuestaCargos?.EsCorrecto == true && respuestaCargos.Valor != null)
                 ListaCargos = respuestaCargos.Valor;
 
-            // 2. POBLAR MODELO CON DATOS RETORNADOS
+            if (respuestaCentrosCosto?.EsCorrecto == true && respuestaCentrosCosto.Valor != null)
+                listaCentrosCosto = respuestaCentrosCosto.Valor;
+
             if (respuestaContrato != null && respuestaContrato.EsCorrecto)
             {
                 var contrato = respuestaContrato.Valor;
@@ -226,27 +233,26 @@
                     update.EmpresaId = contrato.EmpresaId;
                     update.TipoContratoId = contrato.TipoContratoId;
                     update.CargoId = contrato.CargoId;
-                    update.CentroCosto = contrato.CentroCosto ?? string.Empty;
+                    update.CentroCostoId = contrato.CentroCostoId;
                     update.Salario = contrato.Salario;
                     update.FechaInicio = contrato.FechaInicio;
                     update.FechaFinalizacion = contrato.FechaFinalizacion;
 
                     salarioFormateado = (update.Salario ?? 0).ToString("N0", _culture);
-                    nombreEmpleado = string.IsNullOrWhiteSpace(contrato.NombreEmpleado) ? "Empleado" : contrato.NombreEmpleado;
+
+                    nombreEmpleado = string.IsNullOrWhiteSpace(contrato.NombreEmpleado)
+                        ? "Empleado"
+                        : contrato.NombreEmpleado;
+
+                    NombreEmpresa = string.IsNullOrWhiteSpace(contrato.NombreEmpresa)
+                        ? "Sin empresa asignada"
+                        : contrato.NombreEmpresa;
                 }
-                else
-                {
-                    await js.InvokeVoidAsync("Swal.fire", "Atención", "No se encontraron los datos de este contrato.", "warning");
-                }
-            }
-            else
-            {
-                await js.InvokeVoidAsync("Swal.fire", "Error", respuestaContrato?.Mensaje ?? "Error al obtener el contrato.", "error");
             }
         }
         catch (Exception ex)
         {
-            await js.InvokeVoidAsync("Swal.fire", "Error", $"No se pudieron cargar los datos iniciales: {ex.Message}", "error");
+            await js.InvokeVoidAsync("Swal.fire", "Error", ex.Message, "error");
         }
         finally
         {

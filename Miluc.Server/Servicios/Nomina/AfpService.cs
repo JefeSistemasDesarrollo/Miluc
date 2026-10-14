@@ -91,7 +91,7 @@ namespace Miluc.Server.Servicios.Nomina
                 {
 
                     AfpId = a.AfpId,
-                    Nombre = a.Nombre,
+                    Nombre = a.Nombre.Trim().ToUpper(),
                     Codigo = a.Codigo,
 
                     FechaCreacion = a.FechaCreacion,
@@ -169,7 +169,7 @@ namespace Miluc.Server.Servicios.Nomina
                         throw new Exception("Ya existe otra Afp con el mismo nombre o código.");
 
                     afp.AfpId = updateAfp.AfpId;
-                    afp.Nombre = updateAfp.Nombre;
+                    afp.Nombre = updateAfp.Nombre.ToUpper();
                     afp.Codigo = updateAfp.Codigo;
                     afp.FechaActualizacion = DateTime.Now;
                     afp.Activo = updateAfp.Activo;

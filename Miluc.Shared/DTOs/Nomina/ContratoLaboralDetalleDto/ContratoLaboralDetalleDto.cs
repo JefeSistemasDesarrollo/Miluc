@@ -12,7 +12,7 @@ namespace Miluc.Shared.DTOs.Nomina.ContratoLaboralDetalleDto
         public int CargoId { get; set; }
         public DateTime? FechaTerminacion { get; set; }
         public string Observacion { get; set; } = string.Empty;
-        public string CentroCosto { get; set; } = string.Empty;
+   
         public decimal Salario { get; set; }
 
 

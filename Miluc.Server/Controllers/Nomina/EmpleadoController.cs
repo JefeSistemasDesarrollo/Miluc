@@ -190,19 +190,6 @@ namespace Miluc.Server.Controllers.Nomina
         {
 
 
-            ////if (!string.IsNullOrEmpty(empleadoUpdateDto.Usuario.FotoBase64))
-            ////{
-            ////    // Limpiar el encabezado data:image/jpeg;base64,
-            ////    var base64Data = empleadoUpdateDto.Usuario.FotoBase64.Contains(",") ? empleadoUpdateDto.Usuario.FotoBase64.Split(',')[1] : empleadoUpdateDto.Usuario.FotoBase64;
-            ////    empleadoUpdateDto.Usuario.Foto = Convert.FromBase64String(base64Data);
-            ////}
-            //// 2. Asegurar que el IdTipoUsuario seleccionado se agregue a la lista que espera tu servicio
-            //if (empleadoUpdateDto.Usuario.IdTipoUsuario > 0 && !empleadoUpdateDto.Usuario.TiposUsuarioIds.Contains(empleadoUpdateDto.Usuario.IdTipoUsuario))
-            //{
-            //    empleadoUpdateDto.Usuario.TiposUsuarioIds.Add(empleadoUpdateDto.Usuario.IdTipoUsuario);
-            //}
-
-            // Validar null
             if (empleadoUpdateDto == null)
             {
                 return BadRequest(new ResponseAPI<EmpleadoReaderDto>
@@ -269,6 +256,16 @@ namespace Miluc.Server.Controllers.Nomina
                     CantRegistros = 1
                 });
             }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new ResponseAPI<EmpleadoReaderDto>
+                {
+                    EsCorrecto = false,
+                    Valor = null,
+                    Mensaje = ex.Message,
+                    CantRegistros = 0
+                });
+            }
             catch (Exception ex)
             {
                 var errorReal = ObtenerMensajeDetallado(ex);
@@ -287,13 +284,12 @@ namespace Miluc.Server.Controllers.Nomina
                 {
                     EsCorrecto = false,
                     Valor = null,
-                    Mensaje = $"Ocurrió un error al actualizar el empleado: {errorReal}",
+                    Mensaje = "Ocurrió un error interno al actualizar el empleado.",
                     CantRegistros = 0
                 });
             }
         }
-
-        [HttpDelete("{id}")]
+            [HttpDelete("{id}")]
         public async Task<ActionResult<ResponseAPI<bool>>> DeleteEmpleadosAsync(int id)
         {
             try
