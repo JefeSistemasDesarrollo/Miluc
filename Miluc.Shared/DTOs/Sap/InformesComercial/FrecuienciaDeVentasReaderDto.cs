@@ -15,7 +15,7 @@
         public string ? Articulos { get; set; }
         public string? NombreArticulo { get; set; }
         public string ? GrupoInventario { get; set; }
-        public string? Vendedor { get; set; } 
+        //public string? Vendedor { get; set; } 
         public string ? Ruta {  get; set; }
         public string ? VendedorAsignado {  get; set; }
         public string ? VendedorFactura {  get; set; }

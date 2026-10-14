@@ -11,14 +11,50 @@
 @inject IJSRuntime _js
 
 <div class="frecuencia-container container-fluid py-4 px-3 px-md-4">
+
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-6">
+            <div class="d-flex justify-content-between align-items-center">
+                <label class="form-label text-muted small fw-semibold mb-0">
+                    Tipo de Informe
+                </label>
+            </div>
+            <select class="form-select form-select-sm mt-2"
+                    @bind="tipoInformeSeleccionado">
+                <option value='1'>Frecuencia de Ventas por cabecera</option>
+                <option value='2'>Detalle por Fechas Detalle</option>
+                <option value='3'>Historico Frecuencia de Ventas por cabecera</option>
+                <option value='4'>Historico Detalle por Fechas Detalle</option>
+
+            </select>
+        </div>
+    </div>
     <!-- Encabezado -->
     <div class="d-flex align-items-center mb-4 pb-2 border-bottom border-red-subtle">
         <div class="icon-badge me-3">
             <i class="bi bi-bar-chart-line-fill"></i>
         </div>
         <div>
-            <h3 class="title-brand m-0">Frecuencia de Ventas</h3>
-            <p class="subtitle-brand m-0">Generación de informes de SAP Business One</p>
+            @if (tipoInformeSeleccionado == 1)
+            {
+                <h3 class="title-brand m-0">Frecuencia de Ventas por cabecera y fecha </h3>
+                <p class="subtitle-brand m-0">Generación de informes de SAP Business One</p>
+            }
+            @if (tipoInformeSeleccionado == 2)
+            {
+                <h3 class="title-brand m-0">Detalle por Fechas Detalle y fecha </h3>
+                <p class="subtitle-brand m-0">Generación de informes de SAP Business One</p>
+            }
+            @if (tipoInformeSeleccionado == 3)
+            {
+                <h3 class="title-brand m-0">Historico Frecuencia de Ventas por cabecera</h3>
+                <p class="subtitle-brand m-0">Generación de informes de SAP Business One</p>
+            }
+            @if (tipoInformeSeleccionado == 4)
+            {
+                <h3 class="title-brand m-0">Historico Detalle por Fechas Detalle</h3>
+                <p class="subtitle-brand m-0">Generación de informes de SAP Business One</p>
+            }
         </div>
     </div>
 
@@ -28,33 +64,36 @@
             <div class="row g-3 align-items-end">
 
                 <!-- Fecha Inicial -->
-                <div class="col-12 col-sm-6 col-lg-3">
-                    <label class="form-label font-weight-bold">
-                        <i class="bi bi-calendar-event me-1 text-red"></i> Fecha inicial
-                    </label>
-                    <InputDate @bind-Value="fechaInicio" class="form-control input-brand" />
-                </div>
+                @if (tipoInformeSeleccionado == 1 || tipoInformeSeleccionado == 2)
+                {
+                    <div class="col-12 col-sm-6 col-lg-3">
+                        <label class="form-label font-weight-bold">
+                            <i class="bi bi-calendar-event me-1 text-red"></i> Fecha inicial
+                        </label>
+                        <InputDate @bind-Value="fechaInicioFrecuencia" class="form-control input-brand" />
+                    </div>
 
-                <!-- Fecha Final -->
-                <div class="col-12 col-sm-6 col-lg-3">
-                    <label class="form-label font-weight-bold">
-                        <i class="bi bi-calendar-check me-1 text-red"></i> Fecha final
-                    </label>
-                    <InputDate @bind-Value="fechaFinal" class="form-control input-brand" />
-                </div>
+                    <!-- Fecha Final -->
+                    <div class="col-12 col-sm-6 col-lg-3">
+                        <label class="form-label font-weight-bold">
+                            <i class="bi bi-calendar-check me-1 text-red"></i> Fecha final
+                        </label>
+                        <InputDate @bind-Value="fechaFinalFrecuencia" class="form-control input-brand" />
+                    </div>
+                }
 
                 <!-- Código de Vendedor -->
                 <div class="col-12 col-sm-6 col-lg-3">
                     <label class="form-label text-muted small fw-semibold">Grupo *</label>
 
 
-                    <InputSelect @bind-Value="slpCode" class="form-select form-select-sm">
-                                    @* <option value="@int.MinValue">Seleccione un vendedor</option> *@
-                                    @foreach (var slp in listSapVendedorReaderDtos)
-                                    {
-                                        <option value="@slp.SlpName">@slp.SlpName</option>
-                                    }
-                   </InputSelect>
+                    <InputSelect @bind-Value="vendedorSeleccionadoFrecuencia" class="form-select form-select-sm">
+                        @* <option value="@int.MinValue">Seleccione un vendedor</option> *@
+                        @foreach (var slp in listSapVendedorReaderDtos)
+                        {
+                            <option value="@slp.SlpCode">@slp.SlpName</option>
+                        }
+                    </InputSelect>
                     @* <ValidationMessage For="@(() => slp.SlpName)" class="text-danger small" /> *@
 
 
@@ -66,26 +105,46 @@
 
                 <!-- Botón de Acción -->
                 <div class="col-12 col-sm-6 col-lg-3">
-                    <button class="btn btn-red w-100 d-flex align-items-center justify-content-center"
-                            @onclick="DescargarExcel"
-                            disabled="@cargando">
-                        @if (cargando)
-                        {
-                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                            <span>Generando...</span>
-                        }
-                        else
-                        {
-                            <i class="bi bi-file-earmark-excel-fill me-2"></i>
-                            <span>Descargar Excel</span>
-                        }
-                    </button>
+                    @if (tipoInformeSeleccionado == 1 || tipoInformeSeleccionado == 2)
+                    {
+                        <button class="btn btn-red w-100 d-flex align-items-center justify-content-center"
+                                @onclick="DescargarExcelFrecuencia"
+                                disabled="@cargandoFrecuencia">
+                            @if (cargandoFrecuencia)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                <span>Generando...</span>
+                            }
+                            else
+                            {
+                                <i class="bi bi-file-earmark-excel-fill me-2"></i>
+                                <span>Descargar Excel</span>
+                            }
+                        </button>
+                    }
+                     @if (tipoInformeSeleccionado == 3 || tipoInformeSeleccionado == 4)
+                    {
+                        <button class="btn btn-red w-100 d-flex align-items-center justify-content-center"
+                                @onclick="DescargarExcelFrecuencia"
+                                disabled="@cargandoFrecuencia">
+                            @if (cargandoFrecuencia)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                <span>Generando...</span>
+                            }
+                            else
+                            {
+                                <i class="bi bi-file-earmark-excel-fill me-2"></i>
+                                <span>Descargar Excel Histórico</span>
+                            }
+                        </button>
+                    }
+                    
                 </div>
 
             </div>
         </div>
     </div>
-
     <!-- Alertas y Mensajes -->
     @if (!string.IsNullOrEmpty(mensaje))
     {
@@ -165,11 +224,11 @@
         color: var(--text-main);
     }
 
-    .input-brand:focus {
-        border-color: var(--brand-red);
-        box-shadow: 0 0 0 0.25rem rgba(214, 47, 70, 0.15);
-        outline: none;
-    }
+        .input-brand:focus {
+            border-color: var(--brand-red);
+            box-shadow: 0 0 0 0.25rem rgba(214, 47, 70, 0.15);
+            outline: none;
+        }
 
     /* Botón Rojo Principal */
     .btn-red {
@@ -183,20 +242,20 @@
         transition: background-color 0.2s ease, transform 0.1s ease;
     }
 
-    .btn-red:hover:not(:disabled) {
-        background-color: var(--brand-red-dark);
-        color: #ffffff;
-    }
+        .btn-red:hover:not(:disabled) {
+            background-color: var(--brand-red-dark);
+            color: #ffffff;
+        }
 
-    .btn-red:active:not(:disabled) {
-        transform: scale(0.98);
-    }
+        .btn-red:active:not(:disabled) {
+            transform: scale(0.98);
+        }
 
-    .btn-red:disabled {
-        background-color: #e88d99;
-        color: #ffffff;
-        opacity: 0.8;
-    }
+        .btn-red:disabled {
+            background-color: #e88d99;
+            color: #ffffff;
+            opacity: 0.8;
+        }
 
     /* Alerta Custom */
     .alert-red-custom {
@@ -209,11 +268,17 @@
 </style>
 
 @code {
-    private DateTime fechaInicio = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-    private DateTime fechaFinal = DateTime.Now;
-    private int slpCode = -1;
-    private bool cargando;
+    private DateTime fechaInicioFrecuencia = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+    private DateTime fechaFinalFrecuencia = DateTime.Now;
+
+    // private int slpCode = -1;
+    private bool cargandoFrecuencia;
+
     private string? mensaje;
+    public int vendedorSeleccionadoFrecuencia { get; set; }
+
+    private int tipoInformeSeleccionado = 1; // 1: Frecuencia de Ventas, 2: Detalle por Fechas
+
 
     private List<SapVendedorReaderDto> listSapVendedorReaderDtos = new List<SapVendedorReaderDto>();
 
@@ -221,17 +286,21 @@
     {
         try
         {
+
+            vendedorSeleccionadoFrecuencia = _authclienteService.CurrentSession.CodVendedorSAP ?? -1;
             var listaVendedores = await _oslpService.GetListVendedoresAsync();
 
-            if (listaVendedores.Valor!=null)
+            if (listaVendedores.Valor != null)
             {
                 listSapVendedorReaderDtos = listaVendedores.Valor;
 
+                if (vendedorSeleccionadoFrecuencia > 0)
+                {
+                    listSapVendedorReaderDtos = listaVendedores.Valor.Where(v => v.SlpCode == vendedorSeleccionadoFrecuencia).ToList();
+                }
             }
-
-
-
-        }catch(Exception ex)
+        }
+        catch (Exception ex)
         {
             await _logErrores.GuardarErrorAsync
           (
@@ -253,23 +322,39 @@
         }
     }
 
-    private async Task DescargarExcel()
+    private async Task DescargarExcelFrecuencia()
     {
         try
         {
-            cargando = true;
+            cargandoFrecuencia = true;
             mensaje = null;
 
-            var resultado = await _frecuenciaVentasService
-                .DescargarFrecuanciaVentasService(
-                    fechaInicio,
-                    fechaFinal,
-                    slpCode);
-
-            if (!resultado)
+            if (tipoInformeSeleccionado == 3 || tipoInformeSeleccionado == 4)
             {
-                mensaje = "No fue posible generar el archivo Excel o no existen registros con los filtros seleccionados.";
+                fechaInicioFrecuencia = new DateTime(2023, 1, 1);
+                fechaFinalFrecuencia = DateTime.Now;
             }
+
+            if (fechaInicioFrecuencia > fechaFinalFrecuencia)
+            {
+                mensaje = "La fecha inicial no puede ser mayor que la fecha final.";
+                return;
+            }
+
+                var resultado = await _frecuenciaVentasService.DescargarFrecuanciaVentasService(
+                    fechaInicioFrecuencia,
+                    fechaFinalFrecuencia,
+                    vendedorSeleccionadoFrecuencia,
+                    tipoInformeSeleccionado);
+                
+                if (!resultado)
+                {
+                    mensaje = "No fue posible generar el archivo Excel o no existen registros con los filtros seleccionados.";
+                }
+            
+
+
+         
         }
         catch (Exception ex)
         {
@@ -277,7 +362,8 @@
         }
         finally
         {
-            cargando = false;
+            cargandoFrecuencia = false;
         }
     }
+  
 }

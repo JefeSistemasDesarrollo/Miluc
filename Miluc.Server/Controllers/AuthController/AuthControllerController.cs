@@ -13,7 +13,7 @@ namespace Miluc.Server.Controllers.AuthController
 {
     [ApiController]
     [Route("api/[controller]")]
-   // [Authorize]
+    // [Authorize]
     public class AuthController(IAuthService authService, IConfiguration config, ILogService log) : Controller
     {
         [HttpGet("me")]
@@ -46,6 +46,14 @@ namespace Miluc.Server.Controllers.AuthController
                                 .Select(c => c.Value)
                                 .ToList(),
                     Permisos = User.FindAll("Permission").Select(c => c.Value).ToList(),
+
+                    Filtros = User.FindAll("Filtro")
+                                .Select((c, index) => new AsignarFiltrosReaderDto
+                                {
+                                    Filtro = c.Value,
+                                    NombreModulo = User.FindAll("nombre").ElementAtOrDefault(index)?.Value
+                                })
+                                .ToList(),
                     FechaExpiracion = expiraUtc
                 };
 
@@ -98,7 +106,7 @@ namespace Miluc.Server.Controllers.AuthController
                 if (session.Valor.Requiere2FA)
                     return Ok(session);
 
-                if(session.Valor.DebeCambiarPassword)
+                if (session.Valor.DebeCambiarPassword)
                     return Ok(session);
 
                 await CrearCookies(session.Valor);
@@ -135,7 +143,7 @@ namespace Miluc.Server.Controllers.AuthController
                 string ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
                 string userAgent = Request.Headers["User-Agent"].ToString();
 
-                var response = await authService.VerifyOtpAsync(request.IdUsuario,request.Codigo,ip,userAgent);
+                var response = await authService.VerifyOtpAsync(request.IdUsuario, request.Codigo, ip, userAgent);
 
                 if (!response.EsCorrecto || response.Valor == null)
                 {
@@ -176,7 +184,7 @@ namespace Miluc.Server.Controllers.AuthController
                 string ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
                 string userAgent = Request.Headers["User-Agent"].ToString();
 
-                var response = await authService.VerifyOtpCodigoCorreoAsync(request.IdUsuario,request.Codigo,ip,userAgent);
+                var response = await authService.VerifyOtpCodigoCorreoAsync(request.IdUsuario, request.Codigo, ip, userAgent);
 
                 //if (!response.EsCorrecto || response.Valor == null)
                 //{
@@ -211,7 +219,7 @@ namespace Miluc.Server.Controllers.AuthController
 
         [AllowAnonymous]
         [HttpPost("cambiar-password")]
-        public async Task<ActionResult<ResponseAPI<bool>>> CambiarPassword([FromBody] CambiarPasswordRequest request )
+        public async Task<ActionResult<ResponseAPI<bool>>> CambiarPassword([FromBody] CambiarPasswordRequest request)
         {
             try
             {
@@ -297,9 +305,19 @@ namespace Miluc.Server.Controllers.AuthController
             session.Roles.ForEach(r => claims.Add(new Claim(ClaimTypes.Role, r)));
             session.Permisos.ForEach(p => claims.Add(new Claim("Permission", p)));
 
-        await HttpContext.SignInAsync(
+
+            session.Filtros.ForEach(f =>
+            {
+                claims.Add(new Claim("Filtro", f.Filtro ?? ""));
+                claims.Add(new Claim("nombre", f.NombreModulo ?? ""));
+            });
+
+
+            //session.Filtros.ForEach
+
+            await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
-                new ClaimsPrincipal(new ClaimsIdentity(claims,CookieAuthenticationDefaults.AuthenticationScheme)),
+                new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme)),
                 new AuthenticationProperties
                 {
                     IsPersistent = true,
@@ -366,7 +384,7 @@ namespace Miluc.Server.Controllers.AuthController
 
                 int accessMinutes = config.GetValue<int>("Jwt:AccessTokenExpirationMinutes");
                 int refreshMinutes = config.GetValue<int>("Jwt:RefreshTokenExpiration");
-               response.Valor.FechaExpiracion = DateTime.UtcNow.AddMinutes(accessMinutes);
+                response.Valor.FechaExpiracion = DateTime.UtcNow.AddMinutes(accessMinutes);
                 // Claims nuevos
                 var claims = BuildClaims(response.Valor);
                 var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -437,7 +455,7 @@ namespace Miluc.Server.Controllers.AuthController
 
                 return Ok(new { mensaje = "Sesión terminada exitosamente" });
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 await log.GuardarErrorAsync(
                          message: ex.Message,

@@ -235,9 +235,29 @@
             FiltrarLocal(); // Cada vez que el usuario escribe/borra una letra, ejecuta el filtro local en memoria
         }
     }
-    
+
     protected override async Task OnInitializedAsync()
     {
+
+        // var filtros = _autcliente.CurrentSession.Filtros;
+
+        int idEmpresa=0;
+
+
+
+        if (_autcliente.HasPermission("Modulo.Nomina"))
+        {
+
+            if (_autcliente.HasFiltro("Modulo.Nomina"))
+            {
+
+                idEmpresa=Convert.ToInt32(_autcliente.CurrentSession.Filtros.FirstOrDefault(f => f.NombreModulo=="Modulo.Nomina").Filtro);
+            }
+             
+
+        }
+
+
         PuedeEliminar = _autcliente.HasPermission("Delete.employee");
 
         if (!_autcliente.HasPermission("Employee.View"))
