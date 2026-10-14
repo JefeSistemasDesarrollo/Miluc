@@ -15,8 +15,7 @@
         </div>
         <AuthorizeView>
             <Authorized>
-
-                @if(_authClientService.HasPermission("Modulo.Comercial"))
+                @if (_authClientService.HasPermission("Modulo.Comercial"))
                 {
                     <div class="nav-item px-1">
                         <NavLink class="nav-link" href="/administrar-modulo-comercial">
@@ -29,30 +28,37 @@
                 }
                 @if (_authClientService.HasPermission("Modulo.Nomina"))
                 {
-
                     <div class="nav-item px-2">
-                    <NavLink class="nav-link" href="administrar-Nomina">
-                        <div class="nav-icon-wrapper">
-                          <i class="bi bi-calculator"></i>
-                        </div>
-                        <span class="nav-text">RRH</span>
-                    </NavLink>
-                </div>
+                        <NavLink class="nav-link" href="administrar-Nomina">
+                            <div class="nav-icon-wrapper">
+                                <i class="bi bi-calculator"></i>
+                            </div>
+                            <span class="nav-text">RRH</span>
+                        </NavLink>
+                    </div>
                 }
-
                 @if (_authClientService.HasPermission("Modulo.Systems"))
                 {
-                        <div class="nav-item px-2">
-                    <NavLink class="nav-link" href="Usuarios-Seguridad">
-                        <div class="nav-icon-wrapper">
-                            <i class="bi bi-shield-lock-fill"></i>
-                        </div>
-                        <span class="nav-text">Sistemas</span>
-                    </NavLink>
-                </div>
+                    <div class="nav-item px-2">
+                        <NavLink class="nav-link" href="Usuarios-Seguridad">
+                            <div class="nav-icon-wrapper">
+                                <i class="bi bi-shield-lock-fill"></i>
+                            </div>
+                            <span class="nav-text">Sistemas</span>
+                        </NavLink>
+                    </div>
                 }
-            
-
+                @if (_authClientService.HasPermission("Sales.Reports"))
+                {
+                    <div class="nav-item px-2">
+                        <NavLink class="nav-link" href="/reportes/descargas">
+                            <div class="nav-icon-wrapper">
+                                <i class="bi bi-diagram-3-fill"></i>
+                            </div>
+                            <span class="nav-text">Reportes </span>
+                        </NavLink>
+                    </div>
+                }
                 <AuthorizeView Roles="Admin" Context="innerContext">
                     <div class="nav-item px-3">
                         <NavLink class="nav-link" href="configuracion">
@@ -61,10 +67,7 @@
                     </div>
                 </AuthorizeView>
             </Authorized>
-
             <NotAuthorized>
-
-
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="login">
                         <span class="bi bi-person-badge-fill" aria-hidden="true"></span> Iniciar Sesión

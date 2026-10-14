@@ -497,8 +497,9 @@
                 {
                     editarEmpleado.Usuario.Password = PasswordGenerator(); // PasswordGenerator();
                     editarEmpleado.Usuario.ConfirmarPassword = editarEmpleado.Usuario.Password;     
+                    editarEmpleado.Usuario.DebeCambiarPassword = true;
                 }
-                editarEmpleado.Usuario.DebeCambiarPassword = true;
+                
 
                 editarEmpleado.Usuario.HoraInicio = TimeOnly.Parse("08:00 AM");
                 editarEmpleado.Usuario.HoraFin = TimeOnly.Parse("05:00 PM");

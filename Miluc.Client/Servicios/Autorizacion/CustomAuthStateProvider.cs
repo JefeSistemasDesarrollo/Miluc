@@ -32,6 +32,8 @@ namespace Miluc.Client.Servicios.Autorizacion
             new Claim(ClaimTypes.Name, userSession.UserName ?? ""),
             new Claim(ClaimTypes.Email, userSession.Email ?? ""),
             new Claim("IdUsuario", userSession.IdUsuario.ToString()),
+            //new Claim("IdUsuario", userSession.IdUsuario.ToString()),
+            
 
             // ISO format recomendado
             new Claim("fechaExpiracion", userSession.FechaExpiracion.ToUniversalTime().ToString("o"))
@@ -47,6 +49,15 @@ namespace Miluc.Client.Servicios.Autorizacion
                 {
                     foreach (var permiso in userSession.Permisos)
                         claims.Add(new Claim("Permission", permiso));
+                }
+
+                if (userSession.Filtros != null)
+                {
+                    foreach (var filtro in userSession.Filtros)
+                    {
+                        claims.Add(new Claim("Filtro", filtro.Filtro));
+                        claims.Add(new Claim("NombreModulo", filtro.NombreModulo));
+                    }
                 }
 
                 var identity = new ClaimsIdentity(claims, "CookieAuth");

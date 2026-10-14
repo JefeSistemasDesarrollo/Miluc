@@ -37,6 +37,7 @@ namespace Miluc.Server.Models
 
 
         public ICollection<UsuarioOTP> UsuarioOTP { get; set; } = [];
+        public ICollection<AsignarFiltros> AsignarFiltros { get; set; } = [];
 
     }
 }

@@ -10,9 +10,25 @@ namespace Miluc.Server.Controllers.SAPController
 {
     [ApiController]
     [Route("api/[Controller]")]
-    [Authorize]
-    public class PruebasController(SapDbContex _context) : Controller
+   // [Authorize]
+    public class PruebasController(SapDbContex _context, MilucDbContext milucDbContext) : Controller
     {
+
+        [HttpGet("filtros")]
+        public async Task<IActionResult> GetFiltros()
+        {
+            try
+            {
+          
+                var filtros =await milucDbContext.AsignarFiltros.AsNoTracking().ToListAsync();
+
+                return Ok(filtros);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = "Error retrieving filters.", Error = ex.Message });
+            }
+        }
 
         [HttpGet]
         public async Task<IActionResult> Get() 
@@ -89,7 +105,7 @@ namespace Miluc.Server.Controllers.SAPController
 
                         Documento = fac.DocNum,
                        // VendedorFactura = venFact.SlpName,
-                        Vendedor= venCli.SlpName,
+                        //Vendedor= venCli.SlpName,
                         FechaContabilizacion= fac.DocDate,
                         ValorTotal = fac.DocTotal
                     };

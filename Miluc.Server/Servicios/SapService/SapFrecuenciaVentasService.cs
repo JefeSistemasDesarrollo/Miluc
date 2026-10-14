@@ -15,53 +15,91 @@ namespace Miluc.Server.Servicios.SapService
                 if (GrDistribucion == null)
                     GrDistribucion = 0;
 
-                var ConsultaCanalDeDistribucion = from fac in _sapDbContex.OINV.AsNoTracking()
-                                                  join detFac in _sapDbContex.INV1.AsNoTracking() on fac.DocEntry equals detFac.DocEntry into dtfac
-                                                  from detFac in dtfac.DefaultIfEmpty()
-                                                  join art in _sapDbContex.OITM.AsNoTracking() on detFac.ItemCode equals art.ItemCode into itDeta
-                                                  from art in itDeta.DefaultIfEmpty()
-                                                  join oitb in _sapDbContex.OITB.AsNoTracking() on art.ItmsGrpCod equals oitb.ItmsGrpCod into artgru
-                                                  from oitb in itDeta.DefaultIfEmpty()
-                                                  join cli in _sapDbContex.OCRD.AsNoTracking() on fac.CardCode equals cli.CardCode into clifac
-                                                  from cli in clifac.DefaultIfEmpty()
-                                                  join gru in _sapDbContex.OBPP.AsNoTracking() on cli.Priority equals gru.PrioCode into cligru
-                                                  from gru in cligru.DefaultIfEmpty()
-                                                  join can in _sapDbContex.OCRG.AsNoTracking() on cli.GroupCode equals can.GroupCode into cancli
-                                                  from can in cancli.DefaultIfEmpty()
-                                                  where (fac.CANCELED == 'N' && fac.DocDate <= FechaIncio && fac.DocDate <= FechaFinal && GrDistribucion == '0' && can.GroupCode == GrDistribucion)
-                                                  select new CanalDeDistribucionReaderDto
-                                                  {
-                                                      CodigoCliente = fac.CardCode,
-                                                      NombreCliente = fac.CardName,
-                                                      Sucursal = cli.CardFName,
-                                                      Canal = can.GroupName,
-                                                      Documento = fac.DocNum,
-                                                      Telefono1 = cli.Phone1,
-                                                      Telefono2 = cli.Phone2,
-                                                      Correo = cli.E_Mail,
-                                                      FechaContabilizacion = fac.DocDate,
-                                                      LineTotal = detFac.LineTotal,
-                                                      Articulos = detFac.ItemCode,
-                                                      NombreArticulo = art.ItemName,
-                                                      Cantidad = detFac.Quantity,
-                                                      Peso = art.SWeight1,
-                                                      UnidadDeMedida = art.BuyUnitMsr
 
-                                                  };
+
+                var consulta = from fac in _sapDbContex.OINV.AsNoTracking()
+                join cli in _sapDbContex.OCRD.AsNoTracking() on fac.CardCode equals cli.CardCode into clijoin from cli in clijoin.DefaultIfEmpty()
+                join detfac in _sapDbContex.INV1.AsNoTracking() on fac.DocEntry equals detfac.DocEntry into detfacjoin from detfac in detfacjoin.DefaultIfEmpty()
+                join art in _sapDbContex.OITM.AsNoTracking() on detfac.ItemCode equals art.ItemCode into artDte from art in artDte.DefaultIfEmpty()
+                join oitb in _sapDbContex.OITB.AsNoTracking() on art.ItmsGrpCod equals oitb.ItmsGrpCod into artAl from grupo in artAl.DefaultIfEmpty()
+                
+              
+                join venfac in _sapDbContex.OSLP.AsNoTracking() on fac.SlpCode equals venfac.SlpCode into venfacjoin from venfac in venfacjoin.DefaultIfEmpty()
+                join vencli in _sapDbContex.OSLP.AsNoTracking() on cli.SlpCode equals vencli.SlpCode into clivende from vencli in clivende.DefaultIfEmpty()
+                join suc in _sapDbContex.OBPP.AsNoTracking()  on cli.Priority equals suc.PrioCode into scli from ruta in scli.DefaultIfEmpty()
+                //join ultFact in ultimaFactura
+                //    on fac.DocEntry equals ultFact.DocEntry
+                where fac.CANCELED == 'N' && fac.DocDate >= FechaIncio && fac.DocDate <= FechaFinal
+                //        && (slpCode == -1 || vencli.SlpCode == slpCode)
+                orderby cli.CardCode, fac.DocNum
+
+                select new FrecuienciaDeVentasReaderDto
+                {
+                    CodigoCliente = cli.CardCode,
+                    NombreCliente = cli.CardName,
+                    Sucursal = cli.CardFName ?? "SIN SUCURSAL",
+                    Ruta = ruta.PrioDesc ?? "Sin ruta asignada",
+                    Telefono1 = cli.Phone1,
+                    Telefono2 = cli.Phone2,
+                    Correo = cli.E_Mail,
+                    DocEntry = fac.DocEntry,
+                    Documento = fac.DocNum,
+                    VendedorAsignado = vencli.SlpName,
+                    VendedorFactura = venfac.SlpName,
+                    FechaContabilizacion = fac.DocDate,
+                    FechaEntrega = fac.DocDate,
+                    Articulos = detfac.ItemCode,
+                    NombreArticulo = detfac.Dscription,
+                    //Vendedor=venfac.SlpName,
+                    Cantidad = detfac.Quantity,
+                    Peso = detfac.Width1,
+                    LineTotal = detfac.LineTotal,
+                    UnidadDeMedida = detfac.unitMsr,
+                    ValorTotal = fac.DocTotal,
+                    GrupoInventario = grupo.ItmsGrpNam
+
+                };
+
+
+                //var ConsultaCanalDeDistribucion = from fac in _sapDbContex.OINV.AsNoTracking()
+                //                                  join detFac in _sapDbContex.INV1.AsNoTracking() on fac.DocEntry equals detFac.DocEntry into dtfac from detFac in dtfac.DefaultIfEmpty()
+                //                                  join art in _sapDbContex.OITM.AsNoTracking() on detFac.ItemCode equals art.ItemCode into itDeta from art in itDeta.DefaultIfEmpty()
+                //                                  //join oitb in _sapDbContex.OITB.AsNoTracking() on art.ItmsGrpCod equals oitb.ItmsGrpCod into artgru from oitb in itDeta.DefaultIfEmpty()
+                //                                  //join cli in _sapDbContex.OCRD.AsNoTracking() on fac.CardCode equals cli.CardCode into clifac from cli in clifac.DefaultIfEmpty()
+                //                                  //join gru in _sapDbContex.OBPP.AsNoTracking() on cli.Priority equals gru.PrioCode into cligru from gru in cligru.DefaultIfEmpty()
+                //                                  //join can in _sapDbContex.OCRG.AsNoTracking() on cli.GroupCode equals can.GroupCode into cancli from can in cancli.DefaultIfEmpty()
+
+                //                                  where 
+                //                                  (fac.CANCELED == 'N' 
+                //                                    && fac.DocDate >= FechaIncio && fac.DocDate <= FechaFinal)
+                //                                    //&& GrDistribucion == '0' && can.GroupCode == GrDistribucion)
+                //                                  select new CanalDeDistribucionReaderDto
+                //                                  {
+                //                                      CodigoCliente = fac.CardCode,
+                //                                      NombreCliente = fac.CardName,
+                //                                      //Sucursal = cli.CardFName,
+                //                                      //Canal = can.GroupName,
+                //                                      //Documento = fac.DocNum,
+                //                                      //Telefono1 = cli.Phone1,
+                //                                      //Telefono2 = cli.Phone2,
+                //                                      //Correo = cli.E_Mail,
+                //                                      FechaContabilizacion = fac.DocDate,
+                //                                      LineTotal = detFac.LineTotal,
+                //                                      Articulos = detFac.ItemCode,
+                //                                      NombreArticulo = art.ItemName,
+                //                                      Cantidad = detFac.Quantity,
+                //                                      Peso = art.SWeight1,
+                //                                      UnidadDeMedida = art.BuyUnitMsr
+
+                //                                  };
 
                 Stream stream = new MemoryStream();
 
-                await MiniExcel.SaveAsAsync(stream, ConsultaCanalDeDistribucion, printHeader: true, sheetName: "Cana de distribución ", excelType: ExcelType.XLSX);
+                await MiniExcel.SaveAsAsync(stream, consulta, printHeader: true, sheetName: "Canal", excelType: ExcelType.XLSX);
 
                 stream.Position = 0;
 
                 return stream;
-                //await MiniExcel.SaveAsAsync(
-                //      stream,
-                //      consulta,
-                //      printHeader: true,
-                //      sheetName: "FrecuenciaVentas",
-                //      excelType: ExcelType.XLSX);
             }
             catch (Exception ex)
             {
@@ -83,11 +121,15 @@ namespace Miluc.Server.Servicios.SapService
                                            from credito in creditojoin.DefaultIfEmpty()
                                            join can in _sapDbContex.OCRG.AsNoTracking() on cli.GroupCode equals can.GroupCode into canjoin
                                            from can in canjoin.DefaultIfEmpty()
-                                           where fac.CANCELED == 'N' 
+
+                                           where fac.CANCELED == 'N'
                                            && fac.DocTotal - fac.PaidToDate > 0
-                                           && (CardCode == null || fac.CardName.Contains(CardCode) || fac.CardCode.Contains(CardCode) )
-                                           && (CodeVendedor == 0 || ven.SlpCode == CodeVendedor )
-                                           && (CodCanal == 0 || can.GroupCode == CodCanal)
+                                           // Buscar por código o nombre del cliente
+                                           && (string.IsNullOrWhiteSpace(CardCode)
+                                               || fac.CardCode==CardCode || fac.CardName.Contains(CardCode))
+
+                                               && (CodeVendedor == -1 || ven.SlpCode == CodeVendedor)
+                                               && (CodCanal == 0 || can.GroupCode == CodCanal)
 
                                            orderby fac.DocDueDate
                                            select new CarteraVencidaReaderDto
@@ -114,8 +156,6 @@ namespace Miluc.Server.Servicios.SapService
 
                                            };
 
-
-
                 var stream = new MemoryStream();
 
                 await MiniExcel.SaveAsAsync(
@@ -125,26 +165,9 @@ namespace Miluc.Server.Servicios.SapService
                       sheetName: "CarteraVencida",
                       excelType: ExcelType.XLSX);
 
-                //var resultado = await consulta.AsNoTracking().ToListAsync();
-
                 stream.Position = 0;
 
                 return stream;
-
-
-                //var stream = new MemoryStream();
-
-                //stream.Position = 0;
-
-                //await MiniExcel.SaveAsAsync(
-                //      stream,
-                //      consultaDiasVencidos,
-                //      printHeader: true,
-                //      sheetName: "Cartera Vencida",
-                //      excelType: ExcelType.XLSX);
-
-                //return stream;
-
             }
             catch (Exception ex)
             {
@@ -152,15 +175,91 @@ namespace Miluc.Server.Servicios.SapService
             }
         }
 
-        public async Task<Stream> FrecuenciaPorVendedorCabeceraFacturas(DateTime FechaInicio, DateTime FechaFinal, int? slpCode = null)
+        public async Task<Stream> FrecuenciaPorVendedorCabeceraHistoricoFacturas(int? slpCode = null)
         {
             try
             {
+
                 if (slpCode <= 0)
                     slpCode = -1;
+
                 //consulta para encontrar la ultima fcatura por cada cliente
                 var ultimaFactura = from fac in _sapDbContex.OINV.AsNoTracking()
-                                    where (fac.CANCELED == 'N' && fac.DocDate >= FechaInicio && fac.DocDate <= FechaFinal)
+                                    where (fac.CANCELED == 'N')
+                                    group fac by fac.CardCode into grupo
+                                    select new
+                                    {
+                                        CardCode = grupo.Key,
+                                        DocEntry = grupo.Max(x => x.DocEntry)
+                                    };
+
+                var consulta =
+                    from fac in _sapDbContex.OINV.AsNoTracking()
+                    join cli in _sapDbContex.OCRD.AsNoTracking()
+                        on fac.CardCode equals cli.CardCode into clijoin
+                    from cli in clijoin.DefaultIfEmpty()
+                    join venfac in _sapDbContex.OSLP.AsNoTracking()
+                        on fac.SlpCode equals venfac.SlpCode into venfacjoin
+                    from venfac in venfacjoin.DefaultIfEmpty()
+                    join vencli in _sapDbContex.OSLP.AsNoTracking()
+                        on cli.SlpCode equals vencli.SlpCode into clivende
+                    from vencli in clivende.DefaultIfEmpty()
+                    join suc in _sapDbContex.OBPP.AsNoTracking()
+                        on cli.Priority equals suc.PrioCode into scli
+                    from ruta in scli.DefaultIfEmpty()
+                    join ultFact in ultimaFactura
+                        on fac.DocEntry equals ultFact.DocEntry
+                    where fac.CANCELED == 'N' 
+                            && (slpCode == -1 || vencli.SlpCode == slpCode)
+                    orderby cli.CardCode, fac.DocNum
+                    select new FrecuienciaDeVentasReaderDto
+                    {
+                        DocEntry = fac.DocEntry,
+                        CodigoCliente = cli.CardCode,
+                        NombreCliente = cli.CardName,
+                        Sucursal = cli.CardFName ?? "SIN SUCURSAL",
+                        Ruta = ruta.PrioDesc ?? "Sin ruta asignada",
+                        Telefono1 = cli.Phone1,
+                        Telefono2 = cli.Phone2,
+                        Correo = cli.E_Mail,
+                        Documento = fac.DocNum,
+                        VendedorAsignado = vencli.SlpName,
+                        VendedorFactura = venfac.SlpName,
+                        FechaContabilizacion = fac.DocDate,
+                        FechaEntrega = fac.DocDate,
+                        ValorTotal = fac.DocTotal
+                    };
+
+                var stream = new MemoryStream();
+
+                await MiniExcel.SaveAsAsync(
+                      stream,
+                      consulta,
+                      printHeader: true,
+                      sheetName: "FrecHistoricoCabecerea",
+                      excelType: ExcelType.XLSX);
+
+                stream.Position = 0;
+
+                return stream;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error Frecuencia de venta por vendedor {ex.Message}");
+            }
+        }
+
+        public  async Task<Stream> FrecuenciaPorVendedorCabeceraHistoricoFacturasDetalle(int? slpCode = null)
+        {
+            try
+            {
+
+                if (slpCode <= 0)
+                    slpCode = -1;
+
+                //consulta para encontrar la ultima fcatura por cada cliente
+                var ultimaFactura = from fac in _sapDbContex.OINV.AsNoTracking()
+                                    where (fac.CANCELED == 'N' )
                                     group fac by fac.CardCode into grupo
                                     select new
                                     {
@@ -171,23 +270,26 @@ namespace Miluc.Server.Servicios.SapService
                 var consulta =
                     from fac in _sapDbContex.OINV.AsNoTracking()
                     join cli in _sapDbContex.OCRD.AsNoTracking() on fac.CardCode equals cli.CardCode into clijoin
-                    from cli in clijoin.DefaultIfEmpty()
-                    join dtfac in _sapDbContex.INV1.AsNoTracking() on fac.DocEntry equals dtfac.DocEntry into detfac
-                    from dtfac in detfac.DefaultIfEmpty()
-                    join venfac in _sapDbContex.OSLP.AsNoTracking() on fac.SlpCode equals venfac.SlpCode into venfacjoin
-                    from venfac in venfacjoin.DefaultIfEmpty()
-                    join vencli in _sapDbContex.OSLP.AsNoTracking() on cli.SlpCode equals vencli.SlpCode into clivende
-                    from vencli in clivende.DefaultIfEmpty()
-                    join suc in _sapDbContex.OBPP.AsNoTracking() on cli.Priority equals suc.PrioCode into scli
-                    from ruta in scli.DefaultIfEmpty()
 
-                    join art in _sapDbContex.OITM.AsNoTracking() on dtfac.ItemCode equals art.ItemCode into artDte
+                    join detfac in _sapDbContex.INV1.AsNoTracking() on fac.DocEntry equals detfac.DocEntry into detfacjoin
+                    from detfac in detfacjoin.DefaultIfEmpty()
+                    join art in _sapDbContex.OITM.AsNoTracking() on detfac.ItemCode equals art.ItemCode into artDte
                     from art in artDte.DefaultIfEmpty()
                     join oitb in _sapDbContex.OITB.AsNoTracking() on art.ItmsGrpCod equals oitb.ItmsGrpCod into artAl
-                    from grupo in artDte.DefaultIfEmpty()
-                    join ultFact in ultimaFactura on fac.DocEntry equals ultFact.DocEntry
-
-                    where fac.CANCELED == 'N' && fac.DocDate >= FechaInicio && fac.DocDate <= FechaFinal
+                    from grupo in artAl.DefaultIfEmpty()
+                    from cli in clijoin.DefaultIfEmpty()
+                    join venfac in _sapDbContex.OSLP.AsNoTracking()
+                        on fac.SlpCode equals venfac.SlpCode into venfacjoin
+                    from venfac in venfacjoin.DefaultIfEmpty()
+                    join vencli in _sapDbContex.OSLP.AsNoTracking()
+                        on cli.SlpCode equals vencli.SlpCode into clivende
+                    from vencli in clivende.DefaultIfEmpty()
+                    join suc in _sapDbContex.OBPP.AsNoTracking()
+                        on cli.Priority equals suc.PrioCode into scli
+                    from ruta in scli.DefaultIfEmpty()
+                    join ultFact in ultimaFactura
+                        on fac.DocEntry equals ultFact.DocEntry
+                    where fac.CANCELED == 'N' 
                             && (slpCode == -1 || vencli.SlpCode == slpCode)
                     orderby cli.CardCode, fac.DocNum
                     select new FrecuienciaDeVentasReaderDto
@@ -195,22 +297,26 @@ namespace Miluc.Server.Servicios.SapService
                         CodigoCliente = cli.CardCode,
                         NombreCliente = cli.CardName,
                         Sucursal = cli.CardFName ?? "SIN SUCURSAL",
-                        Ruta = ruta.PrioDesc ?? "Sin Ruta",
+                        Ruta = ruta.PrioDesc ?? "Sin ruta asignada",
                         Telefono1 = cli.Phone1,
                         Telefono2 = cli.Phone2,
                         Correo = cli.E_Mail,
+                        DocEntry = fac.DocEntry,
                         Documento = fac.DocNum,
                         VendedorAsignado = vencli.SlpName,
                         VendedorFactura = venfac.SlpName,
                         FechaContabilizacion = fac.DocDate,
-                        NombreArticulo = dtfac.ItemCode,
-
-                        UnidadDeMedida = dtfac.unitMsr,
-                        //Cantidad=dtfac.Quantity,
-                        Cantidad = dtfac.unitMsr == "UN" ? dtfac.Quantity * dtfac.Width1 : dtfac.unitMsr == "KG" ? dtfac.Quantity : dtfac.Quantity,
-                        GrupoInventario = grupo.ItemName,
-                        Peso = dtfac.Width1,
+                        FechaEntrega = fac.DocDate,
+                        Articulos = detfac.ItemCode,
+                        NombreArticulo = detfac.Dscription,
+                        //Vendedor = venfac.SlpName,
+                        Cantidad = detfac.Quantity,
+                        Peso = detfac.Width1,
+                        LineTotal = detfac.LineTotal,
+                        UnidadDeMedida = detfac.unitMsr,
                         ValorTotal = fac.DocTotal,
+                        GrupoInventario = grupo.ItmsGrpNam
+
                     };
 
 
@@ -220,7 +326,7 @@ namespace Miluc.Server.Servicios.SapService
                       stream,
                       consulta,
                       printHeader: true,
-                      sheetName: "FrecuenciaVentas",
+                      sheetName: "FrecHistoricoDetalle",
                       excelType: ExcelType.XLSX);
 
                 //var resultado = await consulta.AsNoTracking().ToListAsync();
@@ -231,9 +337,95 @@ namespace Miluc.Server.Servicios.SapService
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error Frecuencia de venta por vendedor detalle y vendedor {ex.Message}");
+                throw new Exception($"Error Frecuencia de venta por vendedor {ex.Message}");
             }
+
         }
+
+        //public async Task<Stream> FrecuenciaPorVendedorCabeceraFacturas(DateTime FechaInicio, DateTime FechaFinal, int? slpCode = null)
+        //{
+        //    try
+        //    {
+        //        if (slpCode <= 0)
+        //            slpCode = -1;
+        //        //consulta para encontrar la ultima fcatura por cada cliente
+        //        var ultimaFactura = from fac in _sapDbContex.OINV.AsNoTracking()
+        //                            where (fac.CANCELED == 'N' && fac.DocDate >= FechaInicio && fac.DocDate <= FechaFinal)
+        //                            group fac by fac.CardCode into grupo
+        //                            select new
+        //                            {
+        //                                CardCode = grupo.Key,
+        //                                DocEntry = grupo.Max(x => x.DocEntry)
+        //                            };
+
+        //        var consulta =
+        //            from fac in _sapDbContex.OINV.AsNoTracking()
+        //            join cli in _sapDbContex.OCRD.AsNoTracking() on fac.CardCode equals cli.CardCode into clijoin
+        //            from cli in clijoin.DefaultIfEmpty()
+        //            join dtfac in _sapDbContex.INV1.AsNoTracking() on fac.DocEntry equals dtfac.DocEntry into detfac
+        //            from dtfac in detfac.DefaultIfEmpty()
+        //            join venfac in _sapDbContex.OSLP.AsNoTracking() on fac.SlpCode equals venfac.SlpCode into venfacjoin
+        //            from venfac in venfacjoin.DefaultIfEmpty()
+        //            join vencli in _sapDbContex.OSLP.AsNoTracking() on cli.SlpCode equals vencli.SlpCode into clivende
+        //            from vencli in clivende.DefaultIfEmpty()
+        //            join suc in _sapDbContex.OBPP.AsNoTracking() on cli.Priority equals suc.PrioCode into scli
+        //            from ruta in scli.DefaultIfEmpty()
+
+        //            join art in _sapDbContex.OITM.AsNoTracking() on dtfac.ItemCode equals art.ItemCode into artDte
+        //            from art in artDte.DefaultIfEmpty()
+        //            join oitb in _sapDbContex.OITB.AsNoTracking() on art.ItmsGrpCod equals oitb.ItmsGrpCod into artAl
+        //            from grupo in artDte.DefaultIfEmpty()
+        //            join ultFact in ultimaFactura on fac.DocEntry equals ultFact.DocEntry
+
+        //            where fac.CANCELED == 'N' && fac.DocDate >= FechaInicio && fac.DocDate <= FechaFinal
+        //                    && (slpCode == -1 || vencli.SlpCode == slpCode)
+        //            orderby cli.CardCode, fac.DocNum
+        //            select new FrecuienciaDeVentasReaderDto
+        //            {
+        //                DocEntry = fac.DocEntry,
+        //                CodigoCliente = cli.CardCode,
+        //                NombreCliente = cli.CardName,
+        //                Sucursal = cli.CardFName ?? "SIN SUCURSAL",
+        //                Ruta = ruta.PrioDesc ?? "Sin Ruta",
+        //                Telefono1 = cli.Phone1,
+        //                Telefono2 = cli.Phone2,
+        //                Correo = cli.E_Mail,
+        //                Documento = fac.DocNum,
+        //                VendedorAsignado = vencli.SlpName,
+        //                VendedorFactura = venfac.SlpName,
+        //                FechaContabilizacion = fac.DocDate,
+        //                NombreArticulo = dtfac.ItemCode,
+        //                FechaEntrega = fac.DocDate,
+        //                UnidadDeMedida = dtfac.unitMsr,
+
+        //                //Cantidad=dtfac.Quantity,
+        //                Cantidad = dtfac.unitMsr == "UN" ? dtfac.Quantity * dtfac.Width1 : dtfac.unitMsr == "KG" ? dtfac.Quantity : dtfac.Quantity,
+        //                GrupoInventario = grupo.ItemName,
+        //                Peso = dtfac.Width1,
+        //                ValorTotal = fac.DocTotal,
+        //            };
+
+
+        //        var stream = new MemoryStream();
+
+        //        await MiniExcel.SaveAsAsync(
+        //              stream,
+        //              consulta,
+        //              printHeader: true,
+        //              sheetName: "FrecuenciaVentas",
+        //              excelType: ExcelType.XLSX);
+
+        //        //var resultado = await consulta.AsNoTracking().ToListAsync();
+
+        //        stream.Position = 0;
+
+        //        return stream;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception($"Error Frecuencia de venta por vendedor detalle y vendedor {ex.Message}");
+        //    }
+        //}
 
         public async Task<Stream> FrecuenciaPorVendedorUltimaFactura(DateTime FechaInicio, DateTime FechaFinal, int? slpCode = null)
         {
@@ -274,6 +466,7 @@ namespace Miluc.Server.Servicios.SapService
                     orderby cli.CardCode, fac.DocNum
                     select new FrecuienciaDeVentasReaderDto
                     {
+                        DocEntry= fac.DocEntry,
                         CodigoCliente = cli.CardCode,
                         NombreCliente = cli.CardName,
                         Sucursal = cli.CardFName ?? "SIN SUCURSAL",
@@ -284,7 +477,99 @@ namespace Miluc.Server.Servicios.SapService
                         Documento = fac.DocNum,
                         VendedorAsignado = vencli.SlpName,
                         VendedorFactura = venfac.SlpName,
-                        FechaContabilizacion = fac.DocDate
+                        FechaContabilizacion = fac.DocDate,
+                        FechaEntrega = fac.DocDate,
+                        ValorTotal = fac.DocTotal
+                    };
+
+                var stream = new MemoryStream();
+
+                await MiniExcel.SaveAsAsync(
+                      stream,
+                      consulta,
+                      printHeader: true,
+                      sheetName: "FrecuenciaVentas",
+                      excelType: ExcelType.XLSX);
+
+                stream.Position = 0;
+
+                return stream;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error Frecuencia de venta por vendedor {ex.Message}");
+            }
+
+        }
+
+        public async Task<Stream> FrecuenciaPorVendedorUltimaFacturaDetalle(DateTime FechaInicio, DateTime FechaFinal, int? slpCode = null)
+        {
+            try
+            {
+
+                if (slpCode <= 0)
+                    slpCode = -1;
+
+                //consulta para encontrar la ultima fcatura por cada cliente
+                var ultimaFactura = from fac in _sapDbContex.OINV.AsNoTracking()
+                                    where (fac.CANCELED == 'N' && fac.DocDate >= FechaInicio && fac.DocDate <= FechaFinal)
+                                    group fac by fac.CardCode into grupo
+                                    select new
+                                    {
+                                        CardCode = grupo.Key,
+                                        DocEntry = grupo.Max(x => x.DocEntry)
+                                    };
+
+                var consulta =
+                    from fac in _sapDbContex.OINV.AsNoTracking()
+                    join cli in _sapDbContex.OCRD.AsNoTracking() on fac.CardCode equals cli.CardCode into clijoin
+
+                    join detfac in _sapDbContex.INV1.AsNoTracking() on fac.DocEntry equals detfac.DocEntry into detfacjoin
+                    from detfac in detfacjoin.DefaultIfEmpty()
+                    join art in _sapDbContex.OITM.AsNoTracking() on detfac.ItemCode equals art.ItemCode into artDte
+                    from art in artDte.DefaultIfEmpty()
+                    join oitb in _sapDbContex.OITB.AsNoTracking() on art.ItmsGrpCod equals oitb.ItmsGrpCod into artAl
+                    from grupo in artAl.DefaultIfEmpty()
+                    from cli in clijoin.DefaultIfEmpty()
+                    join venfac in _sapDbContex.OSLP.AsNoTracking()
+                        on fac.SlpCode equals venfac.SlpCode into venfacjoin
+                    from venfac in venfacjoin.DefaultIfEmpty()
+                    join vencli in _sapDbContex.OSLP.AsNoTracking()
+                        on cli.SlpCode equals vencli.SlpCode into clivende
+                    from vencli in clivende.DefaultIfEmpty()
+                    join suc in _sapDbContex.OBPP.AsNoTracking()
+                        on cli.Priority equals suc.PrioCode into scli
+                    from ruta in scli.DefaultIfEmpty()
+                    join ultFact in ultimaFactura
+                        on fac.DocEntry equals ultFact.DocEntry
+                    where fac.CANCELED == 'N' && fac.DocDate >= FechaInicio && fac.DocDate <= FechaFinal
+                            && (slpCode == -1 || vencli.SlpCode == slpCode)
+                    orderby cli.CardCode, fac.DocNum
+                    select new FrecuienciaDeVentasReaderDto
+                    {
+                        CodigoCliente = cli.CardCode,
+                        NombreCliente = cli.CardName,
+                        Sucursal = cli.CardFName ?? "SIN SUCURSAL",
+                        Ruta = ruta.PrioDesc ?? "Sin ruta asignada",
+                        Telefono1 = cli.Phone1,
+                        Telefono2 = cli.Phone2,
+                        Correo = cli.E_Mail,
+                        DocEntry=fac.DocEntry,
+                        Documento = fac.DocNum,
+                        VendedorAsignado = vencli.SlpName,
+                        VendedorFactura = venfac.SlpName,
+                        FechaContabilizacion = fac.DocDate,
+                        FechaEntrega=fac.DocDate,
+                        Articulos= detfac.ItemCode,
+                        NombreArticulo = detfac.Dscription,
+                        //Vendedor=venfac.SlpName,
+                        Cantidad=detfac.Quantity,
+                        Peso=detfac.Width1,
+                        LineTotal = detfac.LineTotal,
+                        UnidadDeMedida = detfac.unitMsr,
+                        ValorTotal = fac.DocTotal,
+                        GrupoInventario = grupo.ItmsGrpNam
+
                     };
 
 
@@ -294,7 +579,7 @@ namespace Miluc.Server.Servicios.SapService
                       stream,
                       consulta,
                       printHeader: true,
-                      sheetName: "FrecuenciaVentas",
+                      sheetName: "FrecuenciaVentasDetalle",
                       excelType: ExcelType.XLSX);
 
                 //var resultado = await consulta.AsNoTracking().ToListAsync();
@@ -307,7 +592,6 @@ namespace Miluc.Server.Servicios.SapService
             {
                 throw new Exception($"Error Frecuencia de venta por vendedor {ex.Message}");
             }
-
         }
     }
 }

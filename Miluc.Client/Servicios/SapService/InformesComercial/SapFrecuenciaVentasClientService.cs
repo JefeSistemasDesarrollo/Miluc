@@ -14,6 +14,35 @@ namespace Miluc.Client.Servicios.SapService.InformesComercial
             _js = js;
         }
 
+    
+        public async Task<bool> CanalDeDistribucionAsync(DateTime FechaIncio, DateTime FechaFinal, int? GrDistribucion = null)
+        {
+            try
+            {
+                var url = $"api/Informes/CanalDeDistribucion/Excel?FechaIncio={FechaIncio:yyyy-MM-dd}&FechaFinal={FechaFinal:yyyy-MM-dd}&GrDistribucion={GrDistribucion}";
+               
+                var response = await _http.GetAsync(url);
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new Exception($"Error al generar el informe de canal de distribución. Código de estado: {response.StatusCode}");
+                }
+                var archivo = await response.Content.ReadAsStreamAsync();
+
+                await _js.InvokeVoidAsync(
+                   "descargarArchivo",
+                   $"canalaDedis{FechaIncio:yyyyMMdd}_{FechaFinal:yyyyMMdd}.xlsx",
+                   archivo);
+
+                return true;
+
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error al generar el informe de canal de distribución {ex.Message}");
+            }
+        }
+
         public async Task<bool> CarteraVencidaExcel(DateTime fechaFinal, string? cardCode = null, int? codeVendedor = null, int? codCanal = null)
         {
             try
@@ -45,14 +74,12 @@ namespace Miluc.Client.Servicios.SapService.InformesComercial
             }
         }
 
-    
-
-        public async Task<bool> DescargarFrecuanciaVentasService(DateTime fechaInicio, DateTime fechaFinal, int slpCode)
+        public async Task<bool> DescargarFrecuanciaVentasService(DateTime fechaInicio, DateTime fechaFinal, int slpCode, int tipoInforme)
         {
             try
             {
                 var url = $"api/Informes/FrecuenciaPorVendedor/Excel" + $"?fechaInicio={fechaInicio:yyyy-MM-dd}" +
-               $"&fechaFinal={fechaFinal:yyyy-MM-dd}" + $"&slpCode={slpCode}";
+               $"&fechaFinal={fechaFinal:yyyy-MM-dd}" + $"&slpCode={slpCode}" + $"&tipoInforme={tipoInforme}";
 
                 var response = await _http.GetAsync(url);
 
@@ -63,10 +90,46 @@ namespace Miluc.Client.Servicios.SapService.InformesComercial
 
                 var archivo = await response.Content.ReadAsByteArrayAsync();
 
-                await _js.InvokeVoidAsync(
-                    "descargarArchivo",
-                    $"FrecuenciaVentas_{fechaInicio:yyyyMMdd}_{fechaFinal:yyyyMMdd}.xlsx",
-                    archivo);
+                if (archivo == null || archivo.Length == 0)
+                {
+                    return false;
+                }
+
+                if (tipoInforme == 1)
+                {
+                    await _js.InvokeVoidAsync(
+                        "descargarArchivo",
+                        $"FrecuenciaVentasCabecera_{fechaInicio:yyyyMMdd}_{fechaFinal:yyyyMMdd}.xlsx",
+                        archivo);
+                }
+                else if (tipoInforme == 2)
+                {
+                    await _js.InvokeVoidAsync(
+                        "descargarArchivo",
+                        $"FrecuenciaVentasDetalle_{fechaInicio:yyyyMMdd}_{fechaFinal:yyyyMMdd}.xlsx",
+                        archivo);
+                }
+                else if (tipoInforme == 3)
+                {
+                    await _js.InvokeVoidAsync(
+                        "descargarArchivo",
+                        $"FrecuenciaVentasHistorico_{fechaInicio:yyyyMMdd}_{fechaFinal:yyyyMMdd}.xlsx",
+                        archivo);
+
+                }
+                else if (tipoInforme == 4)
+                {
+                    await _js.InvokeVoidAsync(
+                        "descargarArchivo",
+                        $"FrecuenciaVentasHistoricoDetalle_{fechaInicio:yyyyMMdd}_{fechaFinal:yyyyMMdd}.xlsx",
+                        archivo);
+
+
+                    //await _js.InvokeVoidAsync(
+                    //"descargarArchivo",
+                    //$"FrecuenciaVentas_{fechaInicio:yyyyMMdd}_{fechaFinal:yyyyMMdd}.xlsx",
+                    //archivo);
+                }
 
                 return true;
             }
@@ -76,6 +139,39 @@ namespace Miluc.Client.Servicios.SapService.InformesComercial
                 throw new Exception($"Error al generar el informe de frecuencia de venta {ex.Message}");
             }
         }
+
+
+
+        //public async Task<bool> DescargarFrecuanciaVentasDetalleService(DateTime fechaInicio, DateTime fechaFinal, int slpCode)
+        // {
+        //    try
+        //    {
+        //        var url = $"api/Informes/FrecuenciaPorVendedor/Excel/Detalle" + $"?fechaInicio={fechaInicio:yyyy-MM-dd}" +
+        //       $"&fechaFinal={fechaFinal:yyyy-MM-dd}" + $"&slpCode={slpCode}";
+
+        //        var response = await _http.GetAsync(url);
+
+        //        if (!response.IsSuccessStatusCode)
+        //        {
+        //            return false;
+        //        }
+
+        //        var archivo = await response.Content.ReadAsByteArrayAsync();
+
+        //        await _js.InvokeVoidAsync(
+        //            "descargarArchivo",
+        //            $"FrecuenciaVentas_{fechaInicio:yyyyMMdd}_{fechaFinal:yyyyMMdd}.xlsx",
+        //            archivo);
+
+        //        return true;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return false;
+        //        throw new Exception($"Error al generar el informe de frecuencia de venta {ex.Message}");
+        //    }
+        //}
+
 
 
     }

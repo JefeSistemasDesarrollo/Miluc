@@ -373,13 +373,22 @@ namespace Miluc.Server.Servicios.Nomina
                     var usuarioUpdate = await _milucDbContext.Usuarios
                         .FirstOrDefaultAsync(u => u.IdUsuario == dto.Usuario.IdUsuario);
 
+                    using var hmac = new System.Security.Cryptography.HMACSHA512();
+
                     if (usuarioUpdate != null)
                     {
                         // Crear nuevo usuario si no existe
-                        if (string.IsNullOrWhiteSpace(dto.Usuario.Password))
-                            throw new InvalidOperationException("La contraseña es obligatoria para un usuario nuevo.");
+                        //if (dto.Usuario.Password != null)
+                        //    throw new InvalidOperationException("La contraseña es obligatoria para un usuario nuevo.");
 
-                        using var hmac = new System.Security.Cryptography.HMACSHA512();
+                        if (dto.Usuario.Password != null)
+                        {
+                            usuarioUpdate.DebeCambiarPassword = dto.Usuario.DebeCambiarPassword;
+                            usuarioUpdate.PasswordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(dto.Usuario.Password));
+                            usuarioUpdate.Salt = hmac.Key;
+                        }
+                           
+
 
 
                         usuarioUpdate.UserName = dto.Usuario.Email;
@@ -389,9 +398,8 @@ namespace Miluc.Server.Servicios.Nomina
                         usuarioUpdate.Telefono = dto.Usuario.Telefono;
                         usuarioUpdate.Foto = dto.Usuario.Foto;
                         usuarioUpdate.TwoFactorEnabled = dto.Usuario.TwoFactorEnabled;
-                        usuarioUpdate.DebeCambiarPassword = dto.Usuario.DebeCambiarPassword;
-                        usuarioUpdate.PasswordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(dto.Usuario.Password));
-                        usuarioUpdate.Salt = hmac.Key;
+                    
+                      
                         usuarioUpdate.FechaActualizacion = DateTime.Now;
                         usuarioUpdate.Activo = true;
                   
