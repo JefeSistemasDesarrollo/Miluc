@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Nomina;
+using Miluc.Shared.DTOs.Nomina.ContratoLaboralDto;
 using Miluc.Shared.DTOs.Nomina.EmpresaDto;
 using Miluc.Shared.Models.Response;
 using System.Text;
@@ -114,6 +115,27 @@ namespace Miluc.Server.Controllers.Nomina
                         ? "Empresa creada correctamente."
                         : "Empresa actualizada correctamente.",
                     CantRegistros = 1
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new ResponseAPI<bool>
+                {
+                    EsCorrecto = false,
+                    Valor = false,
+                    Mensaje = ex.Message,
+                    CantRegistros = 0
+                });
+            }
+
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new ResponseAPI<bool>
+                {
+                    EsCorrecto = false,
+                    Valor = false,
+                    Mensaje = ex.Message,
+                    CantRegistros = 0
                 });
             }
             catch (Exception ex)

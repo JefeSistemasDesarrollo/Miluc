@@ -8,6 +8,7 @@ namespace Miluc.Shared.DTOs.Nomina.MatrizSocioDemograficaDto
 {
     public class MatrizSocioDemograficaUpdateDto
     {
+        [Range(1, int.MaxValue, ErrorMessage = "Aceptar Concentimiento informado")]
         public bool ConsentimientoInformado { get; set; } // Anulable si no hay matriz
 
         public int MatrizSociodemograficaId { get; set; }
@@ -18,7 +19,7 @@ namespace Miluc.Shared.DTOs.Nomina.MatrizSocioDemograficaDto
             
         public int Edad { get; set; }
         [Required(ErrorMessage = "El campo nacionalidad es obligatorio")]
-        public string Nacionalidad { get; set; } = string.Empty;
+        public int NacionalidadId { get; set; } 
         [Range(1, int.MaxValue, ErrorMessage = "Debe seleccionar un país de nacimiento")]
 
 

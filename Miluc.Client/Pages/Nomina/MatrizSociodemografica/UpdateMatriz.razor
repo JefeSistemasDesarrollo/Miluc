@@ -13,8 +13,11 @@
 @using Miluc.Client.Components;
 @using Syncfusion.Blazor
 @using Syncfusion.Blazor.Calendars
+@using Miluc.Shared.DTOs.Nomina.NacionalidadDto
+
 
 @inject IClaseViviendaClientService _iClaseVivienda
+@inject INacionalidadClienteService _iNacionalidad
 @inject ICondicionMedicaClientService _iCondicionMedica
 @inject IDeportesClientService _iDeportes
 @inject IGeneroClientService _iGenero
@@ -144,9 +147,16 @@
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label label-custom">Nacionalidad</label>
-                                        <input type="text" class="form-control" @bind="matriz.Nacionalidad" />
-                                        <ValidationMessage For="@(() => matriz.Nacionalidad)" class="text-danger small fw-bold" />
+                                        <select class="form-select" @bind="matriz.NacionalidadId">
+                                            <option value="0">Seleccione...</option>
+                                            @foreach (var item in nacionalidadList)
+                                            {
+                                                <option value="@item.NacionalidadId">@item.NacionalidadNombre</option>
+                                            }
+                                        </select>
+                                        <ValidationMessage For="@(() => matriz.NacionalidadId)" class="text-danger small fw-bold" />
                                     </div>
+
                                     <div class="col-md-4">
                                         <label class="form-label label-custom">País de Nacimiento</label>
                                         <select class="form-select" @bind="matriz.PaisNacimientoId">
@@ -438,7 +448,7 @@
     private bool isLoading = true;
     private bool isSaving = false;
     private bool matrizNoEncontrada = false;
-    
+
     // public DateTime? DateValue { get; set; } = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 10);
     // public DateTime MinDate { get; set; } = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 05);
     // public DateTime MaxDate { get; set; } = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 20);
@@ -473,6 +483,7 @@
     private List<NivelAcademicoReaderDto> nivelAcademicoList = new();
     private List<PaisReaderDto> paisList = new();
     private List<TipoViviendaReaderDto> tipoViviendaList = new();
+    private List<NacionalidadReaderDto> nacionalidadList = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -501,6 +512,9 @@
 
             var resTipo = await _iTipoVivienda.GetTipoViviendaAsync();
             if (resTipo?.EsCorrecto == true && resTipo.Valor != null) tipoViviendaList = resTipo.Valor;
+
+            var resNacionalidad = await _iNacionalidad.GetNacionalidadesAsync();
+            if (resNacionalidad?.EsCorrecto == true && resNacionalidad.Valor != null) nacionalidadList = resNacionalidad.Valor;
         }
         catch (Exception ex)
         {
@@ -534,7 +548,7 @@
                     ConsentimientoInformado = val.ConsentimientoInformado,
                     Edad = val.Edad,
                     GeneroId = val.GeneroId,
-                    Nacionalidad = val.Nacionalidad,
+                    NacionalidadId = val.NacionalidadId,
                     PaisNacimientoId = val.PaisNacimientoId,
                     CondicionMedicaId = val.CondicionMedicaId,
                     DeporteId = val.DeporteId,

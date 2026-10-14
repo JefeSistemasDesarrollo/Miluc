@@ -10,8 +10,8 @@ namespace Miluc.Shared.DTOs.Nomina.ContratoLaboralDto
         public int EmpleadoId { get; set; }//fk de empleado
         public string NombreEmpleado { get; set; }
         public string Documento { get; set; } = string.Empty;
-
-
+        public int CentroCostoId { get; set; } //fk de centro de costo
+        public string NombreCentroCosto { get; set; } = string.Empty;
         public int ContratoLaboralId { get; set; }
         public int EmpresaId { get; set; } //fk de empresa
         public string NombreEmpresa { get; set; }= string.Empty;
@@ -24,7 +24,7 @@ namespace Miluc.Shared.DTOs.Nomina.ContratoLaboralDto
         public string NombreCargo { get; set; }
          public string Observacion {  get; set; }
 
-        public string CentroCosto { get; set; } = string.Empty;
+        
         public decimal Salario { get; set; }
 
 

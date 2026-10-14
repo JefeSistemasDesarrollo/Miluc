@@ -38,8 +38,8 @@ namespace Miluc.Server.Servicios.Nomina
                 // 3. Crear la nueva entidad
                 var nuevaEps = new Eps
                 {
-                    Nombre = EpsCreateDto.Nombre.Trim(),
-                    Codigo = EpsCreateDto.Codigo?.Trim(),
+                    Nombre = EpsCreateDto.Nombre.Trim().ToUpper(),
+                    Codigo = EpsCreateDto.Codigo?.Trim().ToUpper(),
                     FechaCreacion = DateTime.Now,
                     Activo = EpsCreateDto.Activo ,
                 };
@@ -50,8 +50,8 @@ namespace Miluc.Server.Servicios.Nomina
                 return new EpsReaderDto
                 {
                     EpsId = nuevaEps.EpsId,
-                    Nombre = nuevaEps.Nombre,
-                    Codigo = nuevaEps.Codigo,
+                    Nombre = nuevaEps.Nombre.Trim().ToUpper(),
+                    Codigo = nuevaEps.Codigo.Trim().ToUpper(),                    
                     FechaCreacion = nuevaEps.FechaCreacion,
                     FechaActualizacion = null,
                     Activo = nuevaEps.Activo
@@ -76,8 +76,8 @@ namespace Miluc.Server.Servicios.Nomina
                     .Select(e => new EpsReaderDto
                     {
                         EpsId = e.EpsId,
-                        Nombre = e.Nombre,
-                        Codigo = e.Codigo,
+                        Nombre = e.Nombre.Trim().ToUpper(),
+                        Codigo = e.Codigo.Trim().ToUpper(),
                         FechaActualizacion = DateTime.Now,
                         FechaCreacion = DateTime.Now,
                         Activo = e.Activo
@@ -111,8 +111,8 @@ namespace Miluc.Server.Servicios.Nomina
                     .Select(e => new EpsReaderDto
                     {
                         EpsId = e.EpsId,
-                        Nombre = e.Nombre,
-                        Codigo = e.Codigo,
+                        Nombre = e.Nombre.Trim().ToUpper(),
+                        Codigo = e.Codigo.Trim().ToUpper(),
                       
                         FechaCreacion = e.FechaCreacion,
                         FechaActualizacion = e.FechaActualizacion,
@@ -170,8 +170,8 @@ namespace Miluc.Server.Servicios.Nomina
                     throw new Exception("Ya existe otra EPS con el mismo nombre o código.");
 
                 
-                eps.Nombre = updateEps.Nombre;
-                eps.Codigo = updateEps.Codigo;
+                eps.Nombre = updateEps.Nombre.Trim().ToUpper();
+                eps.Codigo = updateEps.Codigo.Trim().ToUpper();
                 eps.FechaActualizacion = DateTime.Now;
                 eps.Activo = updateEps.Activo;
 

@@ -1,4 +1,5 @@
 ﻿using Miluc.Client.Interfaces.Nomina;
+using Miluc.Shared.DTOs.Nomina.ContratoLaboralDto;
 using Miluc.Shared.DTOs.Nomina.EmpresaDto;
 using Miluc.Shared.Models.Response;
 using System.Net.Http.Json;
@@ -69,41 +70,34 @@ namespace Miluc.Client.Servicios.Nomina
             {
                 var response = await httpClient.PutAsJsonAsync($"/api/Empresa/{empresaUpdateDto.EmpresaId}",empresaUpdateDto);
 
+
                 if (!response.IsSuccessStatusCode)
                 {
-                    return new ResponseAPI<bool>
+                    var errorApi =
+                        await response.Content.ReadFromJsonAsync<ResponseAPI<bool>>();
+
+                    return errorApi ?? new ResponseAPI<bool>
                     {
                         EsCorrecto = false,
-                        Mensaje = $"Error en la solicitud: {response.ReasonPhrase}",
-                        Valor = false,
-                        CantRegistros = 0
+                        Mensaje = "Ocurrió un error inesperado."
                     };
                 }
 
-                var resultado = await response.Content
-                    .ReadFromJsonAsync<ResponseAPI<bool>>();
+                var resultado =
+                    await response.Content.ReadFromJsonAsync<ResponseAPI<bool>>();
 
-                if (resultado == null)
+                return resultado ?? new ResponseAPI<bool>
                 {
-                    return new ResponseAPI<bool>
-                    {
-                        EsCorrecto = false,
-                        Mensaje = "La respuesta del servidor es nula.",
-                        Valor = false,
-                        CantRegistros = 0
-                    };
-                }
-
-                return resultado;
+                    EsCorrecto = false,
+                    Mensaje = "No se recibió respuesta válida del servidor."
+                };
             }
             catch (Exception ex)
             {
                 return new ResponseAPI<bool>
                 {
                     EsCorrecto = false,
-                    Mensaje = $"Error al guardar la empresa: {ex.Message}",
-                    Valor = false,
-                    CantRegistros = 0
+                    Mensaje = $"Error de red: {ex.Message}"
                 };
             }
         }

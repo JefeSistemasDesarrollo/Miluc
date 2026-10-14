@@ -41,7 +41,8 @@ namespace Miluc.Server.Data
         public DbSet<NivelAcademico> NivelAcademico { get; set; }
         public DbSet<MatrizSociodemografica> MatrizSociodemografica { get; set; }
         public DbSet<Cargo> Cargos { get; set; }
-
+        public DbSet<Nacionalidad> Nacionalidad { get; set; }
+        public DbSet<CentroCostos> CentroCostos { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -97,11 +98,18 @@ namespace Miluc.Server.Data
             modelBuilder.Entity<TipoContrato>().ToTable("TipoContrato");
             modelBuilder.Entity<TipoContrato>().HasKey(t => t.TipoContratoId);
             modelBuilder.Entity<TipoContrato>().HasMany(t => t.ContratoLaboralModel).WithOne(c => c.TipoContrato).HasForeignKey(c => c.TipoContratoId);
-
+            // centro de costos
+            modelBuilder.Entity<CentroCostos>().ToTable("CentroCostos");
+            modelBuilder.Entity<CentroCostos>().HasKey(c => c.CentroCostoId);
+            modelBuilder.Entity<CentroCostos>().HasMany(c => c.ContratoLaboralModel).WithOne(c => c.CentroCostos).HasForeignKey(c => c.CentroCostoId);
             // Empresa
             modelBuilder.Entity<Empresa>().ToTable("Empresa");
             modelBuilder.Entity<Empresa>().HasKey(e => e.EmpresaId);
             modelBuilder.Entity<Empresa>().HasMany(e => e.ContratoLaboralModel).WithOne(c => c.Empresa).HasForeignKey(c => c.EmpresaId);
+
+            modelBuilder.Entity<Empresa>().ToTable("Empresa");
+            modelBuilder.Entity<Empresa>().HasKey(e => e.EmpresaId);
+            modelBuilder.Entity<Empresa>().HasMany(e => e.Empleados).WithOne(c => c.Empresa).HasForeignKey(c => c.EmpresaId);
 
             // Contrato laboral
             modelBuilder.Entity<ContratoLaboral>().ToTable("ContratoLaboral");
@@ -175,6 +183,12 @@ namespace Miluc.Server.Data
             modelBuilder.Entity<CondicionMedica>().HasKey(c => c.CondicionMedicaId);
             modelBuilder.Entity<CondicionMedica>().HasMany(g => g.MatrizSociodemografica).WithOne(c => c.CondicionMedica).HasForeignKey(d => d.CondicionMedicaId);
 
+            //nacionalidad
+
+
+            modelBuilder.Entity<Nacionalidad>().ToTable("Nacionalidad");
+            modelBuilder.Entity<Nacionalidad>().HasKey(n => n.NacionalidadId);
+            modelBuilder.Entity<Nacionalidad>().HasMany(g => g.MatrizSociodemografica).WithOne(c => c.Nacionalidad).HasForeignKey(d => d.NacionalidadId);
             // MedioTransporte
             modelBuilder.Entity<MedioTransporte>().ToTable("MedioTransporte");
             modelBuilder.Entity<MedioTransporte>().HasKey(m => m.MedioTransporteId);

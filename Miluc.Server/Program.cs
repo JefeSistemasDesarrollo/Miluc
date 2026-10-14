@@ -106,6 +106,9 @@ builder.Services.AddScoped<INivelAcademicoService, NivelAcademicoService>();
 builder.Services.AddScoped<IMatrizSociodemograficaService, MatrizSociodemograficaService>();
 builder.Services.AddScoped<IEmpleadoService, EmpleadoService>();
 builder.Services.AddScoped<ISapTrazabilidadPedido,SapTrazabiliadPedidosService>();
+builder.Services.AddScoped<INacionalidadService, NacionalidadService>();
+builder.Services.AddScoped<ICentroCostosService, CentroCostosService>();
+
 ////sap
 builder.Services.AddScoped<IBusinessPartnerGroups, BusinessPartnerGroupsService>();
 builder.Services.AddScoped<ISapOcrdService, SapOcrdService>();

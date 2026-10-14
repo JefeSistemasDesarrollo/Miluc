@@ -20,4 +20,8 @@
     <ProjectReference Include="..\Miluc.Shared\Miluc.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="bin_bloqueado\" />
+  </ItemGroup>
+
 </Project>

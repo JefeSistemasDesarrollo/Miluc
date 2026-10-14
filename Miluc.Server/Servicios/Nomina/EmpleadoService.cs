@@ -44,18 +44,20 @@ namespace Miluc.Server.Servicios.Nomina
                         Documento = documentoLimpio,
                         FechaExpedicionDoc = dto.FechaExpedicionDoc.Value,
 
-                        PrimerNombre = dto.PrimerNombre.Trim(),
-                        SegundoNombre = dto.SegundoNombre?.Trim(),
-                        PrimerApellido = dto.PrimerApellido.Trim(),
-                        SegundoApellido = dto.SegundoApellido?.Trim(),
+                        PrimerNombre = dto.PrimerNombre.Trim().ToUpper(),
+                        SegundoNombre = dto.SegundoNombre?.Trim().ToUpper(),
+                        PrimerApellido = dto.PrimerApellido.Trim().ToUpper(),
+                        SegundoApellido = dto.SegundoApellido?.Trim().ToUpper(),
                         FechaNacimiento = dto.FechaNacimiento.Value,
                         EstadoCivilId = dto.EstadoCivilId ?? 0,
                         Celular = dto.Celular,
                         CelularAlterno = dto.CelularAlterno,
-                        CorreoElectronico = dto.CorreoElectronico.Trim(),
+                        CorreoElectronico = dto.CorreoElectronico.Trim().ToUpper(),
+                      
+                        EmpresaId = dto.EmpresaId,
 
-                        Direccion = dto.Direccion.Trim(),
-                        Barrio = dto.Barrio.Trim(),
+                        Direccion = dto.Direccion.Trim().ToUpper(),
+                        Barrio = dto.Barrio.Trim().ToUpper(),
                         FechaCreacion = DateTime.Now,
                         FechaActualizacion = DateTime.Now,
                         Activo = true
@@ -185,34 +187,43 @@ namespace Miluc.Server.Servicios.Nomina
         {
             try
             {
-                var empleado = await _context.Empleado.AsNoTracking()
-                    .Include(e => e.Municipio)
-                    .Include(e => e.TipoDocumento)
-                    .Include(e => e.EstadoCivil)
-                    .Where(e => e.EmpleadoId == id)
-                    .Select(e => new EmpleadoReaderDto
-                    {
-                        EmpleadoId = e.EmpleadoId,
-                        CodigoMunicipio = e.Municipio.Codigo,
-                        NombreMunicipio = e.Municipio.Nombre,
-                        TipoDocumentoId = e.TipoDocumento.TipoDocumentoId,
-                        Documento = e.Documento,
-                        FechaExpedicionDoc = e.FechaExpedicionDoc,
-                        PrimerNombre = e.PrimerNombre,
-                        SegundoNombre = e.SegundoNombre,
-                        PrimerApellido = e.PrimerApellido,
-                        SegundoApellido = e.SegundoApellido,
-                        FechaNacimiento = e.FechaNacimiento,
-                        EstadoCivilId = e.EstadoCivil.EstadoCivilId,
-                        Celular = e.Celular,
-                        CelularAlterno = e.CelularAlterno,
-                        CorreoElectronico = e.CorreoElectronico,
-                        Direccion = e.Direccion,
-                        Barrio = e.Barrio,
-                        FechaCreacion = e.FechaCreacion,
-                        FechaActualizacion = e.FechaActualizacion,
-                        Activo = e.Activo
-                    }).FirstOrDefaultAsync();
+                var empleado = await _context.Empleado
+        .AsNoTracking()
+        .Include(e => e.Municipio)
+        .Include(e => e.TipoDocumento)
+        .Include(e => e.EstadoCivil)
+        .Include(e => e.Empresa)
+        .Where(e => e.EmpleadoId == id)
+        .Select(e => new EmpleadoReaderDto
+        {
+            EmpleadoId = e.EmpleadoId,
+            CodigoMunicipio = e.Municipio.Codigo,
+            NombreMunicipio = e.Municipio.Nombre,
+            TipoDocumentoId = e.TipoDocumento.TipoDocumentoId,
+
+            EmpresaId = e.EmpresaId,
+            NombreEmpresa = e.Empresa != null
+                ? e.Empresa.NombreEmpresa
+                : string.Empty,
+
+            Documento = e.Documento,
+            FechaExpedicionDoc = e.FechaExpedicionDoc,
+            PrimerNombre = e.PrimerNombre,
+            SegundoNombre = e.SegundoNombre,
+            PrimerApellido = e.PrimerApellido,
+            SegundoApellido = e.SegundoApellido,
+            FechaNacimiento = e.FechaNacimiento,
+            EstadoCivilId = e.EstadoCivil.EstadoCivilId,
+            Celular = e.Celular,
+            CelularAlterno = e.CelularAlterno,
+            CorreoElectronico = e.CorreoElectronico,
+            Direccion = e.Direccion,
+            Barrio = e.Barrio,
+            FechaCreacion = e.FechaCreacion,
+            FechaActualizacion = e.FechaActualizacion,
+            Activo = e.Activo
+        })
+        .FirstOrDefaultAsync();
 
                 var usuarioexiste = await _milucDbContext.Usuarios.Where(x => x.Email == empleado.CorreoElectronico).FirstOrDefaultAsync();
                 if (usuarioexiste!=null)
@@ -276,6 +287,8 @@ namespace Miluc.Server.Servicios.Nomina
 
                        FechaNacimiento = e.FechaNacimiento,
                        EstadoCivilId = e.EstadoCivilId,
+                       EmpresaId = e.EmpresaId,
+                       NombreEmpresa = e.Empresa != null ? e.Empresa.NombreEmpresa : string.Empty,
 
                        Celular = e.Celular ?? string.Empty,
                        CelularAlterno = e.CelularAlterno ?? string.Empty,
@@ -322,53 +335,62 @@ namespace Miluc.Server.Servicios.Nomina
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
 
-            // Iniciamos la transacción solo en _context, igual que en CreateEmpleadosAsync
             using var transaction = await _context.Database.BeginTransactionAsync();
+
             try
             {
-                    // Buscar empleado existente
-                    var empleado = await _context.Empleado
+                var empleado = await _context.Empleado
                     .FirstOrDefaultAsync(e => e.EmpleadoId == dto.EmpleadoId);
 
                 if (empleado == null)
                     throw new Exception("Empleado no existe.");
 
-                // Validar unicidad de documento
                 var existeDocumento = await _context.Empleado
-                    .AnyAsync(e => e.Documento.ToLower() == dto.Documento.ToLower() && e.EmpleadoId != dto.EmpleadoId);
+                    .AnyAsync(e =>
+                        e.Documento.ToLower() == dto.Documento.ToLower() &&
+                        e.EmpleadoId != dto.EmpleadoId);
 
                 if (existeDocumento)
                     throw new Exception("Ya existe un empleado con ese documento.");
 
-                // Actualizar propiedades del Empleado
+                var correoExistente = await _context.Empleado
+                    .AnyAsync(e =>
+                        e.CorreoElectronico.ToLower() == dto.CorreoElectronico.ToLower() &&
+                        e.EmpleadoId != dto.EmpleadoId);
+
+                if (correoExistente)
+                    throw new Exception("Ya existe un empleado con ese correo electrónico.");
+
+                // EMPLEADO
                 empleado.CodigoMunicipio = dto.CodigoMunicipio;
                 empleado.TipoDocumentoId = dto.TipoDocumentoId;
                 empleado.Documento = dto.Documento;
                 empleado.FechaExpedicionDoc = dto.FechaExpedicionDoc.Value;
 
-                empleado.PrimerNombre = dto.PrimerNombre.ToUpper();
-                empleado.SegundoNombre = dto.SegundoNombre?.ToUpper();
-                empleado.PrimerApellido = dto.PrimerApellido.ToUpper();
-                empleado.SegundoApellido = dto.SegundoApellido?.ToUpper();
+                empleado.PrimerNombre = dto.PrimerNombre.Trim().ToUpper();
+                empleado.SegundoNombre = dto.SegundoNombre?.Trim().ToUpper();
+                empleado.PrimerApellido = dto.PrimerApellido.Trim().ToUpper();
+                empleado.SegundoApellido = dto.SegundoApellido?.Trim().ToUpper();
 
                 empleado.FechaNacimiento = dto.FechaNacimiento.Value;
                 empleado.EstadoCivilId = dto.EstadoCivilId.Value;
+                empleado.EmpresaId = dto.EmpresaId;
 
                 empleado.Celular = dto.Celular;
                 empleado.CelularAlterno = dto.CelularAlterno;
+                empleado.CorreoElectronico = dto.CorreoElectronico.Trim().ToUpper();
 
-                empleado.CorreoElectronico = dto.CorreoElectronico.ToLower();
-                empleado.Direccion = dto.Direccion;
-                empleado.Barrio = dto.Barrio;
+                empleado.Direccion = dto.Direccion?.Trim().ToUpper();
+                empleado.Barrio = dto.Barrio?.Trim().ToUpper();
 
                 empleado.FechaActualizacion = DateTime.Now;
                 empleado.Activo = dto.Activo;
 
                 _context.Empleado.Update(empleado);
-                await _context.SaveChangesAsync(); // Guardamos el primer contexto
+                await _context.SaveChangesAsync();
 
-                // Lógica de Usuario: Buscar si ya existe o crear uno nuevo
-                if (dto.Usuario.IdUsuario>0)
+                // USUARIO
+                if (dto.Usuario != null && dto.Usuario.IdUsuario > 0)
                 {
                     var usuarioUpdate = await _milucDbContext.Usuarios
                         .FirstOrDefaultAsync(u => u.IdUsuario == dto.Usuario.IdUsuario);
@@ -390,6 +412,9 @@ namespace Miluc.Server.Servicios.Nomina
                            
 
 
+                        usuarioUpdate.PasswordHash =
+                            hmac.ComputeHash(
+                                System.Text.Encoding.UTF8.GetBytes(dto.Usuario.Password));
 
                         usuarioUpdate.UserName = dto.Usuario.Email;
                         usuarioUpdate.Nombres= dto.Usuario.Nombres;
@@ -415,48 +440,52 @@ namespace Miluc.Server.Servicios.Nomina
                         await _milucDbContext.SaveChangesAsync();
                     }
 
-                    // Actualizar Roles (Limpiar e Insertar)
+                    _milucDbContext.Usuarios.Update(usuarioUpdate);
+                    await _milucDbContext.SaveChangesAsync();
+
+                    // ROLES
                     if (dto.Usuario.RolesIds != null)
                     {
-                        var rolesExistentes = _milucDbContext.UsuarioRoles.Where(r => r.IdUsuario == usuarioUpdate.IdUsuario);
+                        var rolesExistentes = _milucDbContext.UsuarioRoles
+                            .Where(r => r.IdUsuario == usuarioUpdate.IdUsuario);
+
                         _milucDbContext.UsuarioRoles.RemoveRange(rolesExistentes);
 
                         if (dto.Usuario.RolesIds.Any())
                         {
-                            var userRoles = dto.Usuario.RolesIds.Select(rolId => new UsuarioRol
+                            var nuevosRoles = dto.Usuario.RolesIds.Select(rolId => new UsuarioRol
                             {
                                 IdUsuario = usuarioUpdate.IdUsuario,
                                 IdRol = rolId
                             });
-                            await _milucDbContext.UsuarioRoles.AddRangeAsync(userRoles);
+
+                            await _milucDbContext.UsuarioRoles.AddRangeAsync(nuevosRoles);
                         }
                     }
 
-                    // Actualizar Tipos de Usuario (Limpiar e Insertar)
+                    // TIPOS USUARIO
                     if (dto.Usuario.TiposUsuarioIds != null)
                     {
-                        var tiposExistentes = _milucDbContext.UsuarioTipoUsuario.Where(t => t.IdUsuario == usuarioUpdate.IdUsuario);
+                        var tiposExistentes = _milucDbContext.UsuarioTipoUsuario
+                            .Where(t => t.IdUsuario == usuarioUpdate.IdUsuario);
+
                         _milucDbContext.UsuarioTipoUsuario.RemoveRange(tiposExistentes);
 
                         if (dto.Usuario.TiposUsuarioIds.Any())
                         {
-                            var userTipos = dto.Usuario.TiposUsuarioIds.Select(tipoId => new UsuarioTipoUsuario
+                            var nuevosTipos = dto.Usuario.TiposUsuarioIds.Select(tipoId => new UsuarioTipoUsuario
                             {
                                 IdUsuario = usuarioUpdate.IdUsuario,
                                 IdTipoUsuario = tipoId
                             });
-                            await _milucDbContext.UsuarioTipoUsuario.AddRangeAsync(userTipos);
+
+                            await _milucDbContext.UsuarioTipoUsuario.AddRangeAsync(nuevosTipos);
                         }
                     }
 
-                    // Guardar los cambios de las tablas intermedias
                     await _milucDbContext.SaveChangesAsync();
                 }
 
-
-
-
-                // Commit global para el contexto de Empleado
                 await transaction.CommitAsync();
 
                 return new EmpleadoReaderDto
@@ -472,6 +501,8 @@ namespace Miluc.Server.Servicios.Nomina
                     SegundoApellido = empleado.SegundoApellido,
                     FechaNacimiento = empleado.FechaNacimiento,
                     EstadoCivilId = empleado.EstadoCivilId,
+                    EmpresaId = empleado.EmpresaId,
+                    NombreEmpresa = empleado.Empresa?.NombreEmpresa ?? string.Empty,
                     Celular = empleado.Celular,
                     CelularAlterno = empleado.CelularAlterno,
                     CorreoElectronico = empleado.CorreoElectronico,
@@ -482,13 +513,14 @@ namespace Miluc.Server.Servicios.Nomina
                     Activo = empleado.Activo
                 };
             }
-            catch (Exception ex)
+            catch
             {
                 await transaction.RollbackAsync();
-                throw new Exception($"Error actualizando empleado: {ex.Message}", ex);
+                throw;
             }
         }
     }
 }
+
 
 

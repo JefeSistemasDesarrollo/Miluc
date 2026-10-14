@@ -17,7 +17,7 @@ namespace Miluc.Server.Servicios.Nomina
                     {
 
                         CondicionMedicaId = c.CondicionMedicaId,
-                        Nombre = c.Nombre
+                        Nombre = c.Nombre.Trim().ToUpper()
                     }).ToListAsync();
                 return condicion;
 

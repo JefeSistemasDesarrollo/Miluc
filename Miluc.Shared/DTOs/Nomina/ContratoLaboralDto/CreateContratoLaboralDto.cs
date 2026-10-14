@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Miluc.Shared.Validations;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Miluc.Shared.DTOs.Nomina.ContratoLaboralDto
@@ -15,9 +16,10 @@ namespace Miluc.Shared.DTOs.Nomina.ContratoLaboralDto
         public int EmpleadoId { get; set; } // FK de empleado
         public string NombreEmpledo { get; set; } = string.Empty;
 
-        public DateTime FechaCreacion { get; set; }
+        public DateTime? FechaCreacion { get; set; }
         public bool Activo { get; set; }
-
+        public int CentroCostoId { get; set; } // FK de centro de costo
+        public string NombreCentroCosto { get; set; } = string.Empty;
         // Detalle - tabla detalle contrato
         public int ContratoLaboralId { get; set; }
 
@@ -26,16 +28,15 @@ namespace Miluc.Shared.DTOs.Nomina.ContratoLaboralDto
         [PastOrPresentDate(ErrorMessage = "Fecha inicio  no puede ser mayor")]
         public DateTime? FechaInicio { get; set; }
 
-        [Required(ErrorMessage = "La fecha de finalización es obligatoria")]
-        [DataType(DataType.Date)]
-        
+        //[Required(ErrorMessage = "La fecha de finalización es obligatoria")]
+        //[DataType(DataType.Date)]
+        //[FechaNoAnteriorHoy(ErrorMessage = "La fecha de finalización no puede ser anterior a la fecha de inicio")]
         public DateTime? FechaFinalizacion { get; set; }
 
         [Range(1, int.MaxValue, ErrorMessage = "Seleccione un cargo")]
         public int CargoId { get; set; }
 
-        [Required(ErrorMessage = "Agregar un centro de costo")]
-        public string CentroCosto { get; set; } = string.Empty;
+      
 
         [Required(ErrorMessage = "El salario es obligatorio")]
         [RegularExpression(@"^\d+([.,]\d{1,2})?$", ErrorMessage = "El salario debe ser un número válido (hasta 2 decimales)")]

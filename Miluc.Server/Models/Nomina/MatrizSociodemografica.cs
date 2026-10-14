@@ -6,7 +6,7 @@
         public int EmpleadoId { get; set; }
         public bool ConSentimientoInformado { get; set; }
         public int Edad { get; set; }
-        public string Nacionalidad { get; set; }
+        public int NacionalidadId { get; set; }
         public int PaisNacimientoId { get; set; }
         public int GeneroId { get; set; }
         public  bool Fuma {  get; set; }
@@ -45,12 +45,13 @@
         public ClaseVivienda ClaseVivienda { get; set; }
         public NivelAcademico NivelAcademico { get;set; }
         public Empleado Empleado { get; set; }
+        public Nacionalidad Nacionalidad { get; set; }
 
 
 
 
 
 
-    }  
+        }  
 
 }

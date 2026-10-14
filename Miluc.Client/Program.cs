@@ -112,6 +112,9 @@ builder.Services.AddScoped<IMedioTransporteClientService, MedioTransporteClientS
 
 builder.Services.AddScoped<INivelAcademicoClientService, NivelAcademicoClientService>();
 builder.Services.AddScoped<IPaisClientService, PaisClienteService>();
+builder.Services.AddScoped<INacionalidadClienteService, NacionalidadClienteService>();
+builder.Services.AddScoped<ICentroCostoClienteService, CentroCostosClienteService>();
+
 
 builder.Services.AddSyncfusionBlazor();
 

@@ -83,6 +83,7 @@
         <table class="table table-striped table-hover mb-0">
             <thead class="bg-rojo text-white">
                 <tr>
+                    <th class="ps-4 py-3 text-center">Identificador Empresa</th>                    
                     <th class="ps-4 py-3 text-center">Nombre Empresa</th>
                     <th class="text-center">NIT</th>
                     <th class="text-center">Activo</th>
@@ -111,6 +112,9 @@
                     @foreach (var em in listEmpresasAlServidor)
                     {
                         <tr>
+                            <td>
+                                <div class="x-small text-center text-uppercase">@em.EmpresaId</div>
+                            </td>
                             <td>
                                 <div class="x-small text-center text-uppercase">@em.NombreEmpresa</div>
                             </td>
@@ -195,6 +199,12 @@
 
     protected override async Task OnInitializedAsync()
     {
+
+        if (!_autcliente.HasPermission("Card.Contracts"))
+        {
+            nav.NavigateTo("/no-autorizado");
+            return;
+        }
         await CargarEmpresasAsync();
     }
 
@@ -412,6 +422,6 @@
     // --- REDIRECCIONES ---
     private void IrACrearEmpresa() => nav.NavigateTo("/Administrar/Empresas/Crear");
     private void EditarEmpresa(int id) => nav.NavigateTo($"/Administrar/Empresas/Editar/{id}");
-    private void Volver() => nav.NavigateTo("/administrar-Nomina");
+    private void Volver() => nav.NavigateTo("/Card/Contratos");
     private void VerDetalle(int id) => nav.NavigateTo($"/Administrar/Empresa/Detalle/{id}");
 }

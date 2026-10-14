@@ -52,13 +52,13 @@ namespace Miluc.Server.Servicios.Nomina
                         AfiliacionId = (int?)x.AfiliacionSeguridadSocial.AfiliacionId ?? 0,
 
                         EpsId = (int?)x.AfiliacionSeguridadSocial.EpsId,
-                        NombreEps = x.AfiliacionSeguridadSocial.Eps.Nombre,
+                        NombreEps = x.AfiliacionSeguridadSocial.Eps.Nombre.Trim().ToUpper(),
 
                         AfpId = (int?)x.AfiliacionSeguridadSocial.AfpId,
-                        NombreAfp = x.AfiliacionSeguridadSocial.Afp.Nombre,
+                        NombreAfp = x.AfiliacionSeguridadSocial.Afp.Nombre.Trim().ToUpper(),
 
                         ArlId = (int?)x.AfiliacionSeguridadSocial.ArlId,
-                        NombreArl = x.AfiliacionSeguridadSocial.Arl.Nombre,
+                        NombreArl = x.AfiliacionSeguridadSocial.Arl.Nombre.Trim().ToUpper(),
 
                         CajaCompensacionId = (int?)x.AfiliacionSeguridadSocial.CajaCompensacionId,
                         NombreCajaCompensacion = x.AfiliacionSeguridadSocial.CajaCompensacion.Nombre

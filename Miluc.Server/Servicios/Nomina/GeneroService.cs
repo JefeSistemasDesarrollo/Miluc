@@ -16,7 +16,7 @@ namespace Miluc.Server.Servicios.Nomina
 
                     {
                         GeneroId = g.GeneroId,
-                        Nombre = g.Nombre,
+                        Nombre = g.Nombre.Trim().ToUpper(),
                     }).ToListAsync();
                 return genero;
 

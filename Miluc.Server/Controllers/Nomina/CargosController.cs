@@ -64,8 +64,10 @@ namespace Miluc.Server.Controllers.Nomina
             }
         }
 
-     [HttpPut("{id}")]
-        public async Task<ActionResult<ResponseAPI<bool>>> UpsertCargoAsync(int id, [FromBody] UpsertCargos upsertCargos)
+        [HttpPut("{id}")]
+        public async Task<ActionResult<ResponseAPI<bool>>> UpsertCargoAsync(
+           int id,
+           [FromBody] UpsertCargos upsertCargos)
         {
             if (upsertCargos == null)
             {
@@ -73,12 +75,12 @@ namespace Miluc.Server.Controllers.Nomina
                 {
                     EsCorrecto = false,
                     Valor = false,
-                    Mensaje = "Debe enviar la información de el cargo.",
+                    Mensaje = "Debe enviar la información del cargo.",
                     CantRegistros = 0
                 });
             }
 
-            // Si viene ID en la ruta pero el DTO trae 0, se sincronizan; si ambos traen IDs distintos, se rechaza.
+            // Validar consistencia entre ID de la ruta y DTO
             if (upsertCargos.CargoId != 0 && id != upsertCargos.CargoId)
             {
                 return BadRequest(new ResponseAPI<bool>
@@ -90,6 +92,7 @@ namespace Miluc.Server.Controllers.Nomina
                 });
             }
 
+            // Si viene el ID en la URL y el DTO viene en 0, lo sincronizamos
             if (upsertCargos.CargoId == 0 && id > 0)
             {
                 upsertCargos.CargoId = id;
@@ -101,24 +104,45 @@ namespace Miluc.Server.Controllers.Nomina
                 {
                     EsCorrecto = false,
                     Valor = false,
-                    Mensaje = "Datos inválidos.",
+                    Mensaje = "Los datos enviados no son válidos.",
                     CantRegistros = 0
                 });
             }
 
             try
             {
-                bool esNueva = upsertCargos.CargoId == 0;
+                bool esNuevo = upsertCargos.CargoId == 0;
+
                 var resultado = await _cargoService.UpsertCargoAsync(upsertCargos);
 
                 return Ok(new ResponseAPI<bool>
                 {
                     EsCorrecto = true,
                     Valor = resultado,
-                    Mensaje = esNueva
+                    Mensaje = esNuevo
                         ? "Cargo creado correctamente."
                         : "Cargo actualizado correctamente.",
                     CantRegistros = 1
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new ResponseAPI<bool>
+                {
+                    EsCorrecto = false,
+                    Valor = false,
+                    Mensaje = ex.Message,
+                    CantRegistros = 0
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new ResponseAPI<bool>
+                {
+                    EsCorrecto = false,
+                    Valor = false,
+                    Mensaje = ex.Message,
+                    CantRegistros = 0
                 });
             }
             catch (Exception ex)
@@ -135,8 +159,7 @@ namespace Miluc.Server.Controllers.Nomina
                     origen: nameof(CargosController)
                 );
 
-                // Seguridad: Se registra el error detallado internamente, pero se responde un mensaje controlado al cliente.
-                return StatusCode(500, new ResponseAPI<bool>
+                return StatusCode(StatusCodes.Status500InternalServerError, new ResponseAPI<bool>
                 {
                     EsCorrecto = false,
                     Valor = false,

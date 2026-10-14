@@ -14,7 +14,7 @@ public class ContratoLaboralDetalle
     public DateTime? FechaTerminacion { get; set; }
     public string Observacion { get; set; }
     public int CargoId { get; set; }
-    public string CentroCosto { get; set; } = string.Empty;
+    
     public decimal Salario { get; set; }
     public ContratoLaboral ContratoLaboral { get; set; }
     public Cargo Cargo { get; set; }

@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="es">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -42,7 +41,6 @@
 
 
 </head>
-
 <body>
     <div id="app">
         <svg class="loading-progress">
@@ -86,15 +84,13 @@
     </script>
 
     <script>
-        window.idleHelper = {
-            registerActivity: function (dotnetHelper) {
-                document.addEventListener("mousemove", () => dotnetHelper.invokeMethodAsync("ResetTimer"));
-                document.addEventListener("keydown", () => dotnetHelper.invokeMethodAsync("ResetTimer"));
-                document.addEventListener("click", () => dotnetHelper.invokeMethodAsync("ResetTimer"));
-            }
-        };
+                window.idleHelper = {
+                    registerActivity: function (dotnetHelper) {
+                        document.addEventListener("mousemove", () => dotnetHelper.invokeMethodAsync("ResetTimer"));
+                        document.addEventListener("keydown", () => dotnetHelper.invokeMethodAsync("ResetTimer"));
+                        document.addEventListener("click", () => dotnetHelper.invokeMethodAsync("ResetTimer"));
+                    }
+                };
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
-
 </html>
