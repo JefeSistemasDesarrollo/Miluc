@@ -1,0 +1,139 @@
+﻿@page  "/Filtros-Detalle/{Id:int}"
+@using System.Text.Json
+@using Miluc.Client.Interfaces.UsuariosRolesPermisos
+@using Miluc.Shared.DTOs.Usuarios.AsignarFiltrosDto
+@inject IAsignacionFiltrosClient _asignacionFiltrosClientService
+@inject IJSRuntime _js
+@inject NavigationManager _nav
+@inject ILogClientService _logClienteService
+
+<div class="usuarios-page animate__animated animate__fadeIn p-4">
+    <div class="container-fluid max-width-container">
+
+        @* --- CABECERA DE LA PÁGINA --- *@
+        <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
+            <div>
+                <h2 class="fw-extrabold text-negro m-0 tracking-tight">
+                    <i class="bi bi-eye-fill me-2 header-icon"></i>
+                    Detalle de Asignación de Filtro
+                </h2>
+                <p class="text-muted mb-0 small mt-1">
+                    Visualice la información detallada del filtro asignado.
+                </p>
+            </div>
+
+            <button class="btn btn-rojo btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
+                <i class="bi bi-arrow-left me-2"></i> Volver al listado
+            </button>
+        </div>
+
+        @if (cargando)
+        {
+            <div class="d-flex justify-content-center my-5">
+                <div class="spinner-border text-rojo" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+            </div>
+        }
+        else
+        {
+            @* --- TARJETA DE DETALLES --- *@
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body p-4">
+                    <div class="section-title-container mb-4">
+                        <span class="badge bg-rojo text-white rounded-pill mb-2 px-3 py-2 fw-bold text-uppercase tracking-wider">Información</span>
+                        <h5 class="fw-bold text-dark m-0">Datos Registrados</h5>
+                    </div>
+
+                    <div class="row g-4">
+                        @* ID del Filtro *@
+                        <div class="col-md-6">
+                            <h6 class="fw-bold mb-1 small text-uppercase text-muted">ID Asignación</h6>
+                            <p class="fs-6 text-dark fw-semibold">@filtroDetalle.AsignarFiltrosId</p>
+                        </div>
+
+                        @* Usuario *@
+                        <div class="col-md-6">
+                            <h6 class="fw-bold mb-1 small text-uppercase text-muted">Usuario Asignado</h6>
+                            <p class="fs-6 text-dark fw-semibold">@(string.IsNullOrEmpty(filtroDetalle.NombreUsuario) ? "No especificado" : filtroDetalle.NombreUsuario)</p>
+                        </div>
+
+                        @* Módulo *@
+                        <div class="col-md-6">
+                            <h6 class="fw-bold mb-1 small text-uppercase text-muted">Nombre del Módulo</h6>
+                            <p class="fs-6 text-dark fw-semibold">@filtroDetalle.NombreModulo</p>
+                        </div>
+
+                        @* Filtro *@
+                        <div class="col-md-6">
+                            <h6 class="fw-bold mb-1 small text-uppercase text-muted">Filtro / Expresión</h6>
+                            <p class="fs-6 text-dark fw-semibold"><span class="badge bg-light text-dark border">@filtroDetalle.Filtro</span></p>
+                        </div>
+
+                        @* Descripción *@
+                        <div class="col-12">
+                            <h6 class="fw-bold mb-1 small text-uppercase text-muted">Descripción</h6>
+                            <p class="fs-6 text-dark">@(string.IsNullOrEmpty(filtroDetalle.Descripcion) ? "Sin descripción registrada." : filtroDetalle.Descripcion)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* --- BARRA DE ACCIONES --- *@
+            <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-3">
+                <button type="button" class="btn btn-rojo rounded-pill px-5 shadow-sm fw-bold transition-all d-flex align-items-center" @onclick="Volver">
+                    <i class="bi bi-arrow-left me-2"></i> Volver
+                </button>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private AsignarFiltrosReaderDto filtroDetalle = new();
+    private bool cargando = true;
+
+    private void Volver() => _nav.NavigateTo("/Administrar-Filtros");
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var responseFiltro = await _asignacionFiltrosClientService.GetByIdFiltrosAsync(Id);
+            if (responseFiltro?.Valor != null)
+            {
+                filtroDetalle = responseFiltro.Valor;
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("Swal.fire", new
+                {
+                    icon = "warning",
+                    title = "No encontrado",
+                    text = "El registro de filtro solicitado no existe o fue eliminado.",
+                    confirmButtonColor = "#6c1d1d"
+                });
+                Volver();
+            }
+        }
+        catch (Exception ex)
+        {
+            await _logClienteService.GuardarErrorAsync(ex.Message, ex.StackTrace, "error", "OnInitializedAsync Detalle");
+            await _js.InvokeVoidAsync("Swal.fire", new
+            {
+                icon = "error",
+                title = "Error",
+                text = "Ocurrió un error al cargar los detalles del filtro.",
+                confirmButtonColor = "#6c1d1d"
+            });
+            Volver();
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+}

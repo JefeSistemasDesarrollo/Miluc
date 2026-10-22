@@ -28,9 +28,15 @@
     </div>
 
 
-    <button class="btn btn-rojo btn-nuevo rounded-pill px-4 shadow-sm" @onclick=IrACrearEmpleado>
-        <i class="bi bi-plus-lg me-1"></i> Nuevo empleado
-    </button>
+    @if (_autcliente.HasPermission("Employee.Create"))
+    {
+        <button class="btn btn-rojo btn-nuevo rounded-pill px-4 shadow-sm" @onclick=IrACrearEmpleado>
+            <i class="bi bi-plus-lg me-1"></i> Nuevo empleado
+        </button>
+    }
+
+
+   
 
 
 </div>
@@ -179,7 +185,7 @@
                                     </button>
 
                                     @* Botón para accionar el flujo de eliminación *@
-                                    @if (PuedeEliminar)
+                                    @if (_autcliente.HasPermission("Employee.Delete"))
                                     {
                                         <button class="btn btn-white btn-sm px-2 delete"
                                                 title="Eliminar"@onclick="() => EliminarEmpleado(em.EmpleadoId)"><i class="bi bi-trash3 text-danger"></i>
@@ -217,7 +223,7 @@
 
     // Variable interna de control para el buscador
     private string _textoBusqueda = "";
-    private bool PuedeEliminar;
+    // private bool PuedeEliminar;
     // Variables de control de configuración y paginación
     private int cantidadPorPagina = 10;
     private int paginaActual = 1;
@@ -258,7 +264,7 @@
         }
 
 
-        PuedeEliminar = _autcliente.HasPermission("Delete.employee");
+       // PuedeEliminar = _autcliente.HasPermission("Employee.Delete");
 
         if (!_autcliente.HasPermission("Employee.View"))
         {

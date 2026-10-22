@@ -2,6 +2,7 @@
 using Miluc.Server.Interfaces.Autorizacion;
 using Miluc.Server.Models;
 using Miluc.Shared.DTOs.Usuarios;
+using Miluc.Shared.DTOs.Usuarios.AsignarFiltrosDto;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;

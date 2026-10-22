@@ -6,6 +6,7 @@ using Miluc.Server.Models;
 using Miluc.Server.Models.AutorizacionModel;
 using Miluc.Shared.DTOs.Autorizacion;
 using Miluc.Shared.DTOs.Usuarios;
+using Miluc.Shared.DTOs.Usuarios.AsignarFiltrosDto;
 using Miluc.Shared.Models.Response;
 using System.Security.Cryptography;
 using System.Text;

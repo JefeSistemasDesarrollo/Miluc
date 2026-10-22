@@ -15,7 +15,7 @@ namespace Miluc.Server.Servicios.Nomina
         {
             //if (dto != null) 
             if (dto == null)
-                throw new ArgumentNullException("El objeto del viene vacío", nameof(dto));
+                throw new ArgumentNullException(nameof(dto), "El objeto del viene vacío");
             if (await _milucDbContext.Usuarios.AnyAsync(u => u.Email.ToLower() == dto.Usuario.Email.ToLower()))
                 throw new InvalidOperationException("El correo electrónico ya está en uso.");
 
@@ -96,7 +96,7 @@ namespace Miluc.Server.Servicios.Nomina
                     await _milucDbContext.SaveChangesAsync();
 
                     // 4. Asignación de Roles (Tabla Intermedia)
-                    if (dto.Usuario.RolesIds != null && dto.Usuario.RolesIds.Any())
+                    if (dto.Usuario.RolesIds != null && dto.Usuario.RolesIds.Count != 0)
                     {
                         var userRoles = dto.Usuario.RolesIds.Select(rolId => new UsuarioRol
                         {
@@ -107,7 +107,7 @@ namespace Miluc.Server.Servicios.Nomina
                     }
 
                     // 5. Asignación de Tipos de Usuario (Tabla Intermedia)
-                    if (dto.Usuario.TiposUsuarioIds != null && dto.Usuario.TiposUsuarioIds.Any())
+                    if (dto.Usuario.TiposUsuarioIds != null && dto.Usuario.TiposUsuarioIds.Count != 0)
                     {
                         var userTipos = dto.Usuario.TiposUsuarioIds.Select(tipoId => new UsuarioTipoUsuario
                         {
@@ -245,12 +245,14 @@ namespace Miluc.Server.Servicios.Nomina
         {
             try
             {
+
+
+
+
+
                 int cantidadTop = cantidad ?? 20;
 
-                if (filtro == null)
-                {
-                    filtro = string.Empty;
-                }
+                filtro ??= string.Empty;
 
                 var query = _context.Empleado.AsNoTracking().AsQueryable();
                 if (!string.IsNullOrEmpty(filtro))
@@ -340,10 +342,7 @@ namespace Miluc.Server.Servicios.Nomina
             try
             {
                 var empleado = await _context.Empleado
-                    .FirstOrDefaultAsync(e => e.EmpleadoId == dto.EmpleadoId);
-
-                if (empleado == null)
-                    throw new Exception("Empleado no existe.");
+                    .FirstOrDefaultAsync(e => e.EmpleadoId == dto.EmpleadoId) ?? throw new Exception("Empleado no existe.");
 
                 var existeDocumento = await _context.Empleado
                     .AnyAsync(e =>
@@ -451,7 +450,7 @@ namespace Miluc.Server.Servicios.Nomina
 
                         _milucDbContext.UsuarioRoles.RemoveRange(rolesExistentes);
 
-                        if (dto.Usuario.RolesIds.Any())
+                        if (dto.Usuario.RolesIds.Count != 0)
                         {
                             var nuevosRoles = dto.Usuario.RolesIds.Select(rolId => new UsuarioRol
                             {
@@ -471,7 +470,7 @@ namespace Miluc.Server.Servicios.Nomina
 
                         _milucDbContext.UsuarioTipoUsuario.RemoveRange(tiposExistentes);
 
-                        if (dto.Usuario.TiposUsuarioIds.Any())
+                        if (dto.Usuario.TiposUsuarioIds.Count != 0)
                         {
                             var nuevosTipos = dto.Usuario.TiposUsuarioIds.Select(tipoId => new UsuarioTipoUsuario
                             {

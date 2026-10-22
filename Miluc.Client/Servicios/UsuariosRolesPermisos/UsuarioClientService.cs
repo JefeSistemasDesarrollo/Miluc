@@ -15,8 +15,7 @@ namespace Miluc.Client.Servicios.UsuariosRolesPermisos
                 var url = $"api/Usuario?buscar={buscar}&pagina={pagina}&cantidad={cantidad}";
                 var responseUsuario = await _httpclient.GetFromJsonAsync<ResponseAPI<List<UsuarioReadDto>>>(url);
 
-                return responseUsuario ??
-                    new ResponseAPI<List<UsuarioReadDto>>
+                return responseUsuario ?? new ResponseAPI<List<UsuarioReadDto>>
                     { Valor = new List<UsuarioReadDto>(), Mensaje = responseUsuario?.Mensaje ?? "Error al obtener datos", Errores = responseUsuario?.Errores };
             }
             catch (Exception ex)

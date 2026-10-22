@@ -79,7 +79,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Fecha de Entrega</label>
-                            <InputDate class="form-control form-control-sm" @bind-Value="fechaEntrega"  min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                            <InputDate class="form-control form-control-sm" @bind-Value="fechaEntrega" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Numero referencia O.C</label>
@@ -204,14 +204,14 @@
                                         {
                                             <!-- Cuando el artículo se vende por Kg, este campo solo muestra el valor -->
                                             <InputNumber TValue="decimal?" Value="linea.U_CantidadKg" ValueExpression="() => linea.U_CantidadKg"
-                                                         class="form-control form-control-sm text-end"step="any"readonly />
+                                                         class="form-control form-control-sm text-end" step="any" readonly />
                                         }
                                         else
                                         {
                                             <!-- Cuando el artículo se vende por unidades, este campo SI se puede editar -->
                                             <InputNumber TValue="decimal?" Value="linea.U_CantidadKg" ValueChanged="@(v => OnKgChanged(v, linea))"
-                                                         ValueExpression="() => linea.U_CantidadKg"class="form-control form-control-sm text-end"
-                                                         step="any"min="0" />
+                                                         ValueExpression="() => linea.U_CantidadKg" class="form-control form-control-sm text-end"
+                                                         step="any" min="0" />
                                         }
                                     </td>
                                     <!-- EQUIVALENTE UNIDADES -->
@@ -220,7 +220,7 @@
                                         {
                                             <!-- Cuando el artículo se vende por Kg, este campo SI se puede editar -->
                                             <InputNumber TValue="decimal?" Value="linea.U_UnidadSal" ValueChanged="@(v => OnUnidadesChanged(v, linea))"
-                                                         ValueExpression="() => linea.U_UnidadSal"class="form-control form-control-sm text-end"
+                                                         ValueExpression="() => linea.U_UnidadSal" class="form-control form-control-sm text-end"
                                                          step="1" min="0" />
                                         }
                                         else
@@ -233,15 +233,15 @@
                                         }
                                     </td>
                                     <!-- PRECIOS -->
-                             @*        <td>
+                                    @*        <td>
                                         <input type="number" readonly class="form-control form-control-sm text-end" @bind="linea.PriceAcobrar" @bind:event="oninput">
                                     </td> *@
 
                                     <td>
                                         @if (_authClientService.HasPermission("Orden.EditarPrice"))
                                         {
-                                            <InputNumber TValue="decimal?" Value="linea.PriceAcobrar"ValueChanged="@(v => { linea.PriceAcobrar = v; CalcularTotales(linea); })"
-                                                         ValueExpression="() => linea.PriceAcobrar" class="form-control form-control-sm text-end"step="any" min="0" />
+                                            <InputNumber TValue="decimal?" Value="linea.PriceAcobrar" ValueChanged="@(v => { linea.PriceAcobrar = v; CalcularTotales(linea); })"
+                                                         ValueExpression="() => linea.PriceAcobrar" class="form-control form-control-sm text-end" step="any" min="0" />
                                         }
                                         else
                                         {
@@ -249,19 +249,19 @@
                                         }
                                     </td>
 
-                               @*      <td>
+                                    @*      <td>
                                         <input type="number" readonly class="form-control form-control-sm text-end" @bind="linea.PriceAsignado" @bind:event="oninput">
                                     </td> *@
                                     <td>
                                         <input type="number" readonly class="form-control form-control-sm text-end" @bind="linea.PriceEspecial" @bind:event="oninput">
                                     </td>
-                                  @*   <td>
+                                    @*   <td>
                                         <input type="text" readonly class="form-control form-control-sm" @bind="linea.TaxCode">
                                     </td>
                                     <td>
                                         <input type="number" readonly class="form-control form-control-sm text-end" @bind="linea.Rate" @bind:event="oninput">
                                     </td> *@
-                              @*       <td class="text-end pe-3 fw-bold text-maroon">
+                                    @*       <td class="text-end pe-3 fw-bold text-maroon">
                                         @linea.TotalImpuesto.ToString("N2", new CultureInfo("es-CO"))
                                     </td> *@
                                     <td class="text-end pe-3 fw-bold text-maroon">
@@ -351,7 +351,7 @@
                     <small class="text-muted">Página @paginaActualArticulo de @TotalPaginasArticulo</small>
                 </div>
                 <!-- LISTA -->
-                <div class="list-group"style="max-height: 350px; overflow-y: auto;">
+                <div class="list-group" style="max-height: 350px; overflow-y: auto;">
 
                     @if (listaArticulosApi.Any())
                     {
@@ -782,30 +782,30 @@
                 if (lineasPedido.Count > 0)
                 {
                     PedidoUpdateDto pedidoUpdateDto = new PedidoUpdateDto
-                        {
-                            DocEntry = DocEntry,
-                            CardCode = clienteSeleccionado.CardCode,
-                            NumAtCard = clienteSeleccionado.NumAtCard,
-                            DocDate = fechaContabilizacion,
-                            DocDueDate = fechaEntrega,
-                            Reference2 = "Generado por pagina web",
-                            Comments = comentarios,
-                            JournalMemo = "Pedido editado desde Miluc Web",
-                            SalesPersonCode = clienteSeleccionado.SlpCode,
-                            U_OrigenPedido = origenSeleccionado,
-                            U_Responsable = _authClientService.CurrentSession.IdUsuario.ToString(),
+                    {
+                        DocEntry = DocEntry,
+                        CardCode = clienteSeleccionado.CardCode,
+                        NumAtCard = clienteSeleccionado.NumAtCard,
+                        DocDate = fechaContabilizacion,
+                        DocDueDate = fechaEntrega,
+                        Reference2 = "Generado por pagina web",
+                        Comments = comentarios,
+                        JournalMemo = "Pedido editado desde Miluc Web",
+                        SalesPersonCode = clienteSeleccionado.SlpCode,
+                        U_OrigenPedido = origenSeleccionado,
+                        U_Responsable = _authClientService.CurrentSession.IdUsuario.ToString(),
 
                         // U_Responsable = _authClientService.CurrentSession.UserName,
-                            DocumentLines = lineasPedido.Select(x => new PedidoCrearDetalleLineaDTO
-                            {
-                                ItemCode = x.ItemCode,
-                                Quantity = Convert.ToDecimal(x.Quantity),
-                                U_CantidadKg = Convert.ToDecimal(x.U_CantidadKg),
-                                U_UnidadSal = Convert.ToDecimal(x.U_UnidadSal),
-                                UnitPrice = Convert.ToDecimal(x.PriceAcobrar),
-                            }).ToList()
+                        DocumentLines = lineasPedido.Select(x => new PedidoCrearDetalleLineaDTO
+                        {
+                            ItemCode = x.ItemCode,
+                            Quantity = Convert.ToDecimal(x.Quantity),
+                            U_CantidadKg = Convert.ToDecimal(x.U_CantidadKg),
+                            U_UnidadSal = Convert.ToDecimal(x.U_UnidadSal),
+                            UnitPrice = Convert.ToDecimal(x.PriceAcobrar),
+                        }).ToList()
 
-                        };
+                    };
                     if (TotalFinal > 0)
                     {
                         var response = await _sapOrdrService.UpdatePedidoAsync(pedidoUpdateDto);

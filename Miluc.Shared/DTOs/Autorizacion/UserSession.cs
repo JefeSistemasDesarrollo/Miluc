@@ -1,4 +1,5 @@
 ﻿using Miluc.Shared.DTOs.Usuarios;
+using Miluc.Shared.DTOs.Usuarios.AsignarFiltrosDto;
 
 namespace Miluc.Shared.DTOs.Autorizacion
 {

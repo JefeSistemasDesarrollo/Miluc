@@ -1,5 +1,6 @@
 ﻿using Miluc.Server.Models;
 using Miluc.Shared.DTOs.Usuarios;
+using Miluc.Shared.DTOs.Usuarios.AsignarFiltrosDto;
 
 namespace Miluc.Server.Interfaces.Autorizacion
 {

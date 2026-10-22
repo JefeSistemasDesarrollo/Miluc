@@ -78,7 +78,7 @@ public async Task<ResponseAPI<List<AfpReaderDto>>> GetAfpAsyc(string textoBusque
                 var busquedaSegura = Uri.EscapeDataString(textoBusqueda ?? string.Empty);
 
 
-                var url = $"/api/Afp/Afp?textoBusqueda={busquedaSegura}&paginaActual={paginaActual}&cantidadPorPagina={cantidadPorPagina}";
+                var url = $"/api/filtros/?textoBusqueda={busquedaSegura}&paginaActual={paginaActual}&cantidadPorPagina={cantidadPorPagina}";
 
                 var responsePeticion = await httpClient.GetAsync(url);
 
