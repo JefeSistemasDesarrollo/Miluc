@@ -245,14 +245,7 @@ namespace Miluc.Server.Servicios.Nomina
         {
             try
             {
-
-
-
-
-
                 int cantidadTop = cantidad ?? 20;
-
-             
 
                 if (filtro == null)
                 {
