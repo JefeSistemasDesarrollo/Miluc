@@ -17,7 +17,7 @@
 @inject IEmpresaClientSevice _empresaClientSevice
 @inject IJSRuntime JS
 
-<div class="empleado-page p-4 animate__animated animate__fadeIn">
+<div class="empleado-page p-4 animate_animated animate_fadeIn">
     <div class="container-fluid max-width-container">
 
         @* --- CABECERA DE LA PÁGINA --- *@
@@ -455,22 +455,16 @@
             // Solo generar contraseña si cambió el correo
             if (correoCambio)
             {
-                editarEmpleado.Usuario.IdUsuario = editarEmpleado.Usuario.IdUsuario;
-                editarEmpleado.Usuario.UserName = editarEmpleado.CorreoElectronico;
-                editarEmpleado.Usuario.Nombres = $"{editarEmpleado.PrimerNombre} {editarEmpleado.SegundoNombre}";
-                editarEmpleado.Usuario.Apellidos = $"{editarEmpleado.PrimerApellido} {editarEmpleado.SegundoApellido}";
-                editarEmpleado.Usuario.Email = editarEmpleado.CorreoElectronico;
-                editarEmpleado.Usuario.EmailTemporal=correoTemporal;
-
-                editarEmpleado.Usuario.Telefono = editarEmpleado.Celular;
-
-                if (correoTemporal != editarEmpleado.Usuario.Email)
-                {
-                    editarEmpleado.Usuario.Password = PasswordGenerator(); // PasswordGenerator();
-                    editarEmpleado.Usuario.ConfirmarPassword = editarEmpleado.Usuario.Password;     
-                    editarEmpleado.Usuario.DebeCambiarPassword = true;
-                }
-                
+                editarEmpleado.Usuario.Password = PasswordGenerator();
+                editarEmpleado.Usuario.ConfirmarPassword = editarEmpleado.Usuario.Password;
+                editarEmpleado.Usuario.DebeCambiarPassword = true;
+            }
+            else
+            {
+                editarEmpleado.Usuario.Password = string.Empty;
+                editarEmpleado.Usuario.ConfirmarPassword = string.Empty;
+                editarEmpleado.Usuario.DebeCambiarPassword = false;
+            }
 
             editarEmpleado.Usuario.HoraInicio = TimeOnly.Parse("08:00");
             editarEmpleado.Usuario.HoraFin = TimeOnly.Parse("17:00");
@@ -538,7 +532,7 @@
             width: '100%'
         });
 
-        select.on('change', function () {
+        select.on('change', function() {
             dotNetHelper.invokeMethodAsync('ActualizarMunicipioDesdeJS', $(this).val());
         });
     };

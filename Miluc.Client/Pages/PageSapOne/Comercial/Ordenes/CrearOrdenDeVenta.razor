@@ -558,10 +558,23 @@
             FiltrarArticulos();
         }
     }
+    protected override async Task OnInitializedAsync()
+    {
+
+        // guid = Guid.NewGuid();
+        if (guid == Guid.Empty)
+        {
+            guid = Guid.NewGuid();
+        }
+        
+
+        // pedido.U_WUID = guid.ToString();
+        await InicializarFormulario();
+    }
     private async Task InicializarFormulario()
     {
 
-          guid = Guid.NewGuid();
+      
 
         clienteSeleccionado = new();
         ArticuloSeleccionado = new();
@@ -691,10 +704,8 @@
     }
     private void AbrirModalCliente() => mostrarModalCliente = true;
     private void CerrarModalCliente() => mostrarModalCliente = false;
-    protected override async Task OnInitializedAsync()
-    {
-        await InicializarFormulario();
-    }
+
+   
     private async Task RecargarPagina()
     {
         await InicializarFormulario();
@@ -1085,11 +1096,13 @@
                     RecalcularLinea(line);
 
                 }
+
+              
                 PedidoCreateDto pedidoCreateDto = new PedidoCreateDto
                 {
                     U_WUID = guid.ToString(),
                     CardCode = clienteSeleccionado.CardCode,
-                    NumAtCard=clienteSeleccionado.NumAtCard??"",
+                    NumAtCard = clienteSeleccionado.NumAtCard ?? "",
                     DocDate = fechaContabilizacion,
                     DocDueDate = fechaEntrega,
                     Reference2 = "Generado por pagina web",
@@ -1098,7 +1111,7 @@
                     SalesPersonCode = clienteSeleccionado.SlpCode,
                     U_OrigenPedido = origenSeleccionado,
                     U_Responsable = _authClientService.CurrentSession.IdUsuario.ToString(),
-                   // Printed = "psYes",
+                    // Printed = "psYes",
                     //IdUsuario=_authClientService.CurrentSession.IdUsuario,
                     DocumentLines = lineasPedido.Select(x => new PedidoCrearDetalleLineaDTO
                     {
@@ -1111,8 +1124,12 @@
                 };
 
 
+
+               
                 if (TotalFinal > 0)
                 {
+
+                  //  return;
                     var response = await _sapOrdrService.CreatePedidoAsyc(pedidoCreateDto);
                     // Cerrar ventana de espera
                     // await _jsRuntime.InvokeVoidAsync("cerrarEspera");

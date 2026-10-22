@@ -22,5 +22,8 @@
         Task<bool> CarteraVencidaExcel(DateTime fechaFinal, string? cardCode = null, int? codeVendedor = null, int? codCanal = null);
 
 
+        Task<bool> DescargarTrazabilidad(DateTime fechaInicio, DateTime fechaFinal, int slpCode);
+
+
     }
 }

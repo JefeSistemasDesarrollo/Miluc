@@ -223,6 +223,8 @@
     private int paginaActual = 1;
     private int totalRegistros = 0;
     private bool cargando = false;
+ 
+    int idEmpresa=0;
 
     public string _correo = "";
     // Propiedad Completa (Full Property) para interceptar los cambios en el buscador en tiempo real
@@ -241,11 +243,8 @@
 
         // var filtros = _autcliente.CurrentSession.Filtros;
 
-        int idEmpresa=0;
-
-
-
-        if (_autcliente.HasPermission("Modulo.Nomina"))
+      
+           if (_autcliente.HasPermission("Modulo.Nomina"))
         {
 
             if (_autcliente.HasFiltro("Modulo.Nomina"))
@@ -256,6 +255,8 @@
              
 
         }
+       
+
 
 
         PuedeEliminar = _autcliente.HasPermission("Delete.employee");
@@ -283,11 +284,23 @@
         // var usuariopermiso= _authClientService.CurrentSession.Permisos;
 
 
+            if (_autcliente.HasPermission("Modulo.Nomina"))
+        {
+
+            if (_autcliente.HasFiltro("Modulo.Nomina"))
+            {
+
+                idEmpresa=Convert.ToInt32(_autcliente.CurrentSession.Filtros.FirstOrDefault(f => f.NombreModulo=="Modulo.Nomina").Filtro);
+            }
+             
+
+        }
        
+     
 
         // var documento = "1030574297";
         // Petición asíncrona enviando los parámetros de paginación actuales
-        var respuesta = await _empleadoClientService.GetEmpleadosAsync(textoBusqueda, paginaActual, cantidadPorPagina, _correo);
+        var respuesta = await _empleadoClientService.GetEmpleadosAsync(textoBusqueda, paginaActual, cantidadPorPagina, _correo, idEmpresa);
 
         if (respuesta.EsCorrecto)
         {
@@ -332,7 +345,8 @@
             paginaActual = 1;
 
 
-        var respuesta = await _empleadoClientService.GetEmpleadosAsync(textoBusqueda, paginaActual, cantidadPorPagina, _correo);
+
+        var respuesta = await _empleadoClientService.GetEmpleadosAsync(textoBusqueda, paginaActual, cantidadPorPagina, _correo, idEmpresa);
 
         if (respuesta != null && respuesta.EsCorrecto)
         {

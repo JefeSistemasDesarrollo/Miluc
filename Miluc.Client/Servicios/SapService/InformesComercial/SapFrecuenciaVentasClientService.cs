@@ -19,19 +19,39 @@ namespace Miluc.Client.Servicios.SapService.InformesComercial
         {
             try
             {
-                var url = $"api/Informes/CanalDeDistribucion/Excel?FechaIncio={FechaIncio:yyyy-MM-dd}&FechaFinal={FechaFinal:yyyy-MM-dd}&GrDistribucion={GrDistribucion}";
+                //var url = $"api/Informes/CanalDeDistribucion/Excel?FechaIncio={FechaIncio:yyyy-MM-dd}&FechaFinal={FechaFinal:yyyy-MM-dd}&GrDistribucion={GrDistribucion}";
+               // var url = $"api/Informes/CanalDeDistribucion/Excel?FechaIncio={FechaIncio:yyyy-MM-dd}&FechaFinal={FechaFinal:yyyy-MM-dd}&GrDistribucion={GrDistribucion}";
                
+                
+                var url = $"api/Informes/CanalDeDistribucion/Excel" + $"?fechaInicio={FechaIncio:yyyy-MM-dd}" +$"&FechaFinal={FechaFinal:yyyy-MM-dd}" + $"&GrDistribucion={GrDistribucion}";
+
                 var response = await _http.GetAsync(url);
+
                 if (!response.IsSuccessStatusCode)
                 {
-                    throw new Exception($"Error al generar el informe de canal de distribución. Código de estado: {response.StatusCode}");
+                    return false;
                 }
-                var archivo = await response.Content.ReadAsStreamAsync();
+
+                var archivo = await response.Content.ReadAsByteArrayAsync();
 
                 await _js.InvokeVoidAsync(
-                   "descargarArchivo",
-                   $"canalaDedis{FechaIncio:yyyyMMdd}_{FechaFinal:yyyyMMdd}.xlsx",
-                   archivo);
+                    "descargarArchivo",
+                    $"canalaDedis{FechaIncio:yyyyMMdd}_{FechaFinal:yyyyMMdd}.xlsx",
+                    archivo);
+
+
+
+                //var response = await _http.GetAsync(url);
+                //if (!response.IsSuccessStatusCode)
+                //{
+                //    throw new Exception($"Error al generar el informe de canal de distribución. Código de estado: {response.StatusCode}");
+                //}
+                //var archivo = await response.Content.ReadAsStreamAsync();
+
+                //await _js.InvokeVoidAsync(
+                //   "descargarArchivo",
+                //   $"canalaDedis{FechaIncio:yyyyMMdd}_{FechaFinal:yyyyMMdd}.xlsx",
+                //   archivo);
 
                 return true;
 
@@ -137,6 +157,39 @@ namespace Miluc.Client.Servicios.SapService.InformesComercial
             {
                 return false;
                 throw new Exception($"Error al generar el informe de frecuencia de venta {ex.Message}");
+            }
+        }
+
+        public async Task<bool> DescargarTrazabilidad(DateTime fechaInicio, DateTime fechaFinal, int slpCode)
+        {
+            try
+            {
+
+                ///         api/Informes/CarteraVencida/Excel?fechaFinal=2026-10-02&cardCode=&codeVendedor=&codCanal=
+                //  var url = $"api/Informes/CarteraVencida/Excel?fechaFinal={fechaFinal:yyyy-MM-dd}&cardCode={cardCode}&codeVendedor={codeVendedor}&codCanal={codCanal}";
+                var url = $"api/Informes/Trazabilidad/Excel" + $"?FechaIncio={fechaInicio:yyyy-MM-dd}" + $"&FechaFinal={fechaFinal:yyyy-MM-dd}" + $"&CodeVendedor={slpCode}" ;
+
+
+              
+                var response = await _http.GetAsync(url);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return false;
+                }
+
+                var archivo = await response.Content.ReadAsByteArrayAsync();
+
+                await _js.InvokeVoidAsync(
+                    "descargarArchivo",
+                    $"CarteraVencida_{fechaFinal:yyyyMMdd}.xlsx",
+                    archivo);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error al generar el informe de cartera vencida {ex.Message}");
             }
         }
 
