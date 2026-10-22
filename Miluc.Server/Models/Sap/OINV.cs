@@ -15,13 +15,13 @@
         public string ?Address { get; set; }
         public string ? NumAtCard { get; set; }
         public decimal  VatSum { get; set; }
-        public decimal  DocTotal { get; set; }
+        
         public decimal  PaidToDate { get; set; }
         public string ? Ref1 { get; set; }
         public string ? Ref2 { get; set; }
         public string ? Comments { get; set; }
         public string ? JrnlMemo { get; set; }
-
+        public decimal DocTotal { get; set; }
         public Int16  SlpCode { get; set; }
         public ICollection<INV1> INV1 { get; set; } = new List<INV1>();
 

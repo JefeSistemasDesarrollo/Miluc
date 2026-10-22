@@ -206,9 +206,24 @@
     private int totalRegistros = 0;
     private bool cargando = false; // Controla la visualización del Spinner en el HTML
 
+    public int idEmpresa { get; set; } 
     // Ciclo de vida de Blazor: Se ejecuta de manera automática una sola vez al cargar el componente en pantalla
     protected override async Task OnInitializedAsync()
     {
+
+        if (_autcliente.HasPermission("Modulo.Nomina"))
+        {
+
+            if (_autcliente.HasFiltro("Modulo.Nomina"))
+            {
+
+                idEmpresa = Convert.ToInt32(_autcliente.CurrentSession.Filtros.FirstOrDefault(f => f.NombreModulo == "Modulo.Nomina").Filtro);
+            }
+
+             
+        }
+
+       
 
         if (_autcliente.HasPermission("Employee.FilterCorreo"))
         {
@@ -223,8 +238,10 @@
     {
         cargando = true; // Muestra el Spinner de carga
 
+
+
         // Petición asíncrona enviando los parámetros de paginación actuales
-        var respuesta = await _empleadoClientService.GetEmpleadosAsync(textoBusqueda, paginaActual, cantidadPorPagina,_correo);
+        var respuesta = await _empleadoClientService.GetEmpleadosAsync(textoBusqueda, paginaActual, cantidadPorPagina, _correo, idEmpresa);
 
         if (respuesta.EsCorrecto)
         {
@@ -263,8 +280,21 @@
         paginaActual = 1; // Reseteamos a la página 1 para una nueva búsqueda
         cargando = true;
 
+        if (_autcliente.HasPermission("Modulo.Nomina"))
+        {
+
+            if (_autcliente.HasFiltro("Modulo.Nomina"))
+            {
+
+                idEmpresa = Convert.ToInt32(_autcliente.CurrentSession.Filtros.FirstOrDefault(f => f.NombreModulo == "Modulo.Nomina").Filtro);
+            }
+
+      
+        }
+
+       
         // CORRECCIÓN: Se reemplazó el número fijo '4' por la propiedad dinámica 'cantidadPorPagina'
-        var respuesta = await _empleadoClientService.GetEmpleadosAsync(textoBusqueda, paginaActual, cantidadPorPagina,_correo);
+        var respuesta = await _empleadoClientService.GetEmpleadosAsync(textoBusqueda, paginaActual, cantidadPorPagina, _correo, idEmpresa);
 
         if (respuesta != null)
         {
