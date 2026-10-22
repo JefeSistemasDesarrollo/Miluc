@@ -192,8 +192,11 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("BlazorCors", policy =>
     {
-      // policy.WithOrigins("https://avicolamiluc.ddns.net:92")
-       policy.WithOrigins("https://localhost:7198")
+         // policy.WithOrigins("https://avicolamiluc.ddns.net:62")
+          
+        //policy.WithOrigins("https://avicolamiluc.ddns.net:62")
+       
+           policy.WithOrigins("https://localhost:7198")
          .AllowAnyHeader()
          .AllowAnyMethod()
        .AllowCredentials(); // OBLIGATORIO para enviar cookies
@@ -209,6 +212,8 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     });
 
+
+builder.Services.AddHttpContextAccessor();
 
 // Learn more about configuring OpenAPI at 
 builder.Services.AddOpenApi();

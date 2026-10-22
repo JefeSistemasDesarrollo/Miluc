@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
 using Miluc.Server.Data;
 using Miluc.Server.Interfaces.Sap.ConexionSap;
 using Miluc.Server.Interfaces.Sap.Oitm;
@@ -7,15 +9,24 @@ using Miluc.Server.Models;
 using Miluc.Shared.DTOs.Sap.Articulos;
 using Miluc.Shared.DTOs.Sap.Pedidos;
 using Newtonsoft.Json;
+using System.Security.Claims;
 using System.Text;
 
 namespace Miluc.Server.Servicios.SapService
 {
-    public class SapOrderService(SapDbContex _sapDbContex, MilucDbContext _dbcontex, IConexionServiceLayer _serviceConexion, ISapOitmService _sapOitmService) : ISapOrdrService
+    public class SapOrderService(SapDbContex _sapDbContex, MilucDbContext _dbcontex, IConexionServiceLayer _serviceConexion, ISapOitmService _sapOitmService, IHttpContextAccessor httpContextAccessor) : ISapOrdrService
     {
         public async Task<OrdersReaderDto> CreatePedidoAsyc(PedidoCreateDto pedidoCreateDto)
         {
             var credenciales = await _serviceConexion.ConexionSapService();
+
+            var usuario = httpContextAccessor.HttpContext?.User;
+
+            if (usuario?.Identity?.IsAuthenticated != true)
+                throw new UnauthorizedAccessException("Usuario no autenticado.");
+
+            var usuarioId = usuario.FindFirstValue(ClaimTypes.NameIdentifier);
+
             try
             {
                 //validaciones 
@@ -32,19 +43,24 @@ namespace Miluc.Server.Servicios.SapService
                 {
                     throw new ArgumentNullException("El cliente es inválido");
                 }
-                if (pedidoCreateDto.U_WUID == null || pedidoCreateDto.U_WUID == Guid.Empty.ToString())
+                if (pedidoCreateDto.U_WUID == null )
                 {
-                    throw new ArgumentNullException("El IdSolicitud es obligatorio para crear el pedido");
+                    if (string.IsNullOrEmpty(pedidoCreateDto.U_WUID))
+                    {
+                        throw new ArgumentNullException("El IdSolicitud es obligatorio para crear el pedido");
+                    }
                 }
 
                 var HoraActual = TimeOnly.FromDateTime(DateTime.Now);
 
-                int idUsuario = Convert.ToInt32(pedidoCreateDto.U_Responsable);
-                var Usuario = await _dbcontex.Usuarios.FirstOrDefaultAsync(x => x.IdUsuario == idUsuario);
+                //int idUsuario = Convert.ToInt32(pedidoCreateDto.U_Responsable);
+                
+                
+                var Usuario = await _dbcontex.Usuarios.FirstOrDefaultAsync(x => x.IdUsuario == Convert.ToInt32(usuarioId));
 
                 if (Usuario != null)
                 {
-                    pedidoCreateDto.U_Responsable = $"{Usuario.Nombres} {Usuario.Apellidos}";
+                    pedidoCreateDto.U_Responsable = $"{Usuario.Nombres}";
 
                     if (Usuario.HoraInicio.HasValue && Usuario.HoraFin.HasValue)
                     {

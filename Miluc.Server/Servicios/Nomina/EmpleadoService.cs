@@ -241,7 +241,7 @@ namespace Miluc.Server.Servicios.Nomina
             }
         }
 
-        public async Task<ResponseAPI<List<EmpleadoReaderDto>>> GetEmpleadosAsync(string? filtro = null, int page = 1, int? cantidad = null, string? correo = null)
+        public async Task<ResponseAPI<List<EmpleadoReaderDto>>> GetEmpleadosAsync(string? filtro = null, int page = 1, int? cantidad = null, string? correo = null, int? idEmpresa = null)
         {
             try
             {
@@ -252,9 +252,22 @@ namespace Miluc.Server.Servicios.Nomina
 
                 int cantidadTop = cantidad ?? 20;
 
-                filtro ??= string.Empty;
+             
+
+                if (filtro == null)
+                {
+                    filtro = string.Empty;
+                }
 
                 var query = _context.Empleado.AsNoTracking().AsQueryable();
+
+                if (idEmpresa.HasValue && idEmpresa.Value > 0)
+                {
+                    query = query.Where(e => e.EmpresaId == idEmpresa.Value);
+                }
+
+
+
                 if (!string.IsNullOrEmpty(filtro))
                 {
                     query = query.Where(e => e.Documento.Contains(filtro.Trim()) ||
