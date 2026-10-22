@@ -86,7 +86,7 @@ namespace Miluc.Server.Servicios.Nomina
         }
 
 
-        public async Task<(List<MatrizSociodemograficaReaderDto> data, int CantidadRegistros)> GetMatrizSocioDemograficasAsync(string? filtro = null, int page = 1, int? cantidad = null, string ? correo=null)
+        public async Task<(List<MatrizSociodemograficaReaderDto> data, int CantidadRegistros)> GetMatrizSocioDemograficasAsync(string? filtro = null, int page = 1, int? cantidad = null, string ? correo=null, int? idEmpresa =null)
         {
             try
             {
@@ -102,11 +102,17 @@ namespace Miluc.Server.Servicios.Nomina
                             where string.IsNullOrEmpty(filtro) ||
                                   e.PrimerNombre.Contains(filtro) ||
                                   e.PrimerApellido.Contains(filtro)
+                                 
                             select new { e, m }; // Proyectamos temporalmente (e = Empleado, m = Matriz)
 
                 if (!string.IsNullOrEmpty(correo))
                 {
                     query = query.Where(x => x.e.CorreoElectronico == correo);
+
+                }
+                if (idEmpresa.HasValue && idEmpresa.Value > 0)
+                {
+                    query = query.Where(x => x.e.EmpresaId == idEmpresa.Value);
                 }
 
                 var totalRegistros = await query.CountAsync();

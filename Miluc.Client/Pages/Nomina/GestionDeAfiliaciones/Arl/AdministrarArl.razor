@@ -1,24 +1,26 @@
-﻿@page "/api/Afp/Afp"
+﻿@page "/Administrar-Arl"
 
+@using Miluc.Client.Interfaces.Nomina
 @using Miluc.Client.Interfaces.Nomina.SeguridadSocial
-@using Miluc.Client.Pages.Nomina.GestionDeAfiliaciones.Afp;
-@using Miluc.Shared.DTOs.Nomina.Afp.Dto;
-@inject HttpClient Http
+@using Miluc.Shared.DTOs.Nomina.Arl.Dto
+
 @inject NavigationManager nav
+@inject IArlClientService _arlService
+@inject IAfSeguridadSocialClientService afSeguridadSocialClientService
 @inject IJSRuntime js
-@inject IAfpClientService _afpClientService
+@inject IAuthClientService _authCliente
 
 <div class="eps-page animate__animated animate__fadeIn p-4">
 
     @* ENCABEZADO Y BOTONES SUPERIORES *@
     <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
         <div>
-            <h2 class="fw-extrabold text-vinotinto m-0 tracking-tight">
+            <h2 class="fw-extrabold text-black m-0 tracking-tight">
                 <i class="bi bi-people-fill"></i>
-                Gestión AFP
+                Gestión ARL
             </h2>
             <p class="text-muted mb-0 small mt-1">
-                Administración de Administradora de Fondos de Pensiones.
+                Administración de Administradora de Riesgos Laborales.
             </p>
         </div>
 
@@ -27,8 +29,8 @@
         </button>
     </div>
 
-    <button class="btn btn-rojo btn-nuevo rounded-pill px-4 shadow-sm mb-4" @onclick="IrACrearAfp">
-        <i class="bi bi-plus-lg me-1"></i> Nueva AFP
+    <button class="btn btn-rojo btn-nuevo rounded-pill px-4 shadow-sm mb-4" @onclick="IrACrearArl">
+        <i class="bi bi-plus-lg me-1"></i> Nueva ARL
     </button>
 
     @* SECCIÓN DE FILTROS: Buscador y Selector de cantidad de registros *@
@@ -47,7 +49,7 @@
                                placeholder="Filtrar local o buscar en servidor..."
                                @bind="textoBusqueda" @bind:event="oninput" @onkeyup="HandleEnter" />
 
-                        <button class="btn btn-rojo rounded-end-pill px-4" @onclick="BuscarEnServidor">
+                        <button class="btn btn-vinotinto rounded-end-pill px-4" @onclick="BuscarEnServidor">
                             <i class="bi bi-search me-2"></i>
                         </button>
                     </div>
@@ -60,7 +62,8 @@
 
                         <select class="form-select form-select-sm rounded-pill border-0 bg-transparent fw-bold"
                                 style="width: 80px;"
-                                @bind="CantidadPorPagina">
+                                value="@cantidadPorPagina"
+                                @onchange="CambiarCantidadPagina">
                             <option value="10">10</option>
                             <option value="20">20</option>
                             <option value="50">50</option>
@@ -75,7 +78,7 @@
         </div>
     </div>
 
-    @* TABLA DE AFP *@
+    @* TABLA DE ARL *@
     <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
         <div class="table-responsive">
             <table class="table table-striped table-hover mb-0">
@@ -97,7 +100,7 @@
                             </td>
                         </tr>
                     }
-                    else if (listaAfpAlservidor == null || !listaAfpAlservidor.Any())
+                    else if (!listaArlAlservidor.Any())
                     {
                         <tr>
                             <td colspan="4" class="text-center py-5 text-muted">
@@ -107,23 +110,19 @@
                     }
                     else
                     {
-                        @foreach (var em in listaAfpAlservidor)
+                        @foreach (var em in listaArlAlservidor)
                         {
                             <tr>
                                 <td class="ps-4 align-middle">
-                                    <div class="text-dark fw-semibold small text-uppercase">
-                                        @(string.IsNullOrWhiteSpace(em.Nombre) ? "-" : em.Nombre)
-                                    </div>
+                                    <div class="text-dark fw-semibold small text-uppercase">@em.Nombre</div>
                                 </td>
                                 <td class="ps-4 align-middle">
-                                    <div class="text-dark fw-semibold small text-uppercase">
-                                        @(string.IsNullOrWhiteSpace(em.Codigo) ? "-" : em.Codigo)
-                                    </div>
+                                    <div class="text-dark fw-semibold small text-uppercase">@em.Codigo</div>
                                 </td>
                                 <td class="text-center align-middle">
                                     @if (em.Activo)
                                     {
-                                        <i class="bi text-black bi-check2-circle"></i>
+                                        <i class="bi  text-black bi-check2-circle"></i>
                                     }
                                     else
                                     {
@@ -133,15 +132,15 @@
 
                                 <td class="text-center pe-4 align-middle">
                                     <div class="btn-group shadow-sm border rounded-pill bg-white overflow-hidden">
-                                        <button class="btn-detail btn btn-dark btn-sm px-2 border-end" @onclick="() => VerDetalle(em.AfpId)">
+                                        <button class="btn-detail btn btn-dark btn-sm px-2 border-end""Ver Detalle" @onclick="() => VerDetalle(em.ArlId)">
                                             <i class="bi bi-eye text-dark"></i>
                                         </button>
-                                        <button class="btn btn-white btn-sm px-2 border-end edit" title="Modificar AFP" @onclick="() => ModificarAfp(em.AfpId)">
+                                        <button class="btn btn-white btn-sm px-2 border-end edit" title= "Modificar ARL" @onclick="() => ModificarArl(em.ArlId)">
                                             <i class="bi bi-pencil-square text-primary"></i>
                                         </button>
-                                        <button class="btn btn-white btn-sm px-2 delete" title="Eliminar AFP" @onclick="() => EliminarAfp(em.AfpId)">
+                                         <button class="btn btn-white btn-sm px-2 delete" title="Eliminar Arl" @onclick="() => EliminarEps (em.ArlId)">
                                             <i class="bi bi-trash3 text-danger"></i>
-                                        </button>
+                                        </button
                                     </div>
                                 </td>
                             </tr>
@@ -174,8 +173,8 @@
 </div>
 
 @code {
-    private List<AfpReaderDto> listaAfpOrigen = new List<AfpReaderDto>();
-    private List<AfpReaderDto> listaAfpAlservidor = new List<AfpReaderDto>();
+    private List<ArlReaderDto> listaArlOrigen = new List<ArlReaderDto>();
+    private List<ArlReaderDto> listaArlAlservidor = new List<ArlReaderDto>();
 
     private string _textoBusqueda = "";
 
@@ -185,25 +184,11 @@
         set
         {
             _textoBusqueda = value;
-            FiltrarLocal();
+            FiltrarLocal(); 
         }
     }
 
-    private int _cantidadPorPagina = 10;
-    private int CantidadPorPagina
-    {
-        get => _cantidadPorPagina;
-        set
-        {
-            if (_cantidadPorPagina != value)
-            {
-                _cantidadPorPagina = value;
-                paginaActual = 1;
-                _ = cargarAfp();
-            }
-        }
-    }
-
+    private int cantidadPorPagina = 10;
     private int paginaActual = 1;
     private int totalRegistros = 0;
     private bool cargando = false;
@@ -213,48 +198,58 @@
         get
         {
             if (totalRegistros <= 0) return 1;
-            return (int)Math.Ceiling((double)totalRegistros / _cantidadPorPagina);
+            return (int)Math.Ceiling((double)totalRegistros / cantidadPorPagina);
         }
     }
 
     protected override async Task OnInitializedAsync()
     {
-        await cargarAfp();
+        {
+
+            if (!_authCliente.HasPermission("Arl.View"))
+            {
+                nav.NavigateTo("/no-autorizado");
+                return;
+            }
+
+
+            await cargarArl();
+        }
     }
 
-    public async Task cargarAfp()
+    public async Task cargarArl()
     {
         cargando = true;
-        StateHasChanged();
 
-        var respuesta = await _afpClientService.GetAfpAsyc(_textoBusqueda, paginaActual, _cantidadPorPagina);
+        
+        var respuesta = await _arlService.GetArlAsync(_textoBusqueda, paginaActual, cantidadPorPagina);
 
         if (respuesta != null && respuesta.EsCorrecto)
         {
-            listaAfpOrigen = respuesta.Valor ?? new List<AfpReaderDto>();
+            listaArlOrigen = respuesta.Valor ?? new List<ArlReaderDto>();
             totalRegistros = respuesta.CantRegistros;
         }
         else
         {
-            listaAfpOrigen = new List<AfpReaderDto>();
+            listaArlOrigen = new List<ArlReaderDto>();
             totalRegistros = 0;
         }
 
+        
         FiltrarLocal();
 
         cargando = false;
-        StateHasChanged();
     }
 
     private void FiltrarLocal()
     {
         if (string.IsNullOrWhiteSpace(_textoBusqueda))
         {
-            listaAfpAlservidor = listaAfpOrigen;
+            listaArlAlservidor = listaArlOrigen;
         }
         else
         {
-            listaAfpAlservidor = listaAfpOrigen.Where(e =>
+            listaArlAlservidor = listaArlOrigen.Where(e =>
                 (!string.IsNullOrEmpty(e.Codigo) && e.Codigo.Contains(_textoBusqueda, StringComparison.OrdinalIgnoreCase)) ||
                 (!string.IsNullOrEmpty(e.Nombre) && e.Nombre.Contains(_textoBusqueda, StringComparison.OrdinalIgnoreCase))
             ).ToList();
@@ -264,7 +259,7 @@
     public async Task BuscarEnServidor()
     {
         paginaActual = 1;
-        await cargarAfp();
+        await cargarArl();
     }
 
     private async Task HandleEnter(KeyboardEventArgs e)
@@ -275,32 +270,32 @@
         }
     }
 
+    private async Task CambiarCantidadPagina(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int nuevaCantidad))
+        {
+            cantidadPorPagina = nuevaCantidad;
+            paginaActual = 1;
+            await cargarArl();
+        }
+    }
+
     private async Task IrPagina(int nuevaPagina)
     {
         if (nuevaPagina < 1 || nuevaPagina > totalPaginas)
             return;
 
         paginaActual = nuevaPagina;
-        await cargarAfp();
+        await cargarArl();
     }
-
-    private void VerDetalle(int id)
-    {
-        nav.NavigateTo($"/api/Afp/{id}");
-    }
-
-    private void ModificarAfp(int afpid)
-    {
-        nav.NavigateTo($"/editar/api/Afp/{afpid}");
-    }
-
-    private async Task EliminarAfp(int id)
+      private async Task eliminarArl(int id)
     {
         var resultadoSwal = await js.InvokeAsync<System.Text.Json.JsonElement>("Swal.fire", new
+
         {
-            title = "¿Deseas eliminar esta AFP?",
+            title = "¿Deseas eliminar esta eps?",
             text = "Esta acción removerá el registro permanentemente si no cuenta con transacciones.",
-            icon = "warning",
+            icon = "warning",            
             showCancelButton = true,
             confirmButtonColor = "#D62F46",
             cancelButtonColor = "#FDC922",
@@ -308,6 +303,7 @@
             cancelButtonText = "Cancelar"
         });
 
+        // Extrae el valor booleano resultante del JSON devuelto por JavaScript para comprobar si se confirmó la acción
         bool confirmado = false;
         if (resultadoSwal.ValueKind == System.Text.Json.JsonValueKind.Object &&
             resultadoSwal.TryGetProperty("isConfirmed", out var propiedadConfirmado))
@@ -322,21 +318,23 @@
 
             try
             {
-                var respuesta = await _afpClientService.DeleteAfpAsync(id);
+                // Invocación al cliente HTTP para eliminar físicamente el id seleccionado
+                var respuesta = await _arlService.DeleteArlAsync(id);
 
-                if (respuesta != null && respuesta.EsCorrecto)
+               if (respuesta != null && respuesta.EsCorrecto)
+            {
+                await js.InvokeVoidAsync("Swal.fire", new
                 {
-                    await js.InvokeVoidAsync("Swal.fire", new
-                    {
-                        icon = "success",
-                        title = "¡Eliminado!",
-                        text = respuesta.Mensaje ?? "La AFP ha sido removida con éxito.",
-                        confirmButtonText = "Aceptar",
-                        confirmButtonColor = "#D62F46"
-                    });
+                    icon = "success",
+                    title = "¡Eliminado!",
+                 
+                    text = "La Arl ha sido removida con éxito.", 
+                    confirmButtonText = "Aceptar",
+                    confirmButtonColor = "#D62F46"
+                });
 
-                    await cargarAfp();
-                }
+                await cargarArl();
+            }
                 else
                 {
                     string mensajeServidor = respuesta != null ? respuesta.Mensaje : "No se pudo procesar la solicitud.";
@@ -363,6 +361,10 @@
         }
     }
 
+
+    private void VerDetalle(int idArl) => nav.NavigateTo($"/detalle-Arl/{idArl}");
+    private void ModificarArl(int id) => nav.NavigateTo($"/editar-Arl/{id}");
     private void Volver() => nav.NavigateTo("administrar-entidadesSeguridadSocial");
-    private void IrACrearAfp() => nav.NavigateTo("/api/Afp/CrearAfp");
+    private void IrACrearArl() => nav.NavigateTo("/CrearArl");
+    private async Task EliminarEps(int id) => await eliminarArl(id);
 }

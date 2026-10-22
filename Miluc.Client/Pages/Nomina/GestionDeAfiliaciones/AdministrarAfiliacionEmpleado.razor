@@ -3,11 +3,12 @@
 @using Miluc.Client.Interfaces.Nomina.SeguridadSocial
 @using Miluc.Shared.DTOs.Nomina.AfiliacionSeguridadSocialDto
 @using Miluc.Shared.DTOs.Nomina.EmpleadoDto
+@using Miluc.Shared.DTOs.Nomina.EmpresaDto
 @inject NavigationManager nav
 @inject IEmpleadoClientService _empleadoClientService
 @inject IAfSeguridadSocialClientService afSeguridadSocialClientService
 @inject IJSRuntime js
-@inject IAuthClientService _autclient
+@inject IAuthClientService _autcliente
 
 <div class="afiliaciónEmpleados-page animate__animated animate__fadeIn p-4">
 
@@ -36,7 +37,7 @@
                 @* Barra de búsqueda *@
                 <div class="col-lg-7">
 
-                    @if (_autclient.HasPermission("Employee.Search"))
+                    @if (_autcliente.HasPermission("Employee.Search"))
                     {
 
                         <div class="input-group input-group-lg search-group">
@@ -45,8 +46,8 @@
                             </span>
 
                             <input type="text" class="form-control border-start-0 shadow-none fs-6"
-                            placeholder="Filtrar local o buscar en servidor..."
-                            @bind="textoBusqueda" @bind:event="oninput" @onkeyup="HandleEnter" />
+                                   placeholder="Filtrar local o buscar en servidor..."
+                                   @bind="textoBusqueda" @bind:event="oninput" @onkeyup="HandleEnter" />
 
                             <button class="btn btn-rojo rounded-end-pill px-4" @onclick="BuscarEnServidor">
                                 <i class="bi bi-search me-2"></i>
@@ -104,7 +105,7 @@
                             </td>
                         </tr>
                     }
-                    else if (!listempleadosAlservidor.Any())
+                    else if (!listAfiliacionesAlservidor.Any())
                     {
                         <tr>
                             <td colspan="8" class="text-center py-5">
@@ -114,7 +115,7 @@
                     }
                     else
                     {
-                        @foreach (var em in listempleadosAlservidor)
+                        @foreach (var em in listAfiliacionesAlservidor)
                         {
                             <tr>
                                 <td class="ps-4">
@@ -183,38 +184,57 @@
 </div>
 
 @code {
-    private List<AfiliacionSeguridadSocialreaderDto> listempleadosOrigen = new List<AfiliacionSeguridadSocialreaderDto>();
-    private List<AfiliacionSeguridadSocialreaderDto> listempleadosAlservidor = new List<AfiliacionSeguridadSocialreaderDto>();
+
+
+
+    private List<AfiliacionSeguridadSocialreaderDto> listAfiliacionesOrigen = new List<AfiliacionSeguridadSocialreaderDto>();
+    private List<AfiliacionSeguridadSocialreaderDto> listAfiliacionesAlservidor = new List<AfiliacionSeguridadSocialreaderDto>();
+   
 
     private string _textoBusqueda = "";
-    public string _correo = "";
+    // Variables de control de configuración y paginación
+    private int cantidadPorPagina = 10;
+    private int paginaActual = 1;
+    private int totalRegistros = 0;
+    private bool cargando = false;
 
+    int idEmpresa = 0;
+    public string _correo = "";
+    // Propiedad Completa (Full Property) para interceptar los cambios en el buscador en tiempo real
     private string textoBusqueda
     {
         get => _textoBusqueda;
         set
         {
             _textoBusqueda = value;
-            FiltrarLocal();
+            FiltrarLocal(); // Cada vez que el usuario escribe/borra una letra, ejecuta el filtro local en memoria
         }
     }
 
-    private int cantidadPorPagina = 10;
-    private int paginaActual = 1;
-    private int totalRegistros = 0;
-    private bool cargando = false;
-
+ 
     protected override async Task OnInitializedAsync()
     {
-        if (!_autclient.HasPermission("Employee.View"))
+        if (_autcliente.HasPermission("Modulo.Nomina"))
+        {
+
+            if (_autcliente.HasFiltro("Modulo.Nomina"))
+            {
+
+                idEmpresa = Convert.ToInt32(_autcliente.CurrentSession.Filtros.FirstOrDefault(f => f.NombreModulo == "Modulo.Nomina").Filtro);
+            }
+
+             
+        }
+
+        if (!_autcliente.HasPermission("Afiliaciones.View"))
         {
             nav.NavigateTo("/no-autorizado");
             return;
         }
 
-        if (_autclient.HasPermission("Employee.FilterCorreo"))
+        if (_autcliente.HasPermission("Employee.FilterCorreo"))
         {
-            _correo = _autclient.CurrentSession.UserName;
+            _correo = _autcliente.CurrentSession.UserName;
         }
 
         await cargarAfiliaciones();
@@ -224,13 +244,19 @@
     {
         cargando = true;
 
-        var respuesta = await afSeguridadSocialClientService.GetAfSeguridadSocialAsync(textoBusqueda, paginaActual, cantidadPorPagina, _correo);
+        var respuesta = await afSeguridadSocialClientService.GetAfSeguridadSocialAsync(textoBusqueda, paginaActual,cantidadPorPagina, _correo, idEmpresa);
 
         if (respuesta != null && respuesta.EsCorrecto)
         {
-            listempleadosOrigen = respuesta.Valor;
-            listempleadosAlservidor = respuesta.Valor;
+            listAfiliacionesOrigen = respuesta.Valor ?? new();
+            listAfiliacionesAlservidor = respuesta.Valor ?? new();
             totalRegistros = respuesta.CantRegistros;
+        }
+        else
+        {
+            listAfiliacionesOrigen = new();
+            listAfiliacionesAlservidor = new();
+            totalRegistros = 0;
         }
 
         cargando = false;
@@ -240,11 +266,11 @@
     {
         if (string.IsNullOrWhiteSpace(textoBusqueda))
         {
-            listempleadosAlservidor = listempleadosOrigen;
+            listAfiliacionesAlservidor = listAfiliacionesOrigen;
         }
         else
         {
-            listempleadosAlservidor = listempleadosOrigen.Where(e =>
+            listAfiliacionesAlservidor = listAfiliacionesOrigen.Where(e =>
                 e.NombreEmpleado.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ||
                 e.NombreAfp.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ||
                 e.NombreArl.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ||
@@ -259,18 +285,18 @@
         paginaActual = 1;
         cargando = true;
 
-        var respuesta = await afSeguridadSocialClientService.GetAfSeguridadSocialAsync(textoBusqueda, paginaActual, cantidadPorPagina, _correo);
+        var respuesta = await afSeguridadSocialClientService.GetAfSeguridadSocialAsync(textoBusqueda, paginaActual, cantidadPorPagina, _correo, idEmpresa );
 
         if (respuesta != null && respuesta.EsCorrecto)
         {
-            listempleadosOrigen = respuesta.Valor;
-            listempleadosAlservidor = respuesta.Valor;
+            listAfiliacionesOrigen = respuesta.Valor;
+            listAfiliacionesAlservidor = respuesta.Valor;
             totalRegistros = respuesta.CantRegistros;
         }
         else
         {
-            listempleadosOrigen = new List<AfiliacionSeguridadSocialreaderDto>();
-            listempleadosAlservidor = new List<AfiliacionSeguridadSocialreaderDto>();
+            listAfiliacionesOrigen = new List<AfiliacionSeguridadSocialreaderDto>();
+            listAfiliacionesAlservidor = new List<AfiliacionSeguridadSocialreaderDto>();
             totalRegistros = 0;
 
             string erroresConcatenados = respuesta?.Errores != null && respuesta.Errores.Any()
@@ -319,7 +345,7 @@
         {
             var total = string.IsNullOrWhiteSpace(_textoBusqueda)
                 ? totalRegistros
-                : listempleadosAlservidor.Count;
+                : listAfiliacionesAlservidor.Count;
 
             return (int)Math.Ceiling((double)total / cantidadPorPagina);
         }

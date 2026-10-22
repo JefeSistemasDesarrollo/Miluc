@@ -533,9 +533,13 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (!_authService.HasPermission("Filtro.Update"))
+        {
+            _nav.NavigateTo("/no-autorizado");
+        }
+
         try
         {
-
             var filtroId=await _asignacionFiltrosClientService.GetByIdFiltrosAsync(Id);
 
             if (filtroId.Valor != null)

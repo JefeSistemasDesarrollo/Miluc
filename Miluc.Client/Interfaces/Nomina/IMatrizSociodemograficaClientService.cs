@@ -5,7 +5,7 @@ namespace Miluc.Client.Interfaces.Nomina
 {
     public interface IMatrizSociodemograficaClientService
     {
-        Task<ResponseAPI<List<MatrizSociodemograficaReaderDto>>> GetMatrizSociodemograficaAsync(string textoBusqueda, int paginaActual, int cantidadPorPagina, string? correo = null);
+        Task<ResponseAPI<List<MatrizSociodemograficaReaderDto>>> GetMatrizSociodemograficaAsync(string textoBusqueda, int paginaActual, int cantidadPorPagina, string correo, int? idEmpresa);
         Task<ResponseAPI<MatrizSociodemograficaReaderDto>> GetMatrizPorEmpleadoIdAsync(int empleadoId);
         Task<ResponseAPI<MatrizSociodemograficaReaderDto>> updateMatrizAsync(MatrizSocioDemograficaUpdateDto matriz);
     }

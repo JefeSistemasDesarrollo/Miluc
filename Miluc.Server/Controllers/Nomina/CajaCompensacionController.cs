@@ -2,6 +2,7 @@
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Nomina;
 using Miluc.Server.Models.Nomina;
+using Miluc.Server.Security;
 using Miluc.Server.Servicios.Autorizacion;
 using Miluc.Server.Servicios.Nomina;
 using Miluc.Shared.DTOs.Nomina.CajaCompensacionDto;
@@ -14,6 +15,7 @@ namespace Miluc.Server.Controllers.Nomina
     public class CajaCompensacionController(ICajaCompensacionService cajaService, ILogService _log) : Controller
     {
         [HttpGet]
+        [PermissionAuthorize("CajaComp.View")]
         public async Task<ActionResult<ResponseAPI<List<CajaCompensacionReaderDto>>>> GetCajaCompensacionAsync([FromQuery] string? filtro = null, [FromQuery] int page = 1, [FromQuery] int? cantidad = null)
         {
             try
@@ -64,6 +66,7 @@ namespace Miluc.Server.Controllers.Nomina
             }
         }
         [HttpPost("CrearCaja")]
+        [PermissionAuthorize("CajaComp.Crear")]
         public async Task<ActionResult<ResponseAPI<CajaCompensacionReaderDto>>> CreateCajaAsync(CajaCreateDto cajaCreateDto)
         {
             if (cajaCreateDto == null || string.IsNullOrEmpty(cajaCreateDto.Nombre))
@@ -109,6 +112,7 @@ namespace Miluc.Server.Controllers.Nomina
             }
         }
         [HttpGet("{id}")]
+        [PermissionAuthorize("CajaComp.Detalle")]
         public async Task<ActionResult<ResponseAPI<CajaCompensacionReaderDto>>> GetBycajaAsync(int id)
 
 
@@ -157,6 +161,7 @@ namespace Miluc.Server.Controllers.Nomina
 
 
         [HttpPut("{id}")]
+        [PermissionAuthorize("CajaComp.Update")]
         public async Task<ActionResult<ResponseAPI<CajaCompensacionReaderDto>>> CajaUpdate(int id, [FromBody] CajaUpdate cajaUpdate)
         {
             // 1. Validaciones previas en un solo bloque 
@@ -214,6 +219,7 @@ namespace Miluc.Server.Controllers.Nomina
         };
 
         [HttpDelete("{id}")]
+        [PermissionAuthorize("CajaComp.Delete")]
         public async Task<ActionResult<ResponseAPI<bool>>> DeleteCajaAsync(int id)
         {
             try

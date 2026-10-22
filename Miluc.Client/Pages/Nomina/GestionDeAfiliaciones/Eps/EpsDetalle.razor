@@ -1,4 +1,4 @@
-﻿@page "/api/Eps/{id:int}"
+﻿@page "/detalle-Eps/{id:int}"
 
 @using Miluc.Client.Interfaces.Nomina.SeguridadSocial
 @using Miluc.Shared.DTOs.Nomina.EpsDto
@@ -6,7 +6,7 @@
 @inject NavigationManager nav
 @inject IEpsClientService _epsService
 @inject IJSRuntime JS
-
+@inject IAuthClientService _authCliente
 <div class="empleado-page p-4 animate__animated animate__fadeIn">
     <div class="container-fluid max-width-container">
 
@@ -120,6 +120,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (!_authCliente.HasPermission("Eps.Detalle"))
+        {
+            nav.NavigateTo("/no-autorizado");
+            return;
+        }
         await CargarEps();
     }
 
@@ -149,6 +154,6 @@
         }
     }
 
-    private void Volver() => nav.NavigateTo("/api/Eps/Eps");
-    private void IrAEditar() => nav.NavigateTo($"/api/Eps/Editar/{id}");
+    private void Volver() => nav.NavigateTo("/Administrar-Eps");
+    private void IrAEditar() => nav.NavigateTo($"/editar-Eps/{id}");
 }

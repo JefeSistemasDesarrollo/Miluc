@@ -1,6 +1,7 @@
 ﻿@page "/Gestionar/Afiliaciones"
 @inject NavigationManager nav
 @inject IAuthClientService _authClientService
+@inject IAuthClientService _autcliente
 
 <div class="welcome-container animate__animated animate__fadeIn">
     @* --- SALUDO  --- *@
@@ -69,5 +70,14 @@
 </div>
 
 @code {
+    protected override Task OnInitializedAsync()
+    {
+        if (!_autcliente.HasPermission("Afiliaciones.Card"))
+        {
+            nav.NavigateTo("/no-autorizado");
+        }
+
+        return Task.CompletedTask;
+    }
     private void Volver() => nav.NavigateTo("/administrar-Nomina");
 }

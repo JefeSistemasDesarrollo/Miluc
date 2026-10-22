@@ -1,13 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Miluc.Server.Controllers.Nomina;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Usuarios;
-using Miluc.Server.Servicios.Nomina;
-using Miluc.Shared.DTOs.Nomina.Afp;
+using Miluc.Server.Security;
 using Miluc.Shared.DTOs.Nomina.Afp.Dto;
-using Miluc.Shared.DTOs.Nomina.AfpDto;
-using Miluc.Shared.DTOs.Nomina.Arl.Dto;
-using Miluc.Shared.DTOs.Nomina.EmpleadoDto;
 using Miluc.Shared.DTOs.Permisos;
 using Miluc.Shared.DTOs.Usuarios.AsignarFiltrosDto;
 using Miluc.Shared.Models.Response;
@@ -16,9 +12,11 @@ namespace Miluc.Server.Controllers.Usuarios
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class FiltrosController(IFiltrosUsuarios _filtrosService, ILogService _log ) : Controller
     {
         [HttpGet("Filtro")]
+        [PermissionAuthorize("Filtro.View")]
         public async Task<ActionResult<ResponseAPI<List<AsignarFiltrosReaderDto>>>> GetFiltrosAsync([FromQuery] string? filtro = null, [FromQuery] int page = 1, [FromQuery] int? cantidad = null)
         {
             try

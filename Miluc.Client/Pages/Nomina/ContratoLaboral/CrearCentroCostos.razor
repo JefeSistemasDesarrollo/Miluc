@@ -10,6 +10,7 @@
 @inject NavigationManager nav
 @inject ICentroCostoClienteService _centroCostosService
 @inject IJSRuntime JS
+@inject IAuthClientService _authClientService
 
 <div class="empleado-page p-4 animate__animated animate__fadeIn">
     <div class="container-fluid max-width-container">
@@ -265,6 +266,12 @@
 
     protected override async Task OnParametersSetAsync()
     {
+        if (!_authClientService.HasPermission("CentroCostos.Update"))
+        {
+            nav.NavigateTo("/no-autorizado");
+            return;
+        }
+
         // Reiniciamos el estado antes de cargar la información.
         isProcessing = false;
 

@@ -316,7 +316,8 @@
     {
         _correo = _authClientServic.CurrentSession.UserName;
 
-        if (_authClientServic.HasPermission("Employee.FilterCorreo"))
+
+        if (!_authClientServic.HasPermission("Employee.Create"))
         {
             nav.NavigateTo("/no-autorizado");
             return;

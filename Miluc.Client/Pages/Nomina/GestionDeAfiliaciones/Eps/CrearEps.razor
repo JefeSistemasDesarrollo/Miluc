@@ -1,4 +1,4 @@
-﻿@page "/api/Eps/CrearEps"
+﻿@page "/CrearEps"
 
 @using Miluc.Client.Interfaces.Nomina.SeguridadSocial
 @using Miluc.Shared.DTOs.Nomina.EpsDto
@@ -6,7 +6,7 @@
 @inject NavigationManager nav
 @inject IEpsClientService _epsService
 @inject IJSRuntime JS
-
+@inject IAuthClientService _authCliente
 <div class="empleado-page p-4 animate__animated animate__fadeIn">
     <div class="container-fluid max-width-container">
         
@@ -149,8 +149,19 @@
     private string mensajeError = string.Empty;
     private string mensajeExito = string.Empty;
 
-    private void Volver() => nav.NavigateTo("/api/Eps/Eps");
+    private void Volver() => nav.NavigateTo("/Administrar-Eps");
+    private void crearEps() => nav.NavigateTo("/Administrar-Eps");
 
+
+    protected override Task OnInitializedAsync()
+    {
+        if (!_authCliente.HasPermission("Eps.Crear"))
+        {
+            nav.NavigateTo("/no-autorizado");
+        }
+
+        return Task.CompletedTask;
+    }
 
 
     // Alerta mensaje error o exito

@@ -12,11 +12,11 @@ namespace Miluc.Client.Servicios.Nomina
 
 
     {
-        public async Task<ResponseAPI<List<MatrizSociodemograficaReaderDto>>> GetMatrizSociodemograficaAsync(string textoBusqueda, int paginaActual, int cantidadPorPagina, string? correo = null   )
+        public async Task<ResponseAPI<List<MatrizSociodemograficaReaderDto>>> GetMatrizSociodemograficaAsync(string textoBusqueda, int paginaActual, int cantidadPorPagina, string correo, int? idEmpresa)
         {
             try
             {
-                var responsePeticion = await httpClient.GetAsync($"api/MatrizSocioDemografica?filtro={textoBusqueda}&page={paginaActual}&cantidad={cantidadPorPagina}&correo={correo}");
+                var responsePeticion = await httpClient.GetAsync($"api/MatrizSocioDemografica?filtro={textoBusqueda}&page={paginaActual}&cantidad={cantidadPorPagina}&correo={correo}&idEmpresa={idEmpresa}");
 
                 if (!responsePeticion.IsSuccessStatusCode)
                 {

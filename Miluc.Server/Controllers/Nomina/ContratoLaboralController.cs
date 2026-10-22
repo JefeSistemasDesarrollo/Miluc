@@ -2,6 +2,7 @@
 using Miluc.Client.Interfaces.Nomina;
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Nomina;
+using Miluc.Server.Security;
 using Miluc.Server.Servicios.Nomina;
 using Miluc.Shared.DTOs.Nomina.CargosDto;
 using Miluc.Shared.DTOs.Nomina.ContratoLaboralDetalleDto;
@@ -19,6 +20,7 @@ namespace Miluc.Server.Controllers.Nomina
     {
 
         [HttpGet("TipoContrato")]
+       
         public async Task<ActionResult<ResponseAPI<List<TipoContratoReaderDto>>>> GetTipoContratoAsync([FromQuery] string? filtro = null, [FromQuery] int page = 1, [FromQuery] int? cantidad = null)
         {
             try
@@ -117,11 +119,12 @@ namespace Miluc.Server.Controllers.Nomina
 
         // 1. OBTENER TODOS / FILTRAR (GET: api/ContratoLaboral)
         [HttpGet]
-        public async Task<ActionResult<ResponseAPI<List<ContratoLaboralreaderDto>>>> GetContrato([FromQuery] string? filtro = null, [FromQuery] int page = 1, [FromQuery] int? cantidad = null, [FromQuery] string? correo = null)
+        [PermissionAuthorize("Contratos.View")]
+        public async Task<ActionResult<ResponseAPI<List<ContratoLaboralreaderDto>>>> GetContrato([FromQuery] string? filtro = null, [FromQuery] int page = 1, [FromQuery] int? cantidad = null, [FromQuery] string? correo = null,[FromQuery] int? idEmpresa = null)
         {
             try
             {
-                var (contratoLaboral, totalRegistros) = await contratoLaboralService.GetContratoLaboralAsync(filtro, page, cantidad, correo );
+                var (contratoLaboral, totalRegistros) = await contratoLaboralService.GetContratoLaboralAsync(filtro, page, cantidad, correo, idEmpresa );
 
                 if (contratoLaboral == null || contratoLaboral.Count == 0)
                 {
@@ -165,6 +168,7 @@ namespace Miluc.Server.Controllers.Nomina
 
         // 2. CREAR (POST: api/ContratoLaboral)
         [HttpPost]
+        [PermissionAuthorize("Contrato.Create")]
         public async Task<ActionResult<ResponseAPI<bool>>> CreateContratoLaboralAsync([FromBody] CreateContratoLaboralDto createContratos)
         {
             if (createContratos == null || !ModelState.IsValid)
@@ -272,6 +276,7 @@ namespace Miluc.Server.Controllers.Nomina
 
         // 4. OBTENER POR ID (GET: api/ContratoLaboral/5)
         [HttpGet("{id}")]
+        [PermissionAuthorize("Contrato.Details")]
         public async Task<ActionResult<ResponseAPI<ContratoLaboralreaderDto>>> GetContratoByIdAsync(int id)
         {
             try
@@ -320,6 +325,7 @@ namespace Miluc.Server.Controllers.Nomina
 
         // 5. ACTUALIZAR POR ID (PUT: api/ContratoLaboral/5)
         [HttpPut("{id}")]
+        [PermissionAuthorize("contratos.Update")]
         public async Task<ActionResult<ResponseAPI<ContratoLaboralreaderDto>>> UpdateContratoAsync(int id, [FromBody] UpdateContratoDto updateContratoDto)
         {
             try

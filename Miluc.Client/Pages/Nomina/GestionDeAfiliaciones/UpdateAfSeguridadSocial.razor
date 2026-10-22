@@ -16,6 +16,7 @@
 @inject ICajaCompensacionClientService CajaService
 @inject IEmpleadoClientService EmpleadoService
 @inject NavigationManager nav
+@inject IAuthClientService _authciente
 
 <div class="ActualizarAfiliaciones-page p-4 animate__animated animate__fadeIn">
     <div class="container-fluid max-width-container">
@@ -185,11 +186,11 @@
 @code {
     [Parameter]
     public int EmpleadoId { get; set; }
-    
+
 
     private UpdateAFiliacionDto nuevaAfiliacion = new();
     private string nombreEmpleado = string.Empty;
-    
+
     private bool cargando = true;
     private bool isProcessing = false;
     private string mensajeError = string.Empty;
@@ -200,11 +201,18 @@
     private List<ArlReaderDto> listaArl = new();
     private List<CajaCompensacionReaderDto> listaCajas = new();
     public string _correo = "";
+    public int idEmpresa { get; set; }
 
-    
+
 
     protected override async Task OnInitializedAsync()
     {
+        if (!_authciente.HasPermission("Afiliaciones.Update"))
+        {
+            nav.NavigateTo("/no-autorizado");
+            return;
+            
+        }
         try
         {
             mensajeError = string.Empty;
@@ -240,7 +248,7 @@
             }
 
             //  Buscamos en el listado general filtrando por el EmpleadoId actual
-            var respuestaListado = await AfiliacionService.GetAfSeguridadSocialAsync(string.Empty, 1, 100, _correo);
+            var respuestaListado = await AfiliacionService.GetAfSeguridadSocialAsync(string.Empty, 1, 100, _correo, idEmpresa);
             
             AfiliacionSeguridadSocialreaderDto? datosActuales = null;
             if (respuestaListado?.EsCorrecto == true && respuestaListado.Valor != null)

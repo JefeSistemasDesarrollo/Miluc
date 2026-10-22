@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Nomina;
+using Miluc.Server.Security;
 using Miluc.Shared.DTOs.Nomina.ContratoLaboralDto;
 using Miluc.Shared.DTOs.Nomina.EmpresaDto;
 using Miluc.Shared.Models.Response;
@@ -14,6 +15,7 @@ namespace Miluc.Server.Controllers.Nomina
     {
         //Empresa
         [HttpGet("Empresa")]
+        [PermissionAuthorize("Empresa.View")]
         public async Task<ActionResult<ResponseAPI<List<EmpresaReaderDto>>>> GetAllEmpresasAsync([FromQuery] string? filtro = null, [FromQuery] int page = 1, [FromQuery] int? cantidad = null)
         {
             try
@@ -61,6 +63,7 @@ namespace Miluc.Server.Controllers.Nomina
             }
         }
         [HttpPut("{id}")]
+        [PermissionAuthorize("Empresa.Create")]
         public async Task<ActionResult<ResponseAPI<bool>>> UpsertEmpresaAsync(int id, [FromBody] UpsertEmpresaDto empresaDto)
         {
             if (empresaDto == null)
@@ -163,6 +166,7 @@ namespace Miluc.Server.Controllers.Nomina
             }
         }
         [HttpGet("{id}")]
+        [PermissionAuthorize("Empresa.Details")]
         public async Task<ActionResult<ResponseAPI<EmpresaReaderDto>>> GetEmpresaByIdAsync(int id)
         {
             try
@@ -207,6 +211,7 @@ namespace Miluc.Server.Controllers.Nomina
             }
         }
         [HttpDelete("{id}")]
+        [PermissionAuthorize("Empresa.Delete")]
         public async Task<ActionResult<ResponseAPI<bool>>> DeleteEmpresaAsync(int id)
         {
             try

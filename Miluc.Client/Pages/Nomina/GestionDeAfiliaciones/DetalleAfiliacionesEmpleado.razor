@@ -9,6 +9,7 @@
 @inject IEmpleadoClientService _empleadoService
 @inject IJSRuntime js
 @inject IAuthClientService _autcliente
+
 <div class="detalleAfiliacionesEmpleado-page p-4 animate__animated animate__fadeIn">
     <div class="container-fluid max-width-container">
 
@@ -124,6 +125,7 @@
     private AfiliacionSeguridadSocialreaderDto? afiliacionSeguridadSocial = null;
     private bool cargando = true;
     public string _correo = "";
+    public int idEmpresa { get; set; }
 
     private void Volver() => nav.NavigateTo("/afiliacionseguridadSocial/empleados");
 
@@ -164,7 +166,8 @@ protected override async Task OnInitializedAsync()
                     string.Empty,
                     1,
                     100,
-                    _correo
+                    _correo,idEmpresa
+
                 );
 
         // 5. Validar respuesta del API

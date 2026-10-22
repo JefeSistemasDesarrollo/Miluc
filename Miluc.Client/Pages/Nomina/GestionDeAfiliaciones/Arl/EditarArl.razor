@@ -1,5 +1,5 @@
 ﻿
-@page "/editar/api/Arl/{arlid:int}"
+@page "/editar-Arl/{arlid:int}"
 
 @using System.Linq
 @using Miluc.Client.Interfaces.Nomina.SeguridadSocial
@@ -8,6 +8,7 @@
 @inject NavigationManager nav
 @inject IArlClientService _arlService
 @inject IJSRuntime JS
+@inject IAuthClientService _authCliente
 
 <div class="empleado-page p-4 animate__animated animate__fadeIn">
     <div class="container-fluid max-width-container">
@@ -142,6 +143,10 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (!_authCliente.HasPermission("Arl.Editar"))
+        {
+            nav.NavigateTo("/no-autorizado");
+        }
         await CargarEps();
     }
 
@@ -198,5 +203,5 @@
         }
     }
 
-    private void Volver() => nav.NavigateTo("/api/Arl/Arl");
+    private void Volver() => nav.NavigateTo("/Administrar-Arl");
 }

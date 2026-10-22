@@ -12,7 +12,7 @@
 @inject IEmpleadoClientService _empleadoService
 @inject IEstadoCivilClientService _estadoCivil
 @inject IJSRuntime JS
-
+@inject IAuthClientService _authCliente
 <div class="empleado-page p-4 animate__animated animate__fadeIn">
     <div class="container-fluid max-width-container">
 
@@ -184,6 +184,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (!_authCliente.HasPermission("Employee.Detalle"))
+        {
+            nav.NavigateTo("/no-autorizado");
+            return;
+        } 
         try
         {
             // Validamos cuál parámetro trae el valor de la URL

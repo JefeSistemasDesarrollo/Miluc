@@ -35,8 +35,8 @@
 
             @* Barra de búsqueda *@
             <div class="col-lg-7">
-                @if (_authClienteService.HasPermission("Employee.Search"))
-                {
+                @* @if (_authClienteService.HasPermission("Employee.Search"))
+                { *@
                     <div class="input-group input-group-lg search-group">
                         <span class="input-group-text bg-white border-end-0 rounded-start-pill ps-3">
                             <i class="bi bi-search text-muted"></i>
@@ -50,7 +50,7 @@
                             <i class="bi bi-search me-2"></i>
                         </button>
                     </div>
-                }
+                @* } *@
             </div>
 
             @* Selector de paginación y Badge de Total *@
@@ -167,36 +167,51 @@
     private List<EsquemaVacunacionReaderDto> listempleadosOrigen = new List<EsquemaVacunacionReaderDto>();
     private List<EsquemaVacunacionReaderDto> listempleadosAlservidor = new List<EsquemaVacunacionReaderDto>();
 
-    private string _textoBusqueda = "";
-    private string _correo = "";
 
+    private string _textoBusqueda = "";
+    // Variables de control de configuración y paginación
+    private int cantidadPorPagina = 10;
+    private int paginaActual = 1;
+    private int totalRegistros = 0;
+    private bool cargando = false;
+
+    int idEmpresa = 0;
+    public string _correo = "";
+    // Propiedad Completa (Full Property) para interceptar los cambios en el buscador en tiempo real
     private string textoBusqueda
     {
         get => _textoBusqueda;
         set
         {
             _textoBusqueda = value;
-            FiltrarLocal();
+            FiltrarLocal(); // Cada vez que el usuario escribe/borra una letra, ejecuta el filtro local en memoria
         }
     }
 
-    private int cantidadPorPagina = 10;
-    private int paginaActual = 1;
-    private int totalRegistros = 0;
-    private bool cargando = false;
-
     protected override async Task OnInitializedAsync()
     {
-        if (!_authClienteService.HasPermission("Employee.View"))
+
+        if (!_authClienteService.HasPermission("EsquemaVacunacion.View"))
         {
             nav.NavigateTo("/no-autorizado");
             return;
         }
 
+
+            if (_authClienteService.HasFiltro("Modulo.Nomina"))
+            {
+
+                idEmpresa = Convert.ToInt32(_authClienteService.CurrentSession.Filtros.FirstOrDefault(f => f.NombreModulo == "Modulo.Nomina").Filtro);
+          }
+        
+       
+
+
         if (_authClienteService.HasPermission("Employee.FilterCorreo"))
         {
             _correo = _authClienteService.CurrentSession.UserName;
         }
+        
        
       
 
@@ -210,7 +225,7 @@
 
         try
         {
-            var respuesta = await _esquemaClienteService.GetEsquemasVacunacionAsync(textoBusqueda, paginaActual, cantidadPorPagina, _correo);
+            var respuesta = await _esquemaClienteService.GetEsquemasVacunacionAsync(textoBusqueda, paginaActual, cantidadPorPagina, _correo, idEmpresa);
 
            
             if (respuesta != null && respuesta.EsCorrecto && respuesta.Valor != null)

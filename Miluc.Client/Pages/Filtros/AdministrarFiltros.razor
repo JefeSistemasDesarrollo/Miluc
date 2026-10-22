@@ -4,10 +4,10 @@
 @using Miluc.Client.Interfaces.UsuariosRolesPermisos
 @using Miluc.Shared.DTOs.Usuarios
 @using Miluc.Shared.DTOs.Usuarios.AsignarFiltrosDto
-@inject NavigationManager Nav
+@inject NavigationManager nav
 @inject IAsignacionFiltrosClient _asignar;
 @inject IJSRuntime js
-@inject IAuthClientService authService
+@inject IAuthClientService _authService
 @inject ILogClientService logClient
 
 <div class="usuarios-page animate__animated animate__fadeIn p-4">
@@ -19,7 +19,7 @@
             </h2>
             <p class="m-0 text-muted">Administrcion de usuarios</p>
         </div>
-        @if (authService.HasPermission("Filtro.Create"))
+        @if (_authService.HasPermission("Filtro.Create"))
         {
             <button class="btn btn-rojo  btn-nuevo rounded-pill px-4 shadow-sm" @onclick=IrACrear>
                 <i class="bi bi-plus-lg me-1"></i> Nuevo
@@ -68,7 +68,7 @@
     </div>
     @* vamos a mostrar la tabla de usuarios aqui *@
 
-    @if (authService.HasPermission("Filtro.View"))
+    @if (_authService.HasPermission("Filtro.View"))
     {
         <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
 
@@ -133,13 +133,13 @@
                                     <td class="text-center pe-4">
                                         <div class="btn-group shadow-sm border rounded-pill bg-white overflow-hidden">
 
-                                            @if (authService.HasPermission("Filtro.Details"))
+                                            @if (_authService.HasPermission("Filtro.Details"))
                                             {
                                                 <button class="btn-detail btn btn-dark btn-sm px-2 border-end" title="Ver Detalle" @onclick="() => VerDetalleFiltro(filtro.AsignarFiltrosId)">
                                                     <i class="bi bi-eye text-dark"></i>
                                                 </button>
                                             }
-                                            @if (authService.HasPermission("Filtro.Update"))
+                                            @if (_authService.HasPermission("Filtro.Update"))
                                             {
                                                 @* CORREGIDO: Se usa AsignarFiltrosId en lugar de IdUsuario *@
                                                 <button class="btn btn-white btn-sm px-2 border-end edit" title="Editar Usuario" @onclick="() => EditarFiltro(filtro.AsignarFiltrosId)">
@@ -147,7 +147,7 @@
                                                 </button>
                                             }
 
-                                            @if (authService.HasPermission("Filtro.Delete"))
+                                            @if (_authService.HasPermission("Filtro.Delete"))
                                             {
                                                 @* CORREGIDO: Se usa AsignarFiltrosId en lugar de IdUsuario *@
                                                 <button class="btn btn-white btn-sm px-2 delete" title="Eliminar" @onclick="() => EliminarFiltro(filtro.AsignarFiltrosId)">
@@ -217,6 +217,8 @@
             return (int)Math.Ceiling((double)total / cantidadPorPagina);
         }
     }
+   
+
 
     //aca cargo las lista una para mantener el original y otra para mostrar los resultados filtrados
     private async Task CargarUsuarios(string? texto = null, int? pagina = null, int? cantidad = null)
@@ -272,7 +274,7 @@
             await logClient.GuardarErrorAsync(
                       ex.Message,
                       ex.StackTrace,
-                     usuario: authService.CurrentSession.UserName ?? "No encontrado",
+                     usuario: _authService.CurrentSession.UserName ?? "No encontrado",
                     metodo: "Cargar Filtro",
                       ruta: $"/Filtros",
                       origen: "Blazor cliente",
@@ -365,6 +367,12 @@
 
     protected override async Task OnInitializedAsync()
     {
+    
+        if (!_authService.HasPermission("Filtros.View"))
+        {
+            nav.NavigateTo("/no-autorizado");
+            return;
+        }
         try
         {
             await CargarUsuarios();
@@ -374,7 +382,7 @@
             await logClient.GuardarErrorAsync(
                          ex.Message,
                          ex.StackTrace,
-                         usuario: authService.CurrentSession.UserName ?? "No encontrado",
+                         usuario: _authService.CurrentSession.UserName ?? "No encontrado",
                          metodo: nameof(OnInitializedAsync),
                          ruta: "/Configuracion/usuarios",
                          $"OnInitializedAsync Blazor",
@@ -387,7 +395,7 @@
             });
         }
     }
-    private void IrACrear() => Nav.NavigateTo("/Filtros/Crear");
+    private void IrACrear() => nav.NavigateTo("/Filtros/Crear");
 
     private async Task HandleEnter(KeyboardEventArgs e)
     {
@@ -399,11 +407,11 @@
     }
     private void EditarFiltro(int IdFiltro)
     {
-        Nav.NavigateTo($"/Filtros/Editar/{IdFiltro}");
+        nav.NavigateTo($"/Filtros/Editar/{IdFiltro}");
     }
   private void VerDetalleFiltro(int Id)
 {
-    Nav.NavigateTo($"/Filtros-Detalle/{Id}");
+        nav.NavigateTo($"/Filtros-Detalle/{Id}");
 }
 
     private async Task EliminarFiltro(int IdFiltro)
