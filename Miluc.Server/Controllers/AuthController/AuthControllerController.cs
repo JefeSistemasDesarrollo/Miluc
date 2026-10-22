@@ -6,6 +6,7 @@ using Miluc.Server.Interfaces.Autorizacion;
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Shared.DTOs.Autorizacion;
 using Miluc.Shared.DTOs.Usuarios;
+using Miluc.Shared.DTOs.Usuarios.AsignarFiltrosDto;
 using Miluc.Shared.Models.Response;
 using System.Security.Claims;
 

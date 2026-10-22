@@ -83,7 +83,7 @@
                         <div class="mb-3">
                             <label class="form-label">Numero referencia O.C</label>
                             @* <InputDate class="form-control form-control-sm" @bind-Value="fechaEntrega" min="@DateTime.Now.ToString("yyyy-MM-dd")" /> *@
-                            <InputText class="form-control form-control-sm" @bind-Value="clienteSeleccionado.NumAtCard" ></InputText>
+                            <InputText class="form-control form-control-sm" @bind-Value="clienteSeleccionado.NumAtCard"></InputText>
                             <ValidationMessage For="@(() => clienteSeleccionado.NumAtCard)" class="text-danger small" />
                         </div>
                     </div>
@@ -146,9 +146,9 @@
                                 <th style="width: 8%">Equi.k</th>
                                 <th style="width: 8%">Equi.U</th>
                                 <th class="text-end" style="width: 15%">Precio</th>
-                               @*  <th class="text-end" style="width: 10%">Precio Cliente</th> *@
-                               <th class="text-end" style="width: 8%">Precio Especial</th> 
-                        @*         <th class="text-end" style="width: 10%">Impuesto</th>
+                                @*  <th class="text-end" style="width: 10%">Precio Cliente</th> *@
+                                <th class="text-end" style="width: 8%">Precio Especial</th>
+                                @*         <th class="text-end" style="width: 10%">Impuesto</th>
                                 <th class="text-end" style="width: 10%">% Renta</th>
                                 <th class="text-end pe-3" style="width: 10%">Total Impuesto</th> *@
                                 <th class="text-end pe-3" style="width: 10%">Total</th>
@@ -172,17 +172,17 @@
                                     <td>
                                         @if (linea.BuyUnitMsr?.ToUpper() == "KG")
                                         {
-                                            <InputNumber TValue="decimal?"Value="linea.Quantity"ValueChanged="@(v => OnCantidadChanged(v, linea))"
-                                                         ValueExpression="() => linea.Quantity"class="form-control form-control-sm text-end"
-                                                         step="any"min="0" />
+                                            <InputNumber TValue="decimal?" Value="linea.Quantity" ValueChanged="@(v => OnCantidadChanged(v, linea))"
+                                                         ValueExpression="() => linea.Quantity" class="form-control form-control-sm text-end"
+                                                         step="any" min="0" />
                                         }
                                         else
                                         {
                                             <InputNumber TValue="decimal?"
                                                          Value="linea.Quantity"
                                                          ValueChanged="@(v => OnCantidadChanged(Math.Round(v ?? 0,0,MidpointRounding.AwayFromZero), linea))"
-                                                         ValueExpression="() => linea.Quantity"class="form-control form-control-sm text-end"
-                                                         step="1"min="0" />
+                                                         ValueExpression="() => linea.Quantity" class="form-control form-control-sm text-end"
+                                                         step="1" min="0" />
                                         }
                                     </td>
 
@@ -239,11 +239,11 @@
                                  
                                     <!-- PRECIOS -->
                                     <td>
-                                        @if(_authClientService.HasPermission("Orden.EditarPrice"))
+                                        @if (_authClientService.HasPermission("Orden.EditarPrice"))
                                         {
-                                            <InputNumber TValue="decimal?"Value="linea.PriceAcobrar"
+                                            <InputNumber TValue="decimal?" Value="linea.PriceAcobrar"
                                                          ValueChanged="@(v => { linea.PriceAcobrar = v; CalcularTotales(linea); })"
-                                                         ValueExpression="() => linea.PriceAcobrar"class="form-control form-control-sm text-end"
+                                                         ValueExpression="() => linea.PriceAcobrar" class="form-control form-control-sm text-end"
                                                          step="any" min="0" />
                                         }
                                         else
@@ -251,19 +251,19 @@
                                             <input type="number" readonly class="form-control form-control-sm text-end" @bind="linea.PriceAcobrar" @bind:event="oninput">
                                         }
                                     </td>
-                          @*           <td>
+                                    @*           <td>
                                         <input type="number" readonly class="form-control form-control-sm text-end" @bind="linea.PriceAsignado" @bind:event="oninput">
                                     </td> *@
                                     <td>
                                         <input type="number" readonly class="form-control form-control-sm text-end" @bind="linea.PriceEspecial" @bind:event="oninput">
                                     </td>
-                                 @*    <td>
+                                    @*    <td>
                                         <input type="text" readonly class="form-control form-control-sm" @bind="linea.CodeTaxcode">
                                     </td> *@
-                                 @*    <td>
+                                    @*    <td>
                                         <input type="number" readonly class="form-control form-control-sm text-end" @bind="linea.Rate" @bind:event="oninput">
                                     </td> *@
-                                 @*    <td class="text-end pe-3 fw-bold text-maroon">
+                                    @*    <td class="text-end pe-3 fw-bold text-maroon">
                                         @linea.TotalImpuesto.ToString("N2", new CultureInfo("es-CO"))
                                     </td> *@
                                     <td class="text-end pe-3 fw-bold text-maroon">
@@ -444,7 +444,7 @@
                     </small>
                 </div>
                 <!-- LISTA -->
-                <div class="list-group"style="max-height: 350px; overflow-y: auto;">
+                <div class="list-group" style="max-height: 350px; overflow-y: auto;">
                     @if (listaArticulosApi.Any())
                     {
                         @foreach (var item in listaArticulosApi)
@@ -513,6 +513,7 @@
     private List<SapVendedorReaderDto> listVendedores = new();
     private List<SapClienteReaderDto> listoriginalClientes = new();
     private List<SapClienteReaderDto> listClientesApi = new();
+
     private List<SapOitmDto> listaArticulosApi = new();
     private List<SapOitmDto> listaOriginalArticulos = new();
     private DateTime fechaContabilizacion = DateTime.Now;
@@ -1064,7 +1065,7 @@
                 {
                     await _jsRuntime.InvokeVoidAsync("Swal.fire", "Error", $"Numero o referencia O.C Supera los 20 caracteres permitidos", "error");
                     return;
-                } 
+                }
             }
             var result = await _jsRuntime.InvokeAsync<JsonElement>
                ("Swal.fire", new
@@ -1143,7 +1144,7 @@
                             "Correcto",
                             $"Pedido creado correctamente. Número de documento: {response.Valor.DocNum}", "success");
 
-                       nav.NavigateTo("/administrar-pedido/pedidos", forceLoad: true);
+                        nav.NavigateTo("/administrar-pedido/pedidos", forceLoad: true);
                     }
                     else
                     {

@@ -1,0 +1,600 @@
+﻿@page "/Filtros/Crear"
+@using System.Text.Json
+@using Miluc.Client.Interfaces.UsuariosRolesPermisos
+@using Miluc.Shared.DTOs.Permisos
+@using Miluc.Shared.DTOs.Usuarios
+@using Miluc.Shared.DTOs.Usuarios.AsignarFiltrosDto
+@using Miluc.Shared.Models.Response
+@inject IAsignacionFiltrosClient _asignacionFiltrosClientService
+@inject IUsuarioClientService _usuarioClientService
+@inject IJSRuntime _js
+@inject NavigationManager _nav
+@inject IAuthClientService _authService
+@inject ILogClientService _logClientService
+
+<div class="usuarios-page animate__animated animate__fadeIn p-4">
+    <div class="container-fluid max-width-container">
+
+        @* --- CABECERA DE LA PÁGINA --- *@
+        <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
+            <div>
+                <h2 class="fw-extrabold text-negro m-0 tracking-tight">
+                    <i class="bi bi-shield-plus me-2 header-icon"></i>
+                    Crear Asignación de Filtro
+                </h2>
+                <p class="text-muted mb-0 small mt-1">
+                    Asigne un nuevo filtro a un usuario y módulo específico. Los campos marcados con <span class="text-danger">*</span> son requeridos.
+                </p>
+            </div>
+
+            <button class="btn btn-miluc btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
+                <i class="bi bi-arrow-left me-2"></i> Volver al listado
+            </button>
+        </div>
+
+        @if (cargando)
+        {
+            <div class="d-flex justify-content-center my-5">
+                <div class="spinner-border text-rojo" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+            </div>
+        }
+        else
+        {
+            @* --- FORMULARIO PRINCIPAL --- *@
+            <EditForm Model="filtroCreate" OnValidSubmit="EjecutarGuardado">
+                <DataAnnotationsValidator />
+
+                <div class="card shadow-sm border-0 rounded-4">
+                    <div class="card-body p-4">
+                        <div class="section-title-container mb-4">
+                            <span class="badge bg-rojo text-white rounded-pill mb-2 px-3 py-2 fw-bold text-uppercase tracking-wider">Detalles</span>
+                            <h5 class="fw-bold text-dark m-0">Información del Filtro</h5>
+                        </div>
+
+                        <div class="row g-4">
+                            @* Usuario *@
+                            <div class="col-md-6">
+                                <h6 class="fw-bold mb-3 small text-uppercase text-muted">Datos del usuario</h6>
+                                <div class="mb-3">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text bg-white"><i class="bi bi-person"></i></span>
+                                        <InputNumber class="form-control cursor-pointer" readonly @onclick="AbrirModalUsuario" @bind-Value="filtroCreate.IdUsuario" />
+                                        
+                                        <button class="btn btn-maroon" type="button" @onclick="AbrirModalUsuario">
+                                            <i class="bi bi-search"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Usuario Seleccionado : @filtroCreate?.NombreUsuario</label>
+                                </div>
+                            </div>
+
+                            @* Filtro *@
+                            <div class="col-md-6">
+                                <h6 class="fw-bold mb-3 small text-uppercase text-muted">Filtro</h6>
+                                <div class="mb-3">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text bg-white"><i class="bi bi-funnel"></i></span>
+                                        <InputSelect @bind-Value="filtroCreate.Filtro" class="form-control form-select shadow-none">
+                                            <option value="">-- Seleccionar filtro --</option>
+                                            @foreach (var mod in listFiltros)
+                                            {
+                                                <option value="@mod.Filtro">@mod.Filtro</option>
+                                            }
+                                        </InputSelect>
+                                        <ValidationMessage For="@(() => filtroCreate.Filtro)" class="text-danger small mt-1 d-block fw-medium" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            @* Módulo *@
+                            <div class="col-md-6">
+                                <h6 class="fw-bold mb-3 small text-uppercase text-muted">Nombre Módulo</h6>
+                                <div class="mb-3">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text bg-white"><i class="bi bi-shield-lock"></i></span>
+                                        <InputText class="form-control cursor-pointer"
+                                                   readonly
+                                                   @onclick="AbrirModalModulo"
+                                                   @bind-Value="moduloSeleccionado.Nombre"
+                                                   placeholder="-- Seleccionar módulo --" />
+                                        <button class="btn btn-maroon" type="button" @onclick="AbrirModalModulo">
+                                            <i class="bi bi-search"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @* Descripción *@
+                            <div class="col-md-6">
+                                <h6 class="fw-bold mb-3 small text-uppercase text-muted">Descripción</h6>
+                                <div class="mb-3">
+                                    <div class="input-group input-group-sm">
+                                        <InputText class="form-control shadow-none" @bind-Value="filtroCreate.Descripcion" placeholder="Descripción opcional" />
+                                        <ValidationMessage For="@(() => filtroCreate.Descripcion)" class="text-danger small mt-1 d-block fw-medium" />
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                @* --- BARRA DE ACCIONES --- *@
+                <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-3">
+                    <button type="button" class="btn btn-light rounded-pill px-4 py-2 fw-semibold transition-all border" @onclick="Volver" disabled="@isProcessing">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-miluc rounded-pill px-5 shadow-sm fw-bold transition-all d-flex align-items-center" disabled="@isProcessing">
+                        @if (isProcessing)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            <span>Procesando...</span>
+                        }
+                        else
+                        {
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            <span>Guardar Filtro</span>
+                        }
+                    </button>
+                </div>
+            </EditForm>
+        }
+    </div>
+</div>
+
+@* --- MODAL DE USUARIOS --- *@
+<div class="modal fade @(mostrarModalUsuario ? "show d-block" : "")" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 1050;">
+    <div class="modal-dialog modal-md modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-maroon-modal text-modal">
+                <h5 class="modal-title mb-0">
+                    <i class="bi bi-person-fill-add"></i> Buscar usuarios
+                </h5>
+                <button type="button" class="btn-close text-modal ms-auto" @onclick="CerrarModalUsuario"></button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" @bind:event="oninput" placeholder="Buscar usuario..." @bind="textoBusquedaUsuario" @onkeyup="HandleEnterUsuario">
+                    <button type="button" class="btn btn-maroon" @onclick="() => buscarEnServidorUsuario()">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <small class="text-muted">
+                        Registros encontrados: <strong>@cantidadDeUsuariosEncontrados</strong>
+                    </small>
+                </div>
+                <div class="list-group" style="max-height: 350px; overflow-y: auto;">
+                    @if (listaUsuarios.Any())
+                    {
+                        @foreach (var item in listaUsuarios)
+                        {
+                            <button type="button" class="list-group-item list-group-item-action" @onclick="() => SeleccionarUsuario(item)">
+                                <div class="d-flex flex-column">
+                                    <strong class="text-maroon">@item.IdUsuario</strong>
+                                    <small class="text-muted">@item.Nombres</small>
+                                    <small class="text-muted">@item.UserName</small>
+                                </div>
+                            </button>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-search fs-3"></i>
+                            <div class="mt-2">No se encontraron usuarios</div>
+                        </div>
+                    }
+                </div>
+                @if (cantidadDeUsuariosEncontrados > 0)
+                {
+                    <div class="d-flex justify-content-center mt-3">
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary btn-sm" disabled="@(paginaActualUsuario == 1)" @onclick="PaginaAnteriorUsuario">
+                                <i class="bi bi-chevron-left"></i>
+                            </button>
+                            @for (int i = Math.Max(1, paginaActualUsuario - 2); i <= Math.Min(TotalPaginasUsuario, paginaActualUsuario + 2); i++)
+                            {
+                                var pagina = i;
+                                <button class="btn @(paginaActualUsuario == pagina ? "btn-maroon text-white" : "btn-outline-secondary") btn-sm" @onclick="() => IrPaginaUsuario(pagina)">
+                                    @pagina
+                                </button>
+                            }
+                            <button class="btn btn-outline-secondary btn-sm" disabled="@(paginaActualUsuario == TotalPaginasUsuario)" @onclick="SiguientePaginaUsuario">
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@* --- MODAL DE MÓDULOS --- *@
+<div class="modal fade @(mostrarModalModulo ? "show d-block" : "")" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 1050;">
+    <div class="modal-dialog modal-md modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-maroon-modal text-modal">
+                <h5 class="modal-title mb-0">
+                    <i class="bi bi-shield-shaded"></i> Buscar Módulo
+                </h5>
+                <button type="button" class="btn-close text-modal ms-auto" @onclick="CerrarModalModulo"></button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" @bind:event="oninput" placeholder="Buscar módulo..." @bind="textoBusquedaModulo" @onkeyup="HandleEnterModulo">
+                    <button type="button" class="btn btn-maroon" @onclick="() => buscarEnServidorModulo()">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <small class="text-muted">
+                        Registros encontrados: <strong>@cantidadDeModulosEncontrados</strong>
+                    </small>
+                </div>
+                <div class="list-group" style="max-height: 350px; overflow-y: auto;">
+                    @if (listaModuloApi.Any())
+                    {
+                        @foreach (var mod in listaModuloApi)
+                        {
+                            <button type="button" class="list-group-item list-group-item-action" @onclick="() => SeleccionarModulo(mod)">
+                                <div class="d-flex flex-column">
+                                    <strong class="text-maroon">@mod.Nombre</strong>
+                                </div>
+                            </button>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-search fs-3"></i>
+                            <div class="mt-2">No se encontraron módulos</div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+
+            @if (cantidadDeModulosEncontrados > 0)
+            {
+                <div class="d-flex justify-content-center mt-3">
+                    <div class="btn-group">
+                        <button class="btn btn-outline-secondary btn-sm" disabled="@(paginaActualModulo == 1)" @onclick="PaginaAnteriorModulo">
+                            <i class="bi bi-chevron-left"></i>
+                        </button>
+                        @for (int i = Math.Max(1, paginaActualModulo - 2); i <= Math.Min(TotalPaginasModulos, paginaActualModulo + 2); i++)
+                        {
+                            var pagina = i;
+                            <button class="btn @(paginaActualModulo == pagina ? "btn-maroon text-white" : "btn-outline-secondary") btn-sm" @onclick="() => IrPaginAModulo(pagina)">
+                                @pagina
+                            </button>
+                        }
+                        <button class="btn btn-outline-secondary btn-sm" disabled="@(paginaActualModulo == TotalPaginasModulos)" @onclick="SiguientePaginaModulo">
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private AsignarFiltrosCreateDto filtroCreate = new();
+    private UsuarioReadDto usuarioSeleccionado = new();
+
+    private List<UsuarioReadDto> listaUsuarios = new();
+    private List<UsuarioReadDto> listaUsuariosFiltro = new();
+
+    private List<PermisosReadDto> listaModuloApi = new();
+    private List<PermisosReadDto> listaModuloFiltro = new();
+
+    private List<AsignarFiltrosReaderDto> listFiltros = new();
+    private PermisosReadDto moduloSeleccionado = new();
+
+    private bool mostrarModalUsuario = false;
+    private void AbrirModalUsuario() => mostrarModalUsuario = true;
+    private void CerrarModalUsuario() => mostrarModalUsuario = false;
+
+    private bool mostrarModalModulo = false;
+    private void AbrirModalModulo() => mostrarModalModulo = true;
+    private void CerrarModalModulo() => mostrarModalModulo = false;
+
+    private int paginaActualUsuario = 1;
+    private int paginaActualModulo = 1;
+    private int cantidadDeUsuariosEncontrados = 0;
+    private int cantidadDeModulosEncontrados = 0;
+
+    private int TotalPaginasUsuario => (int)Math.Ceiling((double)cantidadDeUsuariosEncontrados / CantidadRegistrosPorUsuario);
+    private int TotalPaginasModulos => (int)Math.Ceiling((double)cantidadDeModulosEncontrados / CantidadRegistrosporModulo);
+
+    private string _textoBusquedaUsuario = "";
+    private string _textoBusquedaModulo = "";
+
+    public string textoBusquedaUsuario
+    {
+        get => _textoBusquedaUsuario;
+        set{
+            _textoBusquedaUsuario = value;
+            FiltrarUsuario();
+        }
+
+    }
+    public string textoBusquedaModulo
+    {
+        get => _textoBusquedaModulo;
+        set
+        {
+            _textoBusquedaModulo = value;
+            FiltrarModulo();
+        }
+    }
+
+    private bool cargando = true;
+    private bool isProcessing = false;
+    private int CantidadRegistrosPorUsuario = 10;
+    private int CantidadRegistrosporModulo = 10;
+
+    private async Task PaginaAnteriorUsuario()
+    {
+        if (paginaActualUsuario > 1)
+        {
+            paginaActualUsuario--;
+            await buscarEnServidorUsuario(_textoBusquedaUsuario, paginaActualUsuario, CantidadRegistrosPorUsuario);
+        }
+    }
+
+    private async Task SiguientePaginaUsuario()
+    {
+        if (paginaActualModulo < TotalPaginasModulos)
+        {
+            paginaActualUsuario++;
+            await buscarEnServidorUsuario(_textoBusquedaModulo, paginaActualModulo, CantidadRegistrosporModulo);
+        }
+    }
+    private async Task PaginaAnteriorModulo()
+    {
+        if (paginaActualUsuario > 1)
+        {
+            paginaActualUsuario--;
+            await buscarEnServidorUsuario(_textoBusquedaUsuario, paginaActualUsuario, CantidadRegistrosPorUsuario);
+        }
+    }
+
+    private async Task SiguientePaginaModulo()
+    {
+        if (paginaActualModulo < TotalPaginasModulos)
+        {
+            paginaActualModulo++;
+            await buscarEnServidorModulo(_textoBusquedaModulo, paginaActualModulo, CantidadRegistrosporModulo);
+        }
+    }
+
+
+    private async Task HandleEnterUsuario(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            await buscarEnServidorUsuario(_textoBusquedaUsuario, 1, CantidadRegistrosPorUsuario);
+    }
+
+    private async Task HandleEnterModulo(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            await buscarEnServidorModulo(_textoBusquedaModulo, 1, CantidadRegistrosporModulo);
+    }
+
+    private async Task SeleccionarUsuario(UsuarioReadDto user)
+    {
+        if (usuarioSeleccionado != user)
+        {
+            usuarioSeleccionado = user;
+            filtroCreate.IdUsuario = user.IdUsuario;
+            filtroCreate.NombreUsuario = user.NombreCompleto;
+        }
+        CerrarModalUsuario();
+    }
+
+    private async Task SeleccionarModulo(PermisosReadDto modulo)
+    {
+        moduloSeleccionado = modulo;
+        // Asignar al DTO si corresponde (ajustar según tu propiedad exacta en AsignarFiltrosCreateDto)
+        filtroCreate.NombreModulo = modulo.Nombre;
+        CerrarModalModulo();
+    }
+
+    private async Task IrPaginaUsuario(int pagina)
+    {
+        paginaActualUsuario = pagina;
+        await buscarEnServidorUsuario(_textoBusquedaUsuario, paginaActualUsuario, CantidadRegistrosPorUsuario);
+    }
+    private async Task IrPaginAModulo(int pagina)
+    {
+        paginaActualUsuario = pagina;
+        await buscarEnServidorModulo(_textoBusquedaModulo, paginaActualModulo, CantidadRegistrosporModulo);
+    }
+
+    private void FiltrarModulo()
+    {
+        if (string.IsNullOrEmpty(_textoBusquedaModulo))
+        {
+            listaModuloApi = listaModuloFiltro.ToList();
+            return;
+        }
+        listaModuloApi = listaModuloFiltro
+                        .Where(c =>
+                        (c.Descripcion?.Contains(_textoBusquedaModulo.ToString().ToUpper().Trim(), StringComparison.OrdinalIgnoreCase) ?? false)||
+                        (c.Nombre?.Contains(_textoBusquedaModulo.ToString().ToUpper().Trim(), StringComparison.OrdinalIgnoreCase) ?? false)                        
+                        ).ToList();
+    }
+    private void FiltrarUsuario()
+    {
+        if (string.IsNullOrEmpty(_textoBusquedaUsuario))
+        {
+            listaUsuarios= listaUsuariosFiltro.ToList();
+            return;
+        }
+        listaUsuarios = listaUsuariosFiltro
+                        .Where(c =>
+                        (c.Nombres?.Contains(_textoBusquedaUsuario.ToString().ToUpper().Trim(), StringComparison.OrdinalIgnoreCase) ?? false)||
+                        (c.UserName?.Contains(_textoBusquedaUsuario.ToString().ToUpper().Trim(), StringComparison.OrdinalIgnoreCase) ?? false)
+                        ).ToList();
+    }
+
+
+    private async Task buscarEnServidorUsuario(string? text = null, int? paginador = null, int? cantidad = null)
+    {
+        try
+        {
+            text ??= _textoBusquedaUsuario;
+            paginador ??= 1;
+            cantidad ??= 10;
+
+            var responseUsuarios = await _usuarioClientService.ListarUsuariosAsync(text, paginador, cantidad);
+
+            if (responseUsuarios?.Valor != null)
+            {
+                listaUsuarios = responseUsuarios.Valor;
+                listaUsuariosFiltro = listaUsuarios;
+                cantidadDeUsuariosEncontrados = responseUsuarios.CantRegistros;
+            }
+            else
+            {
+                listaUsuarios = new List<UsuarioReadDto>();
+                string errores = responseUsuarios?.Errores != null && responseUsuarios.Errores.Any()
+                    ? string.Join("<br>", responseUsuarios.Errores)
+                    : "Ocurrió un error inesperado.";
+
+                await _js.InvokeVoidAsync("Swal.fire", new
+                {
+                    icon = "error",
+                    title = $"Error al consultar usuarios",
+                    text = $"{errores}",
+                    confirmButtonColor = "#6c1d1d"
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            await _logClientService.GuardarErrorAsync(ex.Message, ex.StackTrace, nivel: "error", metodo: "buscarEnServidorUsuario");
+        }
+    }
+
+    private async Task buscarEnServidorModulo(string? text = null, int? paginador = null, int? cantidad = null)
+    {
+        try
+        {
+            text ??= _textoBusquedaModulo;
+            paginador ??= 1;
+            cantidad ??= 10;
+
+            var responseModulo = await _asignacionFiltrosClientService.GetAllPermisosModuloAsyncPage(text, Convert.ToInt32(paginador), cantidad);
+
+            if (responseModulo?.Valor != null)
+            {
+                listaModuloApi = responseModulo.Valor;
+                listaModuloFiltro = listaModuloApi;
+                cantidadDeModulosEncontrados = responseModulo.CantRegistros;
+            }
+        }
+        catch (Exception ex)
+        {
+            await _logClientService.GuardarErrorAsync(ex.Message, ex.StackTrace, nivel: "error", metodo: "buscarEnServidorModulo");
+        }
+    }
+
+    private void Volver() => _nav.NavigateTo("/Administrar-Filtros");
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var responseUsuarios = await _usuarioClientService.ListarUsuariosAsync();
+            if (responseUsuarios?.Valor != null)
+            {
+                listaUsuarios = responseUsuarios.Valor;
+                listaUsuariosFiltro = listaUsuarios;
+                cantidadDeUsuariosEncontrados = responseUsuarios.CantRegistros;
+            }
+
+            var responseModulos = await _asignacionFiltrosClientService.GetAllPermisosModuloAsyncPage("", 1, 10);
+            if (responseModulos?.Valor != null)
+            {
+                listaModuloApi = responseModulos.Valor;
+                cantidadDeModulosEncontrados = responseModulos.CantRegistros;
+            }
+
+            listFiltros = new List<AsignarFiltrosReaderDto>
+            {
+                new AsignarFiltrosReaderDto { Filtro = "0" },
+                new AsignarFiltrosReaderDto { Filtro = "1" },
+                new AsignarFiltrosReaderDto { Filtro = "2" },
+                new AsignarFiltrosReaderDto { Filtro = "3" },
+                new AsignarFiltrosReaderDto { Filtro = "4" },
+                new AsignarFiltrosReaderDto { Filtro = "5" },
+                new AsignarFiltrosReaderDto { Filtro = "6" },
+                new AsignarFiltrosReaderDto { Filtro = "7" },
+                new AsignarFiltrosReaderDto { Filtro = "8" },
+                new AsignarFiltrosReaderDto { Filtro = "9" },
+                new AsignarFiltrosReaderDto { Filtro = "10" },
+            };
+        }
+        catch (Exception ex)
+        {
+            await _logClientService.GuardarErrorAsync(ex.Message, ex.StackTrace, "error", "OnInitializedAsync");
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private async Task EjecutarGuardado()
+    {
+        if (isProcessing) return;
+        isProcessing = true;
+
+        try
+        {
+            var response = await _asignacionFiltrosClientService.CreateFiltrosAsync(filtroCreate);
+
+            if (response != null && response.EsCorrecto)
+            {
+                await _js.InvokeVoidAsync("Swal.fire", new
+                {
+                    icon = "success",
+                    title = "¡Éxito!",
+                    text = "El filtro ha sido registrado correctamente.",
+                    confirmButtonColor = "#6c1d1d"
+                });
+                Volver();
+            }
+            else
+            {
+                string errores = response?.Errores != null && response.Errores.Any()
+                    ? string.Join("<br>", response.Errores)
+                    : (response?.Mensaje ?? "Ocurrió un error al registrar el filtro.");
+
+                await _js.InvokeVoidAsync("Swal.fire", new
+                {
+                    icon = "error",
+                    title = "Error al guardar",
+                    html = errores,
+                    confirmButtonColor = "#6c1d1d"
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            await _logClientService.GuardarErrorAsync(ex.Message, ex.StackTrace, "error", "EjecutarGuardado");
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+}
