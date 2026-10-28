@@ -250,12 +250,12 @@
 
     protected override async Task OnInitializedAsync()
     {
-
         if (!_autcliente.HasPermission("Employee.View"))
         {
             nav.NavigateTo("/no-autorizado");
             return;
         }
+
         if (_autcliente.HasPermission("Modulo.Nomina"))
         {
             if (_autcliente.HasFiltro("Modulo.Nomina"))
@@ -269,6 +269,9 @@
         {
             _correo = _autcliente.CurrentSession.UserName;
         }
+
+        
+       
 
         await cargarEmpleados();
     }
@@ -503,7 +506,7 @@
     // Redirige al formulario de Edición pasando el ID por la URL
     private void EditarEmpleado(int id)
     {
-        nav.NavigateTo($"/Administrar/Empleado/Editar/{id}");
+        nav.NavigateTo($"/editar-empleado/{id}");
     }
     private void Volver() => nav.NavigateTo("/administrar-Nomina");
 

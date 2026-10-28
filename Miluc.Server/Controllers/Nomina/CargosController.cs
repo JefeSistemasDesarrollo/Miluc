@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Miluc.Client.Interfaces.Nomina;
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Nomina;
+using Miluc.Server.Models.Nomina;
+using Miluc.Server.Security;
 using Miluc.Server.Servicios.Nomina;
 using Miluc.Shared.DTOs.Nomina.CargosDto;
 using Miluc.Shared.DTOs.Nomina.EmpresaDto;
@@ -17,6 +20,7 @@ namespace Miluc.Server.Controllers.Nomina
         
 
         [HttpGet("Cargos")]
+        [PermissionAuthorize("Cargos.View")]
         public async Task<ActionResult<ResponseAPI<List<CargosReaderDto>>>> GetCargosAsync([FromQuery] string? filtro = null, [FromQuery] int page = 1, [FromQuery] int? cantidad = null)
         {
             try
@@ -65,6 +69,7 @@ namespace Miluc.Server.Controllers.Nomina
         }
 
         [HttpPut("{id}")]
+        [PermissionAuthorize("Cargos.Update")]
         public async Task<ActionResult<ResponseAPI<bool>>> UpsertCargoAsync(
            int id,
            [FromBody] UpsertCargos upsertCargos)
@@ -169,6 +174,7 @@ namespace Miluc.Server.Controllers.Nomina
             }
         }
         [HttpGet("{id}")]
+        [PermissionAuthorize("Cargos.Details")]
         public async Task<ActionResult<ResponseAPI<CargosReaderDto>>> GetCargoByIdAsync(int id)
         {
             try
@@ -213,6 +219,7 @@ namespace Miluc.Server.Controllers.Nomina
             }
         }
         [HttpDelete("{id}")]
+        [PermissionAuthorize("Cargos.Delete")]
         public async Task<ActionResult<ResponseAPI<bool>>> DeleteCargoAsync(int id)
         {
             try

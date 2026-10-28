@@ -1,4 +1,4 @@
-﻿@page "/api/CajaCompensacion/{id:int}"
+﻿@page "/ver-Caja/{id:int}"
 
 @using Miluc.Client.Interfaces.Nomina.SeguridadSocial
 @using Miluc.Shared.DTOs.Nomina.CajaCompensacionDto
@@ -6,6 +6,8 @@
 @inject NavigationManager nav
 @inject ICajaCompensacionClientService _cajaCompensacionService
 @inject IJSRuntime JS
+@inject IAuthClientService _authCliente
+
 
 <div class="empleado-page p-4 animate__animated animate__fadeIn">
     <div class="container-fluid max-width-container">
@@ -119,6 +121,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (!_authCliente.HasPermission("CajaComp.Detalle"))
+        {
+            nav.NavigateTo("/no-autorizado");
+            return;
+        }
         await CargarCajaCompensacion();
     }
 
@@ -148,6 +155,6 @@
         }
     }
 
-    private void Volver() => nav.NavigateTo("/api/CajaCompensacion");
-    private void IrAEditar() => nav.NavigateTo($"/api/CajaCompensacion/Editar/{id}");
+    private void Volver() => nav.NavigateTo("/Administrar-CajaCompensacion");
+    private void IrAEditar() => nav.NavigateTo($"editar-Caja/{id}");
 }

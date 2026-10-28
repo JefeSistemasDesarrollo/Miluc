@@ -70,15 +70,16 @@ namespace Miluc.Client.Servicios.Nomina
         }
 
 
-public async Task<ResponseAPI<List<AfpReaderDto>>> GetAfpAsyc(string textoBusqueda, int paginaActual, int cantidadPorPagina)
+        public async Task<ResponseAPI<List<AfpReaderDto>>> GetAfpAsyc(
+            string textoBusqueda,
+            int paginaActual,
+            int cantidadPorPagina)
         {
             try
             {
-                // Codificar la cadena de búsqueda para manejo seguro de URL
                 var busquedaSegura = Uri.EscapeDataString(textoBusqueda ?? string.Empty);
 
-
-                var url = $"/api/filtros/?textoBusqueda={busquedaSegura}&paginaActual={paginaActual}&cantidadPorPagina={cantidadPorPagina}";
+                var url = $"/api/Afp/Afp?filtro={busquedaSegura}&page={paginaActual}&cantidad={cantidadPorPagina}";
 
                 var responsePeticion = await httpClient.GetAsync(url);
 
@@ -87,31 +88,17 @@ public async Task<ResponseAPI<List<AfpReaderDto>>> GetAfpAsyc(string textoBusque
                     return new ResponseAPI<List<AfpReaderDto>>
                     {
                         EsCorrecto = false,
-                        Mensaje = $"Error al obtener las AFP (Status: {responsePeticion.StatusCode})",
-                        Valor = null,
-                        CantRegistros = 0
+                        Mensaje = $"Error al obtener las AFP (Status: {responsePeticion.StatusCode})"
                     };
                 }
 
-                var resultado = await responsePeticion.Content.ReadFromJsonAsync<ResponseAPI<List<AfpReaderDto>>>();
+                var resultado =
+                    await responsePeticion.Content.ReadFromJsonAsync<ResponseAPI<List<AfpReaderDto>>>();
 
-                if (resultado == null || resultado.Valor == null)
+                return resultado ?? new ResponseAPI<List<AfpReaderDto>>
                 {
-                    return new ResponseAPI<List<AfpReaderDto>>
-                    {
-                        EsCorrecto = false,
-                        Mensaje = "Error al obtener las AFP: respuesta nula",
-                        Valor = null,
-                        CantRegistros = 0
-                    };
-                }
-
-                return new ResponseAPI<List<AfpReaderDto>>
-                {
-                    EsCorrecto = true,
-                    Mensaje = "AFP obtenidas correctamente",
-                    Valor = resultado.Valor,
-                    CantRegistros = resultado.CantRegistros
+                    EsCorrecto = false,
+                    Mensaje = "No se obtuvo respuesta del servidor."
                 };
             }
             catch (Exception ex)
@@ -119,9 +106,7 @@ public async Task<ResponseAPI<List<AfpReaderDto>>> GetAfpAsyc(string textoBusque
                 return new ResponseAPI<List<AfpReaderDto>>
                 {
                     EsCorrecto = false,
-                    Mensaje = $"Error al obtener las AFP: {ex.Message}",
-                    Valor = null,
-                    CantRegistros = 0
+                    Mensaje = $"Error al obtener las AFP: {ex.Message}"
                 };
             }
         }

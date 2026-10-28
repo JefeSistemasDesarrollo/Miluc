@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Nomina;
+using Miluc.Server.Security;
 using Miluc.Shared.DTOs.Nomina.EmpleadoDto;
 using Miluc.Shared.Models.Response;
 using System.Text;
@@ -16,6 +17,7 @@ namespace Miluc.Server.Controllers.Nomina
     {
 
         [HttpGet]
+        [PermissionAuthorize("Employee.View")]
         public async Task<ActionResult<ResponseAPI<List<EmpleadoReaderDto>>>>GetEmpleadosAsync([FromQuery] string? filtro = null, [FromQuery] int page = 1, [FromQuery] int? cantidad = null, [FromQuery] string? correo= null, [FromQuery] int? idEmpresa = null)
         {
             try
@@ -68,6 +70,7 @@ namespace Miluc.Server.Controllers.Nomina
         }
 
         [HttpGet("{id}")]
+        [PermissionAuthorize("Employee.Detalle")]
         public async Task<ActionResult<ResponseAPI<EmpleadoReaderDto>>> GetEmpleadoByIdAsync(int id)
         {
             try
@@ -120,6 +123,7 @@ namespace Miluc.Server.Controllers.Nomina
 
 
         [HttpPost("crearEmpleado")]
+        [PermissionAuthorize("Employee.Create")]
         public async Task<ActionResult<ResponseAPI<EmpleadoReaderDto>>> CrearEmpleadoAsync([FromBody] EmpleadoCreateDto dto)
         {
             try
@@ -186,6 +190,7 @@ namespace Miluc.Server.Controllers.Nomina
         }
 
         [HttpPut("{id}")]
+        [PermissionAuthorize("Employee.Update")]
         public async Task<ActionResult<ResponseAPI<EmpleadoReaderDto>>> UpdateEmpleadosAsync(int id, [FromBody] EmpleadoUpdateDto empleadoUpdateDto)
         {
 
@@ -290,6 +295,7 @@ namespace Miluc.Server.Controllers.Nomina
             }
         }
             [HttpDelete("{id}")]
+        [PermissionAuthorize("Employee.Delete")]
         public async Task<ActionResult<ResponseAPI<bool>>> DeleteEmpleadosAsync(int id)
         {
             try

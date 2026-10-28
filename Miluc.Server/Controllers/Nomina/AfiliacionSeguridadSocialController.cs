@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Nomina;
+using Miluc.Server.Security;
 using Miluc.Shared.DTOs.Nomina.AfiliacionSeguridadSocialDto;
 using Miluc.Shared.Models.Response;
 
@@ -8,6 +10,7 @@ namespace Miluc.Server.Controllers.Nomina
 {
     [ApiController]
     [Route("api/[controller]")]
+   
 
     public class AfiliacionSeguridadSocialController( IArlService arlService, ICajaCompensacionService cajaCompensacionService,
         IAfiliacionSeguridadSocialService afiliacionSeguridadSocialService
@@ -19,11 +22,14 @@ namespace Miluc.Server.Controllers.Nomina
         public ILogService Log { get; } = _log;
 
         [HttpGet("AfiliacionSeguridadSocial")]
-        public async Task<ActionResult<ResponseAPI<List<AfiliacionSeguridadSocialreaderDto>>>> GetAfiliacionSeguridadSocialAsync([FromQuery] string? filtro = null,[FromQuery] int page = 1, [FromQuery] int cantidad = 10,[FromQuery] string?correo = null) 
+        [PermissionAuthorize("Afiliaciones.View")]
+       
+        public async Task<ActionResult<ResponseAPI<List<AfiliacionSeguridadSocialreaderDto>>>> GetAfiliacionSeguridadSocialAsync([FromQuery] string? filtro = null,[FromQuery] int page = 1, [FromQuery] int cantidad = 10,[FromQuery] string?correo = null,[FromQuery] int? idEmpresa = null) 
         {
+         
             try
             {
-                (List<AfiliacionSeguridadSocialreaderDto> afiliaciones, int totalRegistros) = await AfiliacionSeguridadSocialService.GetAfiliacionSeguridadSocialAsync(filtro, page, cantidad, correo);
+                (List<AfiliacionSeguridadSocialreaderDto> afiliaciones, int totalRegistros) = await AfiliacionSeguridadSocialService.GetAfiliacionSeguridadSocialAsync(filtro, page, cantidad, correo,idEmpresa);
 
                 if (afiliaciones == null || afiliaciones.Count == 0)
                 {
@@ -68,6 +74,7 @@ namespace Miluc.Server.Controllers.Nomina
         }
 
         [HttpPut("{id}")]
+        [PermissionAuthorize("Afiliaciones.Update")]
         public async Task<ActionResult<ResponseAPI<AfiliacionSeguridadSocialreaderDto>>> UpdateAfiliacionAsync(int id, [FromBody] UpdateAFiliacionDto afiliacionUpdateDto)
         {
             // Validar null

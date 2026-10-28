@@ -1,4 +1,4 @@
-﻿@page "/Administrar/Empleado/Editar/{idEmpleado:int}"
+﻿@page "/editar-empleado/{idEmpleado:int}"
 
 @using Miluc.Client.Interfaces.Nomina
 @using Miluc.Shared.DTOs.Nomina.EmpleadoDto
@@ -16,6 +16,7 @@
 @inject IEstadoCivilClientService _estadoCivil
 @inject IEmpresaClientSevice _empresaClientSevice
 @inject IJSRuntime JS
+@inject IAuthClientService _authCliente
 
 <div class="empleado-page p-4 animate_animated animate_fadeIn">
     <div class="container-fluid max-width-container">
@@ -57,7 +58,7 @@
                                     <label class="form-label label-custom">Primer Nombre <span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
                                         <span class="input-icon"><i class="bi bi-person"></i></span>
-                                        <InputText class="form-control input-custom" @bind-Value="editarEmpleado.PrimerNombre" placeholder="Ej: Juan" />
+                                        <InputText class="form-control input-custom" @bind-Value="editarEmpleado.PrimerNombre" " placeholder="Ej: Juan" />
                                     </div>
                                     <ValidationMessage For="@(() => editarEmpleado.PrimerNombre)" class="text-danger small mt-1 d-block fw-medium" />
                                 </div>
@@ -66,6 +67,7 @@
                                     <label class="form-label label-custom text-muted-custom">Segundo Nombre</label>
                                     <div class="input-group-custom">
                                         <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
+                                       
                                         <InputText class="form-control input-custom" @bind-Value="editarEmpleado.SegundoNombre" placeholder="Opcional" />
                                     </div>
                                 </div>
@@ -103,7 +105,9 @@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom">Tipo de documento<span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
-                                        <InputSelect @bind-Value="editarEmpleado.TipoDocumentoId" class="form-control input-custom">
+                                        <InputSelect @bind-Value="editarEmpleado.TipoDocumentoId"
+                                                     class="form-control input-custom"
+                                                     disabled="@(!PuedeEditarCampos)">
                                             <option value="">Seleccionar tipo de documento</option>
                                             @foreach (var m in listDocumento)
                                             {
@@ -118,7 +122,7 @@
                                     <label class="form-label label-custom">Número de Documento <span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
                                         <span class="input-icon"><i class="bi bi-card-text"></i></span>
-                                        <InputText class="form-control input-custom" @bind-Value="editarEmpleado.Documento" placeholder="Ej: 100023456" />
+                                        <InputText class="form-control input-custom" @bind-Value="editarEmpleado.Documento" disabled="@(!PuedeEditarCampos)" placeholder="Ej: 100023456" />
                                     </div>
                                     <ValidationMessage For="@(() => editarEmpleado.Documento)" class="text-danger small mt-1 d-block fw-medium" />
                                 </div>
@@ -196,11 +200,15 @@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom">Seleccione la empresa <span class="text-danger">*</span></label>
                                     <div class="select2-wrapper">
-                                        <InputSelect @bind-Value="editarEmpleado.EmpresaId" class="form-control input-custom">
+                                        <InputSelect @bind-Value="editarEmpleado.EmpresaId"
+                                                     class="form-control input-custom"
+                                                     disabled="@(!PuedeEditarCampos)">
                                             <option value="">Seleccionar empresa</option>
                                             @foreach (var empresa in listEmpresas)
                                             {
-                                                <option value="@empresa.EmpresaId">@empresa.EmpresaId - @empresa.NombreEmpresa</option>
+                                                <option value="@empresa.EmpresaId">
+                                                    @empresa.EmpresaId - @empresa.NombreEmpresa
+                                                </option>
                                             }
                                         </InputSelect>
                                     </div>
@@ -317,6 +325,8 @@
     private List<EmpresaReaderDto> listEmpresas = new();
     private string correoTemporal = "";
     private bool isProcessing = false;
+    private bool PuedeEditarCampos;
+   
 
     private void Volver() => nav.NavigateTo("/Administrar/Empleado");
 
@@ -331,13 +341,29 @@
     {
         try
         {
+            if (!_authCliente.HasPermission("Employee.Update"))
+            {
+                nav.NavigateTo("/no-autorizado");
+                return;
+            }
+
+           
+
+            PuedeEditarCampos =
+                _authCliente.HasPermission("Empleado.Campos");
+
             var tareaEmpleado = _empleadoService.GetEmpleadoByIdAsync(idEmpleado);
             var tareaMunicipios = _municipioClientService.GetMunicipiosAsync();
             var tareaTiposDoc = _tipoDocumentoClientService.GetTipoDocumentosAsync();
             var tareaEstados = _estadoCivil.GetEstadosCivilesAsync();
             var tareaEmpresas = _empresaClientSevice.GetEmpresasAsync(string.Empty, 1, 100);
 
-            await Task.WhenAll(tareaEmpleado, tareaMunicipios, tareaTiposDoc, tareaEstados, tareaEmpresas);
+            await Task.WhenAll(
+                tareaEmpleado,
+                tareaMunicipios,
+                tareaTiposDoc,
+                tareaEstados,
+                tareaEmpresas);
 
             var respuestaEmpleado = await tareaEmpleado;
             var respuestaMunicipios = await tareaMunicipios;
@@ -360,6 +386,7 @@
             if (respuestaEmpleado?.Valor != null)
             {
                 var emp = respuestaEmpleado.Valor;
+
                 correoTemporal = emp.CorreoElectronico ?? string.Empty;
 
                 editarEmpleado.Usuario ??= new UsuarioUpdateDto();
@@ -390,10 +417,13 @@
         }
         catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("Swal.fire", "Error", ex.Message, "error");
+            await JS.InvokeVoidAsync(
+                "Swal.fire",
+                "Error",
+                ex.Message,
+                "error");
         }
     }
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)

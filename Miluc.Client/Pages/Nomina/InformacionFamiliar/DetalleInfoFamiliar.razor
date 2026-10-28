@@ -11,6 +11,7 @@
 @inject IInfoFamiliarClientService _infoFamiliarService
 @inject IParentescoClientService _parentescoService
 @inject IJSRuntime JS
+@inject IAuthClientService _autcliente
 
 
 <div class="empleado-page p-4 animate__animated animate__fadeIn">
@@ -130,6 +131,12 @@
 
     protected override async Task OnInitializedAsync()
     {
+        
+        if (!_autcliente.HasPermission("informacionFamiliar.Details"))
+            {
+                nav.NavigateTo("/no-autorizado");
+                return;
+            }
         try
         {
             var resultado = await _infoFamiliarService.GetFamiliarByIdAsync(IdEmpleado);
@@ -179,9 +186,9 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    private void EditarInformacionFamiliar(int idFamiliar)
+    private void EditarInformacionFamiliar(int id)
     {
-        nav.NavigateTo($"/nomina/editar/informacion-familiar/{IdEmpleado}/{idFamiliar}");
+        nav.NavigateTo($"/editar-infoFamiliar/{IdEmpleado}/{id}");
     }
 
     private async Task EliminarInformacionFamiliar(int idFamiliar)

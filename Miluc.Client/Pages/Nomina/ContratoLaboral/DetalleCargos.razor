@@ -1,4 +1,4 @@
-﻿@page "/Administrar/Cargos/Detalle/{id:int}"
+﻿@page "/detalle-Cargos/{id:int}"
 
 @using Miluc.Client.Interfaces.Nomina
 @using Miluc.Shared.DTOs.Nomina.CargosDto
@@ -6,6 +6,7 @@
 @inject NavigationManager nav
 @inject ICargosClientService _cargosService
 @inject IJSRuntime JS
+@inject IAuthClientService _authClientService
 
 <div class="empleado-page p-4 animate__animated animate__fadeIn">
     <div class="container-fluid max-width-container">
@@ -115,6 +116,12 @@
     
     protected override async Task OnInitializedAsync()
     {
+        if (!_authClientService.HasPermission("Cargos.Details"))
+        {
+            nav.NavigateTo("/no-autorizado");
+            return;
+        }
+
         await CargarAfp();
     }
 

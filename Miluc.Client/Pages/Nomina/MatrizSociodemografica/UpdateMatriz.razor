@@ -29,7 +29,7 @@
 @inject IEmpleadoClientService _iEmpleado
 @inject NavigationManager nav
 @inject IJSRuntime JS
-
+@inject IAuthClientService _authClientService
 
 <div class="empleado-page p-4 animate__animated animate__fadeIn">
     <div class="container-fluid max-width-container">
@@ -487,6 +487,12 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (!_authClientService.HasPermission("Matriz.Update"))
+        {
+            nav.NavigateTo("/no-autorizado");
+            return;
+        }
+
         try
         {
             var resClase = await _iClaseVivienda.GetClaseViviendaAsync();

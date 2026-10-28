@@ -13,6 +13,7 @@
 @inject IJSRuntime js
 @inject ICargosClientService _cargos
 @inject ITipoContratoClientService _tipoContrato
+@inject IAuthClientService _autcliente
 @inject ICentroCostoClienteService _centroCosto
 
 <div class="empleado-page p-4 animate__animated animate__fadeIn">
@@ -199,6 +200,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (!_autcliente.HasPermission("contratos.Update"))
+        {
+            nav.NavigateTo("/no-autorizado");
+            return;
+        }
         cargando = true;
         try
         {

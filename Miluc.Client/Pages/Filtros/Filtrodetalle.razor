@@ -6,6 +6,7 @@
 @inject IJSRuntime _js
 @inject NavigationManager _nav
 @inject ILogClientService _logClienteService
+@inject IAuthClientService _authCliente
 
 <div class="usuarios-page animate__animated animate__fadeIn p-4">
     <div class="container-fluid max-width-container">
@@ -100,6 +101,14 @@
 
     protected override async Task OnInitializedAsync()
     {
+   
+        if (!_authCliente.HasPermission("Filtro.Details"))
+        {
+            _nav.NavigateTo("/no-autorizado");
+        }
+
+     
+
         try
         {
             var responseFiltro = await _asignacionFiltrosClientService.GetByIdFiltrosAsync(Id);

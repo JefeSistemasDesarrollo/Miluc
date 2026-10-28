@@ -176,28 +176,40 @@
     private List<MatrizSociodemograficaReaderDto> listmatrizSociodemograficaAlservidor = new List<MatrizSociodemograficaReaderDto>();
 
     private string _textoBusqueda = "";
-    private string _correoUsuario = "";
-    // Propiedad pública usada en el enlace @bind="textoBusqueda"
-    private string textoBusqueda
-    {
-        get => _textoBusqueda;
-        set
-        {
-            if (_textoBusqueda == value) return;
-            _textoBusqueda = value;
-            FiltrarLocal();
-        }
-    }
-
+    // Variables de control de configuración y paginación
     private int cantidadPorPagina = 10;
     private int paginaActual = 1;
     private int totalRegistros = 0;
     private bool cargando = false;
 
+    int idEmpresa = 0;
+    public string _correo = "";
+    // Propiedad Completa (Full Property) para interceptar los cambios en el buscador en tiempo real
+    private string textoBusqueda
+    {
+        get => _textoBusqueda;
+        set
+        {
+            _textoBusqueda = value;
+            FiltrarLocal(); // Cada vez que el usuario escribe/borra una letra, ejecuta el filtro local en memoria
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
+        if (_authClientService.HasPermission("Modulo.Nomina"))
+        {
 
-        if (!_authClientService.HasPermission("Employee.View"))
+            if (_authClientService.HasFiltro("Modulo.Nomina"))
+            {
+
+                idEmpresa = Convert.ToInt32(_authClientService.CurrentSession.Filtros.FirstOrDefault(f => f.NombreModulo == "Modulo.Nomina").Filtro);
+            }
+
+             
+        }
+
+        if (!_authClientService.HasPermission("Matriz.View"))
         {
             nav.NavigateTo("/no-autorizado");
             return;
@@ -205,7 +217,7 @@
 
         if (_authClientService.HasPermission("Employee.FilterCorreo"))
         {
-            _correoUsuario = _authClientService.CurrentSession.UserName;
+            _correo = _authClientService.CurrentSession.UserName;
         }
 
         await CargarMatrizSociodemografica();
@@ -214,7 +226,7 @@
     {
         cargando = true;
 
-        var respuesta = await _matrizSociodemograficaService.GetMatrizSociodemograficaAsync(textoBusqueda, paginaActual, cantidadPorPagina, _correoUsuario);
+        var respuesta = await _matrizSociodemograficaService.GetMatrizSociodemograficaAsync(textoBusqueda, paginaActual, cantidadPorPagina, _correo, idEmpresa);
         if (respuesta != null && respuesta.EsCorrecto)
         {
             listmatrizSociodemograficaOrigen = respuesta.Valor ?? new List<MatrizSociodemograficaReaderDto>();
@@ -242,7 +254,7 @@
         paginaActual = 1; // Reiniciar a la primera página al buscar
         cargando = true;
 
-        var respuesta = await _matrizSociodemograficaService.GetMatrizSociodemograficaAsync(textoBusqueda, paginaActual, cantidadPorPagina);
+        var respuesta = await _matrizSociodemograficaService.GetMatrizSociodemograficaAsync(textoBusqueda, paginaActual, cantidadPorPagina, _correo, idEmpresa);
 
         if (respuesta != null && respuesta.EsCorrecto)
         {

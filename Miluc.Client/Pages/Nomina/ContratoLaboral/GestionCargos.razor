@@ -7,6 +7,7 @@
 @inject ICargosClientService _cargosService
 @inject IJSRuntime js
 @inject IAuthClientService _autcliente
+@inject IAuthClientService _authClientService
 
 @* CONTENEDOR PRINCIPAL *@
 <div class="empresas-page animate__animated animate__fadeIn p-4">
@@ -169,12 +170,12 @@
     [Parameter]
     public int Id { get; set; }
 
-    // --- Estado Interno ---
-    private List<CargosReaderDto> listCargosOrigen = new();      // Todos los registros traídos del servidor
-    private List<CargosReaderDto> listCargosFiltrados = new();   // Registros filtrados por texto
-    private List<CargosReaderDto> listCargosAlServidor = new();  // Registros visibles en la página actual
+    private List<CargosReaderDto> listCargosOrigen = new();
+    private List<CargosReaderDto> listCargosFiltrados = new();
+    private List<CargosReaderDto> listCargosAlServidor = new();
 
     private string _textoBusqueda = "";
+
     private string textoBusqueda
     {
         get => _textoBusqueda;
@@ -193,16 +194,15 @@
 
     protected override async Task OnInitializedAsync()
     {
-
-        if (!_autcliente.HasPermission("Card.Contracts"))
+        if (!_autcliente.HasPermission("Cargos.View"))
         {
             nav.NavigateTo("/no-autorizado");
             return;
         }
+
         await CargarCargosAsync();
     }
 
-    // --- MÉTODOS DE CONSULTA Y BÚSQUEDA ---
     public async Task CargarCargosAsync()
     {
         cargando = true;
@@ -210,32 +210,41 @@
 
         try
         {
-            var respuesta = await _cargosService.GetCargosAsync(_textoBusqueda, paginaActual, cantidadPorPagina);
+            var respuesta = await _cargosService.GetCargosAsync(
+                _textoBusqueda,
+                paginaActual,
+                cantidadPorPagina);
 
             if (respuesta != null && respuesta.EsCorrecto)
             {
-                listCargosOrigen = respuesta.Valor ?? new List<CargosReaderDto>();
+                listCargosOrigen = respuesta.Valor ?? new();
 
-                // Si el API no devuelve CantRegistros, tomamos el conteo de la lista recibida
-                totalRegistros = respuesta.CantRegistros > 0 ? respuesta.CantRegistros : listCargosOrigen.Count;
+                totalRegistros = respuesta.CantRegistros > 0
+                    ? respuesta.CantRegistros
+                    : listCargosOrigen.Count;
 
                 AplicarFiltroYPaginacion();
             }
             else
             {
-                listCargosOrigen = new List<CargosReaderDto>();
-                listCargosFiltrados = new List<CargosReaderDto>();
-                listCargosAlServidor = new List<CargosReaderDto>();
+                listCargosOrigen = new();
+                listCargosFiltrados = new();
+                listCargosAlServidor = new();
                 totalRegistros = 0;
 
-                string mensaje = respuesta?.Mensaje ?? "Sin respuesta del servidor.";
-                await MostrarAlertaError("Error al consultar cargos", mensaje, respuesta?.Errores);
+                await MostrarAlertaError(
+                    "Error al consultar cargos",
+                    respuesta?.Mensaje ?? "No fue posible obtener la información.",
+                    respuesta?.Errores);
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error al consultar cargos: {ex.Message}");
-            await MostrarAlertaError("Error de comunicación", "No fue posible conectar con el servidor.");
+            Console.WriteLine($"Error cargando cargos: {ex}");
+
+            await MostrarAlertaError(
+                "Error",
+                "No fue posible conectar con el servidor.");
         }
 
         cargando = false;
@@ -244,34 +253,32 @@
 
     private void AplicarFiltroYPaginacion()
     {
-        // 1. Filtrar localmente si existe texto en el campo de búsqueda
         if (string.IsNullOrWhiteSpace(_textoBusqueda))
         {
-            listCargosFiltrados = listCargosOrigen;
+            listCargosFiltrados = listCargosOrigen.ToList();
         }
         else
         {
-            listCargosFiltrados = listCargosOrigen.Where(c =>
-                (!string.IsNullOrEmpty(c.CargoNombre) && c.CargoNombre.Contains(_textoBusqueda, StringComparison.OrdinalIgnoreCase)) 
-          
-            ).ToList();
+            listCargosFiltrados = listCargosOrigen
+                .Where(c =>
+                    !string.IsNullOrWhiteSpace(c.CargoNombre) &&
+                    c.CargoNombre.Contains(
+                        _textoBusqueda,
+                        StringComparison.OrdinalIgnoreCase))
+                .ToList();
         }
 
-        // 2. Verificar si el servidor ya entregó los datos paginados o la lista completa
-        bool servidorYaPagino = listCargosOrigen.Count <= cantidadPorPagina && totalRegistros > listCargosOrigen.Count;
+        bool servidorYaPagino =
+            listCargosOrigen.Count <= cantidadPorPagina &&
+            totalRegistros > listCargosOrigen.Count;
 
         if (servidorYaPagino)
         {
-            listCargosAlServidor = listCargosFiltrados;
+            listCargosAlServidor = listCargosFiltrados.ToList();
         }
         else
         {
-            // Paginación local si el servidor retorna todos los elementos
             totalRegistros = listCargosFiltrados.Count;
-
-            int maxPaginas = totalPaginas;
-            if (paginaActual > maxPaginas && maxPaginas > 0)
-                paginaActual = maxPaginas;
 
             listCargosAlServidor = listCargosFiltrados
                 .Skip((paginaActual - 1) * cantidadPorPagina)
@@ -301,25 +308,14 @@
             cantidadPorPagina = nuevaCantidad;
             paginaActual = 1;
 
-            if (listCargosOrigen.Count > cantidadPorPagina)
-            {
-                AplicarFiltroYPaginacion();
-            }
-            else
-            {
-                await CargarCargosAsync();
-            }
+            await CargarCargosAsync();
         }
     }
 
-    private int totalPaginas
-    {
-        get
-        {
-            if (totalRegistros <= 0) return 1;
-            return (int)Math.Ceiling((double)totalRegistros / cantidadPorPagina);
-        }
-    }
+    private int totalPaginas =>
+        totalRegistros <= 0
+            ? 1
+            : (int)Math.Ceiling((double)totalRegistros / cantidadPorPagina);
 
     private async Task IrPagina(int nuevaPagina)
     {
@@ -328,46 +324,37 @@
 
         paginaActual = nuevaPagina;
 
-        // Si tenemos más datos cargados localmente que la cantidad por página, paginamos local
-        if (listCargosOrigen.Count > cantidadPorPagina)
-        {
-            AplicarFiltroYPaginacion();
-        }
-        else
-        {
-            if (string.IsNullOrWhiteSpace(_textoBusqueda))
-                await CargarCargosAsync();
-            else
-                await BuscarEnServidor();
-        }
+        await CargarCargosAsync();
     }
 
-    // --- ACCIONES CRUD ---
     private async Task EliminarCargoAsync(int id)
     {
-        var resultadoSwal = await js.InvokeAsync<System.Text.Json.JsonElement>("Swal.fire", new
-        {
-            title = "¿Deseas eliminar este cargo?",
-            text = "Esta acción removerá el registro permanentemente si no cuenta con transacciones.",
-            icon = "warning",
-            showCancelButton = true,
-            confirmButtonColor = "#D62F46",
-            cancelButtonColor = "#FDC922",
-            confirmButtonText = "Sí, eliminar",
-            cancelButtonText = "Cancelar"
-        });
+        var resultado = await js.InvokeAsync<System.Text.Json.JsonElement>(
+            "Swal.fire",
+            new
+            {
+                title = "¿Deseas eliminar este cargo?",
+                text = "Esta acción removerá el registro permanentemente.",
+                icon = "warning",
+                showCancelButton = true,
+                confirmButtonText = "Sí, eliminar",
+                cancelButtonText = "Cancelar",
+                confirmButtonColor = "#D62F46"
+            });
 
-        bool confirmado = resultadoSwal.ValueKind == System.Text.Json.JsonValueKind.Object &&
-                          resultadoSwal.TryGetProperty("isConfirmed", out var propiedadConfirmado) &&
-                          propiedadConfirmado.GetBoolean();
+        bool confirmado =
+            resultado.ValueKind == System.Text.Json.JsonValueKind.Object &&
+            resultado.TryGetProperty("isConfirmed", out var prop) &&
+            prop.GetBoolean();
 
-        if (!confirmado) return;
-
-        cargando = true;
-        StateHasChanged();
+        if (!confirmado)
+            return;
 
         try
         {
+            cargando = true;
+            StateHasChanged();
+
             var respuesta = await _cargosService.DeleteCargoAsync(id);
 
             if (respuesta != null && respuesta.EsCorrecto)
@@ -375,23 +362,19 @@
                 await js.InvokeVoidAsync("Swal.fire", new
                 {
                     icon = "success",
-                    title = "¡Eliminado!",
-                    text = "El cargo ha sido removido con éxito.",
-                    confirmButtonText = "Aceptar",
-                    confirmButtonColor = "#D62F46"
+                    title = "Cargo eliminado",
+                    text = "El registro fue eliminado correctamente."
                 });
 
                 await CargarCargosAsync();
             }
             else
             {
-                string mensajeServidor = respuesta?.Mensaje ?? "No se pudo procesar la solicitud.";
-                await MostrarAlertaError("No se puede eliminar", mensajeServidor, respuesta?.Errores);
+                await MostrarAlertaError(
+                    "No se puede eliminar",
+                    respuesta?.Mensaje ?? "No fue posible eliminar el cargo.",
+                    respuesta?.Errores);
             }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error durante el proceso de borrado: {ex.Message}");
         }
         finally
         {
@@ -400,22 +383,32 @@
         }
     }
 
-    // --- AYUDANTES DE ALERTAS ---
-    private async Task MostrarAlertaError(string titulo, string mensaje, IEnumerable<string>? errores = null)
+    private async Task MostrarAlertaError(
+        string titulo,
+        string mensaje,
+        IEnumerable<string>? errores = null)
     {
-        string erroresHtml = errores != null && errores.Any() ? string.Join("<br>", errores) : "";
+        string erroresHtml = errores != null && errores.Any()
+            ? string.Join("<br>", errores)
+            : "";
+
         await js.InvokeVoidAsync("Swal.fire", new
         {
             icon = "error",
             title = titulo,
-            html = string.IsNullOrEmpty(erroresHtml) ? mensaje : $"{mensaje}<br>{erroresHtml}",
+            html = string.IsNullOrWhiteSpace(erroresHtml)
+                ? mensaje
+                : $"{mensaje}<br>{erroresHtml}",
             confirmButtonColor = "#6c1d1d"
         });
     }
 
-    // --- REDIRECCIONES ---
-    private void IrACrearCargo() => nav.NavigateTo("/Administrar/Cargos/Crear");
+    private void IrACrearCargo()
+        => nav.NavigateTo("/Administrar/Cargos/Crear");
+
     private void EditarCargo(int id) => nav.NavigateTo($"/Administrar/Cargos/Editar/{id}");
-    private void Volver() => nav.NavigateTo("/Card/Contratos");
-    private void VerDetalle(int id) => nav.NavigateTo($"/Administrar/Cargos/Detalle/{id}");
+
+    private void Volver()=> nav.NavigateTo("/Card/Contratos");
+
+    private void VerDetalle(int id)=> nav.NavigateTo($"/Detalle-Cargos/{id}");
 }

@@ -69,31 +69,51 @@ namespace Miluc.Server.Servicios.Nomina
             }
         }
 
-        public async Task<(List<EsquemaVacunacionReaderDto> Data, int CantidadRegistros)> GetEsquemasVacunacionAsync(string? filtro = null, int page = 1, int? cantidad = null, string? correo = null)
+        public async Task<(List<EsquemaVacunacionReaderDto> Data, int CantidadRegistros)>
+      GetEsquemasVacunacionAsync(
+          string? filtro = null,
+          int page = 1,
+          int? cantidad = null,
+          string? correo = null,
+          int? idEmpresa = null)
         {
             try
             {
                 int cantidadtop = cantidad ?? 20;
 
-                var query = _context.Empleado.AsNoTracking().AsQueryable();
+                var query = _context.Empleado
+                    .AsNoTracking()
+                    .AsQueryable();
 
-                if (!string.IsNullOrEmpty(filtro))
+                if (!string.IsNullOrWhiteSpace(filtro))
                 {
                     string filtroMinuscula = filtro.Trim().ToLower();
-                    query = query.Where(x => x.PrimerNombre.ToLower().Contains(filtroMinuscula)
-                                          || x.PrimerApellido.ToLower().Contains(filtroMinuscula)
-                                          || x.Documento.ToLower()
-                                                        .Contains(filtroMinuscula));
+
+                    query = query.Where(x =>
+                        x.PrimerNombre.ToLower().Contains(filtroMinuscula) ||
+                        x.PrimerApellido.ToLower().Contains(filtroMinuscula) ||
+                        x.Documento.ToLower().Contains(filtroMinuscula));
                 }
-                
-                if (!string.IsNullOrEmpty(correo))
+
+                // PRIORIDAD 1: Empleado por correo
+                if (!string.IsNullOrWhiteSpace(correo))
                 {
-                    query = query.Where(x => x.CorreoElectronico.ToLower().Contains(correo.ToLower()));
-                }   
+                    correo = correo.Trim().ToLower();
+
+                    query = query.Where(x =>
+                        x.CorreoElectronico != null &&
+                        x.CorreoElectronico.ToLower() == correo);
+                }
+                // PRIORIDAD 2: Temporal por empresa
+                else if (idEmpresa.HasValue && idEmpresa.Value > 0)
+                {
+                    query = query.Where(x => x.EmpresaId == idEmpresa.Value);
+                }
 
                 var totalRegistros = await query.CountAsync();
 
                 var datosIntermedios = await query
+                    .OrderBy(x => x.PrimerNombre)
                     .Skip((page - 1) * cantidadtop)
                     .Take(cantidadtop)
                     .Select(x => new
@@ -111,36 +131,46 @@ namespace Miluc.Server.Servicios.Nomina
                             {
                                 e.EsquemaVacunacionId,
                                 e.VacunaId,
-                                NombreVacuna = e.Vacuna != null ? e.Vacuna.VacunaName : null,
+                                NombreVacuna = e.Vacuna != null
+                                    ? e.Vacuna.VacunaName
+                                    : null,
                                 e.FechaVacuna,
                                 e.FechaCreacion,
-                                
                                 Activo = (bool?)e.Activo
                             })
                             .FirstOrDefault()
                     })
                     .ToListAsync();
 
-                var esquemas = datosIntermedios.Select(x => new EsquemaVacunacionReaderDto
-                {
-                    EsquemaVacunacionId = x.Esquema?.EsquemaVacunacionId ?? 0,
-                    EmpleadoId = x.EmpleadoId,
-                    NombreEmpleado = $"{x.PrimerNombre} {x.SegundoNombre} {x.PrimerApellido} {x.SegundoApellido}".Replace("  ", " ").Trim(),
-                    Documento = x.Documento,
+                var esquemas = datosIntermedios
+                    .Select(x => new EsquemaVacunacionReaderDto
+                    {
+                        EsquemaVacunacionId = x.Esquema?.EsquemaVacunacionId ?? 0,
+                        EmpleadoId = x.EmpleadoId,
+                        NombreEmpleado =
+                            $"{x.PrimerNombre} {x.SegundoNombre} {x.PrimerApellido} {x.SegundoApellido}"
+                            .Replace("  ", " ")
+                            .Trim(),
+                        Documento = x.Documento,
 
-                    VacunaId = x.Esquema?.VacunaId,
-                    NombreVacuna = x.Esquema?.NombreVacuna ?? "Sin Asignar",
-                    FechaVacuna = x.Esquema?.FechaVacuna,
-                    FechaCreacion = x.Esquema?.FechaCreacion,
+                        VacunaId = x.Esquema?.VacunaId,
+                        NombreVacuna = x.Esquema?.NombreVacuna ?? "Sin Asignar",
+                        FechaVacuna = x.Esquema?.FechaVacuna,
+                        FechaCreacion = x.Esquema?.FechaCreacion,
 
-                    Activo = x.Esquema != null ? (x.Esquema.Activo ?? true) : false
-                }).ToList();
+                        Activo = x.Esquema != null
+                            ? (x.Esquema.Activo ?? true)
+                            : false
+                    })
+                    .ToList();
 
                 return (esquemas, totalRegistros);
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error al obtener esquemas de vacunación: {ex.Message}", ex);
+                throw new Exception(
+                    $"Error al obtener esquemas de vacunación: {ex.Message}",
+                    ex);
             }
         }
 

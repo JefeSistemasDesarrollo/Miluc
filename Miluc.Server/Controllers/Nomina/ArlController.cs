@@ -2,6 +2,7 @@
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Nomina;
 using Miluc.Server.Models.Nomina;
+using Miluc.Server.Security;
 using Miluc.Server.Servicios.Nomina;
 using Miluc.Shared.DTOs.Nomina.Arl.Dto;
 using Miluc.Shared.DTOs.Nomina.ArlDto;
@@ -15,6 +16,7 @@ namespace Miluc.Server.Controllers.Nomina
     public class ArlController(IArlService arlService, ILogService _log) : Controller
     {
         [HttpGet("Arl")]
+        [PermissionAuthorize("Arl.View")]
         public async Task<ActionResult<ResponseAPI<List<ArlReaderDto>>>> GetArlAsync([FromQuery] string? filtro = null, [FromQuery] int page = 1, [FromQuery] int? cantidad = null)
         {
             try
@@ -63,6 +65,7 @@ namespace Miluc.Server.Controllers.Nomina
         }
 
         [HttpPost("CrearArl")] // Responde a: POST api/Arl/CrearArl
+        [PermissionAuthorize("Arl.crear")]
         public async Task<ActionResult<ResponseAPI<ArlReaderDto>>> CreateArlAsync(ArlCreateDto arlCreateDto)
         {
             if (arlCreateDto == null || string.IsNullOrWhiteSpace(arlCreateDto.Nombre) || string.IsNullOrWhiteSpace(arlCreateDto.Codigo))
@@ -157,6 +160,7 @@ namespace Miluc.Server.Controllers.Nomina
 
 
         [HttpPut("{id}")]
+        [PermissionAuthorize("Arl.Editar")]
         public async Task<ActionResult<ResponseAPI<ArlReaderDto>>> UpdateArlAsync(int id, [FromBody] ArlUpdate arlUpdate)
         {
             // 1. Validaciones previas en un solo bloque 

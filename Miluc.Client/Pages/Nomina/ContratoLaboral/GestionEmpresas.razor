@@ -200,7 +200,7 @@
     protected override async Task OnInitializedAsync()
     {
 
-        if (!_autcliente.HasPermission("Card.Contracts"))
+        if (!_autcliente.HasPermission("Empresa.view"))
         {
             nav.NavigateTo("/no-autorizado");
             return;

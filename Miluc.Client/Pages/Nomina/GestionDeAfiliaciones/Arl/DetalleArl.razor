@@ -1,4 +1,4 @@
-﻿@page "/api/Arl/{id:int}"
+﻿@page "/detalle-Arl/{id:int}"
 
 @using Miluc.Client.Interfaces.Nomina.SeguridadSocial
 @using Miluc.Shared.DTOs.Nomina.Arl.Dto
@@ -6,6 +6,7 @@
 @inject NavigationManager nav
 @inject IArlClientService _arlService
 @inject IJSRuntime JS
+@inject IAuthClientService _authCliente
 
 <div class="empleado-page p-4 animate__animated animate__fadeIn">
     <div class="container-fluid max-width-container">
@@ -117,8 +118,13 @@
     private ArlReaderDto? arlDetalle;
     private bool cargando = true;
 
+    
     protected override async Task OnInitializedAsync()
     {
+        if (!_authCliente.HasPermission("Arl.Detalle"))
+        {
+            nav.NavigateTo("/no-autorizado");
+        }
         await CargarArl();
     }
 
@@ -148,6 +154,6 @@
         }
     }
 
-    private void Volver() => nav.NavigateTo("/api/Arl/Arl");
+    private void Volver() => nav.NavigateTo("/Administrar-Arl");
     private void IrAEditar() => nav.NavigateTo($"/api/Arl/Editar/{id}");
 }

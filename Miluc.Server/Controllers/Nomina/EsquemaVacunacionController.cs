@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Nomina;
+using Miluc.Server.Security;
 using Miluc.Server.Servicios.Nomina;
 using Miluc.Shared.DTOs.Nomina.EsquemaVacunacionDto;
 
@@ -13,11 +14,12 @@ namespace Miluc.Server.Controllers.Nomina
     public class EsquemaVacunacionController(IEsquemaVacunacionService _esquemaService, ILogService _log) : Controller
     {
         [HttpGet("Esquemas")]
-        public async Task<ActionResult<ResponseAPI<List<EsquemaVacunacionReaderDto>>>> GetEsquemasVacunacion([FromQuery] string? filtro = null, [FromQuery] int page = 1, [FromQuery] int? cantidad = null, [FromQuery] string? correo = null)
+        [PermissionAuthorize("EsquemaVacunacion.View")]
+        public async Task<ActionResult<ResponseAPI<List<EsquemaVacunacionReaderDto>>>> GetEsquemasVacunacion([FromQuery] string? filtro = null, [FromQuery] int page = 1, [FromQuery] int? cantidad = null, [FromQuery] string? correo = null, [FromQuery] int? idEmpresa = null)
         {
             try
             {
-                var (esquemas, totalRegistros) = await _esquemaService.GetEsquemasVacunacionAsync(filtro, page, cantidad, correo);
+                var (esquemas, totalRegistros) = await _esquemaService.GetEsquemasVacunacionAsync(filtro, page, cantidad, correo, idEmpresa);
 
                 if (esquemas == null || esquemas.Count == 0)
                 {
@@ -58,6 +60,8 @@ namespace Miluc.Server.Controllers.Nomina
             }
         }
         [HttpPost("CreateEsquemaVacunacion")]
+        [PermissionAuthorize("EsquemaVacunacion.Create")]
+
         public async Task<ActionResult<ResponseAPI<bool>>> CreateEsquemaVacunacionAsync([FromBody] List<CreateEsquemaVacunacionDto> esquemaVacunacion)
         {
             
@@ -131,6 +135,7 @@ namespace Miluc.Server.Controllers.Nomina
             }
         }
         [HttpGet("{id}")]
+        [PermissionAuthorize("EsquemaVacunación.Details")]
         public async Task<ActionResult<ResponseAPI<List<EsquemaVacunacionReaderDto>>>> GetEsquemaVacunacionByIdAsync(int id)
         {
 

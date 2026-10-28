@@ -17,7 +17,7 @@ namespace Miluc.Server.Servicios.Nomina
     public class AfiliacionSeguridadSocialService(NominaDbContext _context) : IAfiliacionSeguridadSocialService
     {
 
-        public async Task<(List<AfiliacionSeguridadSocialreaderDto> Data, int CantidadRegistros)> GetAfiliacionSeguridadSocialAsync(string? filtro = null, int page = 1, int? cantidad = null,string? correo= null)
+        public async Task<(List<AfiliacionSeguridadSocialreaderDto> Data, int CantidadRegistros)> GetAfiliacionSeguridadSocialAsync( string? filtro = null, int page = 1,int? cantidad = null,string? correo = null,int? idEmpresa = null)
         {
             try
             {
@@ -25,15 +25,21 @@ namespace Miluc.Server.Servicios.Nomina
 
                 var query = _context.Empleado.AsNoTracking().AsQueryable();
 
+                // Aplicar filtro general (nombre, documento, etc.)
                 query = AplicarFiltro(query, filtro);
 
+                // Filtro por correo
                 if (!string.IsNullOrWhiteSpace(correo))
                 {
                     query = query.Where(e => e.CorreoElectronico == correo.Trim());
                 }
 
+                // Filtro por EmpresaId (Validando que tenga valor y sea mayor a 0)
+                if (idEmpresa.HasValue && idEmpresa.Value > 0)
+                {
+                    query = query.Where(e => e.EmpresaId == idEmpresa.Value);
+                }
                 var totalRegistros = await query.CountAsync();
-
 
                 var datosIntermedios = await query
                     .Skip((page - 1) * cantidadtop)
@@ -47,43 +53,42 @@ namespace Miluc.Server.Servicios.Nomina
                         x.SegundoApellido,
                         x.Documento,
 
+                        ActivoAfiliacion = x.AfiliacionSeguridadSocial != null && x.AfiliacionSeguridadSocial.Activo,
+                        AfiliacionId = x.AfiliacionSeguridadSocial != null ? x.AfiliacionSeguridadSocial.AfiliacionId : 0,
 
-                        ActivoAfiliacion = (bool?)x.AfiliacionSeguridadSocial.Activo ?? false,
-                        AfiliacionId = (int?)x.AfiliacionSeguridadSocial.AfiliacionId ?? 0,
+                        EpsId = x.AfiliacionSeguridadSocial != null ? (int?)x.AfiliacionSeguridadSocial.EpsId : null,
+                        NombreEps = x.AfiliacionSeguridadSocial != null && x.AfiliacionSeguridadSocial.Eps != null ? x.AfiliacionSeguridadSocial.Eps.Nombre : null,
 
-                        EpsId = (int?)x.AfiliacionSeguridadSocial.EpsId,
-                        NombreEps = x.AfiliacionSeguridadSocial.Eps.Nombre.Trim().ToUpper(),
+                        AfpId = x.AfiliacionSeguridadSocial != null ? (int?)x.AfiliacionSeguridadSocial.AfpId : null,
+                        NombreAfp = x.AfiliacionSeguridadSocial != null && x.AfiliacionSeguridadSocial.Afp != null ? x.AfiliacionSeguridadSocial.Afp.Nombre : null,
 
-                        AfpId = (int?)x.AfiliacionSeguridadSocial.AfpId,
-                        NombreAfp = x.AfiliacionSeguridadSocial.Afp.Nombre.Trim().ToUpper(),
+                        ArlId = x.AfiliacionSeguridadSocial != null ? (int?)x.AfiliacionSeguridadSocial.ArlId : null,
+                        NombreArl = x.AfiliacionSeguridadSocial != null && x.AfiliacionSeguridadSocial.Arl != null ? x.AfiliacionSeguridadSocial.Arl.Nombre : null,
 
-                        ArlId = (int?)x.AfiliacionSeguridadSocial.ArlId,
-                        NombreArl = x.AfiliacionSeguridadSocial.Arl.Nombre.Trim().ToUpper(),
-
-                        CajaCompensacionId = (int?)x.AfiliacionSeguridadSocial.CajaCompensacionId,
-                        NombreCajaCompensacion = x.AfiliacionSeguridadSocial.CajaCompensacion.Nombre
+                        CajaCompensacionId = x.AfiliacionSeguridadSocial != null ? (int?)x.AfiliacionSeguridadSocial.CajaCompensacionId : null,
+                        NombreCajaCompensacion = x.AfiliacionSeguridadSocial != null && x.AfiliacionSeguridadSocial.CajaCompensacion != null ? x.AfiliacionSeguridadSocial.CajaCompensacion.Nombre : null
                     })
                     .ToListAsync();
 
-                // 🔹 Mapeo final en memoria al DTO
+                // Mapeo final en memoria al DTO
                 var afiliaciones = datosIntermedios.Select(x => new AfiliacionSeguridadSocialreaderDto
                 {
                     AfiliacionId = x.AfiliacionId,
                     EmpleadoId = x.EmpleadoId,
-                    NombreEmpleado = $"{x.PrimerNombre} {x.SegundoNombre} {x.PrimerApellido} {x.SegundoApellido}",
+                    NombreEmpleado = $"{x.PrimerNombre} {x.SegundoNombre} {x.PrimerApellido} {x.SegundoApellido}".Replace("  ", " ").Trim(),
                     Documento = x.Documento,
 
                     EpsId = x.EpsId,
-                    NombreEps = x.NombreEps ?? "Sin Asignar",
+                    NombreEps = !string.IsNullOrWhiteSpace(x.NombreEps) ? x.NombreEps.Trim().ToUpper() : "Sin Asignar",
 
                     AfpId = x.AfpId,
-                    NombreAfp = x.NombreAfp ?? "Sin Asignar",
+                    NombreAfp = !string.IsNullOrWhiteSpace(x.NombreAfp) ? x.NombreAfp.Trim().ToUpper() : "Sin Asignar",
 
                     ArlId = x.ArlId,
-                    NombreArl = x.NombreArl ?? "Sin Asignar",
+                    NombreArl = !string.IsNullOrWhiteSpace(x.NombreArl) ? x.NombreArl.Trim().ToUpper() : "Sin Asignar",
 
-                    CajaCompensacionId = x.CajaCompensacionId, // ← FALTA ESTA LÍNEA
-                    NombreCajaCompensacion = x.NombreCajaCompensacion ?? "Sin Asignar",
+                    CajaCompensacionId = x.CajaCompensacionId,
+                    NombreCajaCompensacion = !string.IsNullOrWhiteSpace(x.NombreCajaCompensacion) ? x.NombreCajaCompensacion.Trim().ToUpper() : "Sin Asignar",
 
                     Activo = x.ActivoAfiliacion
                 }).ToList();
@@ -96,7 +101,7 @@ namespace Miluc.Server.Servicios.Nomina
             }
         }
 
-       
+
         private static IQueryable<Empleado> AplicarFiltro(IQueryable<Empleado> query, string? filtro)
         {
             if (string.IsNullOrEmpty(filtro))
@@ -138,12 +143,12 @@ namespace Miluc.Server.Servicios.Nomina
                     }).FirstOrDefaultAsync();
 
 
-                //  Para registros no encontrados usas KeyNotFoundException
+                
                 return afiliacion ?? throw new KeyNotFoundException("No se encontró la afiliación especificada.");
             }
             catch (Exception ex)
             {
-                //InvalidOperationException Indica que ocurrió una operación que no se pudo realizar correctamente.
+          
                 throw new InvalidOperationException($"Error al obtener Afiliacion a seguridad social por ID: {ex.Message}", ex);
             }
         }

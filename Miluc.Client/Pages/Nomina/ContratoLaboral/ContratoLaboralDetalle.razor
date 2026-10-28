@@ -9,6 +9,7 @@
 @inject IContratoLaboralClientService _contratoService
 @inject IEmpleadoClientService EmpleadoService
 @inject IJSRuntime JS
+@inject IAuthClientService _authClientService
 
 <div class="empleado-page p-4 animate__animated animate__fadeIn">
     <div class="container-fluid max-width-container">
@@ -213,6 +214,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (!_authClientService.HasPermission("Contrato.Details"))
+        {
+            nav.NavigateTo("/no-autorizado");
+            return;
+        }
         await CargarDatosAsync();
     }
 

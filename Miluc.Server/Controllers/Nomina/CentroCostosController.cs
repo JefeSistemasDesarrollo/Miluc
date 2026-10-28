@@ -2,6 +2,8 @@
 using Miluc.Client.Interfaces.Nomina;
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Nomina;
+using Miluc.Server.Models.Nomina;
+using Miluc.Server.Security;
 using Miluc.Server.Servicios.Nomina;
 using Miluc.Shared.DTOs.Nomina.CentroDeCostos;
 
@@ -17,6 +19,7 @@ namespace Miluc.Server.Controllers.Nomina
 
 
         [HttpGet("CentroCostos")]
+        [PermissionAuthorize("CentroCosto.View")]
         public async Task<ActionResult<ResponseAPI<List<CentroCostosReaderDto>>>> GetCentroCostosAsync([FromQuery] string? filtro = null, [FromQuery] int page = 1, [FromQuery] int? cantidad = null)
         {
             try
@@ -65,6 +68,7 @@ namespace Miluc.Server.Controllers.Nomina
         }
 
         [HttpPut("{id}")]
+        [PermissionAuthorize("CentroCostos.Update")]
         public async Task<ActionResult<ResponseAPI<bool>>> UpsertCentroCostosAsync(int id, [FromBody] UpsertCentroCostosDto upsertCentroCostos)
         {
             if (upsertCentroCostos == null)
@@ -167,6 +171,7 @@ namespace Miluc.Server.Controllers.Nomina
             }
         }
         [HttpGet("{id}")]
+        [PermissionAuthorize("CentroCostos.Details")]
         public async Task<ActionResult<ResponseAPI<CentroCostosReaderDto>>> GetCentroCostosByIdAsync(int id)
         {
             try
@@ -211,6 +216,7 @@ namespace Miluc.Server.Controllers.Nomina
             }
         }
         [HttpDelete("{id}")]
+        [PermissionAuthorize("CentroCostos.Delete")]
         public async Task<ActionResult<ResponseAPI<bool>>> DeleteCentroCostosAsync(int id)
         {
             try

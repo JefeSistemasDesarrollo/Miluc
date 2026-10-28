@@ -1,4 +1,4 @@
-﻿@page "/api/Afp/{id:int}"
+﻿@page "/Detalle-Afp/{id:int}"
 
 @using Miluc.Client.Interfaces.Nomina.SeguridadSocial
 @using Miluc.Shared.DTOs.Nomina.Afp.Dto
@@ -6,6 +6,7 @@
 @inject NavigationManager nav
 @inject IAfpClientService _afpService
 @inject IJSRuntime JS
+@inject IAuthClientService _authCliente
 
 <div class="empleado-page p-4 animate__animated animate__fadeIn">
     <div class="container-fluid max-width-container">
@@ -119,6 +120,10 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (!_authCliente.HasPermission("Afp.Detalle"))
+        {
+            nav.NavigateTo("/no-autorizado");
+        }
         await CargarAfp();
     }
 
@@ -148,6 +153,6 @@
         }
     }
 
-    private void Volver() => nav.NavigateTo("/api/Afp/Afp");
-    private void IrAEditar() => nav.NavigateTo($"/api/Afp/Editar/{id}");
+    private void Volver() => nav.NavigateTo("/Administrar-Afp");
+    private void IrAEditar() => nav.NavigateTo($"/editar-Afp/{id}");
 }
