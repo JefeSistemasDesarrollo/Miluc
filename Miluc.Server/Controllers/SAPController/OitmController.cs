@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.Sap.Oitm;
+using Miluc.Server.Security;
 using Miluc.Shared.DTOs.Sap.Articulos;
 using Miluc.Shared.Models.Response;
 
@@ -9,11 +10,12 @@ namespace Miluc.Server.Controllers.SAPController
     
     [ApiController]
     [Route("api/[Controller]")]
-    //[Authorize]
+    [Authorize]
     public class OitmController(ISapOitmService oitmService) : Controller
     {
 
         [HttpGet]
+        [PermissionAuthorize("Articulos.View")]
         public async Task<ActionResult<ResponseAPI<List<ArticuloPorListaDePreciosDto>>>> GetListOitm([FromQuery] string? buscar = null, [FromQuery] int pagina = 1, [FromQuery] int? cantidad = null)
         {
             try
@@ -54,6 +56,7 @@ namespace Miluc.Server.Controllers.SAPController
         // GET: api/Oitm/oitmCardcodeItemCode?CardCode=123&ItemCode=ABC&ItemName=Example&Quantity=10
 
         [HttpGet("oitmCardcodeItemCode")]
+        [PermissionAuthorize("ListaPrecios.View")]
         public async Task<ActionResult<ResponseAPI<ArticuloPorListaDePreciosDto>>>
        GetOitmAsync([FromQuery] string cardcode, [FromQuery] string itemcode, [FromQuery] int? cantidad = null)
         {

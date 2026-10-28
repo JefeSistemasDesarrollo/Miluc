@@ -8,8 +8,10 @@ using Miluc.Client.Interfaces.LogInterfaceClient;
 using Miluc.Client.Interfaces.Nomina;
 using Miluc.Client.Interfaces.Nomina.SeguridadSocial;
 using Miluc.Client.Interfaces.SapInterfaces.Cliente;
+using Miluc.Client.Interfaces.SapInterfaces.Informes;
 using Miluc.Client.Interfaces.SapInterfaces.LocalizacionSap;
 using Miluc.Client.Interfaces.SapInterfaces.Octg;
+using Miluc.Client.Interfaces.SapInterfaces.Oinv;
 using Miluc.Client.Interfaces.SapInterfaces.Opln;
 using Miluc.Client.Interfaces.SapInterfaces.Oslp;
 using Miluc.Client.Interfaces.SapInterfaces.Rutas;
@@ -17,19 +19,19 @@ using Miluc.Client.Interfaces.SapInterfaces.SapOitm;
 using Miluc.Client.Interfaces.SapInterfaces.SapOrdr;
 using Miluc.Client.Interfaces.SapInterfaces.TrazabilidadPedidos;
 using Miluc.Client.Interfaces.UsuariosRolesPermisos;
+using Miluc.Client.Models;
 using Miluc.Client.Servicios.Autorizacion;
 using Miluc.Client.Servicios.ExportarArchivo;
 using Miluc.Client.Servicios.LocalizacionSapService;
 using Miluc.Client.Servicios.LogService;
 using Miluc.Client.Servicios.Nomina;
 using Miluc.Client.Servicios.SapService;
+using Miluc.Client.Servicios.SapService.InformesComercial;
 using Miluc.Client.Servicios.UsuariosRolesPermisos;
 using Miluc.Shared.DTOs.Nomina.AfiliacionSeguridadSocialDto;
 using Syncfusion.Blazor;
-using TuProyecto.Client.Services;
 using System.Globalization;
-using Miluc.Client.Interfaces.SapInterfaces.Informes;
-using Miluc.Client.Servicios.SapService.InformesComercial;
+using TuProyecto.Client.Services;
 
 var culture = new CultureInfo("es-CO");
 
@@ -70,7 +72,8 @@ builder.Services.AddScoped<IRolClientService, RoleClientService>();
 builder.Services.AddScoped<IUsuarioClientService, UsuarioClientService>();
 builder.Services.AddScoped<IPermisoClientService, PermisosClientService>();
 builder.Services.AddScoped<ILogClientService, LogClientService>();
-builder.Services.AddScoped<IAsignacionFiltrosClient, AsignacionFiltrosClient>();
+builder.Services.AddScoped<IPermisosRolClientService, PermisosRolClientService>();
+//builder.Services.AddScoped<ISapOslpService, SapOslpService>();
 //builder.Services.AddScoped<ISapOslpService, SapOslpService>();
 //builder.Services.AddScoped<ISapOcrdClientService, SapOcrdClientService>();
 //builder.Services.AddScoped<ISapOitmClientService, SapOitmClientService>();
@@ -84,7 +87,9 @@ builder.Services.AddScoped<ISapObppClientService, SapObppClientService>();
 builder.Services.AddScoped<ISapOctgClientService, SapOctgClientService>();
 builder.Services.AddScoped<ISapOplnClientService, SapOplnClientService>();
 builder.Services.AddScoped<ISapTrazabilidadPedidos, SapTrazabilidadClientServices>();
-builder.Services.AddScoped<ISapFrecuenciaVentasClientService, SapFrecuenciaVentasClientService>();
+builder.Services.AddScoped<ISapVentasClientService, SapFrecuenciaVentasClientService>();
+builder.Services.AddScoped<ISapOinvClientService, SapOinvClientService>();
+builder.Services.AddScoped<EstadoPedidosService>();
 //Nomina
 builder.Services.AddScoped<IEmpleadoClientService, EmpleadoClientService>();
 builder.Services.AddScoped<IDepartamentosClientService, DepartamentoClienteService>();
@@ -116,7 +121,7 @@ builder.Services.AddScoped<INivelAcademicoClientService, NivelAcademicoClientSer
 builder.Services.AddScoped<IPaisClientService, PaisClienteService>();
 builder.Services.AddScoped<INacionalidadClienteService, NacionalidadClienteService>();
 builder.Services.AddScoped<ICentroCostoClienteService, CentroCostosClienteService>();
-
+builder.Services.AddScoped<IAsignacionFiltrosClient, AsignacionFiltrosClient>();
 
 builder.Services.AddSyncfusionBlazor();
 

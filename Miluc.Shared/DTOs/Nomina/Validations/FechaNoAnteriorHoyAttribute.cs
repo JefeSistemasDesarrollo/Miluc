@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Miluc.Shared.Validations
+namespace Miluc.Shared.DTOs.Nomina.Validations
 {
     public class FechaNoAnteriorHoyAttribute : ValidationAttribute
     {

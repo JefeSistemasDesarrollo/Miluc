@@ -3,11 +3,84 @@ using Miluc.Server.Data;
 using Miluc.Server.Interfaces.Permisos;
 using Miluc.Server.Models;
 using Miluc.Shared.DTOs.Permisos;
+using Miluc.Shared.DTOs.Roles;
 
 namespace Miluc.Server.Servicios.PermisosService
 {
     public class PermisosService(MilucDbContext _context) : IPermisosService
     {
+        public async Task ActualizarPermisosPorRolAsync(int idRol,List<int> idPermisos)
+        {
+            // Eliminar duplicados de la solicitud.
+            var permisosDeseados = idPermisos.Distinct().ToHashSet();
+
+            // Validar que todos los permisos recibidos existan.
+            var permisosExistentes = await _context.Permisos
+                .Where(p => permisosDeseados.Contains(p.IdPermiso))
+                .Select(p => p.IdPermiso)
+                .ToListAsync();
+
+            if (permisosExistentes.Count != permisosDeseados.Count)
+            {
+                throw new InvalidOperationException(
+                    "Uno o más permisos enviados no existen.");
+            }
+
+            await using var transaccion =
+       await _context.Database.BeginTransactionAsync();
+
+
+            try
+            {
+                // Consultar las relaciones que ya están guardadas para el rol.
+                var relacionesActuales = await _context.RolPermisos
+                    .Where(rp => rp.IdRol == idRol)
+                    .ToListAsync();
+
+                var permisosActuales = relacionesActuales
+                    .Select(rp => rp.IdPermiso)
+                    .ToHashSet();
+
+                // Quitar únicamente los permisos que ya no deben estar asignados.
+                var relacionesEliminar = relacionesActuales
+                    .Where(rp => !permisosDeseados.Contains(rp.IdPermiso))
+                    .ToList();
+
+                if (relacionesEliminar.Count > 0)
+                {
+                    _context.RolPermisos.RemoveRange(relacionesEliminar);
+                }
+
+                // Insertar únicamente los permisos que todavía no existen.
+                var permisosAgregar = permisosDeseados
+                    .Where(idPermiso => !permisosActuales.Contains(idPermiso))
+                    .ToList();
+
+                var fechaActual = DateTime.Now;
+
+                foreach (var idPermiso in permisosAgregar)
+                {
+                    _context.RolPermisos.Add(new RolPermiso
+                    {
+                        IdRol = idRol,
+                        IdPermiso = idPermiso,
+                        Activo=true,
+                        FechaCreacion = fechaActual,
+                        FechaActualizacion = fechaActual
+                    });
+                }
+
+                await _context.SaveChangesAsync();
+                await transaccion.CommitAsync();
+            }
+            catch
+            {
+                await transaccion.RollbackAsync();
+                throw;
+            }
+        }
+
+
         //crear pedidos de los clientes 
         public async Task<bool> CreatePermisosAsync(PermisosCreateDto permisosCreate)
         {
@@ -41,7 +114,10 @@ namespace Miluc.Server.Servicios.PermisosService
                     var userPermiso = roles.Select(rolId => new RolPermiso
                     {
                         IdRol = rolId,
-                        IdPermiso = permisos.IdPermiso
+                        IdPermiso = permisos.IdPermiso,
+                        Activo = true,
+                        FechaCreacion = DateTime.Now,
+                        FechaActualizacion = DateTime.Now
                     });
 
                     await _context.RolPermisos.AddRangeAsync(userPermiso);
@@ -140,11 +216,11 @@ namespace Miluc.Server.Servicios.PermisosService
                         IdPermiso = idPermiso,
                         Nombre = p.Nombre,
                         Activo = p.Activo,
-                        Descripcion =p.Descripcion,
+                        Descripcion = p.Descripcion,
                         FechaCreacion = p.FechaCreacion,
                         FechaActualizacion = p.FechaActualizacion,
                         RolesNombre = p.RolPermisos.Select(r => r.Rol.Nombre).ToList(),
-                        RolesIds=p.RolPermisos.Select(r=>r.Rol.IdRol).ToList()
+                        RolesIds = p.RolPermisos.Select(r => r.Rol.IdRol).ToList()
                     }).FirstOrDefaultAsync();
 
                 return permisoId ?? new PermisosReadDto();
@@ -154,6 +230,38 @@ namespace Miluc.Server.Servicios.PermisosService
                 throw new Exception($"Error al consultar el Permiso: {ex.Message}");
             }
         }
+
+        public async Task<List<PermisosRolReaderDto>> GetPermisosAsignadoPorRol(int idRol)
+        {
+            try
+            {
+
+                var PermisosRolId = await _context.Permisos
+                               .AsNoTracking()
+                               .Select(p => new PermisosRolReaderDto
+                               {
+                                   IdPermiso = p.IdPermiso,
+                                   Nombre = p.Nombre,
+                                   Descripcion = p.Descripcion,
+                                   Activo = p.Activo,
+
+                                   Asignado = _context.RolPermisos.Any(rp =>
+                                       rp.IdRol == idRol &&
+                                       rp.IdPermiso == p.IdPermiso)
+                               })
+                               .OrderBy(p => p.Nombre)
+                               .ToListAsync();
+
+                // return permisos;
+
+                return PermisosRolId;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error al consultar el Permiso: {ex.Message}");
+            }
+        }
+
         public async Task<bool> UpdatePermisosAsync(PermisosUpdateDto permisosUpdate)
         {
             var permiso = await _context.Permisos
@@ -208,6 +316,6 @@ namespace Miluc.Server.Servicios.PermisosService
                 throw new Exception($"Error al actualizar el permiso: {ex.Message}");
             }
         }
-        
+
     }
 }

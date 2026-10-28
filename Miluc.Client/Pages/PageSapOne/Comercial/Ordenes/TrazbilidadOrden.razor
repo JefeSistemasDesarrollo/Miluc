@@ -1,10 +1,12 @@
-﻿@page "/administrar-pedido/trazabilidad/{DocNum:int}"
+﻿@page "/trazabilidad/{tipo:int}/{DocNum:int}/{CardCode}"
+
 @using Miluc.Client.Interfaces.SapInterfaces.TrazabilidadPedidos
 @using Miluc.Shared.DTOs.Sap.TrazabilidadOrdenesVenta
+@using Miluc.Shared.Models.Validaciones.Enums
 @inject NavigationManager _nav
 @inject ISapTrazabilidadPedidos _serviceTrazabilidadPedidos
 @inject IAuthClientService _authClientService
- 
+
 <div class="container py-4">
     <!-- Header Navegación / Título -->
     <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
@@ -14,7 +16,8 @@
             </h4>
             <p class="text-muted small mb-0">Seguimiento de flujo documental para la Orden N° <strong>@DocNum</strong></p>
         </div>
-        <button class="btn btn-outline-secondary btn-sm" @onclick='() => _nav.NavigateTo("/administrar-pedido/pedidos")'>
+        <button class="btn btn-outline-secondary btn-sm" @onclick="Regresar">
+
             <i class="bi bi-arrow-left me-1"></i> Volver
         </button>
     </div>
@@ -80,7 +83,7 @@
                                             <span class="fs-7"><i class="bi bi-calendar-check me-1"></i>@item.DocDueDate.ToShortDateString()</span>
                                         </div>
                                         <div class="col-2">
-                                            @if (_authClientService.HasPermission("DeliveryNotes.Details"))
+                                            @if (_authClientService.HasPermission("NotasEntrega.Details"))
                                             {
                                                 <button class="btn btn-outline-secondary border-0 btn-sm" @onclick:stopPropagation="true" @onclick="() => VerDetalleNota(item.DocEntry, DocNum)">
                                                     <i class="bi bi-list-task"></i>
@@ -139,7 +142,7 @@
                                             <span class="fs-7"><i class="bi bi-calendar-check me-1"></i>@item.DocDueDate.Value.Date.ToShortDateString()</span>
                                         </div>
                                         <div class="col-2">
-                                            @if (_authClientService.HasPermission("Returns.Details"))
+                                            @if (_authClientService.HasPermission("Devolucion.Details"))
                                             {
                                                 <button class="btn btn-outline-secondary border-0 btn-sm" @onclick:stopPropagation="true" @onclick="() => VerDetalleDevolucion(item.DocEntry, DocNum)">
                                                     <i class="bi bi-list-task"></i>
@@ -148,7 +151,7 @@
                                         </div>
                                     </div>
                                     <hr class="my-2 text-muted opacity-25" />
-               
+
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span class="text-muted fs-7">Monto Total:</span><span class="fw-bold text-danger fs-6">@item.DocTotal.ToString("C", new System.Globalization.CultureInfo("es-CO"))</span>
                                     </div>
@@ -193,7 +196,7 @@
                                             <span class="fs-7"><i class="bi bi-calendar-check me-1"></i>@item.DocDueDate.Value.Date.ToShortDateString()</span>
                                         </div>
                                         <div class="col-2">
-                                            @if (_authClientService.HasPermission("Invoices.Details"))
+                                            @if (_authClientService.HasPermission("Facturas.Details"))
                                             {
                                                 <button class="btn btn-outline-secondary border-0 btn-sm" @onclick:stopPropagation="true" @onclick="() => VerDetalleFactura(item.DocEntry, DocNum)">
                                                     <i class="bi bi-list-task"></i>
@@ -202,7 +205,7 @@
                                         </div>
                                     </div>
                                     <hr class="my-2 text-muted opacity-25" />
-                                  
+
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span class="text-muted fs-7">Monto Total:</span>
                                         <span class="fw-bold text-danger fs-6">@item.DocTotal.ToString("C", new System.Globalization.CultureInfo("es-CO"))</span>
@@ -248,7 +251,7 @@
                                             <span class="fs-7"><i class="bi bi-calendar-check me-1"></i>@item.DocDueDate.Value.Date.ToShortDateString()</span>
                                         </div>
                                         <div class="col-2">
-                                            @if (_authClientService.HasPermission("Invoices.Details"))
+                                            @if (_authClientService.HasPermission("Facturas.Details"))
                                             {
                                                 <button class="btn btn-outline-secondary border-0 btn-sm" @onclick:stopPropagation="true" @onclick="() => VerDetalleFactura(item.DocEntry, DocNum)">
                                                     <i class="bi bi-list-task"></i>
@@ -257,7 +260,7 @@
                                         </div>
                                     </div>
                                     <hr class="my-2 text-muted opacity-25" />
-                                  
+
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span class="text-muted fs-7">Monto Total:</span>
                                         <span class="fw-bold text-danger fs-6">@item.DocTotal.ToString("C", new System.Globalization.CultureInfo("es-CO"))</span>
@@ -305,7 +308,7 @@
 
                                         <div class="col-2">
 
-                                            @if (_authClientService.HasPermission("CreditNote.Datails"))
+                                            @if (_authClientService.HasPermission("NotaCredito.Details"))
                                             {
                                                 <button class="btn btn-outline-secondary border-0 btn-sm" @onclick:stopPropagation="true" @onclick="() => VerDetalleNotaCredito(item.DocEntry, DocNum)">
                                                     <i class="bi bi-list-task"></i>
@@ -316,7 +319,7 @@
 
                                     </div>
                                     <hr class="my-2 text-muted opacity-25" />
-                                  
+
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span class="text-muted fs-7">Monto Total:</span>
                                         <span class="fw-bold text-danger fs-6">@item.DocTotal.ToString("C", new System.Globalization.CultureInfo("es-CO"))</span>
@@ -331,10 +334,24 @@
     }
 </div>
 @code {
+
+
+    [Parameter]
+    public int tipo { get; set; }
+
     [Parameter]
     public int DocNum { get; set; }
 
+    [Parameter]
+    public string CardCode { get; set; } = string.Empty;
+
+    private TipoDocumentoSap TipoDocumento =>
+        (TipoDocumentoSap)tipo;
+
+    [SupplyParameterFromQuery(Name = "returnUrl")]
+    public string? ReturnUrl { get; set; }
     public bool cargando = false;
+
     public TrazabilidadOrdenReaderDto trazabilidadOrdenReaderDtos = new TrazabilidadOrdenReaderDto();
 
     protected override async Task OnInitializedAsync()
@@ -344,81 +361,53 @@
         if (result?.Valor != null)
         {
             trazabilidadOrdenReaderDtos = result.Valor;
-
             trazabilidadOrdenReaderDtos.OdlnReader = trazabilidadOrdenReaderDtos.OdlnReader?.GroupBy(x => x.DocNum).Select(g => g.First()).ToList() ?? new();
             trazabilidadOrdenReaderDtos.OinvReader = trazabilidadOrdenReaderDtos.OinvReader?.GroupBy(x => x.DocNum).Select(g => g.First()).ToList() ?? new();
             trazabilidadOrdenReaderDtos.OrdnReader = trazabilidadOrdenReaderDtos.OrdnReader?.GroupBy(x => x.DocNum).Select(g => g.First()).ToList() ?? new();
             trazabilidadOrdenReaderDtos.orinReaders = trazabilidadOrdenReaderDtos.orinReaders?.GroupBy(x => x.DocNum).Select(g => g.First()).ToList() ?? new();
             trazabilidadOrdenReaderDtos.OinvOrders = trazabilidadOrdenReaderDtos.OinvOrders?.GroupBy(x => x.DocNum).Select(g => g.First()).ToList() ?? new();
-
             cargando = true;
         }
         else
         {
-            _nav.NavigateTo("/administrar-pedido");
+            Regresar();
+            // _nav.NavigateTo("/administrar-pedido");
         }
     }
-
     private void VerDetalleNota(int DocEntry, int DocNum)
     {
-
-        // //
-        // if (_authClientService.HasPermission("Orders.Detail"))
-        // {
-        _nav.NavigateTo($"/administrar-detalle-nota/detalle/{DocEntry}/{DocNum}");
-        // }
-        // else
-        // {
-        //     Nav.NavigateTo("/no-autorizado");
-        //     return;
-        // }
-
+        var returnUrldetalleNota = new Uri(_nav.Uri).PathAndQuery;
+        var url = $"/nota-detalle/{DocEntry}/{DocNum}/" + $"?returnUrldetalleNota={Uri.EscapeDataString(returnUrldetalleNota)}";
+        _nav.NavigateTo(url);
     }
     private void VerDetalleDevolucion(int DocEntry, int DocNum)
     {
-
-        // //
-        // if (_authClientService.HasPermission("Orders.Detail"))
-        // {
-        _nav.NavigateTo($"/administrar-detalle-devolucion/detalle/{DocEntry}/{DocNum}");
-        // }
-        // else
-        // {
-        //     Nav.NavigateTo("/no-autorizado");
-        //     return;
-        // }
-
+        var returndevo = new Uri(_nav.Uri).PathAndQuery;
+        var url = $"/detalle-devolucion/{DocEntry}/{DocNum}" + $"?returndevo={Uri.EscapeDataString(returndevo)}";
+        _nav.NavigateTo(url);
     }
     private void VerDetalleNotaCredito(int DocEntry, int DocNum)
     {
-
-        // //
-        // if (_authClientService.HasPermission("Orders.Detail"))
-        // {
-        _nav.NavigateTo($"/administrar-detalle-notacredito/detalle/{DocEntry}/{DocNum}");
-        // }
-        // else
-        // {
-        //     Nav.NavigateTo("/no-autorizado");
-        //     return;
-        // }
-
+        var returnNotaCredito = new Uri(_nav.Uri).PathAndQuery;
+        var url = $"/notacredito-detalle/{DocEntry}/{DocNum}" + $"?returnNotaCredito={Uri.EscapeDataString(returnNotaCredito)}";
+        _nav.NavigateTo(url);
     }
     private void VerDetalleFactura(int DocEntry, int DocNum)
     {
-
-        // //
-        // if (_authClientService.HasPermission("Orders.Detail"))
-        // {
-        _nav.NavigateTo($"/administrar-detalle-factura/detalle/{DocEntry}/{DocNum}");
-        // }
-        // else
-        // {
-        //     Nav.NavigateTo("/no-autorizado");
-        //     return;
-        // }
-
+        var returnFactura = new Uri(_nav.Uri).PathAndQuery;
+        var url = $"/factura-detalle/{DocEntry}/{DocNum}" + $"?returnFactura={Uri.EscapeDataString(returnFactura)}";
+        _nav.NavigateTo(url);
     }
-
-
+    private void Regresar()
+    {
+        if (!string.IsNullOrWhiteSpace(ReturnUrl)
+            && Uri.TryCreate(ReturnUrl, UriKind.Relative, out var ruta)
+            && ReturnUrl.StartsWith("/")
+            && !ReturnUrl.StartsWith("//"))
+        {
+            _nav.NavigateTo(ruta.ToString());
+            return;
+        }
+        _nav.NavigateTo("/administrar-pedido/pedidos");
+    }
 }

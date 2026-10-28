@@ -187,10 +187,10 @@ namespace Miluc.Server.Controllers.AuthController
 
                 var response = await authService.VerifyOtpCodigoCorreoAsync(request.IdUsuario, request.Codigo, ip, userAgent);
 
-                //if (!response.EsCorrecto || response.Valor == null)
-                //{
-                //    return Unauthorized(response);
-                //}
+                if (!response.EsCorrecto || response.Valor == null)
+                {
+                    return Unauthorized(response);
+                }
 
 
                 //await CrearCookies(response.Valor);
@@ -313,9 +313,6 @@ namespace Miluc.Server.Controllers.AuthController
                 claims.Add(new Claim("nombre", f.NombreModulo ?? ""));
             });
 
-
-            //session.Filtros.ForEach
-
             await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme)),
@@ -336,7 +333,6 @@ namespace Miluc.Server.Controllers.AuthController
                     Expires = DateTime.UtcNow.AddMinutes(refreshMinutes)
                 });
         }
-
         private List<Claim> BuildClaims(UserSession session)
         {
             var claims = new List<Claim>
@@ -367,7 +363,6 @@ namespace Miluc.Server.Controllers.AuthController
                         Mensaje = "Refresh token no encontrado"
                     });
                 }
-
                 string ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
                 string ua = Request.Headers["User-Agent"].ToString();
 
@@ -469,7 +464,5 @@ namespace Miluc.Server.Controllers.AuthController
                 throw new Exception($"Error interno {ex.Message}");
             }
         }
-
-
     }
 }
