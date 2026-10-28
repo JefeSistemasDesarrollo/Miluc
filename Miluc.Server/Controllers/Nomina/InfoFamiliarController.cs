@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Nomina;
+using Miluc.Server.Security;
 using Miluc.Server.Servicios.Nomina;
 using Miluc.Shared.DTOs.Nomina.EmpleadoDto;
 using Miluc.Shared.DTOs.Nomina.InformacionFamiliarDto;
@@ -62,6 +63,7 @@ namespace Miluc.Server.Controllers.Nomina
             }
         }
         [HttpGet]
+        [PermissionAuthorize("informacionFamiliar.View")]
         public async Task<ActionResult<ResponseAPI<List<InfoFamiliarReaderDto>>>> GetInformacionFamiliar([FromQuery] string? filtro = null, [FromQuery] int page = 1, [FromQuery] int? cantidad = null)
         {
 
@@ -131,6 +133,7 @@ namespace Miluc.Server.Controllers.Nomina
 
 
         [HttpGet("{id}")]
+        [PermissionAuthorize("informacionFamiliar.Details")]
         public async Task<ActionResult<ResponseAPI<List<InfoFamiliarReaderDto>>>> GetFamiliarByIdAsync(int id)
         {
 
@@ -183,6 +186,7 @@ namespace Miluc.Server.Controllers.Nomina
 
 
         [HttpPost("CreateInformacionFamiliar")]
+        [PermissionAuthorize("InformacionFamiliar.Create")]
         public async Task<ActionResult<ResponseAPI<bool>>> CreateFamiliarAsync([FromBody] List<InfoFamiliarCreateDto> infoFamiliar)
         {
             // 1. MEJORA: Validación defensiva antes de tocar la base de datos
@@ -257,6 +261,8 @@ namespace Miluc.Server.Controllers.Nomina
         }
 
         [HttpPut("{id}")]
+
+        [PermissionAuthorize("InformacionFamiliar.Update")]
         public async Task<ActionResult<ResponseAPI<InfoFamiliarReaderDto>>> UpdateFamiliarAsync(int id, [FromBody] InfoFamiliarUpdateDto infoFamiliarDto)
         {
             // 1. Validación de objeto nulo
@@ -340,6 +346,7 @@ namespace Miluc.Server.Controllers.Nomina
             }
         }
         [HttpDelete("{id:int}")]
+        [PermissionAuthorize("InformacionFamiliar.Delete")]
         public async Task<ActionResult<ResponseAPI<bool>>> DeleteFamiliarAsync(int id)
         {
             try

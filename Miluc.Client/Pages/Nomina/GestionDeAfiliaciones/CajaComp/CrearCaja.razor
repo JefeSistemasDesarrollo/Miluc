@@ -1,4 +1,4 @@
-﻿@page "/api/CajaCompensacion/CrearCaja"
+﻿@page "/CrearCaja"
 
 
 @using Miluc.Client.Interfaces.Nomina.SeguridadSocial
@@ -7,6 +7,7 @@
 @inject NavigationManager nav
 @inject ICajaCompensacionClientService _cajaService
 @inject IJSRuntime JS
+@inject IAuthClientService _authCliente
 
 <div class="empleado-page p-4 animate__animated animate__fadeIn">
     <div class="container-fluid max-width-container">
@@ -153,10 +154,18 @@
     private string mensajeError = string.Empty;
     private string mensajeExito = string.Empty;
 
-    private void Volver() => nav.NavigateTo("/api/CajaCompensacion");
-    private void CrearEps() => nav.NavigateTo("/api/CajaCompensacion");
+    private void Volver() => nav.NavigateTo("/Administrar-CajaCompensacion");
+    private void crearCaja() => nav.NavigateTo("/Administrar-CajaCompensacion");
 
+    protected override Task OnInitializedAsync()
+    {
+        if (!_authCliente.HasPermission("CajaComp.Crear"))
+        {
+            nav.NavigateTo("/no-autorizado");
+        }
 
+        return Task.CompletedTask;
+    }
     // Alerta mensaje error o exito
     public async Task EjecutarGuardado()
     {

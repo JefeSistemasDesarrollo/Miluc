@@ -1,4 +1,4 @@
-﻿@page "/api/CajaCompensacion"
+﻿@page "/Administrar-CajaCompensacion"
 
 @using Miluc.Client.Interfaces.Nomina.SeguridadSocial
 @using Miluc.Client.Pages.Nomina.GestionDeAfiliaciones.Afp;
@@ -7,6 +7,7 @@
 @inject NavigationManager nav
 @inject IJSRuntime js
 @inject ICajaCompensacionClientService _cajaCompensacionClientService
+@inject IAuthClientService _authCliente
 
 
 <div class="caja-page animate__animated animate__fadeIn p-4">
@@ -138,10 +139,10 @@
                             @* Columna de Acciones Limpia *@
                             <td class="text-center pe-4">
                                 <div class="btn-group shadow-sm border rounded-pill bg-white overflow-hidden">
-                                    <button class="btn-detail btn btn-dark btn-sm px-2 border-end""Ver Detalle" @onclick="() => VerDetalle(em.CajaCompensacionId)">
+                                    <button class="btn-detail btn btn-dark btn-sm px-2 border-end edit" title="Ver Caja" @onclick="() => VerDetalle(em.CajaCompensacionId)">
                                         <i class="bi bi-eye text-black-"></i>
                                     </button>
-                                    <button class="btn btn-white btn-sm px-2 border-end edit" title= "ModificarArl" @onclick="() => ModificarCajaCompensacion(em.CajaCompensacionId)">
+                                    <button class="btn btn-white btn-sm px-2 border-end edit" title= "Modificar Caja" @onclick="() => ModificarCajaCompensacion(em.CajaCompensacionId)">
                                         <i class="bi bi-pencil-square text-primary"></i>
                                     </button>
                                     <button class="btn btn-white btn-sm px-2 delete" title="Eliminar Caja" @onclick="() => EliminarCaja (em.CajaCompensacionId)">
@@ -204,6 +205,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (!_authCliente.HasPermission("CajaComp.View"))
+        {
+            nav.NavigateTo("/no-autorizado");
+            return;
+        }
         await cargarCaja();
     }
 
@@ -402,15 +408,15 @@
   private async Task  EliminarCaja(int id) => await EliminarCaja(id);
     private void VerDetalle(int id)
     {
-        nav.NavigateTo($"/api/CajaCompensacion/{id}");
+        nav.NavigateTo($"/ver-Caja/{id}");
     }
 
     private void ModificarCajaCompensacion(int id)
     {
-        nav.NavigateTo($"/caja-compensacion/editar/{id}");
+        nav.NavigateTo($"/editar-Caja/{id}");
     }
 
     private void Volver() => nav.NavigateTo("administrar-entidadesSeguridadSocial");
-    private void CrearCajaCompensacion() => nav.NavigateTo("/api/CajaCompensacion/CrearCaja");
+    private void CrearCajaCompensacion() => nav.NavigateTo("/CrearCaja");
   
 }

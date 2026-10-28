@@ -1,5 +1,4 @@
-﻿@page "/api/Arl/CrearArl"
-
+﻿@page "/CrearArl"
 
 @using Miluc.Client.Interfaces.Nomina.SeguridadSocial
 @using Miluc.Shared.DTOs.Nomina.Arl.Dto
@@ -7,10 +6,11 @@
 @inject NavigationManager nav
 @inject IArlClientService _arlService
 @inject IJSRuntime JS
+@inject IAuthClientService _authCliente
 
 <div class="empleado-page p-4 animate__animated animate__fadeIn">
     <div class="container-fluid max-width-container">
-        
+
         @* --- CABECERA DE LA PÁGINA --- *@
         <div class="header-box mb-4 d-flex justify-content-between align-items-center border-bottom pb-4">
             <div>
@@ -22,12 +22,12 @@
                     Gestione la vinculación de una nueva entidad administradora de riesgos Laborales. Los campos marcados con <span class="text-danger">*</span> son requeridos.
                 </p>
             </div>
-            
+
             <button class="btn btn-rojo btn-outline-custom rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver">
                 <i class="bi bi-arrow-left me-2"></i> Volver al listado
             </button>
-           
-          
+
+
         </div>
 
         @* --- FORMULARIO PRINCIPAL --- *@
@@ -77,7 +77,7 @@
                                     <div class="input-group-custom">
                                         <div class=" card card-custom border-0 shadow-sm rounded-4">
                                             <div class="card-body input-custom">
-                                           
+
                                                 <div class="input-group-custom ">
                                                     <div class="form-check form-switch switch-lg ">
                                                         <InputCheckbox class=" form-check-input form-control " @bind-Value="arlCreate.Activo"> </InputCheckbox>
@@ -128,7 +128,7 @@
                 <button type="button" class="btn btn-light-custom rounded-pill px-4 py-2.5 fw-semibold" @onclick="Volver">
                     Cancelar
                 </button>
-        
+
                 <button type="submit" class="btn btn-rojo btn-secondary rounded-pill px-4" disabled="@isProcessing">
                     @if (isProcessing)
                     {
@@ -137,7 +137,7 @@
                     }
                     else
                     {
-                        
+
                         <span>Guardar</span>
                     }
                 </button>
@@ -153,10 +153,19 @@
     private string mensajeError = string.Empty;
     private string mensajeExito = string.Empty;
 
-    private void Volver() => nav.NavigateTo("/api/Arl/Arl");
-    private void CrearEps() => nav.NavigateTo("/api/Arl/Arl");
+    private void Volver() => nav.NavigateTo("/Administrar-Arl");
+    private void CrearEps() => nav.NavigateTo("Administrar-Arl");
 
 
+    protected override Task OnInitializedAsync()
+    {
+        if (!_authCliente.HasPermission("Arl.Crear"))
+        {
+            nav.NavigateTo("/no-autorizado");
+        }
+
+        return Task.CompletedTask;
+    }
     // Alerta mensaje error o exito
     public async Task EjecutarGuardado()
     {
@@ -176,20 +185,20 @@
             }
             else
             {
-            
+
                 mensajeError = respuesta?.Mensaje ?? "Error al procesar la solicitud en el servidor.";
-            
-          
+
+
                 await JS.InvokeVoidAsync("Swal.fire", "Atención", mensajeError, "warning");
             }
         }
         catch (Exception ex)
         {
             mensajeError = ex.Message;
-        
+
             // Disparar la alerta si el backend lanzó una excepción
             await JS.InvokeVoidAsync("Swal.fire", "Atención", ex.Message, "warning");
-        
+
         }
         finally
         {
@@ -197,5 +206,8 @@
         }
     }
 }
+
+
+
         
     

@@ -511,6 +511,12 @@
 
     protected override async Task OnInitializedAsync()
     {
+   
+        if (!_authService.HasPermission("Filtros.Create"))
+        {
+            _nav.NavigateTo("/no-autorizado");
+            return;
+        }
         try
         {
             var responseUsuarios = await _usuarioClientService.ListarUsuariosAsync();

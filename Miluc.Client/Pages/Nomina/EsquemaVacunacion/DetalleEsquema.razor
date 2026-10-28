@@ -8,6 +8,7 @@
 @inject IEsquemaVacunacionClientService _esquemaVacunacionClientService
 @inject IEmpleadoClientService _empleadoService
 @inject IJSRuntime JS
+@inject IAuthClientService _authClienteService
 
 <div class="detalleAfiliacionesEmpleado-page p-4 animate__animated animate__fadeIn">
     <div class="container-fluid max-width-container">
@@ -166,6 +167,12 @@
 
     protected override async Task OnInitializedAsync()
     {
+        
+        if (_authClienteService.HasPermission("EsquemaVacunación.Details"))
+        {
+            nav.NavigateTo("/no-autorizado");
+            return;
+        }
         try
         {
             if (idEmpleado <= 0)

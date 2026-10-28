@@ -1,5 +1,5 @@
 ﻿@page "/administrar-entidadesSeguridadSocial"
-@inject IAuthClientService authClient
+@inject IAuthClientService _authCliente
 @inject NavigationManager nav
 
 <div class="welcome-container animate__animated animate__fadeIn">
@@ -31,7 +31,7 @@
                         <i class="bi bi-people-fill"></i>
                     </div>
                     <h4 class="text-center">Entidad Promotora de Salud</h4>
-                    <a href=" /api/Eps/Eps" class="btn-miluc btn-rojo">
+                    <a href="/Administrar-Eps" class="btn-miluc btn-rojo">
                         <span>Eps</span>
                         <i class="bi bi-arrow-right-short"></i>
                     </a>
@@ -47,7 +47,7 @@
                     <h4 class="text-center"> Fondos de Pensiones</h4>
                    
                     
-                    <a href="/api/Afp/Afp" class="btn-miluc-amarillo btn-amarillo">
+                    <a href="/Administrar-Afp" class="btn-miluc-amarillo btn-amarillo">
                         <span>AFP</span>
                         <i class="bi bi-arrow-right-short"></i>
                     </a>
@@ -63,7 +63,7 @@
                     <h5 class="text-center">Administradora de Riesgos Laborales </h5>
                    
                     
-                    <a href="/api/Arl/Arl" class="btn-miluc-amarillo btn-amarillo">
+                    <a href="/Administrar-Arl" class="btn-miluc-amarillo btn-amarillo">
                         <span>ARL</span>
                         <i class="bi bi-arrow-right-short"></i>
                     </a>
@@ -81,7 +81,7 @@
                     <h4 class="text-center"> Cajas de Compensación</h4>
                    
                     
-                    <a href="/api/CajaCompensacion" class="btn-miluc btn-rojo">
+                    <a href="/Administrar-CajaCompensacion" class="btn-miluc btn-rojo">
                         <span>CCF</span>
                         <i class="bi bi-arrow-right-short"></i>
                     </a>
@@ -93,10 +93,19 @@
     </div>
 </div>
         
-   
-    
-@code {
+  
 
-    private void Volver() => nav.NavigateTo("/Gestionar/Afiliaciones");
+    @code
+    {
+        private void Volver() => nav.NavigateTo("/Gestionar/Afiliaciones");
 
-}
+        protected override Task OnInitializedAsync()
+        {
+            if (!_authCliente.HasPermission("GestionEntidades.Card"))
+            {
+                nav.NavigateTo("/no-autorizado");
+            }
+
+            return Task.CompletedTask;
+        }
+    }

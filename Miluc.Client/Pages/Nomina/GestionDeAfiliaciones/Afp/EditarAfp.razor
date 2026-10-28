@@ -1,4 +1,4 @@
-﻿@page "/editar/api/Afp/{afpid:int}"
+﻿@page "/editar-Afp/{afpid:int}"
 
 @using System.Linq
 @using Miluc.Client.Interfaces.Nomina.SeguridadSocial
@@ -7,6 +7,7 @@
 @inject NavigationManager nav
 @inject IAfpClientService _afpService
 @inject IJSRuntime JS
+@inject IAuthClientService _authCliente
 
 <div class="empleado-page p-4 animate__animated animate__fadeIn">
     <div class="container-fluid max-width-container">
@@ -100,7 +101,7 @@
                                     Seguridad de las Entidades
 
                                     Asegúrese de que el código asignado corresponda al código oficial de la AFP (con formato de 6 dígitos, ej: 230201, 230301) registrado ante la Superintendencia Financiera de Colombia para evitar inconsistencias en la planilla PILA o reportes de novedades pensionales.
-                               </p>
+                                </p>
                             </div>
                             <div class="decorative-circle"></div>
                         </div>
@@ -120,7 +121,7 @@
                             }
                             else
                             {
-                              
+
                                 <span>Guardar</span>
                             }
                         </button>
@@ -139,6 +140,10 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (!_authCliente.HasPermission("Afp.Editar"))
+        {
+            nav.NavigateTo("/no-autorizado");
+        }
         await CargarAfp();
     }
 
@@ -195,5 +200,5 @@
         }
     }
 
-    private void Volver() => nav.NavigateTo("/api/Afp/Afp");
+    private void Volver() => nav.NavigateTo("/Administrar-Afp");
 }

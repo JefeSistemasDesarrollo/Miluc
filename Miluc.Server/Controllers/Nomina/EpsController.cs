@@ -3,6 +3,7 @@ using Microsoft.OpenApi.Reader;
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Nomina;
 using Miluc.Server.Models.Nomina;
+using Miluc.Server.Security;
 using Miluc.Server.Servicios.Nomina;
 using Miluc.Shared.DTOs.Nomina.EmpleadoDto;
 using Miluc.Shared.DTOs.Nomina.EpsDto;
@@ -22,6 +23,7 @@ namespace Miluc.Server.Controllers.Nomina
 
 
         [HttpGet]
+        [PermissionAuthorize("Eps.View")]
         public async Task<ActionResult<ResponseAPI<List<EpsReaderDto>>>> GetEpsAsync([FromQuery] string? filtro = null, [FromQuery] int page = 1, [FromQuery] int? cantidad = null)
         {
             try
@@ -69,6 +71,7 @@ namespace Miluc.Server.Controllers.Nomina
             }
         }
         [HttpPost("CrearEps")]
+        [PermissionAuthorize("Eps.Crear")]
         public async Task<ActionResult<ResponseAPI<EpsReaderDto>>> CreateEpsAsync(EpsCreateDto epsCreateDto)
         {
             if (epsCreateDto == null || string.IsNullOrWhiteSpace(epsCreateDto.Nombre))
@@ -109,6 +112,7 @@ namespace Miluc.Server.Controllers.Nomina
 
         }
         [HttpGet("{id}")]
+        [PermissionAuthorize("Eps.Detalle")]
         public async Task<ActionResult<ResponseAPI<EpsReaderDto>>> GetByEpsAsync(int id)
 
 
@@ -157,6 +161,7 @@ namespace Miluc.Server.Controllers.Nomina
 
 
         [HttpPut("{id}")]
+        [PermissionAuthorize("Eps.Editar")]
         public async Task<ActionResult<ResponseAPI<EpsReaderDto>>> UpdateEpsAsync(int id, [FromBody] UpdateEpsDto updateEps)
         {
             // 1. Validaciones previas en un solo bloque 
@@ -215,6 +220,7 @@ namespace Miluc.Server.Controllers.Nomina
 
 
         [HttpDelete("{id}")]
+        [PermissionAuthorize("Eps.Delete")]
         public async Task<ActionResult<ResponseAPI<bool>>> DeleteEpsAsync(int id)
         {
             try

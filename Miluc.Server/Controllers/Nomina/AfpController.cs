@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Nomina;
 using Miluc.Shared.DTOs.Nomina.Afp;
@@ -14,6 +15,7 @@ namespace Miluc.Server.Controllers.Nomina
     public class AfpController(IAfpService afpService, ILogService _log) : Controller
     {
         [HttpGet("Afp")]
+        [PermissionAuthorize("Afp.View")]
         public async Task<ActionResult<ResponseAPI<List<AfpReaderDto>>>> GetAfpAsync([FromQuery] string? filtro = null, [FromQuery] int page = 1, [FromQuery] int? cantidad = null)
         {
             try
@@ -59,7 +61,9 @@ namespace Miluc.Server.Controllers.Nomina
                 });
             }
         }
+       
         [HttpPost("CrearAfp")]
+        [PermissionAuthorize("Afp.Crear")]
         public async Task<ActionResult<ResponseAPI<AfpReaderDto>>> CreateAfpAsync(AfpCreateDto afpCreateDto)
         {
             // 1. Validación de integridad: Verifica que el objeto y sus campos esenciales no estén vacíos.
@@ -156,6 +160,7 @@ namespace Miluc.Server.Controllers.Nomina
 
 
         [HttpPut("{id}")]
+        [PermissionAuthorize("Afp.Editar")]
         public async Task<ActionResult<ResponseAPI<AfpReaderDto>>> UpdateAfpAsync(int id, [FromBody] UpdateAfp updateAfp)
         {
             // 1. Validaciones previas en un solo bloque 

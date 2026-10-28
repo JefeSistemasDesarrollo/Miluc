@@ -255,7 +255,11 @@
         
     protected override async Task OnInitializedAsync()
     {
-        await CargarDatosIniciales();
+        if (!_autcliente.HasPermission("InformacionFamiliar.Create"))
+        {
+            nav.NavigateTo("/no-autorizado");
+            return;
+        }
 
         if (_autcliente.HasPermission("Modulo.Nomina"))
         {
@@ -267,6 +271,11 @@
             }
 
       
+      
+      
+      
+            await CargarDatosIniciales();
+
         }
     }
 

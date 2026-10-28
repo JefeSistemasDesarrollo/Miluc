@@ -1,4 +1,4 @@
-﻿@page "/api/ContratoLaboral/CreateContratoLaboral{idempleado:int}"
+﻿@page "/CreateContrato-Laboral/{idempleado:int}"
 
 @using Miluc.Client.Interfaces.Nomina
 @using Miluc.Client.Interfaces.Nomina.SeguridadSocial
@@ -19,7 +19,7 @@
 @inject ICargosClientService _cargoService
 @inject ICentroCostoClienteService _centroCostosService
 @inject IJSRuntime JS
-
+@inject IAuthClientService _authClientService
 <div class="empleado-page p-4 animate__animated animate__fadeIn">
     <div class="container-fluid max-width-container">
 
@@ -215,6 +215,12 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (!_authClientService.HasPermission("Contrato.Create"))
+        {
+            nav.NavigateTo("/no-autorizado");
+            return;
+        }
+
         try
         {
             var tareaTipos = _tipoContratoService.GetTipoContratoAsync(string.Empty, 1, 100);

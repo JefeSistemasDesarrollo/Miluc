@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Nomina;
+using Miluc.Server.Security;
 using Miluc.Server.Servicios.Nomina;
 using Miluc.Shared.DTOs.Nomina.AfiliacionSeguridadSocialDto;
 using Miluc.Shared.DTOs.Nomina.MatrizSocioDemograficaDto;
@@ -13,11 +14,12 @@ namespace Miluc.Server.Controllers.Nomina
     public class MatrizSociodemograficaController(IMatrizSociodemograficaService matrizSociodemograficaService, ILogService _log) : Controller
     {
         [HttpGet]
-        public async Task<ActionResult<ResponseAPI<List<MatrizSociodemograficaReaderDto>>>> GetMatrizSociodemograficaAsync([FromQuery] string? filtro = null, [FromQuery] int page = 1, [FromQuery] int? cantidad = null, [FromQuery] string? correo = null)
+        [PermissionAuthorize("Matriz.View")]
+        public async Task<ActionResult<ResponseAPI<List<MatrizSociodemograficaReaderDto>>>> GetMatrizSociodemograficaAsync([FromQuery] string? filtro = null, [FromQuery] int page = 1, [FromQuery] int? cantidad = null, [FromQuery] string? correo = null, [FromQuery] int? idEmpresa = null)
         {
             try
             {
-                var (matrizSociodemografica, totalRegistros) = await matrizSociodemograficaService.GetMatrizSocioDemograficasAsync(filtro, page, cantidad, correo);
+                var (matrizSociodemografica, totalRegistros) = await matrizSociodemograficaService.GetMatrizSocioDemograficasAsync(filtro, page, cantidad, correo, idEmpresa);
                 if (matrizSociodemografica == null || matrizSociodemografica.Count == 0)
                 {
                     return NotFound(new ResponseAPI<List<MatrizSociodemograficaReaderDto>>
@@ -56,6 +58,7 @@ namespace Miluc.Server.Controllers.Nomina
             }
         }
         [HttpGet("{id}")]
+        [PermissionAuthorize("Matriz.Details")]
         public async Task<ActionResult<ResponseAPI<MatrizSociodemograficaReaderDto>>> GetMatrizSocioDemograficaByIdAsync(int Id)
         {
             try
@@ -101,6 +104,7 @@ namespace Miluc.Server.Controllers.Nomina
             }
         }
             [HttpPut("{id}")]
+        [PermissionAuthorize("Matriz.Update")]
             public async Task<ActionResult<ResponseAPI<MatrizSociodemograficaReaderDto>>> updateMatrizAsync(int id, [FromBody]MatrizSocioDemograficaUpdateDto matrizUpdateDto)
             {
                 // Validar null

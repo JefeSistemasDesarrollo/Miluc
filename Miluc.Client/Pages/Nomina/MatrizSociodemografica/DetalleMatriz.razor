@@ -6,6 +6,7 @@
 @inject IMatrizSociodemograficaClientService _iMatriz
 @inject NavigationManager nav
 @inject IJSRuntime js
+@inject IAuthClientService _authCliente
 
 <div class="empleado-page p-4 animate__animated animate__fadeIn">
     <div class="container-fluid max-width-container">
@@ -280,6 +281,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (!_authCliente.HasPermission("Matriz.Details"))
+        {
+            nav.NavigateTo("/no-autorizado");
+            return;
+        }
         try
         {
             if (id <= 0)

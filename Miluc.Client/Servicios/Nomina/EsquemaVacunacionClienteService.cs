@@ -51,12 +51,12 @@ namespace Miluc.Client.Servicios.Nomina
 }
         }
 
-        public async Task<ResponseAPI<List<EsquemaVacunacionReaderDto>>> GetEsquemasVacunacionAsync(string textoBusqueda, int paginaActual, int cantidadPorPagina, string? correo)
+        public async Task<ResponseAPI<List<EsquemaVacunacionReaderDto>>> GetEsquemasVacunacionAsync(string textoBusqueda, int paginaActual, int cantidadPorPagina, string? correo, int? idEmpresa)
         {
             try
             {
 
-                var response = await _httpClient.GetAsync($"/api/EsquemaVacunacion/Esquemas?filtro={Uri.EscapeDataString(textoBusqueda ?? string.Empty)}&page={paginaActual}&cantidad={cantidadPorPagina}&correo={correo}");
+                var response = await _httpClient.GetAsync($"/api/EsquemaVacunacion/Esquemas?filtro={textoBusqueda}&page={paginaActual}&cantidad={cantidadPorPagina}&correo={correo}&idEmpresa={idEmpresa}");
                 if (!response.IsSuccessStatusCode)
                 { // Manejar el error de la solicitud
                     return new ResponseAPI<List<EsquemaVacunacionReaderDto>>

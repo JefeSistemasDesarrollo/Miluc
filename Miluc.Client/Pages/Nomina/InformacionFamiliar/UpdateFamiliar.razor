@@ -1,4 +1,4 @@
-﻿@page "/nomina/editar/informacion-familiar/{empleadoid:int}/{informacionfamiliarid:int}"
+﻿@page "/editar-infoFamiliar/{empleadoid:int}/{id:int}"
 
 @using System.Linq
 @using System.Text.Json
@@ -11,6 +11,7 @@
 @inject IInfoFamiliarClientService _infoFamiliarService
 @inject IParentescoClientService _parentescoService
 @inject IJSRuntime JS
+@inject IAuthClientService _autcliente
 
 <div class="empleado-page p-4 animate__animated animate__fadeIn">
     <div class="container-fluid max-width-container">
@@ -181,7 +182,7 @@
 
 @code {
     [Parameter] public int empleadoid { get; set; }
-    [Parameter] public int informacionfamiliarid { get; set; }
+    [Parameter] public int id { get; set; }
 
     private InfoFamiliarUpdateDto informacionFamiliar;
     private List<ParentescoReaderDto> listParentescos = new();
@@ -189,6 +190,12 @@
 
     protected override async Task OnInitializedAsync()
     {
+
+        if (!_autcliente.HasPermission("InformacionFamiliar.Update"))
+        {
+            nav.NavigateTo("/no-autorizado");
+            return;
+        }
         await CargarDatosIniciales();
     }
 
@@ -202,7 +209,7 @@
         if (respuestaFamiliar.EsCorrecto && respuestaFamiliar.Valor != null && respuestaFamiliar.Valor.Any())
         {
             var familiarEspecifico = respuestaFamiliar.Valor
-                .FirstOrDefault(f => f.InformacionFamiliarId == informacionfamiliarid);
+                .FirstOrDefault(f => f.InformacionFamiliarId ==id);
 
             if (familiarEspecifico != null)
             {

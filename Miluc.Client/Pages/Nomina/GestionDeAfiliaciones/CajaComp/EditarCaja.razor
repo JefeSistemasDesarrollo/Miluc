@@ -1,4 +1,4 @@
-﻿@page "/caja-compensacion/editar/{id:int}"
+﻿@page "/editar-Caja/{id:int}"
 
 @using System.Linq
 @using Miluc.Client.Interfaces.Nomina.SeguridadSocial
@@ -7,6 +7,7 @@
 @inject NavigationManager nav
 @inject ICajaCompensacionClientService cajaCompensacion
 @inject IJSRuntime JS
+@inject IAuthClientService _authCliente
 
 <div class="empleado-page p-4 animate__animated animate__fadeIn">
     <div class="container-fluid max-width-container">
@@ -143,6 +144,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (!_authCliente.HasPermission("CajaComp.Update"))
+        {
+            nav.NavigateTo("/no-autorizado");
+            return;
+        }
         await CargarCaja();
     }
 
@@ -201,5 +207,5 @@
     }
 
     // Ruta corregida a la vista de usuario, no a la API
-    private void Volver() => nav.NavigateTo("/api/CajaCompensacion");
+    private void Volver() => nav.NavigateTo("/Administrar-CajaCompensacion");
 }

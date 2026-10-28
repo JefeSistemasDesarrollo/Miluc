@@ -8,7 +8,7 @@
 @inject IContratoLaboralClientService _contratoLaboralClientService
 @inject IAfSeguridadSocialClientService afSeguridadSocialClientService
 @inject IJSRuntime js
-@inject IAuthClientService _authClient
+@inject IAuthClientService _authCliente
 
 <div class="afiliaciónEmpleados-page animate__animated animate__fadeIn p-4">
 
@@ -36,7 +36,7 @@
 
             @* Barra de búsqueda *@
             <div class="col-lg-7">
-                @if (_authClient.HasPermission("Employee.Search"))
+                @if (_authCliente.HasPermission("Employee.Search"))
                 {
                     <div class="input-group input-group-lg search-group">
                         <span class="input-group-text bg-white border-end-0 rounded-start-pill ps-3">
@@ -191,41 +191,52 @@
     private List<ContratoLaboralreaderDto> listempleadosAlservidor = new List<ContratoLaboralreaderDto>();
 
     private string _textoBusqueda = "";
-    private string _correo = "";
+    // Variables de control de configuración y paginación
+    private int cantidadPorPagina = 10;
+    private int paginaActual = 1;
+    private int totalRegistros = 0;
+    private bool cargando = false;
+
+    int idEmpresa = 0;
+    public string _correo = "";
+    // Propiedad Completa (Full Property) para interceptar los cambios en el buscador en tiempo real
     private string textoBusqueda
     {
         get => _textoBusqueda;
         set
         {
             _textoBusqueda = value;
-            FiltrarLocal();
+            FiltrarLocal(); // Cada vez que el usuario escribe/borra una letra, ejecuta el filtro local en memoria
         }
     }
 
-    private int cantidadPorPagina = 10;
-    private int paginaActual = 1;
-    private int totalRegistros = 0;
-    private bool cargando = false;
-
     protected override async Task OnInitializedAsync()
     {
-        if (!_authClient.HasPermission("Employee.View"))
+        if (_authCliente
+            .HasPermission("Modulo.Nomina"))
+        {
+
+            if (_authCliente.HasFiltro("Modulo.Nomina"))
+            {
+
+                idEmpresa = Convert.ToInt32(_authCliente.CurrentSession.Filtros.FirstOrDefault(f => f.NombreModulo == "Modulo.Nomina").Filtro);
+            }
+
+             
+        }
+        if (!_authCliente.HasPermission("Contratos.View"))
         {
             nav.NavigateTo("/no-autorizado");
             return;
         }
 
-        if (_authClient.HasPermission("Employee.FilterCorreo"))
+        if (_authCliente.HasPermission("Employee.FilterCorreo"))
         {
-            _correo = _authClient.CurrentSession.UserName;
+            _correo = _authCliente.CurrentSession.UserName;
         }
           
     
-        if (!_authClient.HasPermission("Card.Contracts"))
-        {
-            nav.NavigateTo("/no-autorizado");
-            return;
-        }
+      
       
     
         await cargarAfiliaciones();
@@ -236,7 +247,7 @@
         cargando = true;
 
         // Invocación a tu servicio de seguridad social con paginación
-        var respuesta = await _contratoLaboralClientService.GetContratoLaboralAsync(textoBusqueda, paginaActual, cantidadPorPagina,_correo);
+        var respuesta = await _contratoLaboralClientService.GetContratoLaboralAsync(textoBusqueda, paginaActual, cantidadPorPagina, _correo, idEmpresa);
 
         if (respuesta != null && respuesta.EsCorrecto)
         {
@@ -272,7 +283,7 @@
         paginaActual = 1;
         cargando = true;
 
-        var respuesta = await _contratoLaboralClientService.GetContratoLaboralAsync(textoBusqueda, paginaActual, cantidadPorPagina);
+        var respuesta = await _contratoLaboralClientService.GetContratoLaboralAsync(textoBusqueda, paginaActual, cantidadPorPagina, _correo, idEmpresa);
 
         if (respuesta != null && respuesta.EsCorrecto)
         {
@@ -359,7 +370,7 @@
     private void CrearContratos(int idempleado)
     {
 
-        nav.NavigateTo($"/api/ContratoLaboral/CreateContratoLaboral{idempleado}");
+        nav.NavigateTo($"/CreateContrato-Laboral/{idempleado}");
     }
 
     private void Volver() => nav.NavigateTo("/Card/Contratos");

@@ -211,6 +211,13 @@
     protected override async Task OnInitializedAsync()
     {
 
+        
+        if (!_autcliente.HasPermission("informacionFamiliar.View"))
+            {
+                nav.NavigateTo("/no-autorizado");
+                return;
+            }
+
         if (_autcliente.HasPermission("Modulo.Nomina"))
         {
 
