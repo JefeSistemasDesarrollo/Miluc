@@ -30,9 +30,6 @@ namespace Miluc.Server.Servicios.SapService
 
                 //var usuario =await _dbContext.Usuarios.FirstOrDefaultAsync(x=>x.IdUsuario==sapClienteCreateDto.IdUsuario);
                 //var horaActual = DateTime.Now.TimeOfDay;
-
-
-
                 // throw new ArgumentNullException($"El cliente es inválido {nameof(credenciales)}");
                 HttpClientHandler clientHandler = new()
                 {
@@ -215,10 +212,7 @@ namespace Miluc.Server.Servicios.SapService
                     {
                     }
 
-                    await _serviceConexion.LogoutAsync(
-                        credenciales.Valor.URLServiceLayer,
-                        credenciales.Valor.B1SESSION,
-                        credenciales.Valor.ROUTEID);
+                    await _serviceConexion.LogoutAsync(credenciales.Valor.URLServiceLayer,credenciales.Valor.B1SESSION,credenciales.Valor.ROUTEID);
 
                     throw new HttpRequestException($"SAP rechazó la actualización de direcciones. {mensajeError}");
                 }
@@ -251,13 +245,6 @@ namespace Miluc.Server.Servicios.SapService
 
                 if (string.IsNullOrWhiteSpace(cardCode))
                     throw new ArgumentNullException(nameof(cardCode), "El código del cliente es obligatorio.");
-
-                //HttpClientHandler clientHandler = new()
-                //{
-                //    ServerCertificateCustomValidationCallback =HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-                //};
-
-
 
                 HttpClientHandler clientHandler = new()
                 {

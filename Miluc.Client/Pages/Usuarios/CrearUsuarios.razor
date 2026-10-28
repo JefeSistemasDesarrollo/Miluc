@@ -47,20 +47,12 @@
                             </div>
                             <small class="d-block text-muted mt-2">Formatos: JPG, PNG (Máx 2MB)</small>
                         </div>
-
-                    @*     <div class="mb-3">
-                            <label class="form-label fw-bold small text-secondary">Nombre de Usuario (Login)*</label>
-                            <InputText class="form-control custom-input" @bind-Value="usuarioDto.UserName" placeholder="Nombre único para el ingreso" />
-                            <ValidationMessage For="@(() => usuarioDto.UserName)" class="text-danger small" />
-                        </div> *@
-
                            <div class="mb-3">
                             <label class="form-label fw-bold small text-secondary">Email (Login)*</label>
                             @* <label class="form-label fw-bold small text-secondary">Email</label> *@
                             <InputText class="form-control custom-input" @bind-Value="usuarioDto.Email" placeholder="correo@ejemplo.com" />
                             <ValidationMessage For="@(() => usuarioDto.Email)" class="text-danger small" />
                         </div>
-
 
                         <div class="row g-2">
                             <div class="col-6 mb-3">
@@ -110,9 +102,7 @@
                                         {
                                             <option value="@vendedor.SlpCode">@vendedor.SlpName</option>
                                         }
-
                                     }
-
                                 </InputSelect>
                             </div>
                         </div>
@@ -122,7 +112,6 @@
                                 <label class="form-check-label fw-bold small cursor-pointer" for="chkPass">2FA – Two-Factor Authentication </label>
                             </div>
                         </div>
-
                         <div class="mt-4 p-3 rounded-3 bg-light border-start border-4 border-warning shadow-sm">
                             <div class="form-check form-switch m-0">
                                 <InputCheckbox class="form-check-input" id="chkPass" @bind-Value="usuarioDto.DebeCambiarPassword" />
@@ -131,7 +120,6 @@
                         </div>
                     </div>
                 </div>
-
                 @* --- TIPOS DE USUARIO --- *@
                 <div class="card shadow-sm border-0 rounded-4">
                     <div class="card-header bg-white py-3 border-0"><h6 class="mb-0 fw-bold text-rojo">Tipos de Acceso*</h6></div>
@@ -219,12 +207,6 @@
     private List<SapVendedorReaderDto>? listOspSap;
     private string? previewImage;
     private bool procesando = false;
-
-    // protected override Task OnInitializedAsync()
-    // {
-    //     return base.OnInitializedAsync();
-    // }
-
 
     protected override async Task OnInitializedAsync()
     {

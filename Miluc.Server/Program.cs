@@ -15,11 +15,11 @@ using Miluc.Server.Interfaces.Sap.BussnesParnerGrup;
 using Miluc.Server.Interfaces.Sap.CiudadMM;
 using Miluc.Server.Interfaces.Sap.ConexionSap;
 using Miluc.Server.Interfaces.Sap.Informes.InformeComercial;
-using Miluc.Server.Interfaces.Sap.Itm1Sap;
 using Miluc.Server.Interfaces.Sap.LocalizacionSap;
 using Miluc.Server.Interfaces.Sap.Obpp;
 using Miluc.Server.Interfaces.Sap.Ocrd;
 using Miluc.Server.Interfaces.Sap.Octg;
+using Miluc.Server.Interfaces.Sap.Oinv;
 using Miluc.Server.Interfaces.Sap.Oitm;
 using Miluc.Server.Interfaces.Sap.Opln;
 using Miluc.Server.Interfaces.Sap.Ordr;
@@ -72,7 +72,7 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IEstadoCivilService, EstadoCivilService>();
 builder.Services.AddScoped<ILocalizacionSapCliente, SapLocalizacionClienteService>();
 builder.Services.AddScoped<ISapOctgService, SapOctgService>();
-builder.Services.AddScoped<ISapFrecuenciaVentasService, SapFrecuenciaVentasService>();
+builder.Services.AddScoped<ISapInformeService, SapInformeService>();
 builder.Services.AddScoped<IFiltrosUsuarios, FiltrosUsuariosService>();
 //nomina 
 builder.Services.AddScoped<IVacunaService, VacunaService>();
@@ -114,7 +114,6 @@ builder.Services.AddScoped<IBusinessPartnerGroups, BusinessPartnerGroupsService>
 builder.Services.AddScoped<ISapOcrdService, SapOcrdService>();
 builder.Services.AddScoped<ISapOslpService, SapOslpService>();
 builder.Services.AddScoped<ISapOitmService, SapOitmService>();
-builder.Services.AddScoped<ISapItm1Service, SapItm1Service>();
 builder.Services.AddScoped<ISapOplnService, SapOplnService>();
 builder.Services.AddScoped<ISapObppService, SapObppService>();
 builder.Services.AddScoped<ISapCiudadMMService, SapCiudadMMService>();
@@ -123,6 +122,7 @@ builder.Services.AddScoped<ISapOitmService, SapOitmService>();
 builder.Services.AddScoped<IConexionServiceLayer, SapConexionService>();
 builder.Services.AddScoped<ISapOrdrService, SapOrderService>();
 builder.Services.AddScoped<IEncryptionService, EncryptionService>();
+builder.Services.AddScoped<ISapOinvServices, SapOinvService>();
 // 3. CONFIGURACIÓN DE COOKIES (Seguridad BFF)
 builder.Services.AddAuthentication(options =>
 {

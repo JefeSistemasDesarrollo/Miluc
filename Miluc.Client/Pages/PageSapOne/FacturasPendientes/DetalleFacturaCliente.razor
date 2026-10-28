@@ -1,10 +1,12 @@
 ﻿@page "/detalle-factura-Cliente/{DocEntry:int}/{CardCode}"
 
-@using Miluc.Client.Interfaces.Exportar
+@using Miluc.Client.Interfaces.SapInterfaces.Oinv
 @using Miluc.Client.Interfaces.SapInterfaces.TrazabilidadPedidos
 @using Miluc.Shared.DTOs.Sap.Factura
 @inject ISapTrazabilidadPedidos _sapDetalleFactura
 @inject NavigationManager _nav
+@inject IAuthClientService _authcliente
+@inject ISapOinvClientService _sapService 
 @* @inject IExportarService _excelService *@
 <div class="container-fluid py-3">
 
@@ -12,7 +14,7 @@
 
     <div class="card-bordered-red p-3 shadow-sm mb-4">
         <div class="d-flex justify-content-between align-items-center flex-wrap">
- @*            <button class="btn btn-success"
+            @*            <button class="btn btn-success"
                     @onclick="DescargarExcel">
                 <i class="bi bi-file-earmark-spreadsheet"></i>Descargar
             </button> *@
@@ -22,7 +24,7 @@
             </div>
             <div class="text-end">
                 <span class="small text-muted d-block">DocEntry</span>
-                <span class="fs-5 fw-bold text-red-accent">#@DocEntry</span>    
+                <span class="fs-5 fw-bold text-red-accent">#@DocEntry</span>
             </div>
             <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
 
@@ -92,7 +94,7 @@
             </div>
 
         </div>
-      
+
         <!-- Tabla ordenada con el formato exacto del Select -->
         <div class="card-bordered-red shadow-sm overflow-hidden">
             <div class="table-responsive">
@@ -111,6 +113,7 @@
                             <th class="text-end">Total</th>
                             <th class="text-center">WhsCode</th>
                             <th class="text-center">U_Picking</th>
+                            <th class="text-center">Trazabilidad</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -135,6 +138,8 @@
                                 <td class="text-center">
                                     <span class="badge bg-light text-dark border">@item.WhsCode</span>
                                 </td>
+
+
                                 <td class="text-center">
                                     @if (item.U_Picking.HasValue)
                                     {
@@ -145,6 +150,15 @@
                                         <span class="text-muted small">-</span>
                                     }
                                 </td>
+
+                                @if (_authcliente.HasPermission("TrazabilidadFactura.View"))
+                                {
+                                    <td class="text-center">
+                                        <button class="btn btn-outline-danger border-0  btn-sm" title="Ver Trazabilidad" @onclick:stopPropagation="true" @onclick="() => VerTrazabilidad(Convert.ToInt32(item.DocEntry),CardCode)">
+                                            <i class="bi bi-diagram-3"> </i>
+                                        </button>
+                                    </td>
+                                }
                             </tr>
                         }
                     </tbody>
@@ -186,6 +200,37 @@
         _nav.NavigateTo($"/administrar-facturas/pendientes/{CardCode}");
     }
 
+    //  private void VerTrazabilidad(int docNum, string cardCode)
+    // {
+    //     var returnUrl = new Uri(_nav.Uri).PathAndQuery;
+    //     var url = $"/trazabilidad/{17}/{docNum}/" + $"{Uri.EscapeDataString(cardCode)}" + $"?returnUrl={Uri.EscapeDataString(returnUrl)}";
+    //     _nav.NavigateTo(url);
+    // }
+
+
+
+
+    private async Task VerTrazabilidad(int DocNum, string Cardcode)
+    {
+        var returnUrl = new Uri(_nav.Uri).PathAndQuery;
+
+        var trazabilidadFactura = await _sapService.ObtenerPedidoDesdeFacturaObtenerPedidoDesdeFactura(DocNum);
+
+
+        if (trazabilidadFactura.Valor>0)
+        {
+
+            var url = $"/trazabilidad/{13}/{trazabilidadFactura.Valor}/" + $"{Uri.EscapeDataString(Cardcode)}" + $"?returnUrl={Uri.EscapeDataString(returnUrl)}";
+            
+            _nav.NavigateTo(url);
+
+            //_nav.NavigateTo($"/administrar-pedido/trazabilidadFactura/{trazabilidadFactura.Valor}/{CardCode}");
+
+        }
+
+        
+
+    }
     // private async Task DescargarExcel()
     // {
     //     await _excelService.DescargarExcelAsync(listaDetalleFactura, "Lista de facturas pendientes");

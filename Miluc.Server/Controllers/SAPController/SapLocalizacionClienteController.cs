@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Sap.LocalizacionSap;
+using Miluc.Server.Security;
 using Miluc.Shared.DTOs.Sap.ActividadEconomica;
 using Miluc.Shared.DTOs.Sap.Cliente.HBT_RESPFISCAL;
 using Miluc.Shared.DTOs.Sap.Cliente.RegimeNTributario;
@@ -22,6 +23,7 @@ namespace Miluc.Server.Controllers.SAPController
         [ProducesResponseType(typeof(ResponseAPI<List<RegimenTributarioDto>>), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ResponseAPI<List<RegimenTributarioDto>>), StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(typeof(ResponseAPI<List<RegimenTributarioDto>>), StatusCodes.Status400BadRequest)]
+        [PermissionAuthorize("RegimenTributario.View")]
         public async Task<ActionResult<ResponseAPI<List<RegimenTributarioDto>>>> GetAllRegimenTributario()
         {
             try
@@ -67,6 +69,7 @@ namespace Miluc.Server.Controllers.SAPController
             }
         }
         [HttpGet("tipos-documento")]
+        [PermissionAuthorize("TipoDocumento.View")]
         public async Task<ActionResult<ResponseAPI<List<TiposDocumentoDto>>>> GetAllTiposDocumento()
         {
             try
@@ -121,6 +124,7 @@ namespace Miluc.Server.Controllers.SAPController
         [ProducesResponseType(typeof(ResponseAPI<List<HbtMunicipiosDto>>), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ResponseAPI<List<HbtMunicipiosDto>>), StatusCodes.Status404NotFound)]
         [HttpGet("municipios")]
+        [PermissionAuthorize("TipoDocumento.View")]
         public async Task<ActionResult<ResponseAPI<List<HbtMunicipiosDto>>>> GetAllMunicipios([FromQuery] string? buscar = null, [FromQuery] int? pagina = null, [FromQuery] int? cantidad = null)
         {
             try
@@ -168,6 +172,7 @@ namespace Miluc.Server.Controllers.SAPController
         }
 
         [HttpGet("responsabilidades-fiscales")]
+        [PermissionAuthorize("ResponsabilidadFiscal.View")]
         public async Task<ActionResult<ResponseAPI<List<OkiResponsabilidadesFiscalesDto>>>> GetAllResponsabilidadesFiscales([FromQuery] string? buscar = null, [FromQuery] int? pagina = null, [FromQuery] int? cantidad = null)
         {
             try
@@ -219,6 +224,7 @@ namespace Miluc.Server.Controllers.SAPController
         [ProducesResponseType(typeof(ResponseAPI<List<HBT_codigosPostalesDto>>), StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(typeof(ResponseAPI<List<HBT_codigosPostalesDto>>), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ResponseAPI<List<HBT_codigosPostalesDto>>), StatusCodes.Status404NotFound)]
+        [PermissionAuthorize("CodigoPostal.View")]
         public async Task<ActionResult<ResponseAPI<List<HBT_codigosPostalesDto>>>> GetAllCodigosPostales([FromQuery] string? buscar = null, [FromQuery] int? pagina = null, [FromQuery] int? cantidad = null)
         {
             try
@@ -267,11 +273,13 @@ namespace Miluc.Server.Controllers.SAPController
                     });
             }
         }
+        [HttpGet("regimen-fiscal")]
         [ProducesResponseType(typeof(ResponseAPI<List<HBT_RegimenFiscalDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ResponseAPI<HBT_RegimenFiscalDto>), StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(typeof(ResponseAPI<HBT_RegimenFiscalDto>), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ResponseAPI<HBT_RegimenFiscalDto>), StatusCodes.Status400BadRequest)]
-        [HttpGet("regimen-fiscal")]
+      
+        [PermissionAuthorize("RegimenFiscal.View")]
         public async Task<ActionResult<HBT_RegimenFiscalDto>> GetAllRegimenFiscal()
         {
             try
@@ -316,6 +324,7 @@ namespace Miluc.Server.Controllers.SAPController
         }
 
         [HttpGet("retenciones")]
+        [PermissionAuthorize("Retenciones.View")]
         public async Task<ActionResult<ResponseAPI<List<RetencionDto>>>> GetAllRetncionesCliente()
         {
             try
@@ -363,6 +372,7 @@ namespace Miluc.Server.Controllers.SAPController
         [ProducesResponseType(typeof(ResponseAPI<List<HbtActividadEconomicaDto>>), StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(typeof(ResponseAPI<List<HbtActividadEconomicaDto>>), StatusCodes.Status401Unauthorized)]
         [HttpGet("actividad-economica")]
+        [PermissionAuthorize("ActividadEconomica.View")]
         public async Task<ActionResult<ResponseAPI<List<HbtActividadEconomicaDto>>>> GetAllActividadEconomica([FromQuery] string? buscar = null, [FromQuery] int? pagina = null, [FromQuery] int? cantidad = null)
         {
             try
@@ -409,6 +419,7 @@ namespace Miluc.Server.Controllers.SAPController
         [ProducesResponseType(typeof(ResponseAPI<List<SapResponsabilidadFiscalDto>>), StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(typeof(ResponseAPI<List<SapResponsabilidadFiscalDto>>), StatusCodes.Status401Unauthorized)]
         [HttpGet("responsabilidad-fiscal1")]
+        [PermissionAuthorize("ResponsabilidadFiscal1.View")]
         public async Task<ActionResult<ResponseAPI<List<SapResponsabilidadFiscalDto>>>> GetResponsabilidadFiscal1([FromQuery] string? buscar = null, [FromQuery] int? pagina = null, [FromQuery] int? cantidad = null)
         {
             try

@@ -4,7 +4,6 @@ using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Permisos;
 using Miluc.Server.Security;
 using Miluc.Shared.DTOs.Permisos;
-using Miluc.Shared.DTOs.Usuarios;
 using Miluc.Shared.Models.Response;
 
 namespace Miluc.Server.Controllers.Permisos
@@ -14,7 +13,7 @@ namespace Miluc.Server.Controllers.Permisos
     [Authorize]
     public class PermisosController(ILogService log, IPermisosService _permisoService) : Controller
     {
- 
+
         [HttpGet]
         [PermissionAuthorize("Permiso.View")]
         public async Task<ActionResult<ResponseAPI<List<PermisosReadDto>>>> GetPermisosAsync(
@@ -27,7 +26,7 @@ namespace Miluc.Server.Controllers.Permisos
             {
                 var (data, totalRegistros) = await _permisoService.GetAllPermisosAsyncPage(busqueda, pagina, cantidad);
 
-            
+
                 return Ok(new ResponseAPI<List<PermisosReadDto>>
                 {
                     EsCorrecto = true,
@@ -138,7 +137,7 @@ namespace Miluc.Server.Controllers.Permisos
             try
             {
                 var success = await _permisoService.DeletePermisoAsync(id);
-    
+
 
                 if (!success)
                 {
@@ -207,7 +206,7 @@ namespace Miluc.Server.Controllers.Permisos
                     ruta: "/api/Permisos",
                     ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
                     origen: $"PermisosController");
-                return BadRequest(new ResponseAPI<UsuarioReadDto>
+                return BadRequest(new ResponseAPI<bool>
                 {
                     EsCorrecto = false,
                     Mensaje = ex.Message,
@@ -215,5 +214,105 @@ namespace Miluc.Server.Controllers.Permisos
                 });
             }
         }
+
+        [HttpGet("rol/{idRol:int}")]
+        public async Task<ActionResult<List<ResponseAPI<List<PermisosRolReaderDto>>>>> GetPermisosPorRol(int idRol)
+        {
+            try
+            {
+
+                var permisos = await _permisoService.GetPermisosAsignadoPorRol(idRol);
+
+                if (permisos == null)
+                {
+                    return NotFound(new ResponseAPI<List<PermisosRolReaderDto>>
+                    {
+                        Valor = null,
+                        EsCorrecto = false,
+                        Mensaje = "No se encontraron permisos para el rol."
+                    });
+                }
+
+                return Ok(new ResponseAPI<List<PermisosRolReaderDto>>
+                {
+                    Valor = permisos,
+                    EsCorrecto = true,
+                    Mensaje = "Permisos obtenidos correctamente."
+                });
+
+
+            }
+            catch (Exception ex)
+            {
+                await log.GuardarErrorAsync(
+                       message: ex.Message,
+                       StackTrace: ex.StackTrace,
+                       usuario: User.Identity?.Name ?? "Sistema",
+                       metodo: "GET",
+                       ruta: $"/api/Permisos/rol/{idRol}",
+                       ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
+                       origen: "PermisosController"
+                   );
+
+                return StatusCode(500, new ResponseAPI<List<PermisosRolReaderDto>>
+                {
+                    Valor = null,
+                    EsCorrecto = false,
+                    Mensaje = "Ocurrió un error al consultar los permisos.",
+                    Errores = new List<string> { ex.Message }
+                });
+
+            }
+        }
+
+        //HttpPut("rol/{idRol:int}/permisos")]
+        [HttpPut("rol/{idRol:int}/permisos")]
+        public async Task<ActionResult<ResponseAPI<bool>>> ActualizarPermisosPorRol(int idRol,[FromBody] PermisoActualizarRol dto)
+        {
+            try
+            {
+                await _permisoService.ActualizarPermisosPorRolAsync(
+                    idRol,
+                    dto.IdPermisos ?? new List<int>());
+
+                return Ok(new ResponseAPI<bool>
+                {
+                    Valor = true,
+                    EsCorrecto = true,
+                    Mensaje = "Los permisos del rol se actualizaron correctamente."
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new ResponseAPI<bool>
+                {
+                    Valor = false,
+                    EsCorrecto = false,
+                    Mensaje = ex.Message,
+                    Errores = new List<string> { ex.Message }
+                });
+            }
+            catch (Exception ex)
+            {
+                await log.GuardarErrorAsync(
+                    message: ex.Message,
+                    StackTrace: ex.StackTrace,
+                    usuario: User.Identity?.Name ?? "Sistema",
+                    metodo: "PUT",
+                    ruta: $"/api/Permisos/rol/{idRol}/permisos",
+                    ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
+                    origen: "PermisosController");
+
+                return StatusCode(500, new ResponseAPI<bool>
+                {
+                    Valor = false,
+                    EsCorrecto = false,
+                    Mensaje = "Ocurrió un error al guardar los permisos.",
+                    Errores = new List<string> { ex.Message }
+                });
+            }
+        }
+
+
     }
 }

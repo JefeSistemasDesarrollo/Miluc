@@ -138,7 +138,7 @@
                     <table class="table table-hover align-middle mb-0">
                         <thead class="table-light small text-uppercase">
                             <tr>
-                                <th class="ps-3" style="width: 3%">#</th>
+                                @* <th class="ps-3" style="width: 3%">#</th> *@
                                 <th style="width: 5%">Código</th>
                                 <th style="width: 40%">Descripción</th>
                                 <th class="text-center" style="width: 3%">Cantidad</th>
@@ -161,7 +161,7 @@
                                 var index = i;
                                 var linea = lineasPedido[index];
                                 <tr>
-                                    <td class="ps-3 text-muted">@(index + 1)</td>
+                                    @* <td class="ps-3 text-muted">@(index + 1)</td> *@
                                     <td>
                                         <span class="text-vinotinto">@linea.ItemCode</span>
                                     </td>
@@ -195,10 +195,8 @@
                                         @if (linea.BuyUnitMsr?.ToUpper() == "KG")
                                         {
                                             <!-- Cuando el artículo se vende por Kg, este campo solo muestra el valor -->
-                                            <InputNumber TValue="decimal?"
-                                                         Value="linea.U_CantidadKg"
-                                                         ValueExpression="() => linea.U_CantidadKg"
-                                                         class="form-control form-control-sm text-end"
+                                            <InputNumber TValue="decimal?"Value="linea.U_CantidadKg"
+                                                         ValueExpression="() => linea.U_CantidadKg" class="form-control form-control-sm text-end"
                                                          step="any"
                                                          readonly />
                                         }
@@ -235,9 +233,6 @@
                                                          class="form-control form-control-sm text-end" readonly />
                                         }
                                     </td>
-
-                                 
-                                    <!-- PRECIOS -->
                                     <td>
                                         @if (_authClientService.HasPermission("Orden.EditarPrice"))
                                         {
@@ -251,21 +246,9 @@
                                             <input type="number" readonly class="form-control form-control-sm text-end" @bind="linea.PriceAcobrar" @bind:event="oninput">
                                         }
                                     </td>
-                                    @*           <td>
-                                        <input type="number" readonly class="form-control form-control-sm text-end" @bind="linea.PriceAsignado" @bind:event="oninput">
-                                    </td> *@
                                     <td>
                                         <input type="number" readonly class="form-control form-control-sm text-end" @bind="linea.PriceEspecial" @bind:event="oninput">
                                     </td>
-                                    @*    <td>
-                                        <input type="text" readonly class="form-control form-control-sm" @bind="linea.CodeTaxcode">
-                                    </td> *@
-                                    @*    <td>
-                                        <input type="number" readonly class="form-control form-control-sm text-end" @bind="linea.Rate" @bind:event="oninput">
-                                    </td> *@
-                                    @*    <td class="text-end pe-3 fw-bold text-maroon">
-                                        @linea.TotalImpuesto.ToString("N2", new CultureInfo("es-CO"))
-                                    </td> *@
                                     <td class="text-end pe-3 fw-bold text-maroon">
                                         @linea.BaseSum.ToString("N2", new CultureInfo("es-CO"))
                                     </td>
@@ -574,9 +557,6 @@
     }
     private async Task InicializarFormulario()
     {
-
-      
-
         clienteSeleccionado = new();
         ArticuloSeleccionado = new();
         lineasPedido.Clear();
@@ -811,31 +791,23 @@
         linea.TotalImpuesto = Math.Round((linea.BaseSum * linea.Rate) / 100, 2);
     }
 
-
     private void CalculaTotales(ArticuloPorListaDePreciosDto linea)
     {
         linea.BaseSum = Math.Round(Convert.ToDecimal(linea.Quantity) * Convert.ToDecimal((linea.PriceAcobrar ?? 0)), 2);
         linea.TotalImpuesto = Math.Round(Convert.ToDecimal((linea.BaseSum * linea.Rate) / 100), 2);
     }
-
     private void CerrarModalArticulo() => mostrarModalArticulo = false;
-
-
-
-
     private async Task HandleEnterCliente(KeyboardEventArgs e)
     {
         if (e.Key == "Enter")
         {
             int codVendedorSAP = -1;
-
             if (_authClientService.CurrentSession.CodVendedorSAP != null)
             {
                 codVendedorSAP = _authClientService.CurrentSession.CodVendedorSAP ?? -1;
             }
             await BuscarEnServidorCliente(_textoBusquedaCliente, 1, cantidadPorPaginaCliente, codVendedorSAP);
         }
-
     }
     private async Task BuscarEnServidorCliente(string? textoBusqueda = null, int? pagina = null, int? cantidadPorPagina = null, int? codVendedorSAP = null)
     {

@@ -17,19 +17,16 @@
             </h4>
             <p class="text-muted small mb-0">Seguimiento de flujo documental de N° <strong>@cardcode</strong></p>
         </div>
+
         <button class="btn btn-success"
                 @onclick="DescargarExcel">
             <i class="bi bi-file-earmark-spreadsheet"></i>Descargar
         </button>
 
-        
-
-
         <button class="btn btn-outline-secondary btn-sm" @onclick='() => _nav.NavigateTo("/administrar-clientesCartera")'>
             <i class="bi bi-arrow-left me-1"></i> Volver
         </button>
     </div>
-
     @if (!cargando)
     {
         <!-- Estado de Carga -->
@@ -55,7 +52,6 @@
     else
     {
         <div class="row g-4">
-
             <!-- SECCIÓN 3: FACTURAS DE VENTA (Espacio reservado) -->
             <div class="col-12">
                 <div class="p-3 bg-light rounded-3 border border-dashed">
@@ -81,11 +77,11 @@
                                         <span class="fw-semibold text-dark">@item.CardCode</span>
                                     </div>
                                     <div class="row g-2 mb-2">
-                                        <div class="col-5">
+                                        <div class="col-4">
                                             <small class="text-muted d-block fs-8">Emisión</small>
                                             <span class="fs-7"><i class="bi bi-calendar-event me-1"></i>@item.DocDate.Value.Date.ToShortDateString()</span>
                                         </div>
-                                        <div class="col-5">
+                                        <div class="col-4">
                                             <small class="text-muted d-block fs-8">Vencimiento</small>
                                             <span class="fs-7"><i class="bi bi-calendar-check me-1"></i>@item.DocDueDate.Value.Date.ToShortDateString()</span>
                                         </div>
@@ -97,6 +93,7 @@
                                                 </button>
                                             }
                                         </div>
+
                                     </div>
                                     <hr class="my-2 text-muted opacity-25" />
                                     <div class="d-flex justify-content-between align-items-center">
@@ -112,21 +109,17 @@
                     }
                 </div>
             </div>
-
-          
-          
-      
         </div>
     }
 </div>
 
 @code {
     [Parameter]
-    public string cardcode{ get; set; }
+    public string cardcode { get; set; }
     public bool cargando = false;
 
 
-    public List<OinvReaderDto>ListaFacturasPendientes=new List<OinvReaderDto>();
+    public List<OinvReaderDto> ListaFacturasPendientes = new List<OinvReaderDto>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -135,7 +128,7 @@
 
         if (result.Valor != null)
         {
-            ListaFacturasPendientes=result.Valor;
+            ListaFacturasPendientes = result.Valor;
             cargando = true;
         }
         else
@@ -143,25 +136,20 @@
             _nav.NavigateTo("/");
         }
     }
-
     private void VerDetalleFactura(int DocEntry, string CardCode)
     {
 
-        // //
-        // if (_authClientService.HasPermission("Orders.Detail"))
-        // {
-        // _nav.NavigateTo($"/administrar-detalle-factura/detalle/{DocEntry}/{cardcode}");
-        _nav.NavigateTo($"/detalle-factura-Cliente/{DocEntry}/{CardCode}");
-        // }
-        // else
-        // {
-        //     Nav.NavigateTo("/no-autorizado");
-        //     return;
-        // }
+        
+        if (_auth.HasPermission("Facturas.Details"))
+        {
 
+            _nav.NavigateTo($"/detalle-factura-Cliente/{DocEntry}/{CardCode}");
+        }
+        else
+        {
+            _nav.NavigateTo("/no-autorizado");
+            return;
+        }
     }
-    private async Task DescargarExcel() => await _excelService.DescargarExcelAsync(
-           ListaFacturasPendientes,
-           "Facturas Pendientes ");
-
+    private async Task DescargarExcel() => await _excelService.DescargarExcelAsync(ListaFacturasPendientes, "Facturas Pendientes ");
 }

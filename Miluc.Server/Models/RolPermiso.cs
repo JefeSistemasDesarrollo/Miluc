@@ -10,5 +10,9 @@ namespace Miluc.Server.Models
 
         public int IdPermiso { get; set; }
         public Permisos Permiso { get; set; } = null!;
+
+        public bool Activo { get; set; }
+        public DateTime ?FechaCreacion { get; set; }
+        public DateTime ?FechaActualizacion { get; set; }
     }
 }

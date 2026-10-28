@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.Sap.Ospp;
+using Miluc.Server.Security;
 
 namespace Miluc.Server.Controllers.SAPController
 {
@@ -10,6 +11,7 @@ namespace Miluc.Server.Controllers.SAPController
     public class OsppController(ISapOsppService _sapOsppService) : Controller
     {
         [HttpGet]
+        [PermissionAuthorize("ListaPreciosEspeciales.View")]
         public async Task<IActionResult> GetPreciosEspeciales()
         {
             try

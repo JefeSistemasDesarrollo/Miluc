@@ -1,14 +1,16 @@
 ﻿@page "/administrar-pedido/pedidos"
-@using Miluc.Shared.DTOs.Sap.Pedidos
-@using Miluc.Client.Interfaces.SapInterfaces.SapOrdr
 @using System.Globalization
-@using Shared.Models.Response
 @using System.Text.Json
+@using Miluc.Client.Interfaces.SapInterfaces.SapOrdr
+@using Miluc.Client.Models
+@using Miluc.Shared.DTOs.Sap.Pedidos
+@using Shared.Models.Response
 @inject ISapOrdrService _pedidoService
-@inject NavigationManager Nav
+@inject NavigationManager _nav
 @inject IJSRuntime _jsRuntime
 @inject ILogClientService _logserviceClient
 @inject IAuthClientService _authClientService
+@inject EstadoPedidosService EstadoPedidos
 <div class="pedidos-page animate__animated animate__fadeIn p-4">
     @* Header *@
 
@@ -60,7 +62,6 @@
                                                 <InputDate class="form-control ps-0 border-start-0" @bind-Value="fechaInicioContabilizacion" />
                                             </div>
                                         </div>
-
                                         <div class="col-6">
                                             <label class="form-label text-muted small mb-1">Emisión Final</label>
                                             <div class="input-group input-group-sm">
@@ -71,10 +72,7 @@
                                             </div>
                                         </div>
                                     </div>
-
                                 }
-
-
                             </div>
                             <div class="col-12 col-md-6">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -112,7 +110,6 @@
                                         </div>
                                     </div>
                                 }
-
                             </div>
                             <!-- FILTRO ESTADO -->
                             <div class="col-12 col-md-6">
@@ -126,8 +123,7 @@
                                 </div>
                                 @if (checkEstado)
                                 {
-                                    <select class="form-select form-select-sm mt-2"
-                                            @bind="estadoOrden">
+                                    <select class="form-select form-select-sm mt-2" @bind="estadoOrden">
                                         <option value='T'>Todas</option>
                                         <option value='O'>Abierta</option>
                                         <option value='C'>Cerrada</option>
@@ -174,25 +170,37 @@
                                     </select>
                                 }
                             </div>
+                            <div class="col-12 col-md-6">
+                                <div class="d-flex justify-content-between align-items-center">
+                                   @*  <label class="form-label text-muted small fw-semibold mb-0">
+                                        Limpiar Filtros
+                                    </label> *@
+                                    <div class="form-check form-switch m-0">
+
+                                        <button type="button"class="btn btn-outline-secondary" @onclick="LimpiarFiltros">
+                                            <i class="bi bi-x-circle me-1"></i>
+                                            Limpiar 
+                                        </button>
+
+                                    </div>
+                                </div>
+
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-
             <!-- BOTONES -->
             <div class="col-12 col-lg-3">
                 <div class="h-100 d-flex flex-column justify-content-center gap-2">
                     <button type="button"
                             class="btn btn-outline-secondary btn-lg rounded-pill px-4 shadow-sm w-100 fs-6 fw-semibold"
-                            @onclick='() => Nav.NavigateTo("/administrar-modulo-comercial")'>
+                            @onclick='() => _nav.NavigateTo("/administrar-modulo-comercial")'>
                         <i class="bi bi-arrow-left me-2"></i>Volver
                     </button>
-                    @if (_authClientService.HasPermission("Orders.Create"))
-                    {
-                        <button type="button" class="btn btn-vinotinto btn-lg rounded-pill px-4 shadow-sm w-100 fs-6 fw-semibold" @onclick="IrACrear">
-                            <i class="bi bi-plus-lg me-2"></i>Nueva Orden
-                        </button>
-                    }
+                    <button type="button" class="btn btn-vinotinto btn-lg rounded-pill px-4 shadow-sm w-100 fs-6 fw-semibold" @onclick="IrACrear">
+                        <i class="bi bi-plus-lg me-2"></i>Nueva Orden
+                    </button>
                 </div>
             </div>
         </div>
@@ -244,8 +252,6 @@
                         <div class="card-body p-4">
                             @* Estado *@
                             <div class="status-badge">
-
-                               
                                 @if (pedido.CANCELED == "Y")
                                 {
                                     <span class="badge bg-danger rounded-pill">Cancelado</span>
@@ -319,17 +325,20 @@
                                     }
                                     @if (pedido.DocStatus != "C")
                                     {
-                                        @*     @if (_authClientService.HasPermission("Orders.Cancelar"))
-                                        { *@
+
                                         <button class="btn btn-outline-danger border-0 btn-sm" title="Cancelar Pedido" @onclick:stopPropagation="true" @onclick="() => CancelarPedido(pedido.DocEntry ?? 0)">
                                             <i class="bi bi-x-octagon"></i>
                                         </button>
-                                        @* } *@
+
                                     }
 
-                                    <button class="btn btn-outline-danger border-0  btn-sm" title="Ver Trazabilidad" @onclick:stopPropagation="true" @onclick="() => VerTrazabilidad(Convert.ToInt32(pedido.DocNum))">
-                                        <i class="bi bi-diagram-3"> </i>
-                                    </button>
+                                    @if (_authClientService.HasPermission("Orders.Trazabilidad"))
+                                    {
+                                        <button class="btn btn-outline-danger border-0  btn-sm" title="Ver Trazabilidad" @onclick:stopPropagation="true" @onclick="() => VerTrazabilidad(Convert.ToInt32(pedido.DocNum), pedido.CardCode)">
+                                            <i class="bi bi-diagram-3"> </i>
+                                        </button>
+                                    }
+                                  
                                 </div>
                             </div>
                         </div>
@@ -374,43 +383,114 @@
 @code {
     private List<OrdersReaderDto> listaOriginal = new();
     private List<OrdersReaderDto> listPedidosApi = new();
-    private DateTime? fechaInicioContabilizacion;
-    private DateTime? fechaFinalContabilizacion;
-    private DateTime? fechaEntregaInicio;
-    private DateTime? fechaEntregaFinal;
-    private string _textoBusqueda = "";
+
+    private DateTime? fechaInicioContabilizacion
+    {
+        get => EstadoPedidos.FechaInicioContabilizacion;
+        set => EstadoPedidos.FechaInicioContabilizacion = value;
+    }
+
+    private DateTime? fechaFinalContabilizacion
+    {
+        get => EstadoPedidos.FechaFinalContabilizacion;
+        set => EstadoPedidos.FechaFinalContabilizacion = value;
+    }
+
+    private DateTime? fechaEntregaInicio
+    {
+        get => EstadoPedidos.FechaEntregaInicio;
+        set => EstadoPedidos.FechaEntregaInicio = value;
+    }
+
+    private DateTime? fechaEntregaFinal
+    {
+        get => EstadoPedidos.FechaEntregaFinal;
+        set => EstadoPedidos.FechaEntregaFinal = value;
+    }
+
+    private bool checkFechasContabilizacion 
+    {
+        get => EstadoPedidos.CheckFechasContabilizacion;
+        set => EstadoPedidos.CheckFechasContabilizacion = value;
+    }
+
+    private bool checkFechasEntrega
+    {
+        get => EstadoPedidos.CheckFechasEntrega;
+        set => EstadoPedidos.CheckFechasEntrega = value;
+    }
+
+    private bool checkEstado
+    {
+        get => EstadoPedidos.CheckEstado;
+        set => EstadoPedidos.CheckEstado = value;
+    }
+
+    private bool checkCanceladas
+    {
+        get => EstadoPedidos.CheckCanceladas;
+        set => EstadoPedidos.CheckCanceladas = value;
+    }
+
+    private bool checkImpresas
+    {
+        get => EstadoPedidos.CheckImpresas;
+        set => EstadoPedidos.CheckImpresas = value;
+    }
+
+    private char? estadoOrden
+    {
+        get => EstadoPedidos.EstadoOrden;
+        set => EstadoPedidos.EstadoOrden = value;
+    }
+
+    private char? Canceladas
+    {
+        get => EstadoPedidos.Canceladas;
+        set => EstadoPedidos.Canceladas = value;
+    }
+
+    private char? Impresas
+    {
+        get => EstadoPedidos.Impresas;
+        set => EstadoPedidos.Impresas = value;
+    }
+
+    private string _textoBusqueda
+    {
+        get => EstadoPedidos.TextoBusqueda;
+        set => EstadoPedidos.TextoBusqueda = value;
+    }
+
     private string textoBusqueda
     {
-        get => _textoBusqueda;
-        set { _textoBusqueda = value; FiltrarLocal(); }
+        get => EstadoPedidos.TextoBusqueda;
+        set
+        {
+            EstadoPedidos.TextoBusqueda = value;
+            FiltrarLocal();
+        }
     }
-    private bool checkFechasContabilizacion { get; set; }
 
-    private bool checkFechasEntrega { get; set; }
+    private int cantidadPorPagina
+    {
+        get => EstadoPedidos.CantidadPorPagina;
+        set => EstadoPedidos.CantidadPorPagina = value;
+    }
 
-    private bool checkEstado = false;
-    private bool checkCanceladas = false;
-    private bool checkImpresas = false;
-    // Estado de la orden: 'o' para abierta, 'C' para cerrada, null para todos
-    private char? estadoOrden = null;
-    private char? Canceladas = null;
-    private char? Impresas = null;
-    private int cantidadPorPagina = 12;
-    private int paginaActual = 1;
+    private int paginaActual
+    {
+        get => EstadoPedidos.PaginaActual;
+        set => EstadoPedidos.PaginaActual = value;
+    }
+
     private int totalRegistros = 0;
     private bool cargando = false;
     private int totalPaginas => totalRegistros == 0 ? 1 : (int)Math.Ceiling((double)totalRegistros / cantidadPorPagina);
 
     protected override async Task OnInitializedAsync()
     {
-        fechaInicioContabilizacion = DateTime.Now;
-        fechaFinalContabilizacion = DateTime.Now;
-        fechaEntregaInicio = DateTime.Now;
-        fechaEntregaFinal = DateTime.Now;
-        paginaActual = 1;
 
-        //aca solo filtra por la ordenes del vendedor logueado, si es null trae todas las ordenes
-        // int CodVendedor = _authClientService.CurrentSession.CodVendedorSAP ?? -1;
         cargando = true;
         textoBusqueda ??= string.Empty;
 
@@ -443,22 +523,50 @@
         {
             Canceladas = null;
         }
-
         // Filtro de impresas
         if (!checkImpresas || Impresas == 'T')
         {
             Impresas = null;
         }
-
         try
         {
 
-            await ObtenerPedidosDesdeApiAsync(_textoBusqueda, paginaActual, cantidadPorPagina, fechaInicioContabilizacion, fechaFinalContabilizacion, fechaEntregaInicio, fechaEntregaFinal, estadoOrden, Canceladas, Impresas);
+            var emisionInicio = checkFechasContabilizacion
+    ? fechaInicioContabilizacion : null;
+
+            var emisionFinal = checkFechasContabilizacion
+                ? fechaFinalContabilizacion : null;
+
+            var entregaInicio = checkFechasEntrega
+                ? fechaEntregaInicio : null;
+
+            var entregaFinal = checkFechasEntrega
+                ? fechaEntregaFinal : null;
+
+            char? estado = checkEstado ? estadoOrden : null;
+            char? cancelada = checkCanceladas ? Canceladas : null;
+            char? impresa = checkImpresas ? Impresas : null;
+
+            await ObtenerPedidosDesdeApiAsync(
+                _textoBusqueda,
+                paginaActual,
+                cantidadPorPagina,
+                emisionInicio,
+                emisionFinal,
+                entregaInicio,
+                entregaFinal,
+                estado == 'T' ? null : estado,
+                cancelada == 'T' ? null : cancelada,
+                impresa == 'T' ? null : impresa
+            );
+
+
+
+            //  await ObtenerPedidosDesdeApiAsync(_textoBusqueda, paginaActual, cantidadPorPagina, fechaInicioContabilizacion, fechaFinalContabilizacion, fechaEntregaInicio, fechaEntregaFinal, estadoOrden, Canceladas, Impresas);
         }
         catch (Exception ex)
         {
             cargando = false;
-
             await _logserviceClient.GuardarErrorAsync
             (
                 ex.Message,
@@ -468,7 +576,6 @@
                 ruta: "/administrar-Ordenes/pedidos",
                 origen: $"Orden Cliente Service Sap {ex.HelpLink}",
                 nivel: "error"
-
             );
             await _jsRuntime.InvokeVoidAsync("Swal.fire", new
             {
@@ -477,13 +584,42 @@
                 text = ex.Message
             });
         }
-
-        fechaInicioContabilizacion = DateTime.Now;
-        fechaFinalContabilizacion = DateTime.Now;
-        fechaEntregaInicio = DateTime.Now;
-        fechaEntregaFinal = DateTime.Now;
-
+        // fechaInicioContabilizacion = DateTime.Now;
+        // fechaFinalContabilizacion = DateTime.Now;
+        // fechaEntregaInicio = DateTime.Now;
+        // fechaEntregaFinal = DateTime.Now;
         cargando = false;
+    }
+
+    private async Task LimpiarFiltros()
+    {
+        // Fechas
+        fechaInicioContabilizacion = DateTime.Now.Date;
+        fechaFinalContabilizacion = DateTime.Now.Date;
+        fechaEntregaInicio = DateTime.Now.Date;
+        fechaEntregaFinal = DateTime.Now.Date;
+
+        // Activar o desactivar filtros
+        checkFechasContabilizacion = false;
+        checkFechasEntrega = false;
+        checkEstado = false;
+        checkCanceladas = false;
+        checkImpresas = false;
+
+        // Valores de los filtros
+        estadoOrden = null;
+        Canceladas = null;
+        Impresas = null;
+
+        // Búsqueda
+        EstadoPedidos.TextoBusqueda = string.Empty;
+
+        // Paginación
+        paginaActual = 1;
+        cantidadPorPagina = 12;
+
+        // Consultar nuevamente sin los filtros opcionales
+        await BuscarEnServidor();
     }
     private async Task ObtenerPedidosDesdeApiAsync(string? textoBusqueda = null, int? pagina = null, int? cantidadPagina = null, DateTime? ContabilizacionInicio = null, DateTime? ContabilizacionFin = null, DateTime? EntregaInicio = null, DateTime? EntregaFin = null, char? DocStatus = null, char? CANCELED = null, char? Printed = null)
     {
@@ -498,18 +634,14 @@
                     text = "No tienes permiso para Visualizar las órdenes.",
                     confirmButtonColor = "#6c1d1d"
                 });
-
                 return;
             }
-
             textoBusqueda ??= string.Empty;
-
             if (paginaActual < 1)
                 paginaActual = 1;
 
             if (cantidadPorPagina < 1)
                 cantidadPorPagina = 12;
-
             // Filtros de fechas
             if (!checkFechasContabilizacion)
             {
@@ -521,7 +653,6 @@
                 fechaEntregaInicio = null;
                 fechaEntregaFinal = null;
             }
-
             // Filtro de estado
             if (!checkEstado || estadoOrden == 'T')
             {
@@ -540,9 +671,7 @@
             cargando = true;
             ResponseAPI<List<OrdersReaderDto>> responseApi = new();
             int CodVendedor = _authClientService.CurrentSession.CodVendedorSAP ?? -1;
-
             responseApi = await _pedidoService.ListarPedidosAsync(textoBusqueda, pagina, cantidadPagina, ContabilizacionInicio, ContabilizacionFin, EntregaInicio, EntregaFin, CodVendedor, DocStatus, CANCELED, Printed);
-
             if (responseApi.Valor != null)
             {
                 listaOriginal = responseApi.Valor;
@@ -612,13 +741,10 @@
             //pendientes cuando coloque los valores de los filtros, que se mantengan al cambiar la cantidad de pagina
 
             textoBusqueda ??= string.Empty;
-
             if (paginaActual < 1)
                 paginaActual = 1;
-
             if (cantidadPorPagina < 1)
                 cantidadPorPagina = 12;
-
             // Filtros de fechas
             if (!checkFechasContabilizacion)
             {
@@ -630,13 +756,11 @@
                 fechaEntregaInicio = null;
                 fechaEntregaFinal = null;
             }
-
             // Filtro de estado
             if (!checkEstado || estadoOrden == 'T')
             {
                 estadoOrden = null;
             }
-
             // Filtro de canceladas
             if (!checkCanceladas || Canceladas == 'T')
             {
@@ -648,12 +772,9 @@
             {
                 Impresas = null;
             }
-
-
             await ObtenerPedidosDesdeApiAsync(_textoBusqueda, paginaActual, cantidadPorPagina, fechaInicioContabilizacion, fechaFinalContabilizacion, fechaEntregaInicio, fechaEntregaFinal, estadoOrden, Canceladas, Impresas);
             // await ObtenerPedidosDesdeApiAsync(_textoBusqueda, paginaActual, cantidadPorPagina);
         }
-
     }
     private void FiltrarLocal()
     {
@@ -662,7 +783,6 @@
             listPedidosApi = listaOriginal.ToList();
             return;
         }
-
         listPedidosApi = listaOriginal.Where(p =>
             (p.CardName?.Contains(_textoBusqueda, StringComparison.OrdinalIgnoreCase) ?? false) ||
             (p.CardCode?.Contains(_textoBusqueda, StringComparison.OrdinalIgnoreCase) ?? false) ||
@@ -685,10 +805,8 @@
             });
             return;
         }
-
         if (nuevaPagina < 1 || nuevaPagina > totalPaginas || nuevaPagina == paginaActual)
             return;
-
 
         textoBusqueda ??= string.Empty;
 
@@ -709,29 +827,24 @@
             fechaEntregaInicio = null;
             fechaEntregaFinal = null;
         }
-       
         // Filtro de estado
         if (!checkEstado || estadoOrden == 'T')
         {
             estadoOrden = null;
         }
-
         // Filtro de canceladas
         if (!checkCanceladas || Canceladas == 'T')
         {
             Canceladas = null;
         }
-
         // Filtro de impresas
         if (!checkImpresas || Impresas == 'T')
         {
             Impresas = null;
         }
-
         paginaActual = nuevaPagina;
         await ObtenerPedidosDesdeApiAsync(_textoBusqueda, paginaActual, cantidadPorPagina, fechaInicioContabilizacion, fechaFinalContabilizacion, fechaEntregaInicio, fechaEntregaFinal, estadoOrden, Canceladas, Impresas);
     }
-
     private async Task BuscarEnServidor()
     {
         if (!_authClientService.HasPermission("Orders.View"))
@@ -743,10 +856,8 @@
                 text = "No tienes permiso para Visualizar las órdenes.",
                 confirmButtonColor = "#6c1d1d"
             });
-
             return;
         }
-
         textoBusqueda ??= string.Empty;
 
         if (paginaActual < 1)
@@ -766,42 +877,27 @@
             fechaEntregaInicio = null;
             fechaEntregaFinal = null;
         }
-
         // Filtro de estado
         if (!checkEstado || estadoOrden == 'T')
         {
             estadoOrden = null;
         }
-
         // Filtro de canceladas
         if (!checkCanceladas || Canceladas == 'T')
         {
             Canceladas = null;
         }
-
         // Filtro de impresas
         if (!checkImpresas || Impresas == 'T')
         {
             Impresas = null;
         }
-
         paginaActual = 1;
-
         cargando = true;
-
         try
         {
-            await ObtenerPedidosDesdeApiAsync(
-                textoBusqueda,
-                paginaActual,
-                cantidadPorPagina,
-                fechaInicioContabilizacion,
-                fechaFinalContabilizacion,
-                fechaEntregaInicio,
-                fechaEntregaFinal,
-                estadoOrden,
-                Canceladas,
-                Impresas);
+            await ObtenerPedidosDesdeApiAsync(textoBusqueda,paginaActual,cantidadPorPagina,fechaInicioContabilizacion,
+                fechaFinalContabilizacion,fechaEntregaInicio,fechaEntregaFinal,estadoOrden,Canceladas,Impresas);
         }
         finally
         {
@@ -830,52 +926,46 @@
     {
         if (!_authClientService.HasPermission("Orders.Create"))
         {
-            Nav.NavigateTo("/no-autorizado");
+            _nav.NavigateTo("/no-autorizado");
             return;
         }
-
-        Nav.NavigateTo("/administrar-pedido/crear-pedido");
+        _nav.NavigateTo("/administrar-pedido/crear-pedido");
     }
     private void VerDetalle(int id)
     {
-
-        //
         if (_authClientService.HasPermission("Orders.Detail"))
         {
-            Nav.NavigateTo($"/administrar-pedido/detalle/{id}");
+            _nav.NavigateTo($"/administrar-pedido/detalle/{id}");
         }
         else
         {
-            Nav.NavigateTo("/no-autorizado");
+            _nav.NavigateTo("/no-autorizado");
             return;
         }
-
     }
     private void EditarPedido(int DocEntry)
     {
         if (_authClientService.HasPermission("Orders.Update"))
         {
-            Nav.NavigateTo($"/administrar-pedido/editar/{DocEntry}");
+            _nav.NavigateTo($"/administrar-pedido/editar/{DocEntry}");
         }
         else
         {
-            Nav.NavigateTo("/no-autorizado");
+            _nav.NavigateTo("/no-autorizado");
         }
-
     }
-    private void VerTrazabilidad(int DocNum)
+    private void VerTrazabilidad(int docNum, string cardCode)
     {
-     
-            Nav.NavigateTo($"/administrar-pedido/trazabilidad/{DocNum}");
-
+        var returnUrl = new Uri(_nav.Uri).PathAndQuery;
+        var url = $"/trazabilidad/{17}/{docNum}/" + $"{Uri.EscapeDataString(cardCode)}" + $"?returnUrl={Uri.EscapeDataString(returnUrl)}";
+        _nav.NavigateTo(url);
     }
     //cancela el pedido
-
     private async Task CancelarPedido(int docEntry)
     {
         if (!_authClientService.HasPermission("Orders.Cancelar"))
         {
-            Nav.NavigateTo("/no-autorizado");
+            _nav.NavigateTo("/no-autorizado");
             return;
         }
         try
@@ -896,9 +986,6 @@
             {
 
                 await _jsRuntime.InvokeVoidAsync("mostrarEspera", "Sincronizando - SAP ONE", "Cancelando Orden de venta ...<br><br><b>No cierre esta ventana.</b>", "info");
-
-
-
 
                 var resultado = await _pedidoService.CancelPedidoAsync(docEntry);
                 if (resultado.EsCorrecto)
@@ -924,7 +1011,6 @@
         }
         catch (Exception ex)
         {
-
             await _jsRuntime.InvokeVoidAsync("cerrarEspera");
 
             await _logserviceClient.GuardarErrorAsync
@@ -945,5 +1031,4 @@
             );
         }
     }
-
 }

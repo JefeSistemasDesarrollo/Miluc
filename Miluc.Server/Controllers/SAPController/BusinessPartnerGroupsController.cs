@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.Sap.BussnesParnerGrup;
 using Miluc.Server.Models.Sap;
+using Miluc.Server.Security;
 using Miluc.Shared.DTOs.Sap.Credito;
 using Miluc.Shared.DTOs.Sap.GrupoDeVenta;
 
@@ -13,6 +14,7 @@ namespace Miluc.Server.Controllers.SAPController
     public class BusinessPartnerGroupsController(IBusinessPartnerGroups _PartnerGroupsService) : Controller
     {
         [HttpGet]
+        [PermissionAuthorize("BusinessPartner.View")]
         public async Task<ActionResult<List<BusinessPartnerGroupsDto>>> GetAllBusinessPartnerGroups()
         {
             try

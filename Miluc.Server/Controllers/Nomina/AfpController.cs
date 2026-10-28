@@ -1,14 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Nomina;
-using Miluc.Server.Servicios.Nomina;
 using Miluc.Shared.DTOs.Nomina.Afp;
 using Miluc.Shared.DTOs.Nomina.Afp.Dto;
 using Miluc.Shared.DTOs.Nomina.AfpDto;
 using Miluc.Shared.DTOs.Nomina.Arl.Dto;
-using Miluc.Shared.DTOs.Nomina.EpsDto;
 using Miluc.Shared.Models.Response;
-using Org.BouncyCastle.Bcpg.OpenPgp;
 
 namespace Miluc.Server.Controllers.Nomina
 {

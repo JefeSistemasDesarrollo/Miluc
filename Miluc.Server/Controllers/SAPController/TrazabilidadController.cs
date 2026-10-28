@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Sap.TrasabilidadOrdendeVenta;
+using Miluc.Server.Security;
 using Miluc.Shared.DTOs.Sap.Cliente;
 using Miluc.Shared.DTOs.Sap.Devolucion;
 using Miluc.Shared.DTOs.Sap.Factura;
@@ -20,6 +21,7 @@ namespace Miluc.Server.Controllers.SAPController
 
 
         [HttpGet("lista-trazabilidad")]
+        [PermissionAuthorize("DiagramaTrazabilidad.View")]
         public async Task<ActionResult<ResponseAPI<List<TrazabilidadOrdenReaderDto>>>>ListaTrazabilidadVentas(string fechaInicial, string fechaFinal)
         {
             try
@@ -56,6 +58,7 @@ namespace Miluc.Server.Controllers.SAPController
 
 
         [HttpGet("orden-venta/{DocNum:int}")]
+        [PermissionAuthorize("DiagramaTrazabilidad.View")]
         public async Task<ActionResult<ResponseAPI<TrazabilidadOrdenReaderDto>>> GetTrazabilidadOrdenVenta(int DocNum)
         {
             try
@@ -103,6 +106,7 @@ namespace Miluc.Server.Controllers.SAPController
 
 
         [HttpGet("nota-detalle/{DocEntry:int}")]
+        [PermissionAuthorize("NotaEntrega.Details")]
         public async Task<ActionResult<ResponseAPI<List<Dln1DetalleReaderDto>>>> ObtenerDetalleNota(int DocEntry)
         {
             try
@@ -145,6 +149,7 @@ namespace Miluc.Server.Controllers.SAPController
         }
 
         [HttpGet("devolucion-detalle/{DocEntry:int}")]
+        [PermissionAuthorize("Devolucion.Details")]
         public async Task<ActionResult<ResponseAPI<List<Rdn1DetalleDevolucionReaderDto>>>> ObtenerDetalleDevolucion(int DocEntry)
         {
             try
@@ -186,6 +191,7 @@ namespace Miluc.Server.Controllers.SAPController
         }
         
         [HttpGet("factura-detalle/{DocEntry:int}")]
+        [PermissionAuthorize("Invoices.Details")]
         public async Task<ActionResult<ResponseAPI<List<Inv1DetalleReaderDto>>>> ObtenerDetalleFactura(int DocEntry)
         {
             try
@@ -226,6 +232,7 @@ namespace Miluc.Server.Controllers.SAPController
             }
         }
         [HttpGet("notacredito-detalle/{DocEntry:int}")]
+        [PermissionAuthorize("NotaCredito.Details")]
         public async Task<ActionResult<ResponseAPI<List<Rin1DetalleNotaCredito>>>> ObtenerDetalleNotaCredito(int DocEntry)
         {
             try

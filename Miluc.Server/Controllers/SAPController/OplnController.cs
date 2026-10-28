@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.Sap.Opln;
 using Miluc.Server.Models.Sap;
+using Miluc.Server.Security;
 using Miluc.Shared.DTOs.Sap.Opln;
 using Miluc.Shared.Models.Response;
 
@@ -13,6 +14,7 @@ namespace Miluc.Server.Controllers.SAPController
     public class OplnController (ISapOplnService sapOplnService): Controller
     {
         [HttpGet]
+        [PermissionAuthorize("Precios.View")]
         public async Task<ActionResult<ResponseAPI<List<OplnReaderDto>>>> GetOplnAsync()
         {
             try

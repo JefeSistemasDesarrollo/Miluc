@@ -173,7 +173,7 @@ namespace Miluc.Server.Controllers.SAPController
             }
         }
 
-        [HttpPatch("{docEntry:int}")]
+     [HttpPatch("{docEntry:int}")]
      [PermissionAuthorize("Orders.Update")]
         public async Task<ActionResult<ResponseAPI<OrdersReaderDto>>> UpdateOrderAsync(int docEntry, [FromBody] PedidoUpdateDto pedidoUpdateDto)
         {

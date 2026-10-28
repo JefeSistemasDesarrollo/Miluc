@@ -1196,23 +1196,15 @@
                 if (!_authClientService.HasPermission("CondicionPagoSap.View"))
                 {
                     listDias = resposeOctg.Valor.Where(x => x.PymntGroup.ToUpper() == "CONTADO" || x.PymntGroup.ToUpper() == "DOMICILIO").ToList();
-
-
                 }else{
                     listDias = resposeOctg.Valor;
                 }
             }
-
-
             //aca la lista de precios y si es vendor cargo una lista generica de dos item de domicilio y de contado
             //si es administrador cargo la lista de precios y si es vendor cargo una lista generica de dos item de domicilio y de contado
-
-
             var responseOpln = await _sapOplnClientService.GetListOplnAsync();
-
             if (responseOpln.Valor != null)
             {
-
                 if (sesion != null)
                 {
                     if (!_authClientService.HasPermission("ListaPreciosSap.View"))
@@ -1225,13 +1217,7 @@
                         listOpln = responseOpln.Valor;
                     }
                 }
-
-
-
-
             }
-
-
             var responseRegimenfiscal = await _sapLocalizacionService.GetRegimenFiscal();
 
             if (responseRegimenfiscal != null)
