@@ -1,0 +1,526 @@
+﻿@page "/administrar-permisos-rol"
+@using System.Linq
+@using System.Text.Json
+@using Miluc.Client.Interfaces.UsuariosRolesPermisos
+@using Miluc.Shared.DTOs.Permisos
+@using Miluc.Shared.DTOs.Roles
+@inject IRolClientService _rolService
+@inject IPermisosRolClientService _service
+@inject ILogClientService _LogService
+@inject IAuthClientService _auth
+@inject IJSRuntime _jsRuntime
+@inject NavigationManager _nav
+<PageTitle>Administrar permisos por rol</PageTitle>
+
+<div class="permisos-page container-fluid py-3 py-md-4">
+
+    <div class="card-container">
+
+        <div class="permisos-header">
+            <div class="d-flex align-items-center gap-3">
+                <div class="permisos-header-icon">
+                    <i class="bi bi-shield-lock"></i>
+                </div>
+
+                <div>
+                    <h4 class="mb-1">Permisos por rol</h4>
+                    <p class="mb-0">
+                        Administra los accesos de cada rol del sistema.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="permisos-content">
+
+            <div class="rol-selector">
+                <label for="selectorRol" class="form-label">
+                    Seleccionar rol
+                </label>
+
+                <div class="rol-selector-row">
+                    <select id="selectorRol" class="form-select" @bind="IdRolSeleccionado">
+                        <option value="">Selecciona un rol...</option>
+
+                        @foreach (var rol in Roles)
+                        {
+                            <option value="@rol.IdRol">
+                                @rol.Nombre
+                            </option>
+                        }
+                    </select>
+
+                    <button class="btn btn-rojo"
+                            @onclick="ConsultarPermisosAsync"
+                            disabled="@(!IdRolSeleccionado.HasValue || Cargando)">
+                        <i class="bi bi-search me-1"></i>
+                        Consultar
+                    </button>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Mensaje))
+            {
+                <div class="alert alert-info mt-3" role="alert">
+                    @Mensaje
+                </div>
+            }
+
+            @if (Cargando)
+            {
+                <div class="estado-carga">
+                    <div class="spinner-border text-danger" role="status"></div>
+                    <span>Consultando permisos...</span>
+                </div>
+            }
+            else if (IdRolSeleccionado.HasValue && PermisosConsultados)
+            {
+                <div class="listas-permisos">
+
+                    <section class="lista-card">
+                        <div class="lista-header asignados-header">
+                            <div>
+                                <h5>Permisos asignados</h5>
+                                <small>Permisos que tiene el rol</small>
+                            </div>
+
+                            <span class="contador contador-rojo">
+                                @PermisosAsignados.Count
+                            </span>
+                        </div>
+
+                        <div class="lista-body">
+                            <input class="form-control buscador-permisos"
+                                   placeholder="Buscar permiso..."
+                                   @bind="BusquedaAsignados"
+                                   @bind:event="oninput" />
+
+                            <div class="permisos-scroll">
+
+
+                                @foreach (var permiso in PermisosAsignados.Where(p => Coincide(p, BusquedaAsignados)))
+                                {
+                                    <label class="permiso-item"
+                                           @key="permiso.IdPermiso">
+                                        <input type="checkbox"
+                                               checked="@SeleccionadosAsignados.Contains(permiso.IdPermiso)"
+                                               @onchange="e => CambiarSeleccion(permiso.IdPermiso, true, e.Value)" />
+
+                                        <span class="permiso-texto">
+                                            <strong>@permiso.Nombre</strong>
+
+                                            @if (!string.IsNullOrWhiteSpace(permiso.Descripcion))
+                                            {
+                                                <small>@permiso.Descripcion</small>
+                                            }
+                                        </span>
+                                    </label>
+                                }
+
+                                @if (!PermisosAsignados.Any(p => Coincide(p, BusquedaAsignados)))
+                                {
+                                    <div class="lista-vacia">
+                                        No hay permisos asignados para esta búsqueda.
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="lista-footer">
+                            <button class="btn btn-outline-secondary btn-sm"
+                                    @onclick="SeleccionarTodosAsignados">
+                                Seleccionar todos
+                            </button>
+                        </div>
+                    </section>
+
+                    <div class="acciones-permisos">
+                        <button class="btn btn-rojo"
+                                title="Asignar permisos seleccionados"
+                                @onclick="AsignarSeleccionados"
+                                disabled="@(!SeleccionadosDisponibles.Any())">
+                            <span class="texto-accion">Asignar</span>
+                            <i class="bi bi-arrow-left"></i>
+                        </button>
+
+                        <button class="btn btn-amarillo"
+                                title="Quitar permisos seleccionados"
+                                @onclick="QuitarSeleccionados"
+                                disabled="@(!SeleccionadosAsignados.Any())">
+                            <i class="bi bi-arrow-right"></i>
+                            <span class="texto-accion">Quitar</span>
+                        </button>
+                    </div>
+
+                    <section class="lista-card">
+                        <div class="lista-header disponibles-header">
+                            <div>
+                                <h5>Permisos disponibles</h5>
+                                <small>Permisos que puedes asignar</small>
+                            </div>
+
+                            <span class="contador contador-amarillo">
+                                @PermisosDisponibles.Count
+                            </span>
+                        </div>
+
+                        <div class="lista-body">
+                            <input class="form-control buscador-permisos"
+                                   placeholder="Buscar permiso..."
+                                   @bind="BusquedaDisponibles"
+                                   @bind:event="oninput" />
+
+                            <div class="permisos-scroll">
+                                @foreach (var permiso in PermisosDisponibles
+                                    .Where(p => Coincide(p, BusquedaDisponibles)))
+                                {
+                                    <label class="permiso-item"
+                                           @key="permiso.IdPermiso">
+                                        <input type="checkbox"
+                                               checked="@SeleccionadosDisponibles.Contains(permiso.IdPermiso)"
+                                               @onchange="e => CambiarSeleccion(permiso.IdPermiso, false, e.Value)" />
+
+                                        <span class="permiso-texto">
+                                            <strong>@permiso.Nombre</strong>
+
+                                            @if (!string.IsNullOrWhiteSpace(permiso.Descripcion))
+                                            {
+                                                <small>@permiso.Descripcion</small>
+                                            }
+                                        </span>
+                                    </label>
+                                }
+
+                                @if (!PermisosDisponibles.Any(p => Coincide(p, BusquedaDisponibles)))
+                                {
+                                    <div class="lista-vacia">
+                                        No hay permisos disponibles para esta búsqueda.
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="lista-footer">
+                            <button class="btn btn-outline-secondary btn-sm"
+                                    @onclick="SeleccionarTodosDisponibles">
+                                Seleccionar todos
+                            </button>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="acciones-finales">
+                    <button class="btn btn-outline-secondary"
+                            @onclick="DescartarCambios"
+                            disabled="@(!HayCambios || Guardando)">
+                        Descartar cambios
+                    </button>
+
+                    <button class="btn btn-rojo"
+                            @onclick="GuardarPermisosAsync"
+                            disabled="@(!HayCambios || Guardando)">
+                        @if (Guardando)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+
+                        }
+                        else
+                        {
+                            <i class="bi bi-floppy me-1"></i>
+                            @*  Guardar cambios *@
+                        }
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="estado-inicial">
+                    <i class="bi bi-shield-check"></i>
+                    <h5>Administra los permisos de tus roles</h5>
+                    <p>Selecciona un rol y pulsa Consultar para comenzar.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    // Ajustar RolSelectorDto y la carga de Roles al modelo
+    // y servicio de roles que ya existen en tu proyecto.
+    private List<RolReadDto> Roles = new();
+
+    private int? IdRolSeleccionado;
+
+    private List<PermisosRolReaderDto> TodosLosPermisos = new();
+    private List<PermisosRolReaderDto> PermisosAsignados = new();
+    private List<PermisosRolReaderDto> PermisosDisponibles = new();
+
+    private HashSet<int> SeleccionadosAsignados = new();
+    private HashSet<int> SeleccionadosDisponibles = new();
+
+    private string BusquedaAsignados = string.Empty;
+    private string BusquedaDisponibles = string.Empty;
+    private string Mensaje = string.Empty;
+
+    private bool Cargando;
+    private bool Guardando;
+    private bool HayCambios;
+    private bool PermisosConsultados;
+
+    // Conectar aquí el servicio existente que carga los roles.
+    // Se ejecutará cuando tengamos definido su nombre real.
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+
+            var resRole = await _rolService.GetAllRolesAsync();
+            if (resRole != null && resRole.EsCorrecto)
+            {
+                Roles = resRole.Valor;
+            }
+
+        }
+        catch (Exception ex)
+        {
+            await _LogService.GuardarErrorAsync(
+                     ex.Message,
+                     ex.StackTrace,
+                     usuario: _auth.CurrentSession?.UserName ?? "No encontrado",
+                     metodo: "OnInitializedAsync Crear Permisos",
+                     ruta: $"Permisos/rol permisos",
+                     origen: "Blazor cliente",
+                     nivel: "error");
+        }
+
+    }
+    private async Task ConsultarPermisosAsync()
+    {
+        //valido si hay un rol seleccionado
+        if (IdRolSeleccionado < 0)
+            return;
+
+        try
+        {
+            Cargando = true;
+            Mensaje = string.Empty;
+
+            PermisosConsultados = true;
+
+            var respuestasPermisos = await _service.GetPermisosPorRol(IdRolSeleccionado.Value);
+
+            if (!respuestasPermisos.EsCorrecto || respuestasPermisos is null)
+            {
+                TodosLosPermisos.Clear();
+                PermisosAsignados.Clear();
+                PermisosDisponibles.Clear();
+                Mensaje = respuestasPermisos.Mensaje
+                  ?? "No fue posible consultar los permisos.";
+
+                HayCambios = false;
+                return;
+            }
+
+            TodosLosPermisos = respuestasPermisos.Valor;
+            PermisosAsignados = TodosLosPermisos.Where(x => x.Asignado).OrderBy(p => p.Nombre).ToList();
+            PermisosDisponibles = TodosLosPermisos.Where(x => !x.Asignado).OrderBy(p => p.Nombre).ToList();
+
+            SeleccionadosAsignados.Clear();
+            SeleccionadosAsignados.Clear();
+            BusquedaAsignados = string.Empty;
+            BusquedaDisponibles = string.Empty;
+            HayCambios = false;
+            PermisosConsultados = true;
+
+        }
+        catch (Exception ex)
+        {
+            Mensaje = "Ocurrió un error al consultar los permisos.";
+        }
+        finally
+        {
+            Cargando = false;
+        }
+    }
+
+    private static bool Coincide(PermisosRolReaderDto permiso,
+        string busqueda)
+    {
+        if (string.IsNullOrWhiteSpace(busqueda))
+            return true;
+
+        return permiso.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase)
+               || (permiso.Descripcion?.Contains(busqueda, StringComparison.OrdinalIgnoreCase) ?? false);
+    }
+
+    private void CambiarSeleccion(int idPermiso, bool asignado, object? valor)
+    {
+        var seleccionados = asignado
+            ? SeleccionadosAsignados
+            : SeleccionadosDisponibles;
+
+        if (valor is true)
+            seleccionados.Add(idPermiso);
+        else
+            seleccionados.Remove(idPermiso);
+    }
+
+    private void SeleccionarTodosAsignados()
+    {
+        foreach (var permiso in PermisosAsignados
+            .Where(p => Coincide(p, BusquedaAsignados)))
+        {
+            SeleccionadosAsignados.Add(permiso.IdPermiso);
+        }
+    }
+
+    private void SeleccionarTodosDisponibles()
+    {
+        foreach (var permiso in PermisosDisponibles
+            .Where(p => Coincide(p, BusquedaDisponibles)))
+        {
+            SeleccionadosDisponibles.Add(permiso.IdPermiso);
+        }
+    }
+
+    private void AsignarSeleccionados()
+    {
+        var mover = PermisosDisponibles
+            .Where(p => SeleccionadosDisponibles.Contains(p.IdPermiso))
+            .ToList();
+
+        foreach (var permiso in mover)
+        {
+            permiso.Asignado = true;
+            PermisosDisponibles.Remove(permiso);
+            PermisosAsignados.Add(permiso);
+        }
+
+        SeleccionadosDisponibles.Clear();
+
+        PermisosAsignados = PermisosAsignados
+            .OrderBy(p => p.Nombre)
+            .ToList();
+
+        HayCambios = true;
+    }
+
+    private void QuitarSeleccionados()
+    {
+        var mover = PermisosAsignados
+            .Where(p => SeleccionadosAsignados.Contains(p.IdPermiso))
+            .ToList();
+
+        foreach (var permiso in mover)
+        {
+            permiso.Asignado = false;
+            PermisosAsignados.Remove(permiso);
+            PermisosDisponibles.Add(permiso);
+        }
+
+        SeleccionadosAsignados.Clear();
+
+        PermisosDisponibles = PermisosDisponibles
+            .OrderBy(p => p.Nombre)
+            .ToList();
+
+        HayCambios = true;
+    }
+
+    private async Task DescartarCambios()
+    {
+        await ConsultarPermisosAsync();
+    }
+
+    private async Task GuardarPermisosAsync()
+    {
+
+        if (IdRolSeleccionado is not > 0 || Guardando || !HayCambios)
+            return;
+
+        try
+        {
+            Guardando = true;
+            Mensaje = string.Empty;
+
+            // Enviar el estado final de la lista, no solamente
+            // los permisos que se seleccionaron para mover.
+            var dto = new PermisoActualizarRol
+            {
+                IdPermisos = PermisosAsignados
+                    .Select(p => p.IdPermiso)
+                    .Distinct()
+                    .ToList()
+            };
+
+
+            var result = await _jsRuntime.InvokeAsync<JsonElement>
+         ("Swal.fire", new
+         {
+             title = "¿Estás seguro?",
+             text = $"¿Deseas asignar los permisos?",
+             icon = "info",
+             showCancelButton = true,
+             confirmButtonColor = "#d33",
+             cancelButtonColor = "#3085d6",
+             confirmButtonText = "Asignar",
+             cancelButtonText = "Cancelar"
+         });
+
+
+            if (result.GetProperty("isConfirmed").GetBoolean())
+            {
+
+                await _jsRuntime.InvokeVoidAsync("mostrarEspera", "Sincronizando - SAP ONE", "Creando Cliente ...<br><br><b>No cierre esta ventana.</b>", "info");
+             
+                
+                var respuesta = await _service.ActualizarPermisosPorRolAsync(IdRolSeleccionado.Value, dto);
+
+
+                if (respuesta.EsCorrecto)
+                {
+                    await _jsRuntime.InvokeVoidAsync("cerrarEspera");
+
+
+                    await _jsRuntime.InvokeVoidAsync("Swal.fire",
+                                "Correcto",
+                                $" {respuesta.Mensaje}",
+                                "success");
+
+                    _nav.NavigateTo("/configuracion/permisos", forceLoad: true);
+                    // return;
+                }
+                else
+                {
+                    await _jsRuntime.InvokeVoidAsync("cerrarEspera");
+
+                    string errores = respuesta.Errores != null && respuesta.Errores.Any()
+                    ? string.Join("<br>", respuesta.Errores)
+                    : "Ocurrió un error inesperado.";
+
+                    await _jsRuntime.InvokeVoidAsync("Swal.fire", new
+                    {
+                        icon = "error",
+                        title = $"Error al asignar Permisos",
+                        text = $"{errores}",
+                        confirmButtonColor = "#6c1d1d"
+                    });
+                }
+
+            }
+
+            // Volver a consultar la API para confirmar el estado persistido.
+            await ConsultarPermisosAsync();
+        }
+        catch (Exception)
+        {
+            Mensaje = "Ocurrió un error al guardar los permisos.";
+        }
+        finally
+        {
+            Guardando = false;
+        }
+
+    }
+}

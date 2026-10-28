@@ -5,7 +5,7 @@
 @using Miluc.Shared.DTOs.Sap.GrupoDeVenta
 @using Miluc.Shared.DTOs.Sap.Vendedor
 
-@inject ISapFrecuenciaVentasClientService _frecuenciaVentasService
+@inject ISapVentasClientService _facturasVentasService
 @inject ISapOslpService _oslpService
 @inject IAuthClientService _authclienteService
 @inject ILogClientService _logErrores
@@ -39,32 +39,17 @@
                 </div>
 
                 <!-- Fecha Final -->
-                <!-- Código de Vendedor -->
                 <div class="col-12 col-sm-6 col-lg-3">
                     <label class="form-label text-muted small fw-semibold">Vendedor *</label>
-
-
                     <InputSelect @bind-Value="codigoVendedor" class="form-select form-select-sm">
-                        @* <option value="@int.MinValue">Seleccione un vendedor</option> *@
-                        <option selected value="0">Seleccione un vendedor</option>
-
                         @foreach (var slp in listSapVendedorReaderDtos)
                         {
                             <option value="@slp.SlpCode">@slp.SlpName</option>
                         }
                     </InputSelect>
-                    @* <ValidationMessage For="@(() => slp.SlpName)" class="text-danger small" /> *@
-
-
-                    @*  <label class="form-label font-weight-bold">
-                        <i class="bi bi-person-badge me-1 text-red"></i> Vendedor (SlpCode)
-                    </label>
-                    <InputNumber @bind-Value="slpCode" class="form-control input-brand" placeholder="Ej: -1 para todos" /> *@
                 </div>
                 <div class="col-12 col-sm-6 col-lg-3">
                     <label class="form-label text-muted small fw-semibold">Grupo *</label>
-
-
                     <InputSelect @bind-Value="canal" class="form-select form-select-sm">
 
                         <option selected value="0">Seleccione el canal </option>
@@ -73,29 +58,11 @@
                         {
                             <option value="@canal.GroupCode">@canal.GroupName</option>
                         }
-                    </InputSelect>
-                    @* <ValidationMessage For="@(() => slp.SlpName)" class="text-danger small" /> *@
-
-
-                    @*  <label class="form-label font-weight-bold">
-                        <i class="bi bi-person-badge me-1 text-red"></i> Vendedor (SlpCode)
-                    </label>
-                    <InputNumber @bind-Value="slpCode" class="form-control input-brand" placeholder="Ej: -1 para todos" /> *@
+                    </InputSelect>            
                 </div>
                 <div class="col-12 col-sm-6 col-lg-3">
                     <label class="form-label text-muted small fw-semibold"> Cliente</label>
-
-
                     <InputText @bind-Value="codigoCliente" class="form-control input-brand" placeholder="  " />
-
-                    
-                    @* <ValidationMessage For="@(() => slp.SlpName)" class="text-danger small" /> *@
-
-
-                    @*  <label class="form-label font-weight-bold">
-                        <i class="bi bi-person-badge me-1 text-red"></i> Vendedor (SlpCode)
-                    </label>
-                    <InputNumber @bind-Value="slpCode" class="form-control input-brand" placeholder="Ej: -1 para todos" /> *@
                 </div>
 
                 <!-- Botón de Acción -->
@@ -130,122 +97,9 @@
     }
 </div>
 
-<style>
-    /* Variables de marca */
-    :root {
-        --brand-red: #D62F46;
-        --brand-red-dark: #b82236;
-        --brand-red-light: #fdf2f3;
-        --brand-red-border: #f8c2c8;
-        --text-main: #2b2b2b;
-        --text-muted: #6c757d;
-    }
-
-    /* Estilos del Contenedor */
-    .frecuencia-container {
-        max-width: 1200px;
-    }
-
-    .border-red-subtle {
-        border-color: var(--brand-red-border) !important;
-    }
-
-    .icon-badge {
-        width: 42px;
-        height: 42px;
-        background-color: var(--brand-red-light);
-        color: var(--brand-red);
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.25rem;
-    }
-
-    .title-brand {
-        color: var(--brand-red);
-        font-weight: 700;
-        font-size: 1.5rem;
-    }
-
-    .subtitle-brand {
-        color: var(--text-muted);
-        font-size: 0.875rem;
-    }
-
-    /* Estilos de Card y Formulario */
-    .card-brand {
-        background-color: #ffffff;
-        border: 1px solid #f0d0d4;
-        border-radius: 12px;
-    }
-
-    .form-label {
-        font-size: 0.875rem;
-        color: var(--text-main);
-        margin-bottom: 0.4rem;
-    }
-
-    .text-red {
-        color: var(--brand-red);
-    }
-
-    .input-brand {
-        border: 1px solid #e2cad0;
-        border-radius: 8px;
-        padding: 0.55rem 0.75rem;
-        font-size: 0.95rem;
-        transition: all 0.2s ease-in-out;
-        color: var(--text-main);
-    }
-
-        .input-brand:focus {
-            border-color: var(--brand-red);
-            box-shadow: 0 0 0 0.25rem rgba(214, 47, 70, 0.15);
-            outline: none;
-        }
-
-    /* Botón Rojo Principal */
-    .btn-red {
-        background-color: var(--brand-red);
-        color: #ffffff;
-        border: none;
-        border-radius: 8px;
-        padding: 0.6rem 1.2rem;
-        font-weight: 600;
-        font-size: 0.95rem;
-        transition: background-color 0.2s ease, transform 0.1s ease;
-    }
-
-        .btn-red:hover:not(:disabled) {
-            background-color: var(--brand-red-dark);
-            color: #ffffff;
-        }
-
-        .btn-red:active:not(:disabled) {
-            transform: scale(0.98);
-        }
-
-        .btn-red:disabled {
-            background-color: #e88d99;
-            color: #ffffff;
-            opacity: 0.8;
-        }
-
-    /* Alerta Custom */
-    .alert-red-custom {
-        background-color: var(--brand-red-light);
-        border: 1px solid var(--brand-red-border);
-        color: var(--brand-red-dark);
-        border-radius: 8px;
-        font-size: 0.9rem;
-    }
-</style>
 
 @code {
     private DateTime fechaInicio = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-
-
     //private DateTime fechaFinal = DateTime.Now;
     private int codigoVendedor = 0;
     private int canal = 0;
@@ -262,39 +116,32 @@
         try
         {
 
-            int vendedorSeleccionado = _authclienteService.CurrentSession.CodVendedorSAP ?? 0;
-
-            var listaVendedores = await _oslpService.GetListVendedoresAsync();
-
-            if (listaVendedores.Valor != null)
+            if (_authclienteService.HasPermission("Informe.CarteraClientes"))
             {
-                listSapVendedorReaderDtos = listaVendedores.Valor;
+                int vendedorSeleccionado = Convert.ToInt32(_authclienteService.CurrentSession.CodVendedorSAP);
 
-                if (vendedorSeleccionado > 0 )
+                var listaVendedores = await _oslpService.GetListVendedoresAsync();
+
+                if (listaVendedores.Valor != null)
                 {
-                    listSapVendedorReaderDtos = listSapVendedorReaderDtos.Where(x => x.SlpCode == vendedorSeleccionado).ToList();
+                    listSapVendedorReaderDtos = listaVendedores.Valor;
+
+                    if (vendedorSeleccionado > 0)
+                    {
+                        listSapVendedorReaderDtos = listSapVendedorReaderDtos.Where(x => x.SlpCode == vendedorSeleccionado).ToList();
+                    }
                 }
-
-                /*  listaVendedores.Valor.ForEach(vendedor =>
-                  {
-                      if (vendedor.SlpCode == vendedorSeleccionado)
-                      {
-                          codigoVendedor = vendedor.SlpCode;
-                      }
-                  });*/
+                var listaGruposDeVenta = await _ocrdService.GetGrupoDeVentasAsync();
+                if (listaGruposDeVenta.Valor != null)
+                {
+                    partnerGroupsDtos = listaGruposDeVenta.Valor;
+                }
             }
-            var listaGruposDeVenta = await _ocrdService.GetGrupoDeVentasAsync();
-            if (listaGruposDeVenta.Valor != null)
+            else
             {
-
-                partnerGroupsDtos = listaGruposDeVenta.Valor;
-
-            
+                _nav.NavigateTo("/no-autorizado");
+                return;
             }
-
-
-
-
         }
         catch (Exception ex)
         {
@@ -326,7 +173,7 @@
             mensaje = null;
 
 
-            var resultado = await _frecuenciaVentasService.CarteraVencidaExcel(fechaInicio, codigoCliente, codigoVendedor, canal);
+            var resultado = await _facturasVentasService.CarteraVencidaExcel(fechaInicio, codigoCliente, codigoVendedor, canal);
             if (!resultado)
             {
                 mensaje = "No fue posible generar el archivo Excel o no existen registros con los filtros seleccionados.";

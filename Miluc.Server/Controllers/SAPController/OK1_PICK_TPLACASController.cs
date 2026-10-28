@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Miluc.Server.Data;
+using Miluc.Server.Security;
 
 namespace Miluc.Server.Controllers.SAPController
 {
@@ -11,6 +12,7 @@ namespace Miluc.Server.Controllers.SAPController
     public class OK1_PICK_TPLACASController(SapDbContex sapDbContex) : Controller
     {
         [HttpGet]
+        [PermissionAuthorize("Placas.View")]
         public async Task<ActionResult> GetAll()
         {
             var placas = await sapDbContex.OK1_PICK_TPLACAS.ToListAsync();

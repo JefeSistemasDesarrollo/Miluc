@@ -3,7 +3,7 @@ using Miluc.Client.Interfaces.SapInterfaces.Informes;
 
 namespace Miluc.Client.Servicios.SapService.InformesComercial
 {
-    public class SapFrecuenciaVentasClientService : ISapFrecuenciaVentasClientService
+    public class SapFrecuenciaVentasClientService : ISapVentasClientService
     {
         private readonly HttpClient _http;
         private readonly IJSRuntime _js;
@@ -94,11 +94,11 @@ namespace Miluc.Client.Servicios.SapService.InformesComercial
             }
         }
 
-        public async Task<bool> DescargarFrecuanciaVentasService(DateTime fechaInicio, DateTime fechaFinal, int slpCode, int tipoInforme)
+        public async Task<bool> DescargarFacturasVentasService(DateTime fechaInicio, DateTime fechaFinal, int slpCode, int tipoInforme)
         {
             try
             {
-                var url = $"api/Informes/FrecuenciaPorVendedor/Excel" + $"?fechaInicio={fechaInicio:yyyy-MM-dd}" +
+                var url = $"api/Informes/FacturasPorVendedor/Excel" + $"?fechaInicio={fechaInicio:yyyy-MM-dd}" +
                $"&fechaFinal={fechaFinal:yyyy-MM-dd}" + $"&slpCode={slpCode}" + $"&tipoInforme={tipoInforme}";
 
                 var response = await _http.GetAsync(url);
@@ -119,21 +119,21 @@ namespace Miluc.Client.Servicios.SapService.InformesComercial
                 {
                     await _js.InvokeVoidAsync(
                         "descargarArchivo",
-                        $"FrecuenciaVentasCabecera_{fechaInicio:yyyyMMdd}_{fechaFinal:yyyyMMdd}.xlsx",
+                        $"FacturasVentasCabecera_{fechaInicio:yyyyMMdd}_{fechaFinal:yyyyMMdd}.xlsx",
                         archivo);
                 }
                 else if (tipoInforme == 2)
                 {
                     await _js.InvokeVoidAsync(
                         "descargarArchivo",
-                        $"FrecuenciaVentasDetalle_{fechaInicio:yyyyMMdd}_{fechaFinal:yyyyMMdd}.xlsx",
+                        $"FacturasVentasDetalle_{fechaInicio:yyyyMMdd}_{fechaFinal:yyyyMMdd}.xlsx",
                         archivo);
                 }
                 else if (tipoInforme == 3)
                 {
                     await _js.InvokeVoidAsync(
                         "descargarArchivo",
-                        $"FrecuenciaVentasHistorico_{fechaInicio:yyyyMMdd}_{fechaFinal:yyyyMMdd}.xlsx",
+                        $"FacturasVentasHistorico_{fechaInicio:yyyyMMdd}_{fechaFinal:yyyyMMdd}.xlsx",
                         archivo);
 
                 }
@@ -141,7 +141,7 @@ namespace Miluc.Client.Servicios.SapService.InformesComercial
                 {
                     await _js.InvokeVoidAsync(
                         "descargarArchivo",
-                        $"FrecuenciaVentasHistoricoDetalle_{fechaInicio:yyyyMMdd}_{fechaFinal:yyyyMMdd}.xlsx",
+                        $"FacturasVentasHistoricoDetalle_{fechaInicio:yyyyMMdd}_{fechaFinal:yyyyMMdd}.xlsx",
                         archivo);
 
 
@@ -156,7 +156,7 @@ namespace Miluc.Client.Servicios.SapService.InformesComercial
             catch (Exception ex)
             {
                 return false;
-                throw new Exception($"Error al generar el informe de frecuencia de venta {ex.Message}");
+                throw new Exception($"Error al generar el informe de ventas de venta {ex.Message}");
             }
         }
 

@@ -2,6 +2,7 @@
 using Miluc.Shared.DTOs.Permisos;
 using Miluc.Shared.Models.Response;
 using System.Net.Http.Json;
+using static System.Net.WebRequestMethods;
 
 namespace Miluc.Client.Servicios.UsuariosRolesPermisos
 {
@@ -124,5 +125,31 @@ namespace Miluc.Client.Servicios.UsuariosRolesPermisos
 
             }
         }
+
+        //public async Task<ResponseAPI<bool>> ActualizarPermisosPorRolAsync(int idRol, PermisoActualizarRol dto)
+        //{
+        //    try
+        //    {
+
+        //        var response = await _http.PutAsJsonAsync($"api/Permisos/rol/{idRol}/permisos",dto);
+
+        //        var resultado = await response.Content
+        //            .ReadFromJsonAsync<ResponseAPI<bool>>();
+
+        //        return resultado ?? new ResponseAPI<bool>
+        //        {
+        //            Valor = false,
+        //            EsCorrecto = false,
+        //            Mensaje = "No se recibió respuesta de la API."
+        //        };
+
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return new ResponseAPI<bool> { EsCorrecto = false, Mensaje = ex.Message };
+
+        //    }
+        //}
     }
 }
