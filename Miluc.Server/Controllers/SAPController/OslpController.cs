@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Sap.Oslp;
+using Miluc.Server.Security;
 using Miluc.Shared.DTOs.Sap.Vendedor;
 using Miluc.Shared.Models.Response;
 
@@ -15,6 +16,7 @@ namespace Miluc.Server.Controllers.SAPController
     {
 
         [HttpGet]
+        [PermissionAuthorize("Vendedor.View")]
         public async Task<ActionResult<ResponseAPI<List<SapVendedorReaderDto>>>> GetListOslpAsync()
         {
             try

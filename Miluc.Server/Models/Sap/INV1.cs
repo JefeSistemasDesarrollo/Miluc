@@ -7,7 +7,7 @@ namespace Miluc.Server.Models.Sap
         public int DocEntry { get; set; }
         public int ? LineNum { get; set; }
         public string ?BaseRef { get; set; }
-        public string ? BaseType { get; set; }
+        public int ? BaseType { get; set; }
         public int ? BaseEntry { get; set; }
         public int ? BaseLine { get; set; }
         public int ? U_Picking { get; set; }

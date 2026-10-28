@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.Sap.Octg;
+using Miluc.Server.Security;
 using Miluc.Shared.DTOs.Sap.Credito;
 using Miluc.Shared.Models.Response;
 
@@ -13,6 +14,7 @@ namespace Miluc.Server.Controllers.SAPController
     public class OctgController (ISapOctgService _octgService): Controller
     {
        [HttpGet]
+       [PermissionAuthorize("DiasCredito.View")]
        public async Task<ActionResult<ResponseAPI<List<DiasCreditoDto>>>> GetAllDiasCreditoAsync()
         {
             try

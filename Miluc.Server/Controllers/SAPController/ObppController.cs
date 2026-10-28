@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Sap.Obpp;
 using Miluc.Server.Models.Sap;
+using Miluc.Server.Security;
 using Miluc.Shared.DTOs.Sap.Rutas;
 using Miluc.Shared.Models.Response;
 
@@ -13,7 +14,7 @@ namespace Miluc.Server.Controllers.SAPController
     public class ObppController (ISapObppService _service, ILogService log) : Controller
     {
         [HttpGet]
-  
+        [PermissionAuthorize("Rutas.View")]
         public async Task<ActionResult<ResponseAPI<List<SapObppDto>>>> GetObpp()
         {
             try

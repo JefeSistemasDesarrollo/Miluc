@@ -6,7 +6,7 @@ using MiniExcelLibs;
 
 namespace Miluc.Server.Servicios.SapService
 {
-    public class SapFrecuenciaVentasService(SapDbContex _sapDbContex) : ISapFrecuenciaVentasService
+    public class SapInformeService(SapDbContex _sapDbContex) : ISapInformeService
     {
         public async Task<Stream> CanalDeDistribucion(DateTime FechaIncio, DateTime FechaFinal, int? GrDistribucion = null)
         {
@@ -144,7 +144,7 @@ namespace Miluc.Server.Servicios.SapService
             }
         }
 
-        public async Task<Stream> FrecuenciaPorVendedorCabeceraHistoricoFacturas(int? slpCode = null)
+        public async Task<Stream> FacturasPorVendedorCabeceraHistoricoFacturas(int? slpCode = null)
         {
             try
             {
@@ -214,7 +214,7 @@ namespace Miluc.Server.Servicios.SapService
             }
         }
 
-        public async Task<Stream> FrecuenciaPorVendedorCabeceraHistoricoFacturasDetalle(int? slpCode = null)
+        public async Task<Stream> FacturasPorVendedorCabeceraHistoricoFacturasDetalle(int? slpCode = null)
         {
             try
             {
@@ -306,7 +306,7 @@ namespace Miluc.Server.Servicios.SapService
             }
 
         }
-        public async Task<Stream> FrecuenciaPorVendedorUltimaFactura(DateTime FechaInicio, DateTime FechaFinal, int? slpCode = null)
+        public async Task<Stream> FacturasPorVendedorUltimaFactura(DateTime FechaInicio, DateTime FechaFinal, int? slpCode = null)
         {
             try
             {
@@ -381,7 +381,7 @@ namespace Miluc.Server.Servicios.SapService
 
         }
 
-        public async Task<Stream> FrecuenciaPorVendedorUltimaFacturaDetalle(DateTime FechaInicio, DateTime FechaFinal, int? slpCode = null)
+        public async Task<Stream> FacturasPorVendedorUltimaFacturaDetalle(DateTime FechaInicio, DateTime FechaFinal, int? slpCode = null)
         {
             try
             {

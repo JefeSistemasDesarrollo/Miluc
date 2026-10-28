@@ -6,6 +6,7 @@
         public string? CardName { get; set; }
         public int DocNum { get; set; }
         public int DocEntry { get; set; } //ID del pedido en SAP
+        public int ? BaseType { get; set; } //ID del pedido en SAP
         public char? CANCELED { get; set; } //Indica si el pedido fue cancelado ('Y' o 'N')
         public char ? Printed { get; set; }
         public char? DocStatus { get; set; }

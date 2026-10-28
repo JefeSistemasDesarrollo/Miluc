@@ -1,15 +1,17 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.Sap.CiudadMM;
+using Miluc.Server.Security;
 
 namespace Miluc.Server.Controllers.SAPController
 {
     [ApiController]
     [Route("api/[controller]")]
-    //[Authorize]
+    [Authorize]
     public class CiudadMediosMagneticosController(ISapCiudadMMService sapCiudadMMService) : Controller
     {
         [HttpGet]
+        [PermissionAuthorize("CiudadMediosMgneticos.View")]
         public async Task<IActionResult> GetAllBPCO_MUAsync([FromQuery] string? buscar = null,
          [FromQuery] int pagina = 1, [FromQuery] int? cantidad = null)
         {

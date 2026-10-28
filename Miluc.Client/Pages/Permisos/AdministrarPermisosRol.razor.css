@@ -1,0 +1,345 @@
+﻿
+.permisos-page {
+    color: #343434;
+}
+
+.card-container {
+    background: #fff;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid #f0f0f0;
+    box-shadow: 0 4px 18px rgb(0 0 0 / 5%);
+}
+
+.permisos-header {
+    padding: 22px 26px;
+    border-bottom: 1px solid #f0f0f0;
+    background: #fff;
+}
+
+    .permisos-header h4 {
+        font-weight: 700;
+        color: #343434;
+    }
+
+    .permisos-header p,
+    .permisos-header small {
+        color: #777;
+    }
+
+.permisos-header-icon {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    background: #D62F46;
+    color: #fff;
+    font-size: 23px;
+}
+
+.permisos-content {
+    padding: 24px;
+}
+
+.rol-selector {
+    max-width: 680px;
+}
+
+    .rol-selector .form-label {
+        font-weight: 700;
+    }
+
+.rol-selector-row {
+    display: flex;
+    gap: 10px;
+}
+
+    .rol-selector-row .form-select {
+        min-width: 0;
+        flex: 1;
+    }
+
+.btn-rojo {
+    background-color: #D62F46;
+    border-color: #D62F46;
+    color: white;
+}
+
+    .btn-rojo:hover,
+    .btn-rojo:focus {
+        background-color: #B92338;
+        border-color: #B92338;
+        color: white;
+    }
+
+.btn-amarillo {
+    background-color: #FDC922;
+    border-color: #FDC922;
+    color: #292929;
+}
+
+    .btn-amarillo:hover,
+    .btn-amarillo:focus {
+        background-color: #E7B414;
+        border-color: #E7B414;
+        color: #292929;
+    }
+
+    .btn-rojo:disabled,
+    .btn-amarillo:disabled {
+        opacity: .5;
+    }
+
+.listas-permisos {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 145px minmax(0, 1fr);
+    align-items: stretch;
+    gap: 18px;
+    margin-top: 26px;
+}
+
+.lista-card {
+    min-width: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #eaeaea;
+    border-radius: 16px;
+    background: white;
+}
+
+.lista-header {
+    min-height: 84px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px;
+    border-bottom: 1px solid #eee;
+}
+
+    .lista-header h5 {
+        margin: 0 0 4px;
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    .lista-header small {
+        color: #777;
+    }
+
+.asignados-header {
+    border-top: 4px solid #D62F46;
+}
+
+.disponibles-header {
+    border-top: 4px solid #FDC922;
+}
+
+.contador {
+    min-width: 34px;
+    min-height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 9px;
+    border-radius: 10px;
+    font-weight: 700;
+}
+
+.contador-rojo {
+    background: #D62F46;
+    color: white;
+}
+
+.contador-amarillo {
+    background: #FDC922;
+    color: #292929;
+}
+
+.lista-body {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.buscador-permisos {
+    margin-bottom: 10px;
+}
+
+.permisos-scroll {
+    max-height: 390px;
+    min-height: 180px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.permiso-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 9px;
+    border-bottom: 1px solid #f0f0f0;
+    border-radius: 7px;
+    cursor: pointer;
+    overflow-wrap: anywhere;
+}
+
+    .permiso-item:hover {
+        background: #fff8e3;
+    }
+
+    .permiso-item input {
+        flex-shrink: 0;
+        width: 16px;
+        height: 16px;
+        margin-top: 4px;
+        accent-color: #D62F46;
+    }
+
+.permiso-texto {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+    .permiso-texto strong {
+        font-size: .9rem;
+        font-weight: 600;
+    }
+
+    .permiso-texto small {
+        color: #777;
+        font-size: .8rem;
+    }
+
+.lista-vacia {
+    padding: 30px 12px;
+    text-align: center;
+    color: #888;
+    font-size: .9rem;
+}
+
+.lista-footer {
+    margin-top: auto;
+    padding: 12px;
+    border-top: 1px solid #eee;
+}
+
+.acciones-permisos {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    gap: 12px;
+}
+
+    .acciones-permisos .btn {
+        min-height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-weight: 600;
+    }
+
+.acciones-finales {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 22px;
+}
+
+.estado-carga,
+.estado-inicial {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 48px 16px;
+    text-align: center;
+    color: #777;
+}
+
+    .estado-inicial i {
+        font-size: 42px;
+        color: #D62F46;
+    }
+
+    .estado-inicial h5 {
+        color: #343434;
+        font-weight: 700;
+    }
+
+@media (max-width: 991.98px) {
+    .listas-permisos {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .acciones-permisos {
+        flex-direction: row;
+        justify-content: center;
+    }
+
+        .acciones-permisos .btn {
+            min-width: 135px;
+        }
+
+    .permisos-scroll {
+        max-height: 300px;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .permisos-content {
+        padding: 15px;
+    }
+
+    .permisos-header {
+        padding: 18px 15px;
+    }
+
+    .permisos-header-icon {
+        width: 42px;
+        height: 42px;
+        font-size: 20px;
+    }
+
+    .permisos-header h4 {
+        font-size: 1.15rem;
+    }
+
+    .rol-selector-row {
+        flex-direction: column;
+    }
+
+        .rol-selector-row .btn {
+            width: 100%;
+            min-height: 42px;
+        }
+
+    .acciones-permisos .btn {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .texto-accion {
+        font-size: .9rem;
+    }
+
+    .acciones-finales {
+        flex-direction: column-reverse;
+    }
+
+        .acciones-finales .btn {
+            width: 100%;
+            min-height: 42px;
+        }
+}

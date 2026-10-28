@@ -1,0 +1,158 @@
+﻿
+/* Encabezado y contenedor */
+.frecuencia-container {
+    max-width: 1200px;
+    margin-inline: auto;
+}
+
+/* Borde corporativo */
+.border-red-subtle {
+    border-color: #f8c2c8 !important;
+}
+
+/* Icono del encabezado */
+.icon-badge {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    background-color: #fdf2f3;
+    color: #D62F46;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+/* Títulos */
+.title-brand {
+    color: #D62F46;
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.subtitle-brand {
+    color: #6c757d;
+    font-size: 0.875rem;
+    margin-top: 0.25rem !important;
+}
+
+/* Tarjeta principal */
+.card-brand {
+    background-color: #ffffff;
+    border: 1px solid #f0d0d4;
+    border-radius: 12px;
+    overflow: visible;
+}
+
+/* Etiquetas */
+.frecuencia-container .form-label {
+    font-size: 0.875rem;
+    color: #2b2b2b;
+    margin-bottom: 0.4rem;
+}
+
+/* Texto rojo */
+.text-red {
+    color: #D62F46 !important;
+}
+
+/* Campos de fecha */
+.input-brand {
+    width: 100%;
+    min-height: 38px;
+    border: 1px solid #e2cad0;
+    border-radius: 8px;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.95rem;
+    color: #2b2b2b;
+    background-color: #ffffff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .input-brand:focus {
+        border-color: #D62F46;
+        box-shadow: 0 0 0 0.25rem rgba(214, 47, 70, 0.15);
+        outline: none;
+    }
+
+/* Selector de canal */
+.frecuencia-container .form-select {
+    min-height: 38px;
+    border: 1px solid #e2cad0;
+    border-radius: 8px;
+    color: #2b2b2b;
+    background-color: #ffffff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .frecuencia-container .form-select:focus {
+        border-color: #D62F46;
+        box-shadow: 0 0 0 0.25rem rgba(214, 47, 70, 0.15);
+        outline: none;
+    }
+
+/* Botón de descarga */
+.btn-red {
+    min-height: 40px;
+    background-color: #D62F46;
+    color: #ffffff;
+    border: 1px solid #D62F46;
+    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+}
+
+    .btn-red:hover:not(:disabled) {
+        background-color: #b82236;
+        border-color: #b82236;
+        color: #ffffff;
+    }
+
+    .btn-red:active:not(:disabled) {
+        transform: scale(0.98);
+    }
+
+    .btn-red:focus-visible {
+        outline: 3px solid rgba(214, 47, 70, 0.3);
+        outline-offset: 2px;
+    }
+
+    .btn-red:disabled {
+        background-color: #e88d99;
+        border-color: #e88d99;
+        color: #ffffff;
+        opacity: 0.8;
+        cursor: not-allowed;
+    }
+
+/* Alerta personalizada */
+.alert-red-custom {
+    background-color: #fdf2f3;
+    border: 1px solid #f8c2c8;
+    color: #b82236;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    padding: 0.875rem 1rem;
+}
+
+/* Ajustes para móviles */
+@media (max-width: 575.98px) {
+    .frecuencia-container {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+    }
+
+    .title-brand {
+        font-size: 1.25rem;
+    }
+
+    .icon-badge {
+        width: 38px;
+        height: 38px;
+        min-width: 38px;
+        font-size: 1.1rem;
+    }
+}

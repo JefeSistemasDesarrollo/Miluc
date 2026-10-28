@@ -16,9 +16,7 @@ namespace Miluc.Server.Servicios.SapService
     {
    
 
-        public async Task<ResponseAPI<List<TrazabilidadOrdenReaderDto>>> ListaTrazabilidad(
-       string fechaInicial,
-       string fechaFinal)
+        public async Task<ResponseAPI<List<TrazabilidadOrdenReaderDto>>> ListaTrazabilidad(string fechaInicial,string fechaFinal)
         {
             try
             {

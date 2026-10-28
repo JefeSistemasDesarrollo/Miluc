@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.Sap.Informes.InformeComercial;
+using Miluc.Server.Security;
 using Miluc.Shared.Models.Response;
 
 namespace Miluc.Server.Controllers.SAPController
@@ -8,39 +9,40 @@ namespace Miluc.Server.Controllers.SAPController
     [ApiController]
     [Route("api/[Controller]")]
     [Authorize]
-    public class InformesController(ISapFrecuenciaVentasService _service) : Controller
+    public class InformesController(ISapInformeService _service) : Controller
     {
-        [HttpGet("FrecuenciaPorVendedor/Excel")]
-        public async Task<IActionResult> FrecuenciaPorVendedorExcel(DateTime fechaInicio, DateTime fechaFinal, int slpCode = -1, int tipoInforme = 0)
+        [HttpGet("FacturasPorVendedor/Excel")]
+        [PermissionAuthorize("Informe.FacturasVentas")]
+        public async Task<IActionResult> FacturasPorVendedorExcel(DateTime fechaInicio, DateTime fechaFinal, int slpCode = -1, int tipoInforme = 0)
         {
             try
             {
                 Stream stream = new MemoryStream();
-                string nombreArchivo = $"FrecuenciaVentas";
+                string nombreArchivo = $"InformeVentas";
 
                 if (tipoInforme == 1)
                 {
-                    stream = await _service.FrecuenciaPorVendedorUltimaFactura(fechaInicio, fechaFinal, slpCode);
-                    string nombreArchivoDetalle = $"FrecuenciaPorVendedorCabeceraFacturas_{fechaInicio:yyyyMMdd}_{fechaFinal:yyyyMMdd}.xlsx";
+                    stream = await _service.FacturasPorVendedorUltimaFactura(fechaInicio, fechaFinal, slpCode);
+                    string nombreArchivoDetalle = $"FacturasPorVendedorCabeceraFacturas_{fechaInicio:yyyyMMdd}_{fechaFinal:yyyyMMdd}.xlsx";
 
                 }
                 if (tipoInforme == 2)
                 {
-                    stream = await _service.FrecuenciaPorVendedorUltimaFacturaDetalle(fechaInicio, fechaFinal, slpCode);
-                    string nombreArchivoResumen = $"FrecuenciaPorVendedorFacturaDetalle_{fechaInicio:yyyyMMdd}_{fechaFinal:yyyyMMdd}.xlsx";
+                    stream = await _service.FacturasPorVendedorUltimaFacturaDetalle(fechaInicio, fechaFinal, slpCode);
+                    string nombreArchivoResumen = $"FacturasPorVendedorFacturaDetalle_{fechaInicio:yyyyMMdd}_{fechaFinal:yyyyMMdd}.xlsx";
                 }
 
                 if (tipoInforme == 3)
                 {
-                    stream = await _service.FrecuenciaPorVendedorCabeceraHistoricoFacturas(slpCode);
-                    string nombreArchivoHistorico = $"FrecuenciaPorVendedorCabeceraHistoricoFacturas.xlsx";
+                    stream = await _service.FacturasPorVendedorCabeceraHistoricoFacturas(slpCode);
+                    string nombreArchivoHistorico = $"FacturasPorVendedorCabeceraHistoricoFacturas.xlsx";
 
                 }
 
                 if (tipoInforme == 4)
                 {
-                    stream = await _service.FrecuenciaPorVendedorCabeceraHistoricoFacturasDetalle(slpCode);
-                    string nombreArchivoHistoricoDetalle = $"FrecuenciaPorVendedorCabeceraHistoricoFacturasDetalle.xlsx";
+                    stream = await _service.FacturasPorVendedorCabeceraHistoricoFacturasDetalle(slpCode);
+                    string nombreArchivoHistoricoDetalle = $"FacturasPorVendedorCabeceraHistoricoFacturasDetalle.xlsx";
                 }
 
                 return File(
@@ -63,6 +65,7 @@ namespace Miluc.Server.Controllers.SAPController
             }
         }
         [HttpGet("CarteraVencida/Excel")]
+        [PermissionAuthorize("Informe.CarteraClientes")]
         public async Task<IActionResult> CarteraVencidaExcel(DateTime fechaFinal, string? cardCode = null, int? codeVendedor = null, int? codCanal = null)
         {
             try
@@ -88,6 +91,7 @@ namespace Miluc.Server.Controllers.SAPController
             }
         }
         [HttpGet("CanalDeDistribucion/Excel")]
+        [PermissionAuthorize("Informe.CanalaDeDistribucion")]
         public async Task<IActionResult> CanalDeDistribucionExcel(DateTime fechaInicio, DateTime fechaFinal, int? GrDistribucion = null)
         {
             try
@@ -113,6 +117,7 @@ namespace Miluc.Server.Controllers.SAPController
             }
         }
         [HttpGet("Trazabilidad/Excel")]
+        [PermissionAuthorize("Informe.Trazabilidad")]
         public async Task<IActionResult> TrazabilidadOrden(DateTime FechaIncio, DateTime FechaFinal, int? CodeVendedor = null)
         {
             try

@@ -1,9 +1,10 @@
-﻿@page "/administrar-detalle-nota/detalle/{DocEntry:int}/{DocNum:int}"
+﻿@page "/nota-detalle/{DocEntry:int}/{DocNum:int}"
 
 @using Miluc.Client.Interfaces.SapInterfaces.TrazabilidadPedidos
 @using Miluc.Shared.DTOs.Sap.NotaDeEntrega
 @inject ISapTrazabilidadPedidos _sapDetalleNotaEntrega
 @inject NavigationManager _nav
+@inject IAuthClientService _auth
 
 <div class="container-fluid py-3">
     <!-- Encabezado sutil -->
@@ -18,7 +19,7 @@
                 <span class="fs-5 fw-bold text-red-accent">#@DocEntry</span>
             </div>
             <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
-                <button class="btn btn-outline-secondary btn-sm" @onclick="Volver">
+                <button class="btn btn-outline-secondary btn-sm" @onclick="Regresar">
                     <i class="bi bi-arrow-left me-2"></i> Volver
                 </button>
             </div>
@@ -148,11 +149,20 @@
 
     public List<Dln1DetalleReaderDto> listaDetalleNota = new();
     private bool cargando = true;
+    [SupplyParameterFromQuery(Name = "returnUrldetalleNota")]
+    public string? returnUrldetalleNota { get; set; }
+
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
+            if (!_auth.HasPermission("NotasEntrega.Details"))
+            {
+                _nav.NavigateTo("/no-autorizado");
+                return;
+            }
+
             cargando = true;
             var response = await _sapDetalleNotaEntrega.ObtenerDetalleNota(DocEntry);
 
@@ -167,8 +177,19 @@
         }
     }
 
-    private void Volver()
+    private void Regresar()
     {
-        _nav.NavigateTo($"/administrar-pedido/trazabilidad/{DocNum}");
+        if (!string.IsNullOrWhiteSpace(returnUrldetalleNota)
+            && Uri.TryCreate(returnUrldetalleNota, UriKind.Relative, out var ruta)
+            && returnUrldetalleNota.StartsWith("/")
+            && !returnUrldetalleNota.StartsWith("//"))
+        {
+            _nav.NavigateTo(ruta.ToString());
+            return;
+        }
+        else
+        {
+            _nav.NavigateTo($"/trazabilidad/{DocNum}");
+        }
     }
 }

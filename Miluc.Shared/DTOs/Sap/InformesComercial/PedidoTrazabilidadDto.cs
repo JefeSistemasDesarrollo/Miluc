@@ -17,6 +17,11 @@
         public DateTime? FechaNotaEntrega { get; set; }
         public int? NotaEntrega { get; set; }
         public decimal? CantidadNotaEntrega { get; set; }
+        public DateTime? FechaDevolucionNotaEntrega { get; set; }
+        public int ? DevolucionNotaEntrega { get; set; }
+        public decimal ? CantidadDevNotaEntrega { get; set; }
+
+
         public DateTime? FechaFactura { get; set; }
         public int? Factura { get; set; }
         public decimal? CantidadFactura { get; set; }
