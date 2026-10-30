@@ -122,7 +122,7 @@ builder.Services.AddScoped<INivelAcademicoClientService, NivelAcademicoClientSer
 builder.Services.AddScoped<IPaisClientService, PaisClienteService>();
 builder.Services.AddScoped<INacionalidadClienteService, NacionalidadClienteService>();
 builder.Services.AddScoped<ICentroCostoClienteService, CentroCostosClienteService>();
-
+builder.Services.AddScoped<IAsignacionFiltrosClient, AsignacionFiltrosClient>();
 
 builder.Services.AddSyncfusionBlazor();
 

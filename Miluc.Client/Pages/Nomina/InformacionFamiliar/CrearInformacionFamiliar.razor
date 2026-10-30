@@ -33,7 +33,7 @@
         @* --- FORMULARIO PARA AGREGAR A LA LISTA TEMPORAL --- *@
         <EditForm Model="nuevaInfoFamiliar" OnValidSubmit="AgregarAListaTemporal">
             <DataAnnotationsValidator />
-            
+
             <div class="col-12">
                 <div class="card card-custom border-0 shadow-sm rounded-4">
                     <div class="card-body p-4">
@@ -128,34 +128,34 @@
                             <i class="bi bi-plus-circle me-2"></i> Añadir a la Lista Temporal
                         </button>
                     </div>
-                    
-                        <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-3">
-                            <button type="button" class="btn btn-light-custom rounded-pill px-4 py-2.5 fw-semibold" @onclick="Volver">
-                                Cancelar
-                            </button>
-    
-                            <!-- CAMBIO: type="button", se añade @onclick y se deshabilita si no hay elementos en la cola -->
-                            <button type="button"
-                                    class="btn btn-rojo btn-secondary rounded-pill px-4"
-                                    @onclick="PersistirEnBaseDeDatos"
-                                    disabled="@(!listainformacionFamiliar.Any() || isProcessing)">
-        
-                                @if (isProcessing)
-                                {
-                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                    <span>Guardando en Servidor...</span>
-                                }
-                                else
-                                {
-                                   
-                                    <span> Guardar </span>
-                                }
-                            </button>
-                        </div>
-                   </div> 
 
+                    <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-3">
+                        <button type="button" class="btn btn-light-custom rounded-pill px-4 py-2.5 fw-semibold" @onclick="Volver">
+                            Cancelar
+                        </button>
+
+                        <!-- CAMBIO: type="button", se añade @onclick y se deshabilita si no hay elementos en la cola -->
+                        <button type="button"
+                                class="btn btn-rojo btn-secondary rounded-pill px-4"
+                                @onclick="PersistirEnBaseDeDatos"
+                                disabled="@(!listainformacionFamiliar.Any() || isProcessing)">
+
+                            @if (isProcessing)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                <span>Guardando en Servidor...</span>
+                            }
+                            else
+                            {
+
+                                <span> Guardar </span>
+                            }
+                        </button>
+                    </div>
                 </div>
-            
+
+            </div>
+
         </EditForm>
 
         @* --- TABLA 1: COLA TEMPORAL POR REGISTRAR (NUEVOS) --- *@
@@ -226,7 +226,7 @@
                                     <td class="text-center">
                                         <span class="badge @(info.Activo ? "bg-black" : "bg-danger")">@(info.Activo ? "Sí" : "No")</span>
                                     </td>
-                                    
+
                                 </tr>
                             }
                         </tbody>
@@ -234,8 +234,8 @@
                 </div>
             </div>
         </div>
-       
-       
+
+
 
     </div>
 </div>
@@ -250,9 +250,7 @@
     private bool isProcessing = false;
 
     public int idEmpresa { get; set; }
-    
-   
-        
+
     protected override async Task OnInitializedAsync()
     {
         if (!_autcliente.HasPermission("InformacionFamiliar.Create"))
@@ -261,31 +259,42 @@
             return;
         }
 
+        // 1. CARGAR LOS PARENTESCOS SIEMPRE (Es un catálogo independiente)
+        await CargarParentescos();
+
+        // 2. Validaciones de empresa / módulo de nómina para los empleados o filtros
         if (_autcliente.HasPermission("Modulo.Nomina"))
         {
-
             if (_autcliente.HasFiltro("Modulo.Nomina"))
             {
-
-                idEmpresa = Convert.ToInt32(_autcliente.CurrentSession.Filtros.FirstOrDefault(f => f.NombreModulo == "Modulo.Nomina").Filtro);
+                var filtro = _autcliente.CurrentSession?.Filtros?.FirstOrDefault(f => f.NombreModulo == "Modulo.Nomina")?.Filtro;
+                if (!string.IsNullOrEmpty(filtro))
+                {
+                    idEmpresa = Convert.ToInt32(filtro);
+                }
             }
+        }
 
-      
-      
-      
-      
-            await CargarDatosIniciales();
+        // Cargar el resto de datos dependientes
+        await CargarDatosEmpleadosYFamiliares();
+    }
 
+    private async Task CargarParentescos()
+    {
+        var respuestaParentescos = await _parentescoService.GetAllParentescosAsync();
+        if (respuestaParentescos != null && respuestaParentescos.EsCorrecto)
+        {
+            listParentescos = respuestaParentescos.Valor ?? new();
         }
     }
 
-    private async Task CargarDatosIniciales()
+    private async Task CargarDatosEmpleadosYFamiliares()
     {
-        var respuestaParentescos = await _parentescoService.GetAllParentescosAsync();
-        if (respuestaParentescos.EsCorrecto) listParentescos = respuestaParentescos.Valor;
-
-        var respuestaEmpleados = await _empleadoService.GetEmpleadosAsync(null, 1, 1000,"", idEmpresa);
-        if (respuestaEmpleados?.EsCorrecto == true) listEmpleados = respuestaEmpleados.Valor ?? new();
+        var respuestaEmpleados = await _empleadoService.GetEmpleadosAsync(null, 1, 1000, "", idEmpresa);
+        if (respuestaEmpleados?.EsCorrecto == true)
+        {
+            listEmpleados = respuestaEmpleados.Valor ?? new();
+        }
 
         await CargarFamiliaresExistentes();
         ResetFormulario();
@@ -294,7 +303,10 @@
     private async Task CargarFamiliaresExistentes()
     {
         var listinfo = await _infoFamiliarService.GetFamiliarByIdAsync(idempleado);
-        if (listinfo.EsCorrecto) listaInformacionReader = listinfo.Valor;
+        if (listinfo != null && listinfo.EsCorrecto)
+        {
+            listaInformacionReader = listinfo.Valor ?? new();
+        }
     }
 
     private void AgregarAListaTemporal()
@@ -321,7 +333,6 @@
         listainformacionFamiliar.Remove(dto);
     }
 
-    // ¡ESTA ES LA FUNCIÓN CLAVE QUE TE HACÍA FALTA!
     private async Task PersistirEnBaseDeDatos()
     {
         if (isProcessing || !listainformacionFamiliar.Any()) return;
@@ -329,18 +340,17 @@
 
         try
         {
-            // Enviar toda la lista a la API que espera un List<InfoFamiliarCreateDto>
             var respuesta = await _infoFamiliarService.CreateFamiliarAsync(listainformacionFamiliar);
 
-            if (!respuesta.EsCorrecto)
+            if (respuesta == null || !respuesta.EsCorrecto)
             {
-                await JS.InvokeVoidAsync("Swal.fire", "Error", $"No se pudo guardar la información familiar: {respuesta.Mensaje}", "error");
+                await JS.InvokeVoidAsync("Swal.fire", "Error", $"No se pudo guardar la información familiar: {respuesta?.Mensaje ?? "Error desconocido"}", "error");
             }
             else
             {
-                await JS.InvokeVoidAsync("Swal.fire", "Éxito", "Toda la información familiar ha sido guardado correctamente.", "success");
-                listainformacionFamiliar.Clear(); // Limpiar cola temporal
-                await CargarFamiliaresExistentes(); // Refrescar tabla de datos reales
+                await JS.InvokeVoidAsync("Swal.fire", "Éxito", "Toda la información familiar ha sido guardada correctamente.", "success");
+                listainformacionFamiliar.Clear();
+                await CargarFamiliaresExistentes();
             }
         }
         catch (Exception ex)
@@ -352,18 +362,20 @@
             isProcessing = false;
         }
     }
-    // Esta propiedad auxiliar convierte el valor booleano de ViveConEmpleado a string para el InputSelect y viceversa
+
     private string ViveConEmpleadoString
     {
         get => nuevaInfoFamiliar.ViveConEmpleado?.ToString().ToLower() ?? "";
         set => nuevaInfoFamiliar.ViveConEmpleado = string.IsNullOrEmpty(value) ? null : bool.Parse(value);
     }
+
     private string DependeEconomicamenteString
     {
         get => nuevaInfoFamiliar.DependeEconomicamente?.ToString().ToLower() ?? "";
         set => nuevaInfoFamiliar.DependeEconomicamente = string.IsNullOrEmpty(value) ? null : bool.Parse(value);
     }
-private string PersonaaCargoString
+
+    private string PersonaaCargoString
     {
         get => nuevaInfoFamiliar.PersonaaCargo?.ToString().ToLower() ?? "";
         set => nuevaInfoFamiliar.PersonaaCargo = string.IsNullOrEmpty(value) ? null : bool.Parse(value);

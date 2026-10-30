@@ -48,7 +48,7 @@ namespace Miluc.Shared.DTOs.Nomina.MatrizSocioDemograficaDto
         public DateTime? FechaUltimoEmpleo { get; set; }
 
         public string CargoDesempeñado { get; set; } = string.Empty;
-        public decimal UltimoSalario { get; set; }
+        public decimal? UltimoSalario { get; set; }
         public string PersonaEnCasoDeEmergencia { get; set; } = string.Empty;
         public string TelefonoEmergencia { get; set; } = string.Empty;
         public string DireccionPersonaEmergencia { get; set; } = string.Empty;

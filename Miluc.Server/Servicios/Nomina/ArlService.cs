@@ -87,8 +87,8 @@ namespace Miluc.Server.Servicios.Nomina
                     .Select(c => new ArlReaderDto
                     {
                         ArlId = c.ArlId,
-                        Nombre = c.Nombre.Trim().ToUpper(),
-                        Codigo = c.Codigo.Trim().ToUpper(),
+                        Nombre = c.Nombre,
+                        Codigo = c.Codigo,
 
                         FechaCreacion = c.FechaCreacion,
                         FechaActualizacion = c.FechaActualizacion,

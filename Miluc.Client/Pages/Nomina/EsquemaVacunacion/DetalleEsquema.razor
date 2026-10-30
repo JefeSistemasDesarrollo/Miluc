@@ -168,7 +168,7 @@
     protected override async Task OnInitializedAsync()
     {
         
-        if (_authClienteService.HasPermission("EsquemaVacunación.Details"))
+        if (!_authClienteService.HasPermission("EsquemaVacunación.Details"))
         {
             nav.NavigateTo("/no-autorizado");
             return;

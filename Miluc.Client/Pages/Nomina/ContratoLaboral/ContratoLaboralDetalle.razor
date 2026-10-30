@@ -71,8 +71,8 @@
                                         <div class="d-flex justify-content-between gap-2">
                                             <span class="text-muted">Centro de Costo:</span>
                                             <strong class="text-dark">
-                                                @(string.IsNullOrEmpty(contrato.NombreCentroCosto) 
-                                                    ? (contrato.CentroCostoId > 0 ? $"Centro #{contrato.CentroCostoId}" : "Sin asignar") 
+                                                @(string.IsNullOrEmpty(contrato.NombreCentroCosto)
+                                                    ? (contrato.CentroCostoId > 0 ? $"Centro #{contrato.CentroCostoId}" : "Sin asignar")
                                                     : contrato.NombreCentroCosto)
                                             </strong>
                                         </div>
@@ -150,51 +150,75 @@
     </div>
 </div>
 
-@* Modal Terminar Contrato *@
 @if (mostrarModalInhabilitar)
 {
-    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(2px);">
-        <div class="modal-dialog modal-dialog-centered" style="max-width: 420px;">
-            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+    <div class="modal fade show d-block" tabindex="-1"
+         style="background-color: rgba(0,0,0,.5);">
 
-                <div class="modal-header bg-light border-bottom px-4 py-3">
-                    <h5 class="modal-title fw-bold text-dark fs-6 d-flex align-items-center">
-                        <i class="bi bi-exclamation-triangle-fill text-rojo me-2 fs-5"></i> Terminar Contrato
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        Terminar Contrato
                     </h5>
-                    <button type="button" class="btn-close" @onclick="CerrarModal"></button>
+
+                    <button type="button"
+                            class="btn-close"
+                            @onclick="CerrarModal">
+                    </button>
                 </div>
 
-                <div class="modal-body p-4">
-                    <EditForm Model="modeloInhabilitacion" OnValidSubmit="GuardarInhabilitacionAsync">
+                <div class="modal-body">
+
+                    <EditForm Model="modeloInhabilitacion"
+                              OnValidSubmit="GuardarInhabilitacionAsync">
+
                         <DataAnnotationsValidator />
 
+                        <ValidationSummary />
+
                         <div class="mb-3">
-                            <label class="form-label fw-semibold text-secondary small">Fecha de Terminación<span class="text-rojo">*</span></label>
-                            <InputDate @bind-Value="modeloInhabilitacion.FechaTerminacion" class="form-control rounded-3" />
-                            <ValidationMessage For="@(() => modeloInhabilitacion.FechaTerminacion)" class="text-danger small mt-1" />
+                            <label>Fecha de Terminación</label>
+
+                            <InputDate @bind-Value="modeloInhabilitacion.FechaTerminacion"
+                                       class="form-control" />
+
+                            <ValidationMessage For="@(() => modeloInhabilitacion.FechaTerminacion)" />
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-semibold text-secondary small">Observación<span class="text-rojo">*</span></label>
-                            <InputTextArea @bind-Value="modeloInhabilitacion.Observacion" class="form-control rounded-3" rows="3" placeholder="Motivo de la terminación..." />
-                            <ValidationMessage For="@(() => modeloInhabilitacion.Observacion)" class="text-danger small mt-1" />
+                            <label>Observación</label>
+
+                            <InputTextArea @bind-Value="modeloInhabilitacion.Observacion"
+                                           class="form-control"
+                                           rows="3" />
+
+                            <ValidationMessage For="@(() => modeloInhabilitacion.Observacion)" />
                         </div>
 
-                        <div class="d-flex justify-content-end gap-2 mt-4 pt-2 border-top">
-                            <button type="button" class="btn btn-amarillo btn-miluc-amarillo rounded-pill px-3 py-2 fw-semibold small" @onclick="CerrarModal">
+                        <div class="d-flex justify-content-end gap-2">
+
+                            <button type="button"
+                                    class="btn btn-secondary"
+                                    @onclick="CerrarModal">
                                 Cancelar
                             </button>
-                            <button type="submit" class="btn btn-rojo btn-miluc rounded-pill px-3 py-2 fw-semibold small shadow-sm">
+
+                            <button type="submit"
+                                    class="btn btn-danger">
                                 Confirmar
                             </button>
+
                         </div>
+
                     </EditForm>
+
                 </div>
             </div>
         </div>
     </div>
 }
-
 @code {
     [Parameter]
     public int idempleado { get; set; }
