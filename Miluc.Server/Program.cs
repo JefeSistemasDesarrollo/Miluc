@@ -194,9 +194,9 @@ builder.Services.AddCors(options =>
     {
          // policy.WithOrigins("https://avicolamiluc.ddns.net:62")
           
-        //policy.WithOrigins("https://avicolamiluc.ddns.net:62")
+       // policy.WithOrigins("https://avicolamiluc.ddns.net:62")
        
-           policy.WithOrigins("https://localhost:7198")
+          policy.WithOrigins("https://localhost:7198")
          .AllowAnyHeader()
          .AllowAnyMethod()
        .AllowCredentials(); // OBLIGATORIO para enviar cookies

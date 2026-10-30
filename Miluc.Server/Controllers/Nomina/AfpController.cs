@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Miluc.Server.Interfaces.LogErrores;
 using Miluc.Server.Interfaces.Nomina;
+using Miluc.Server.Security;
 using Miluc.Shared.DTOs.Nomina.Afp;
 using Miluc.Shared.DTOs.Nomina.Afp.Dto;
 using Miluc.Shared.DTOs.Nomina.AfpDto;
