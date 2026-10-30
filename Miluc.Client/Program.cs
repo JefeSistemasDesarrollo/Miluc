@@ -53,9 +53,9 @@ builder.Services.AddScoped(sp =>
 
     return new HttpClient(handler)
     {
-     // BaseAddress = new Uri("https://avicolamiluc.ddns.net:61/")
-     // BaseAddress = new Uri("https://avicolamiluc.ddns.net:61/")
-     BaseAddress = new Uri("https://localhost:7222/")
+        //BaseAddress = new Uri("https://avicolamiluc.ddns.net:61/")
+        // BaseAddress = new Uri("https://avicolamiluc.ddns.net:61/")
+        BaseAddress = new Uri("https://localhost:7222/")
     };
 });
 //  AUTENTICACIÓN
@@ -116,6 +116,7 @@ builder.Services.AddScoped<IDeportesClientService, DeportesClienteService>();
 builder.Services.AddScoped<IGeneroClientService, GeneroClienteService>();
 builder.Services.AddScoped<ITipoViviendaClientService, TipoDeViviendaClientService>();
 builder.Services.AddScoped<IMedioTransporteClientService, MedioTransporteClientService>();
+builder.Services.AddScoped<IAsignacionFiltrosClient, AsignacionFiltrosClient>();
 
 builder.Services.AddScoped<INivelAcademicoClientService, NivelAcademicoClientService>();
 builder.Services.AddScoped<IPaisClientService, PaisClienteService>();

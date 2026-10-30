@@ -19,13 +19,7 @@ namespace Miluc.Server.Servicios.SapService
                         GroupName = x.GroupName
                     })
                     .ToListAsync();
-
-
-
                 return new ResponseAPI<List<BusinessPartnerGroupsDto>>().SuccessResponse(true, "Grupos de socios comerciales obtenidos correctamente", result, result.Count);
-
-
-
 
             }
             catch (Exception ex) 
