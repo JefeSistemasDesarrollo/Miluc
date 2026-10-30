@@ -8,8 +8,9 @@ namespace Miluc.Shared.DTOs.Nomina.InformacionFamiliarDto
     public class InfoFamiliarUpdateDto
     {
         public int InformacionFamiliarId { get; set; }
-        [RegularExpression(@"^[0-9]+$", ErrorMessage = "El documento solo puede contener números")]
-        [Required(ErrorMessage = " Campo documento es obligatorio")]
+        [RegularExpression(@"^[0-9]+$", ErrorMessage = "El documento solo puede contener números.")]
+        [MinLength(4, ErrorMessage = "El documento debe tener al menos 4 caracteres.")]
+        [MaxLength(20, ErrorMessage = "El documento no puede tener más de 20 caracteres.")]
 
         public string Documento { get; set; } = string.Empty;
         public int EmpleadoId { get; set; } // Foreign key de Empleado

@@ -10,8 +10,6 @@
 @using Miluc.Shared.DTOs.Nomina.NivelAcademico;
 @using Miluc.Shared.DTOs.Nomina.PaisDto;
 @using Miluc.Shared.DTOs.Nomina.TipoVivienda;
-@using Miluc.Client.Components;
-@using Syncfusion.Blazor
 @using Syncfusion.Blazor.Calendars
 @using Miluc.Shared.DTOs.Nomina.NacionalidadDto
 
@@ -145,28 +143,33 @@
                                         </select>
                                         <ValidationMessage For="@(() => matriz.GeneroId)" class="text-danger small fw-bold" />
                                     </div>
-                                    <div class="col-md-4">
+
+                                    @* --- NACIONALIDAD (CON MODAL) --- *@
+                                    <div class="col-md-6">
                                         <label class="form-label label-custom">Nacionalidad</label>
-                                        <select class="form-select" @bind="matriz.NacionalidadId">
-                                            <option value="0">Seleccione...</option>
-                                            @foreach (var item in nacionalidadList)
-                                            {
-                                                <option value="@item.NacionalidadId">@item.NacionalidadNombre</option>
-                                            }
-                                        </select>
-                                        <ValidationMessage For="@(() => matriz.NacionalidadId)" class="text-danger small fw-bold" />
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text bg-white"><i class="bi bi-flag"></i></span>
+                                            <input type="text" class="form-control cursor-pointer" readonly @onclick="AbrirModalNacionalidad"
+                                                   value="@(nacionalidadSeleccionada.NacionalidadNombre ?? "Seleccionar nacionalidad...")" />
+                                            <button class="btn btn-maroon btn-rojo" type="button" @onclick="AbrirModalNacionalidad">
+                                                <i class="bi bi-search"></i>
+                                            </button>
+                                        </div>
+                                        <ValidationMessage For="@(() => matriz.NacionalidadId)" class="text-danger small fw-bold mt-1 d-block" />
                                     </div>
 
-                                    <div class="col-md-4">
+                                    @* --- PAÍS DE NACIMIENTO (CON MODAL) --- *@
+                                    <div class="col-md-6">
                                         <label class="form-label label-custom">País de Nacimiento</label>
-                                        <select class="form-select" @bind="matriz.PaisNacimientoId">
-                                            <option value="0">Seleccione...</option>
-                                            @foreach (var item in paisList)
-                                            {
-                                                <option value="@item.PaisId">@item.pais</option>
-                                            }
-                                        </select>
-                                        <ValidationMessage For="@(() => matriz.PaisNacimientoId)" class="text-danger small fw-bold" />
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text bg-white"><i class="bi bi-globe-americas"></i></span>
+                                            <input type="text" class="form-control cursor-pointer" readonly @onclick="AbrirModalPais"
+                                                   value="@(paisSeleccionado.pais ?? "Seleccionar país...")" />
+                                            <button class="btn btn-maroon btn-rojo" type="button" @onclick="AbrirModalPais">
+                                                <i class="bi bi-search"></i>
+                                            </button>
+                                        </div>
+                                        <ValidationMessage For="@(() => matriz.PaisNacimientoId)" class="text-danger small fw-bold mt-1 d-block" />
                                     </div>
                                 </div>
                             </div>
@@ -303,32 +306,15 @@
                                     <ValidationMessage For="@(() => matriz.EntidadEducativa)" class="text-danger small fw-bold" />
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label label-custom">
-                                        Título Obtenido
-                                    </label>
-
-                                    <input type="text"
-                                           class="form-control"
-                                           @bind="matriz.TituloObtenido" />
-
-                                    <ValidationMessage For="@(() => matriz.TituloObtenido)"
-                                                       class="text-danger small fw-bold" />
+                                    <label class="form-label label-custom">Título Obtenido</label>
+                                    <input type="text" class="form-control" @bind="matriz.TituloObtenido" />
+                                    <ValidationMessage For="@(() => matriz.TituloObtenido)" class="text-danger small fw-bold" />
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label label-custom">
-                                        Fecha de Culminación de Estudios
-                                    </label>
-
-                                    <SfDatePicker TValue="DateTime?"
-                                                  @bind-Value="matriz.AñoFinalizacionEducacion"
-                                                  Format="dd/MM/yyyy"
-                                                  Placeholder="dd/mm/aaaa"
-                                                  Width="100%">
-                                    </SfDatePicker>
-                                    <ValidationMessage For="@(() => matriz.AñoFinalizacionEducacion)"
-                                                       class="text-danger small fw-bold" />
+                                    <label class="form-label label-custom">Fecha de Culminación de Estudios</label>
+                                    <SfDatePicker TValue="DateTime?" @bind-Value="matriz.AñoFinalizacionEducacion" Format="dd/MM/yyyy" Placeholder="dd/mm/aaaa" Width="100%"></SfDatePicker>
+                                    <ValidationMessage For="@(() => matriz.AñoFinalizacionEducacion)" class="text-danger small fw-bold" />
                                 </div>
-
                             </div>
                         </div>
                     </div>
@@ -350,21 +336,13 @@
                                         <ValidationMessage For="@(() => matriz.CargoDesempeñado)" class="text-danger small fw-bold" />
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label label-custom">Fecha Ultimo Empleo</label>
-                                        <SfDatePicker TValue="DateTime?"
-                                                      @bind-Value="matriz.FechaUltimoEmpleo"
-                                                      Format="dd/MM/yyyy"
-                                                      Placeholder="dd/mm/aaaa"
-                                                      Width="100%">
-                                        </SfDatePicker>
+                                        <label class="form-label label-custom">Fecha fin ultimo Empleo</label>
+                                        <SfDatePicker TValue="DateTime?" @bind-Value="matriz.FechaUltimoEmpleo" Format="dd/MM/yyyy" Placeholder="dd/mm/aaaa" Width="100%"></SfDatePicker>
                                         <ValidationMessage For="@(() => matriz.FechaUltimoEmpleo)" class="text-danger small fw-bold" />
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label label-custom">Último Salario</label>
-                                        <input type="number" step="1" min="0" class="form-control"
-                                               @bind:get="Convert.ToInt64(matriz.UltimoSalario)"
-                                               @bind:set="val => matriz.UltimoSalario = Convert.ToDecimal(val)"
-                                               onkeypress="return event.charCode >= 48 && event.charCode <= 57" />
+                                        <input type="text" class="form-control" value="@(matriz.UltimoSalario?.ToString("N0") ?? "")" @oninput="@(e => OnSalarioChanged(e.Value?.ToString() ?? string.Empty))" onkeypress="return event.charCode >= 48 && event.charCode <= 57" />
                                         <ValidationMessage For="@(() => matriz.UltimoSalario)" class="text-danger small fw-bold" />
                                     </div>
                                 </div>
@@ -410,18 +388,15 @@
                         </div>
                     </div>
 
-                </div> @* --- FIN DEL ROW PRINCIPAL G-4 --- *@
+                </div>
 
                 @* --- BOTONES DE ACCIÓN --- *@
                 <div class="d-flex justify-content-end gap-2 mt-4">
-                    <button type="button" class="btn btn-amarillo btn-outline-secondary rounded-pill px-4 py-2 transition-all fw-semibold"
-                            @onclick="Volver"
-                            disabled="@isSaving">
+                    <button type="button" class="btn btn-amarillo btn-outline-secondary rounded-pill px-4 py-2 transition-all fw-semibold" @onclick="Volver" disabled="@isSaving">
                         <i class="bi bi-arrow-left me-2"></i> Cancelar
                     </button>
 
-                    <button type="submit" class="btn btn-rojo rounded-pill px-4 py-2 transition-all fw-semibold"
-                            disabled="@(isSaving || matrizNoEncontrada)">
+                    <button type="submit" class="btn btn-rojo rounded-pill px-4 py-2 transition-all fw-semibold" disabled="@(isSaving || matrizNoEncontrada)">
                         @if (isSaving)
                         {
                             <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
@@ -435,8 +410,143 @@
                     </button>
                 </div>
             </EditForm>
-            @* --- FIN DEL EDITFORM --- *@
         }
+    </div>
+</div>
+
+@* --- MODAL DE NACIONALIDADES --- *@
+<div class="modal fade @(mostrarModalNacionalidad ? "show d-block" : "")" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 1050;">
+    <div class="modal-dialog modal-md modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-maroon-modal text-modal">
+                <h5 class="modal-title mb-0">
+                    <i class="bi bi-flag-fill me-2"></i> Buscar Nacionalidad
+                </h5>
+                <button type="button" class="btn-close text-modal ms-auto" @onclick="CerrarModalNacionalidad"></button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" placeholder="Buscar nacionalidad..."
+                           @bind="textoBusquedaNacionalidad" @bind:event="oninput" @onkeyup="HandleEnterNacionalidad">
+                    <button type="button" class="btn btn-maroon" @onclick="() => buscarEnServidorNacionalidad()">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <small class="text-muted">
+                        Registros encontrados: <strong>@cantidadDeNacionalidadesEncontradas</strong>
+                    </small>
+                </div>
+                <div class="list-group" style="max-height: 350px; overflow-y: auto;">
+                    @if (listaNacionalidades.Any())
+                    {
+                        @foreach (var item in listaNacionalidades
+                           .Skip((paginaActualNacionalidad - 1) * CantidadRegistrosPorNacionalidad)
+                           .Take(CantidadRegistrosPorNacionalidad))
+                        {
+                            <button type="button"
+                                    class="list-group-item list-group-item-action"
+                                    @onclick="() => SeleccionarNacionalidad(item)">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <strong class="text-maroon">@item.NacionalidadNombre</strong>
+                                    <small class="text-muted">ID: @item.NacionalidadId</small>
+                                </div>
+                            </button>
+                        }
+                    }
+                   
+                 
+                </div>
+                @if (cantidadDeNacionalidadesEncontradas > 0)
+                {
+                    <div class="d-flex justify-content-center mt-3">
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary btn-sm" disabled="@(paginaActualNacionalidad == 1)" @onclick="PaginaAnteriorNacionalidad">
+                                <i class="bi bi-chevron-left"></i>
+                            </button>
+                            @for (int i = Math.Max(1, paginaActualNacionalidad - 2); i <= Math.Min(TotalPaginasNacionalidad, paginaActualNacionalidad + 2); i++)
+                            {
+                                var pagina = i;
+                                <button class="btn @(paginaActualNacionalidad == pagina ? "btn-maroon text-white" : "btn-outline-secondary") btn-sm" @onclick="() => IrPaginaNacionalidad(pagina)">
+                                    @pagina
+                                </button>
+                            }
+                            <button class="btn btn-outline-secondary btn-sm" disabled="@(paginaActualNacionalidad == TotalPaginasNacionalidad)" @onclick="SiguientePaginaNacionalidad">
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@* --- MODAL DE PAÍSES --- *@
+<div class="modal fade @(mostrarModalPais ? "show d-block" : "")" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 1050;">
+    <div class="modal-dialog modal-md modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-maroon-modal text-modal">
+                <h5 class="modal-title mb-0">
+                    <i class="bi bi-globe-americas me-2"></i> Buscar País de Nacimiento
+                </h5>
+                <button type="button" class="btn-close text-modal ms-auto" @onclick="CerrarModalPais"></button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" placeholder="Buscar país..."
+                           @bind="textoBusquedaPais" @bind:event="oninput" @onkeyup="HandleEnterPais">
+                    <button type="button" class="btn btn-maroon" @onclick="() => buscarEnServidorPais()">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <small class="text-muted">
+                        Registros encontrados: <strong>@cantidadDePaisesEncontrados</strong>
+                    </small>
+                </div>
+                <div class="list-group" style="max-height: 350px; overflow-y: auto;">
+                    @if (listaPaises.Any())
+                    {
+                        @foreach (var item in listaPaises
+                                .Skip((paginaActualPais - 1) * CantidadRegistrosPorPais)
+                                .Take(CantidadRegistrosPorPais))
+                            {
+                                <button type="button"
+                                        class="list-group-item list-group-item-action"
+                                        @onclick="() => SeleccionarPais(item)">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <strong class="text-maroon">@item.pais</strong>
+                                        <small class="text-muted">ID: @item.PaisId</small>
+                                    </div>
+                                </button>
+                            }
+                        }
+                    
+                    
+                </div>
+                @if (cantidadDePaisesEncontrados > 0)
+                {
+                    <div class="d-flex justify-content-center mt-3">
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary btn-sm" disabled="@(paginaActualPais == 1)" @onclick="PaginaAnteriorPais">
+                                <i class="bi bi-chevron-left"></i>
+                            </button>
+                            @for (int i = Math.Max(1, paginaActualPais - 2); i <= Math.Min(TotalPaginasPais, paginaActualPais + 2); i++)
+                            {
+                                var pagina = i;
+                                <button class="btn @(paginaActualPais == pagina ? "btn-maroon text-white" : "btn-outline-secondary") btn-sm" @onclick="() => IrPaginaPais(pagina)">
+                                    @pagina
+                                </button>
+                            }
+                            <button class="btn btn-outline-secondary btn-sm" disabled="@(paginaActualPais == TotalPaginasPais)" @onclick="SiguientePaginaPais">
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
     </div>
 </div>
 
@@ -448,10 +558,6 @@
     private bool isLoading = true;
     private bool isSaving = false;
     private bool matrizNoEncontrada = false;
-
-    // public DateTime? DateValue { get; set; } = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 10);
-    // public DateTime MinDate { get; set; } = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 05);
-    // public DateTime MaxDate { get; set; } = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 20);
 
     private string FumaString
     {
@@ -485,6 +591,58 @@
     private List<TipoViviendaReaderDto> tipoViviendaList = new();
     private List<NacionalidadReaderDto> nacionalidadList = new();
 
+    // --- ESTADOS Y OBJETOS SELECCIONADOS ---
+    private NacionalidadReaderDto nacionalidadSeleccionada = new();
+    private PaisReaderDto paisSeleccionado = new();
+
+    private List<NacionalidadReaderDto> listaNacionalidades = new();
+    private List<NacionalidadReaderDto> listaNacionalidadesFiltro = new();
+
+    private List<PaisReaderDto> listaPaises = new();
+    private List<PaisReaderDto> listaPaisesFiltro = new();
+
+    // --- MODALES Y PAGINACIÓN NACIONALIDAD ---
+    private bool mostrarModalNacionalidad = false;
+    private void AbrirModalNacionalidad() => mostrarModalNacionalidad = true;
+    private void CerrarModalNacionalidad() => mostrarModalNacionalidad = false;
+
+    private int paginaActualNacionalidad = 1;
+    private int cantidadDeNacionalidadesEncontradas = 0;
+    private int CantidadRegistrosPorNacionalidad = 10;
+    private int TotalPaginasNacionalidad => (int)Math.Ceiling((double)cantidadDeNacionalidadesEncontradas / CantidadRegistrosPorNacionalidad);
+
+    private string _textoBusquedaNacionalidad = "";
+    public string textoBusquedaNacionalidad
+    {
+        get => _textoBusquedaNacionalidad;
+        set
+        {
+            _textoBusquedaNacionalidad = value;
+            FiltrarNacionalidad();
+        }
+    }
+
+    // --- MODALES Y PAGINACIÓN PAÍS ---
+    private bool mostrarModalPais = false;
+    private void AbrirModalPais() => mostrarModalPais = true;
+    private void CerrarModalPais() => mostrarModalPais = false;
+
+    private int paginaActualPais = 1;
+    private int cantidadDePaisesEncontrados = 0;
+    private int CantidadRegistrosPorPais = 10;
+    private int TotalPaginasPais => (int)Math.Ceiling((double)cantidadDePaisesEncontrados / CantidadRegistrosPorPais);
+
+    private string _textoBusquedaPais = "";
+    public string textoBusquedaPais
+    {
+        get => _textoBusquedaPais;
+        set
+        {
+            _textoBusquedaPais = value;
+            FiltrarPais();
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
         if (!_authClientService.HasPermission("Matriz.Update"))
@@ -513,71 +671,81 @@
             var resNivel = await _iNivelAcademico.GetNivelAcademicoAsync();
             if (resNivel?.EsCorrecto == true && resNivel.Valor != null) nivelAcademicoList = resNivel.Valor;
 
-            var resPais = await _iPais.GetPaisAsync();
-            if (resPais?.EsCorrecto == true && resPais.Valor != null) paisList = resPais.Valor;
-
             var resTipo = await _iTipoVivienda.GetTipoViviendaAsync();
             if (resTipo?.EsCorrecto == true && resTipo.Valor != null) tipoViviendaList = resTipo.Valor;
 
+            // Cargar Nacionalidades
             var resNacionalidad = await _iNacionalidad.GetNacionalidadesAsync();
-            if (resNacionalidad?.EsCorrecto == true && resNacionalidad.Valor != null) nacionalidadList = resNacionalidad.Valor;
-        }
-        catch (Exception ex)
-        {
-            await JS.InvokeVoidAsync("Swal.fire", "Error", $"Error al inicializar los catálogos: {ex.Message}", "error");
-        }
-    }
-
-    protected override async Task OnParametersSetAsync()
-    {
-        await CargarMatriz();
-    }
-
-    private async Task CargarMatriz()
-    {
-        try
-        {
-            isLoading = true;
-            matrizNoEncontrada = false;
-
-            var response = await _iMatriz.GetMatrizPorEmpleadoIdAsync(id);
-
-            if (response != null && response.EsCorrecto && response.Valor != null)
+            if (resNacionalidad?.EsCorrecto == true && resNacionalidad.Valor != null)
             {
-                var val = response.Valor;
+                nacionalidadList = resNacionalidad.Valor;
+                listaNacionalidades = nacionalidadList;
+                listaNacionalidadesFiltro = nacionalidadList;
+                cantidadDeNacionalidadesEncontradas = nacionalidadList.Count;
+            }
+
+            // Cargar Paises
+            var resPais = await _iPais.GetPaisAsync();
+            if (resPais?.EsCorrecto == true && resPais.Valor != null)
+            {
+                paisList = resPais.Valor;
+                listaPaises = paisList;
+                listaPaisesFiltro = paisList;
+                cantidadDePaisesEncontrados = paisList.Count;
+            }
+
+            // Cargar Datos de la Matriz por ID
+            // Cargar Datos de la Matriz por ID
+            var resMatriz = await _iMatriz.GetMatrizPorEmpleadoIdAsync(id);
+
+            if (resMatriz?.EsCorrecto == true && resMatriz.Valor != null)
+            {
+                var item = resMatriz.Valor;
 
                 matriz = new MatrizSocioDemograficaUpdateDto
                 {
-                    MatrizSociodemograficaId = val.MatrizSociodemograficaId,
-                    EmpleadoId = val.EmpleadoId,
-                    NombreEmpleado = val.NombreEmpleado,
-                    ConsentimientoInformado = val.ConsentimientoInformado,
-                    Edad = val.Edad,
-                    GeneroId = val.GeneroId,
-                    NacionalidadId = val.NacionalidadId,
-                    PaisNacimientoId = val.PaisNacimientoId,
-                    CondicionMedicaId = val.CondicionMedicaId,
-                    DeporteId = val.DeporteId,
-                    Hobbies = val.Hobbies,
-                    Fuma = val.Fuma,
-                    FumaVecesAlMes = val.FumaVecesAlMes,
-                    Alcohol = val.Alcohol,
-                    BebeVecesAlAño = val.BebeVecesAlAño,
-                    MedioDeTransporteId = val.MedioDeTransporteId,
-                    ClaseDeViviendaId = val.ClaseDeViviendaId,
-                    TipoDeViviendaId = val.TipoDeViviendaId,
-                    NivelAcademicoId = val.NivelAcademicoId,
-                    EntidadEducativa = val.EntidadEducativa,
-                    TituloObtenido = val.TituloObtenido,
-                    AñoFinalizacionEducacion = val.AñoFinalizacionEducacion,
-                    UltimaEmpresaTrabajo = val.UltimaEmpresaTrabajo,
-                    CargoDesempeñado = val.CargoDesempeñado,
-                    FechaUltimoEmpleo = val.FechaUltimoEmpleo,
-                    UltimoSalario = val.UltimoSalario??0,
-                    PersonaEnCasoDeEmergencia = val.PersonaEnCasoDeEmergencia,
-                    TelefonoEmergencia = val.TelefonoEmergencia,
-                    DireccionPersonaEmergencia = val.DireccionPersonaEmergencia
+
+                    EmpleadoId = item.EmpleadoId,
+                    NombreEmpleado = item.NombreEmpleado,
+                    ConsentimientoInformado = item.ConsentimientoInformado,
+                    Edad = item.Edad,
+                    GeneroId = item.GeneroId,
+                    NacionalidadId = item.NacionalidadId,
+                    PaisNacimientoId = item.PaisNacimientoId,
+                    CondicionMedicaId = item.CondicionMedicaId,
+                    DeporteId = item.DeporteId,
+                    Hobbies = item.Hobbies,
+                    Fuma = item.Fuma,
+                    FumaVecesAlMes = item.FumaVecesAlMes,
+                    Alcohol = item.Alcohol,
+                    BebeVecesAlAño = item.BebeVecesAlAño,
+                    MedioDeTransporteId = item.MedioDeTransporteId,
+                    ClaseDeViviendaId = item.ClaseDeViviendaId,
+                    TipoDeViviendaId = item.TipoDeViviendaId,
+                    NivelAcademicoId = item.NivelAcademicoId,
+                    EntidadEducativa = item.EntidadEducativa,
+                    TituloObtenido = item.TituloObtenido,
+                    AñoFinalizacionEducacion = item.AñoFinalizacionEducacion,
+                    UltimaEmpresaTrabajo = item.UltimaEmpresaTrabajo,
+                    CargoDesempeñado = item.CargoDesempeñado,
+                    FechaUltimoEmpleo = item.FechaUltimoEmpleo,
+                    UltimoSalario = item.UltimoSalario,
+                    PersonaEnCasoDeEmergencia = item.PersonaEnCasoDeEmergencia,
+                    TelefonoEmergencia = item.TelefonoEmergencia,
+                    DireccionPersonaEmergencia = item.DireccionPersonaEmergencia
                 };
+
+                if (matriz.NacionalidadId > 0)
+                {
+                    nacionalidadSeleccionada = nacionalidadList
+                        .FirstOrDefault(n => n.NacionalidadId == matriz.NacionalidadId) ?? new();
+                }
+
+                if (matriz.PaisNacimientoId > 0)
+                {
+                    paisSeleccionado = paisList
+                        .FirstOrDefault(p => p.PaisId == matriz.PaisNacimientoId) ?? new();
+                }
             }
             else
             {
@@ -586,45 +754,150 @@
         }
         catch (Exception ex)
         {
+            await JS.InvokeVoidAsync("console.error", ex.Message);
             matrizNoEncontrada = true;
-            await JS.InvokeVoidAsync("Swal.fire", "Error", $"Error al cargar la matriz sociodemográfica: {ex.Message}", "error");
         }
         finally
         {
             isLoading = false;
-            StateHasChanged();
         }
     }
 
+    // --- ACCIONES DE SELECCIÓN ---
+    private void SeleccionarNacionalidad(NacionalidadReaderDto item)
+    {
+        nacionalidadSeleccionada = item;
+        matriz.NacionalidadId = item.NacionalidadId;
+        CerrarModalNacionalidad();
+    }
+
+    private void SeleccionarPais(PaisReaderDto item)
+    {
+        paisSeleccionado = item;
+        matriz.PaisNacimientoId = item.PaisId;
+        CerrarModalPais();
+    }
+
+    // --- FILTRADO LOCAL ---
+    private void FiltrarNacionalidad()
+    {
+        if (string.IsNullOrWhiteSpace(_textoBusquedaNacionalidad))
+        {
+            listaNacionalidades = listaNacionalidadesFiltro.ToList();
+        }
+        else
+        {
+            listaNacionalidades = listaNacionalidadesFiltro
+                .Where(n => n.NacionalidadNombre?.Contains(
+                    _textoBusquedaNacionalidad.Trim(),
+                    StringComparison.OrdinalIgnoreCase) ?? false)
+                .ToList();
+        }
+
+        cantidadDeNacionalidadesEncontradas = listaNacionalidades.Count;
+        paginaActualNacionalidad = 1;
+    }
+    private void FiltrarPais()
+    {
+        if (string.IsNullOrWhiteSpace(_textoBusquedaPais))
+        {
+            listaPaises = listaPaisesFiltro.ToList();
+        }
+        else
+        {
+            listaPaises = listaPaisesFiltro
+                .Where(p => p.pais?.Contains(
+                    _textoBusquedaPais.Trim(),
+                    StringComparison.OrdinalIgnoreCase) ?? false)
+                .ToList();
+        }
+
+        cantidadDePaisesEncontrados = listaPaises.Count;
+        paginaActualPais = 1;
+    }
+
+
+    private async Task buscarEnServidorNacionalidad(string? text = null, int? paginador = null, int? cantidad = null)
+    {
+        var resNacionalidad = await _iNacionalidad.GetNacionalidadesAsync();
+        if (resNacionalidad?.EsCorrecto == true && resNacionalidad.Valor != null)
+        {
+            listaNacionalidadesFiltro = resNacionalidad.Valor;
+            cantidadDeNacionalidadesEncontradas = resNacionalidad.Valor.Count;
+            FiltrarNacionalidad();
+        }
+    }
+
+    private async Task buscarEnServidorPais(string? text = null, int? paginador = null, int? cantidad = null)
+    {
+        var resPais = await _iPais.GetPaisAsync();
+        if (resPais?.EsCorrecto == true && resPais.Valor != null)
+        {
+            listaPaisesFiltro = resPais.Valor;
+            cantidadDePaisesEncontrados = resPais.Valor.Count;
+            FiltrarPais();
+        }
+    }
+
+    private async Task HandleEnterNacionalidad(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            await buscarEnServidorNacionalidad();
+    }
+
+    private async Task HandleEnterPais(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            await buscarEnServidorPais();
+    }
+
+    private void IrPaginaNacionalidad(int pagina) => paginaActualNacionalidad = pagina;
+    private void PaginaAnteriorNacionalidad() { if (paginaActualNacionalidad > 1) paginaActualNacionalidad--; }
+    private void SiguientePaginaNacionalidad() { if (paginaActualNacionalidad < TotalPaginasNacionalidad) paginaActualNacionalidad++; }
+
+    private void IrPaginaPais(int pagina) => paginaActualPais = pagina;
+    private void PaginaAnteriorPais() { if (paginaActualPais > 1) paginaActualPais--; }
+    private void SiguientePaginaPais() { if (paginaActualPais < TotalPaginasPais) paginaActualPais++; }
+
+    private void OnSalarioChanged(string value)
+    {
+        if (long.TryParse(value.Replace(",", "").Replace(".", ""), out long result))
+        {
+            matriz.UltimoSalario = result;
+        }
+        else
+        {
+            matriz.UltimoSalario = null;
+        }
+    }
+
+    private void Volver() => nav.NavigateTo("/Administrar/MatrizSociodemografica");
+
     private async Task Guardar()
     {
+        if (isSaving) return;
+        isSaving = true;
+
         try
         {
-            isSaving = true;
             var response = await _iMatriz.updateMatrizAsync(matriz);
-
-            if (response != null && response.EsCorrecto)
+            if (response?.EsCorrecto == true)
             {
-                await JS.InvokeVoidAsync("Swal.fire", "¡Éxito!", "Matriz sociodemográfica actualizada correctamente.", "success");
+                await JS.InvokeVoidAsync("Swal.fire", "¡Éxito!", "Matriz actualizada correctamente.", "success");
                 Volver();
             }
             else
             {
-                await JS.InvokeVoidAsync("Swal.fire", "Error", response?.Mensaje ?? "No se pudo actualizar la matriz.", "error");
+                await JS.InvokeVoidAsync("Swal.fire", "Error", response?.Mensaje ?? "No se pudo actualizar.", "error");
             }
         }
         catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("Swal.fire", "Error", $"Ocurrió un error al guardar: {ex.Message}", "error");
+            await JS.InvokeVoidAsync("Swal.fire", "Error", ex.Message, "error");
         }
         finally
         {
             isSaving = false;
         }
-    }
-
-    private void Volver()
-    {
-        nav.NavigateTo("/Administrar/MatrizSociodemografica");
     }
 }

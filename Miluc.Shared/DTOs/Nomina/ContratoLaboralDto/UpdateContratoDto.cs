@@ -29,7 +29,6 @@ namespace Miluc.Shared.DTOs.Nomina.ContratoLaboralDto
         [Range(1, int.MaxValue, ErrorMessage = "Seleccione un cargo")]
         public int CargoId { get; set; }
 
-      
 
         [Required(ErrorMessage = "El salario es obligatorio")]
         [Range(typeof(decimal), "1750906", "999999999",  ErrorMessage = "El salario debe ser superior al salario mínimo legal vigente y menor a 999.999.999.")]

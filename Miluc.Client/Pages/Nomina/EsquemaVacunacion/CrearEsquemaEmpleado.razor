@@ -40,14 +40,14 @@
                     <div class="card-body p-4">
                         <div class="section-title-container mb-4">
                             <span class="badge bg-vinotinto-light text-vinotinto rounded-pill mb-2 px-3 py-2 fw-bold text-uppercase tracking-wider">Paso 1</span>
-                            <h5 class="fw-bold text-dark m-0">Selección de Vacunación</h5>
+                            <h5 class="fw-bold text-dark m-0">Selección de Vacunas</h5>
                         </div>
 
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-capsule"></i></span> Vacuna<span class="text-danger">*</span></label>
                                 <div class="input-group-custom">
-                                    <InputSelect @bind-Value="createEsquema.VacunaId" class="form-control input-custom">
+                                    <InputSelect @bind-Value="createEsquema.VacunaId" class="form-select">
                                         <option value="0">-- Seleccionar vacuna --</option>
                                         @foreach (var vacuna in listVacuna)
                                         {
