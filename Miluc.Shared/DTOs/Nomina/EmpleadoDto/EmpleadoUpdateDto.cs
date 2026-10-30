@@ -1,4 +1,6 @@
-﻿using Miluc.Shared.DTOs.Usuarios;
+﻿using Miluc.Shared.DTOs.Nomina.Validations;
+using Miluc.Shared.DTOs.Usuarios;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -29,14 +31,15 @@ namespace Miluc.Shared.DTOs.Nomina.EmpleadoDto
         public string PrimerApellido { get; set; } = string.Empty;
 
         public string? SegundoApellido { get; set; }
+        [Range(1, int.MaxValue, ErrorMessage = "Debe seleccionar una de Empresa")]
         public int EmpresaId { get; set; }
 
-
         [Required(ErrorMessage = "La fecha de nacimiento es obligatoria.")]
+        [MayorDeEdad(ErrorMessage = "El empleado debe ser mayor de 18 años y no debe tener mas de 80 años.")]
         public DateTime? FechaNacimiento { get; set; }
 
-        
         [Required(ErrorMessage = "La fecha de expedición del documento es obligatoria.")]
+        
         public DateTime? FechaExpedicionDoc { get; set; }
 
         [Required(ErrorMessage = "El municipio es obligatorio.")]

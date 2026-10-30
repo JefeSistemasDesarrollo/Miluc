@@ -12,57 +12,49 @@ namespace Miluc.Server.Servicios.Nomina
     {
         public async Task<CajaCompensacionReaderDto> CajaUpdate(CajaUpdate cajaUpdate)
         {
-            try
+            var caja = await _context.CajaCompensacion
+                .FirstOrDefaultAsync(e => e.CajaCompensacionId == cajaUpdate.CajaCompensacionId);
+
+            if (caja == null)
+                throw new Exception("La caja de compensación no existe.");
+
+            var nombreFormateado = cajaUpdate.Nombre?.Trim().ToUpper();
+            var codigoFormateado = cajaUpdate.Codigo?.Trim().ToUpper();
+
+            var existeCaja = await _context.CajaCompensacion.AnyAsync(e =>
+                e.CajaCompensacionId != cajaUpdate.CajaCompensacionId &&
+                (
+                    e.Nombre.ToUpper() == nombreFormateado ||
+                    e.Codigo.ToUpper() == codigoFormateado
+                ));
+
+            if (existeCaja)
+                throw new Exception("Ya existe otra caja de compensación con el mismo nombre o código.");
+
+            if (caja.Activo && !cajaUpdate.Activo)
             {
-                var caja = await _context.CajaCompensacion
-                    .FirstOrDefaultAsync(e => e.CajaCompensacionId == cajaUpdate.CajaCompensacionId);
+                bool tieneEmpleadosAfiliados = await _context.AfiliacionSeguridadSocial
+                    .AnyAsync(a => a.CajaCompensacionId == cajaUpdate.CajaCompensacionId);
 
-                if (caja == null)
-                    throw new Exception("La caja de compensación no existe.");
-
-                var nombreFormateado = cajaUpdate.Nombre?.Trim().ToUpper();
-                var codigoFormateado = cajaUpdate.Codigo?.Trim().ToUpper();
-
-                
-                var existeCaja = await _context.CajaCompensacion.AnyAsync(e =>
-                    e.CajaCompensacionId != cajaUpdate.CajaCompensacionId &&
-                    (e.Nombre.ToUpper() == nombreFormateado || e.Codigo.ToUpper() == codigoFormateado)
-                );
-
-                if (existeCaja)
-                    throw new Exception("Ya existe otra caja de compensación con el mismo nombre o código.");
-
-                if (caja.Activo && !cajaUpdate.Activo)
-                {
-                    bool tieneEmpleadosAfiliados = await _context.AfiliacionSeguridadSocial
-                        .AnyAsync(a => a.CajaCompensacionId == cajaUpdate.CajaCompensacionId);
-
-                    if (tieneEmpleadosAfiliados)
-                    {
-                        throw new Exception("La caja de compensación no se puede inactivar porque tiene empleados afiliados.");
-                    }
-                }
-
-                caja.Nombre = cajaUpdate.Nombre;
-                caja.Codigo = cajaUpdate.Codigo;
-                caja.FechaActualizacion = DateTime.Now;
-                caja.Activo = cajaUpdate.Activo;
-
-                await _context.SaveChangesAsync();
-
-                return new CajaCompensacionReaderDto
-                {
-                    CajaCompensacionId = caja.CajaCompensacionId,
-                    Nombre = caja.Nombre,
-                    Codigo = caja.Codigo,
-                    FechaActualizacion = caja.FechaActualizacion,
-                    Activo = caja.Activo
-                };
+                if (tieneEmpleadosAfiliados)
+                    throw new Exception("La caja de compensación no se puede inactivar porque tiene empleados afiliados.");
             }
-            catch (Exception ex)
+
+            caja.Nombre = nombreFormateado;
+            caja.Codigo = codigoFormateado;
+            caja.Activo = cajaUpdate.Activo;
+            caja.FechaActualizacion = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+
+            return new CajaCompensacionReaderDto
             {
-                throw new Exception(ex.Message);
-            }
+                CajaCompensacionId = caja.CajaCompensacionId,
+                Nombre = caja.Nombre,
+                Codigo = caja.Codigo,
+                FechaActualizacion = caja.FechaActualizacion,
+                Activo = caja.Activo
+            };
         }
 
         public async Task<CajaCompensacionReaderDto> CreateCajaAsync(CajaCreateDto cajaCompensacion)
@@ -77,8 +69,8 @@ namespace Miluc.Server.Servicios.Nomina
 
                 var nuevaCaja = new CajaCompensacion
                 {
-                    Nombre = cajaCompensacion.Nombre,
-                    Codigo = cajaCompensacion.Codigo,
+                    Nombre = cajaCompensacion.Nombre.Trim().ToUpper(),
+                    Codigo = cajaCompensacion.Codigo.Trim().ToUpper(),
 
                     FechaCreacion = DateTime.UtcNow,
                     Activo = cajaCompensacion.Activo

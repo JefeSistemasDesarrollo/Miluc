@@ -159,7 +159,7 @@
 
     protected override Task OnInitializedAsync()
     {
-        if (!_authCliente.HasPermission("Arl.Crear"))
+        if (_authCliente.HasPermission("Arl.Crear"))
         {
             nav.NavigateTo("/no-autorizado");
         }

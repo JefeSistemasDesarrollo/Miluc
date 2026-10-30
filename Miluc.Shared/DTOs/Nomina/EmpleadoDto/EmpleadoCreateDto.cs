@@ -1,7 +1,9 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using Miluc.Shared.DTOs;
+using Miluc.Shared.DTOs.Nomina.Validations;
 using Miluc.Shared.DTOs.Usuarios;
+
 
 
 namespace Miluc.Shared.DTOs.Nomina.EmpleadoDto
@@ -24,15 +26,15 @@ namespace Miluc.Shared.DTOs.Nomina.EmpleadoDto
         public string PrimerApellido { get; set; } = string.Empty;
         public string? SegundoApellido { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "La fecha de nacimiento es obligatoria")]
-        [DataType(DataType.Date)]
-        [PastOrPresentDate(ErrorMessage = "La fecha de nacimiento no puede ser futura")]
-        public DateTime? FechaNacimiento { get; set; }
+        [Required(ErrorMessage = "La fecha de nacimiento es obligatoria.")]
+        [MayorDeEdad(ErrorMessage = "El empleado debe ser mayor de 18 años y no debe tener mas de 80 años.")]
 
-        [Required(ErrorMessage = "La fecha de expedición del documento es obligatoria")]
-        [DataType(DataType.Date)]
-        [PastOrPresentDate(ErrorMessage = "La fecha de expedición del documento no puede ser futura")]
+        public DateTime? FechaNacimiento { get; set; }
+        [Required(ErrorMessage = "La fecha de expedición del documento es obligatoria.")]
+        [FechaExpedicion(ErrorMessage = "La fecha de expedición no es válida.")]
         public DateTime? FechaExpedicionDoc { get; set; }
+
+       
 
         [Required(ErrorMessage = "Codigo municipio es obligatorio")]
         public string CodigoMunicipio { get; set; } = string.Empty;
@@ -55,6 +57,7 @@ namespace Miluc.Shared.DTOs.Nomina.EmpleadoDto
         public int? EstadoCivilId { get; set; }
 
         // Tabla: ContratoLaboral
+        [Range(1, int.MaxValue, ErrorMessage = "Debe seleccionar una de Empresa")]
         public int EmpresaId { get; set; }
         public int? TipoContratoId { get; set; }
 

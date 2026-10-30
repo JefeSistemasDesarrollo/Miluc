@@ -221,7 +221,10 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label label-custom">Último Salario</label>
-                                    <input type="text" class="form-control input-custom-view" value="@matriz.UltimoSalario.ToString("C0", new System.Globalization.CultureInfo("es-CO"))" readonly />
+                                    <input type="text"
+                                           class="form-control input-custom-view"
+                                           value="@(matriz.UltimoSalario.HasValue? matriz.UltimoSalario.Value.ToString("C0", new System.Globalization.CultureInfo("es-CO")): string.Empty)"
+                                           readonly />
                                 </div>
                             </div>
                         </div>

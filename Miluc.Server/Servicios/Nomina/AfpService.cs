@@ -43,8 +43,8 @@ namespace Miluc.Server.Servicios.Nomina
 
                 var nuevaAfp = new Afp
                 {
-                    Nombre = afpCreateDto.Nombre,
-                    Codigo = afpCreateDto.Codigo,
+                    Nombre = afpCreateDto.Nombre.Trim().ToUpper(),
+                    Codigo = afpCreateDto.Codigo.Trim().ToUpper(),
 
                     FechaCreacion = DateTime.UtcNow,
                     Activo = afpCreateDto.Activo
@@ -170,7 +170,7 @@ namespace Miluc.Server.Servicios.Nomina
 
                     afp.AfpId = updateAfp.AfpId;
                     afp.Nombre = updateAfp.Nombre.ToUpper();
-                    afp.Codigo = updateAfp.Codigo;
+                    afp.Codigo = updateAfp.Codigo.ToUpper();
                     afp.FechaActualizacion = DateTime.Now;
                     afp.Activo = updateAfp.Activo;
 

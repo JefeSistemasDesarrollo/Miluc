@@ -169,6 +169,18 @@
                                 </div>
                             </div>
                         </div>
+                        @* --- VALIDATION SUMMARY SEPARADO CON MARGEN AMPLIADO --- *@
+                        <div class="mt-5 mb-4">
+                            <div class="alert alert-warning d-flex align-items-start shadow-sm border-0 rounded-4 p-4">
+                                <i class="bi bi-exclamation-triangle-fill me-3 fs-4 text-warning"></i>
+                                <div>
+                                    <strong class="d-block mb-1 text-dark">Por favor revise los siguientes campos antes de continuar:</strong>
+                                    <div class="validation-summary-container text-muted small">
+                                        <ValidationSummary />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -260,7 +272,6 @@
 
                 NombreEmpresa = emp.NombreEmpresa ?? "Sin empresa asignada";
 
-                // IMPORTANTE
                 createContratoDto.EmpleadoId = emp.EmpleadoId;
                 createContratoDto.EmpresaId = emp.EmpresaId;
                 createContratoDto.NombreEmpledo = nombreEmpleado;
@@ -310,10 +321,6 @@
 
                 return;
             }
-
-            // DEBUG TEMPORAL
-            Console.WriteLine(
-                System.Text.Json.JsonSerializer.Serialize(createContratoDto));
 
             var respuesta =
                 await _contratoService.CreateContratoLaboralAsync(createContratoDto);

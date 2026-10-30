@@ -1,45 +1,43 @@
-﻿using Miluc.Shared.Validations;
-using System;
+﻿using Miluc.Shared.DTOs.Nomina.Validations;
 using System.ComponentModel.DataAnnotations;
 
-namespace Miluc.Shared.DTOs.Nomina.ContratoLaboralDto
+public class CreateContratoLaboralDto
 {
-    public class CreateContratoLaboralDto
-    {
-        // Cabecera tabla contrato laboral
-        [Range(1, int.MaxValue, ErrorMessage = "Seleccione una empresa")]
-        public int EmpresaId { get; set; } // FK de empresa
+    [Range(1, int.MaxValue, ErrorMessage = "Seleccione una empresa.")]
+    public int EmpresaId { get; set; }
 
-        [Range(1, int.MaxValue, ErrorMessage = "Seleccione un tipo de contrato")]
-        public int TipoContratoId { get; set; } // FK de tipo
+    [Range(1, int.MaxValue, ErrorMessage = "Seleccione un tipo de contrato.")]
+    public int TipoContratoId { get; set; }
 
-        public int EmpleadoId { get; set; } // FK de empleado
-        public string NombreEmpledo { get; set; } = string.Empty;
+    public int EmpleadoId { get; set; }
 
-        public DateTime? FechaCreacion { get; set; }
-        public bool Activo { get; set; }
-        public int CentroCostoId { get; set; } // FK de centro de costo
-        public string NombreCentroCosto { get; set; } = string.Empty;
-        // Detalle - tabla detalle contrato
-        public int ContratoLaboralId { get; set; }
+    public string NombreEmpledo { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "La fecha de inicio es obligatoria")]
-        [DataType(DataType.Date)]
-        [PastOrPresentDate(ErrorMessage = "Fecha inicio  no puede ser mayor")]
-        public DateTime? FechaInicio { get; set; }
+    public DateTime? FechaCreacion { get; set; }
 
-        //[Required(ErrorMessage = "La fecha de finalización es obligatoria")]
-        //[DataType(DataType.Date)]
-        //[FechaNoAnteriorHoy(ErrorMessage = "La fecha de finalización no puede ser anterior a la fecha de inicio")]
-        public DateTime? FechaFinalizacion { get; set; }
+    public bool Activo { get; set; }
 
-        [Range(1, int.MaxValue, ErrorMessage = "Seleccione un cargo")]
-        public int CargoId { get; set; }
+    [Range(1, int.MaxValue, ErrorMessage = "Seleccione un centro de costo.")]
+    public int CentroCostoId { get; set; }
 
-      
+    public string NombreCentroCosto { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "El salario es obligatorio")]
-        [RegularExpression(@"^\d+([.,]\d{1,2})?$", ErrorMessage = "El salario debe ser un número válido (hasta 2 decimales)")]
-        public decimal? Salario { get; set; }
-    }
+    public int ContratoLaboralId { get; set; }
+
+    [Required(ErrorMessage = "La fecha de inicio es obligatoria.")]
+    [DataType(DataType.Date)]
+    public DateTime? FechaInicio { get; set; }
+
+    [FechaNoAnteriorHoy(ErrorMessage = "La fecha de finalización no puede ser anterior a la fecha de inicio.")]
+    public DateTime? FechaFinalizacion { get; set; }
+
+    [Range(1, int.MaxValue, ErrorMessage = "Seleccione un cargo.")]
+    public int CargoId { get; set; }
+
+    [Required(ErrorMessage = "El salario es obligatorio.")]
+    [Range(typeof(decimal),
+        "1750906",
+        "999999999",
+        ErrorMessage = "El salario debe ser superior al salario mínimo legal vigente y menor a 999.999.999.")]
+    public decimal? Salario { get; set; }
 }
