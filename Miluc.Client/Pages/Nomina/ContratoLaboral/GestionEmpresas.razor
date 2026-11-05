@@ -102,7 +102,7 @@
                 else if (listEmpresasAlServidor == null || !listEmpresasAlServidor.Any())
                 {
                     <tr>
-                        <td colspan="4" class="text-center py-5 text-muted">
+                        <td colspan="6" class="text-center py-5 text-muted">
                             No se encontraron registros.
                         </td>
                     </tr>
@@ -176,11 +176,12 @@
     public int Id { get; set; }
 
     // --- Estado Interno ---
-    private List<EmpresaReaderDto> listEmpresasOrigen = new();      // Todos los registros traídos del servidor
-    private List<EmpresaReaderDto> listEmpresasFiltradas = new();   // Registros filtrados por texto
-    private List<EmpresaReaderDto> listEmpresasAlServidor = new();  // Registros visibles en la página actual
+    private List<EmpresaReaderDto> listEmpresasOrigen = new();
+    private List<EmpresaReaderDto> listEmpresasFiltradas = new();
+    private List<EmpresaReaderDto> listEmpresasAlServidor = new();
 
     private string _textoBusqueda = "";
+
     private string textoBusqueda
     {
         get => _textoBusqueda;
@@ -199,12 +200,12 @@
 
     protected override async Task OnInitializedAsync()
     {
-
         if (_autcliente.HasPermission("Empresa.view"))
         {
             nav.NavigateTo("/no-autorizado");
             return;
         }
+
         await CargarEmpresasAsync();
     }
 
@@ -216,41 +217,60 @@
 
         try
         {
-            var respuesta = await _empresaService.GetEmpresasAsync(_textoBusqueda, paginaActual, cantidadPorPagina);
+            var respuesta = await _empresaService.GetEmpresasAsync(
+                _textoBusqueda,
+                paginaActual,
+                cantidadPorPagina);
 
-            if (respuesta != null && respuesta.EsCorrecto)
+            if (respuesta?.EsCorrecto == true)
             {
                 listEmpresasOrigen = respuesta.Valor ?? new List<EmpresaReaderDto>();
 
-                // Si el API no devuelve CantRegistros, tomamos el conteo de la lista recibida
-                totalRegistros = respuesta.CantRegistros > 0 ? respuesta.CantRegistros : listEmpresasOrigen.Count;
+                totalRegistros = respuesta.CantRegistros > 0
+                    ? respuesta.CantRegistros
+                    : listEmpresasOrigen.Count;
 
                 AplicarFiltroYPaginacion();
             }
             else
             {
+                // No hay registros = NO es error
                 listEmpresasOrigen = new List<EmpresaReaderDto>();
                 listEmpresasFiltradas = new List<EmpresaReaderDto>();
                 listEmpresasAlServidor = new List<EmpresaReaderDto>();
                 totalRegistros = 0;
 
-                string mensaje = respuesta?.Mensaje ?? "Sin respuesta del servidor.";
-                await MostrarAlertaError("Error al consultar empresas", mensaje, respuesta?.Errores);
+                var mensaje = respuesta?.Mensaje ?? string.Empty;
+
+                // if (!string.IsNullOrWhiteSpace(mensaje) &&
+                //     !mensaje.Contains("no hay", StringComparison.OrdinalIgnoreCase) &&
+                //     !mensaje.Contains("no existen", StringComparison.OrdinalIgnoreCase) &&
+                //     !mensaje.Contains("no se encontraron", StringComparison.OrdinalIgnoreCase))
+                // {
+                //     // await MostrarAlertaError(
+                //     //     "Error al consultar empresas",
+                //     //     mensaje,
+                //     //     respuesta?.Errores);
+                // }
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error al consultar empresas: {ex.Message}");
-            await MostrarAlertaError("Error de comunicación", "No fue posible conectar con el servidor.");
-        }
 
-        cargando = false;
-        StateHasChanged();
+            await MostrarAlertaError(
+                "Error de comunicación",
+                "No fue posible conectar con el servidor.");
+        }
+        finally
+        {
+            cargando = false;
+            StateHasChanged();
+        }
     }
 
     private void AplicarFiltroYPaginacion()
     {
-        // 1. Filtrar localmente si existe texto en el campo de búsqueda
         if (string.IsNullOrWhiteSpace(_textoBusqueda))
         {
             listEmpresasFiltradas = listEmpresasOrigen;
@@ -258,13 +278,17 @@
         else
         {
             listEmpresasFiltradas = listEmpresasOrigen.Where(e =>
-                (!string.IsNullOrEmpty(e.NombreEmpresa) && e.NombreEmpresa.Contains(_textoBusqueda, StringComparison.OrdinalIgnoreCase)) ||
-                (!string.IsNullOrEmpty(e.Nit) && e.Nit.Contains(_textoBusqueda, StringComparison.OrdinalIgnoreCase))
+                (!string.IsNullOrEmpty(e.NombreEmpresa) &&
+                 e.NombreEmpresa.Contains(_textoBusqueda, StringComparison.OrdinalIgnoreCase))
+                ||
+                (!string.IsNullOrEmpty(e.Nit) &&
+                 e.Nit.Contains(_textoBusqueda, StringComparison.OrdinalIgnoreCase))
             ).ToList();
         }
 
-        // 2. Verificar si el servidor ya entregó los datos paginados o la lista completa
-        bool servidorYaPagino = listEmpresasOrigen.Count <= cantidadPorPagina && totalRegistros > listEmpresasOrigen.Count;
+        bool servidorYaPagino =
+            listEmpresasOrigen.Count <= cantidadPorPagina &&
+            totalRegistros > listEmpresasOrigen.Count;
 
         if (servidorYaPagino)
         {
@@ -272,10 +296,10 @@
         }
         else
         {
-            // Paginación local si el servidor retorna todos los elementos
             totalRegistros = listEmpresasFiltradas.Count;
 
             int maxPaginas = totalPaginas;
+
             if (paginaActual > maxPaginas && maxPaginas > 0)
                 paginaActual = maxPaginas;
 
@@ -322,7 +346,9 @@
     {
         get
         {
-            if (totalRegistros <= 0) return 1;
+            if (totalRegistros <= 0)
+                return 1;
+
             return (int)Math.Ceiling((double)totalRegistros / cantidadPorPagina);
         }
     }
@@ -334,7 +360,6 @@
 
         paginaActual = nuevaPagina;
 
-        // Si tenemos más datos cargados localmente que la cantidad por página, paginamos local
         if (listEmpresasOrigen.Count > cantidadPorPagina)
         {
             AplicarFiltroYPaginacion();
@@ -351,23 +376,27 @@
     // --- ACCIONES CRUD ---
     private async Task EliminarEmpresaAsync(int id)
     {
-        var resultadoSwal = await js.InvokeAsync<System.Text.Json.JsonElement>("Swal.fire", new
-        {
-            title = "¿Deseas eliminar esta empresa?",
-            text = "Esta acción removerá el registro permanentemente si no cuenta con transacciones.",
-            icon = "warning",
-            showCancelButton = true,
-            confirmButtonColor = "#D62F46",
-            cancelButtonColor = "#FDC922",
-            confirmButtonText = "Sí, eliminar",
-            cancelButtonText = "Cancelar"
-        });
+        var resultadoSwal = await js.InvokeAsync<System.Text.Json.JsonElement>(
+            "Swal.fire",
+            new
+            {
+                title = "¿Deseas eliminar esta empresa?",
+                text = "Esta acción removerá el registro permanentemente si no cuenta con transacciones.",
+                icon = "warning",
+                showCancelButton = true,
+                confirmButtonColor = "#D62F46",
+                cancelButtonColor = "#FDC922",
+                confirmButtonText = "Sí, eliminar",
+                cancelButtonText = "Cancelar"
+            });
 
-        bool confirmado = resultadoSwal.ValueKind == System.Text.Json.JsonValueKind.Object &&
-                          resultadoSwal.TryGetProperty("isConfirmed", out var propiedadConfirmado) &&
-                          propiedadConfirmado.GetBoolean();
+        bool confirmado =
+            resultadoSwal.ValueKind == System.Text.Json.JsonValueKind.Object &&
+            resultadoSwal.TryGetProperty("isConfirmed", out var propiedadConfirmado) &&
+            propiedadConfirmado.GetBoolean();
 
-        if (!confirmado) return;
+        if (!confirmado)
+            return;
 
         cargando = true;
         StateHasChanged();
@@ -376,7 +405,7 @@
         {
             var respuesta = await _empresaService.DeleteEmpresaAsync(id);
 
-            if (respuesta != null && respuesta.EsCorrecto)
+            if (respuesta?.EsCorrecto == true)
             {
                 await js.InvokeVoidAsync("Swal.fire", new
                 {
@@ -391,13 +420,22 @@
             }
             else
             {
-                string mensajeServidor = respuesta?.Mensaje ?? "No se pudo procesar la solicitud.";
-                await MostrarAlertaError("No se puede eliminar", mensajeServidor, respuesta?.Errores);
+                string mensajeServidor =
+                    respuesta?.Mensaje ?? "No se pudo procesar la solicitud.";
+
+                await MostrarAlertaError(
+                    "No se puede eliminar",
+                    mensajeServidor,
+                    respuesta?.Errores);
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error durante el proceso de borrado: {ex.Message}");
+
+            await MostrarAlertaError(
+                "Error",
+                "Ocurrió un error al eliminar la empresa.");
         }
         finally
         {
@@ -407,21 +445,36 @@
     }
 
     // --- AYUDANTES DE ALERTAS ---
-    private async Task MostrarAlertaError(string titulo, string mensaje, IEnumerable<string>? errores = null)
+    private async Task MostrarAlertaError(
+        string titulo,
+        string mensaje,
+        IEnumerable<string>? errores = null)
     {
-        string erroresHtml = errores != null && errores.Any() ? string.Join("<br>", errores) : "";
+        string erroresHtml = errores != null && errores.Any()
+            ? string.Join("<br>", errores)
+            : "";
+
         await js.InvokeVoidAsync("Swal.fire", new
         {
             icon = "error",
             title = titulo,
-            html = string.IsNullOrEmpty(erroresHtml) ? mensaje : $"{mensaje}<br>{erroresHtml}",
+            html = string.IsNullOrEmpty(erroresHtml)
+                ? mensaje
+                : $"{mensaje}<br>{erroresHtml}",
             confirmButtonColor = "#6c1d1d"
         });
     }
 
     // --- REDIRECCIONES ---
-    private void IrACrearEmpresa() => nav.NavigateTo("/Administrar/Empresas/Crear");
-    private void EditarEmpresa(int id) => nav.NavigateTo($"/Administrar/Empresas/Editar/{id}");
-    private void Volver() => nav.NavigateTo("/Card/Contratos");
-    private void VerDetalle(int id) => nav.NavigateTo($"/Administrar/Empresa/Detalle/{id}");
+    private void IrACrearEmpresa()
+        => nav.NavigateTo("/Administrar/Empresas/Crear");
+
+    private void EditarEmpresa(int id)
+        => nav.NavigateTo($"/Administrar/Empresas/Editar/{id}");
+
+    private void Volver()
+        => nav.NavigateTo("/Card/Contratos");
+
+    private void VerDetalle(int id)
+        => nav.NavigateTo($"/Administrar/Empresa/Detalle/{id}");
 }

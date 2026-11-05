@@ -198,18 +198,16 @@
         }
 
 
-            if (_authClienteService.HasFiltro("Modulo.Nomina"))
-            {
+        if (_authClienteService.HasFiltro("Modulo.Nomina"))
+        {
+            idEmpresa = Convert.ToInt32(_authClienteService.CurrentSession.Filtros.FirstOrDefault(f => f.NombreModulo == "Modulo.Nomina")?.Filtro);
+        }
 
-                idEmpresa = Convert.ToInt32(_authClienteService.CurrentSession.Filtros.FirstOrDefault(f => f.NombreModulo == "Modulo.Nomina").Filtro);
-          }
-        
        
-
 
         if (_authClienteService.HasPermission("Employee.FilterCorreo"))
         {
-            _correo = _authClienteService.CurrentSession.UserName;
+            _correo = _authClienteService.CurrentSession.UserName ?? string.Empty;
         }
         
        

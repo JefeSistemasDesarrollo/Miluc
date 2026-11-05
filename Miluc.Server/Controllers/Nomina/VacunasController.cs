@@ -9,7 +9,7 @@ namespace Miluc.Server.Controllers.Nomina
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class VacunasController(IVacunaService _service, IEsquemaVacunacionService _esquemaService, ILogService _log) : Controller
+    public class VacunasController(IVacunaService _service,  ILogService _log) : Controller
     {
         [HttpGet]
         public async Task<ActionResult<ResponseAPI<List<VacunaReaderDto>>>> GetVacunaAsync()
@@ -66,51 +66,7 @@ namespace Miluc.Server.Controllers.Nomina
 
             }
         }
-            //[HttpGet("{id}")]
-            //public async Task<ActionResult<ResponseAPI<List<VacunaReaderDto>>>> GetVacunaByIdAsync(int id)
-            //{
-
-            //    try
-            //    {
-            //        var vacuna = await _service.GetVacunaByIdAsync(id);
-            //        if (vacuna == null)
-            //        {
-            //            return NotFound(new ResponseAPI<List<VacunaReaderDto>>
-            //            {
-            //                EsCorrecto = false,
-            //                Valor = null,
-            //                Mensaje = "No se encontraron registros de vacunas.",
-            //                CantRegistros = 0
-            //            });
-            //        }
-            //        return Ok(new ResponseAPI<List<VacunaReaderDto>>
-            //        {
-            //            EsCorrecto = true,
-            //            Valor = vacuna,
-            //            Mensaje = "Vacuna obtenida correctamente.",
-            //            CantRegistros = 1
-            //        });
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        await _log.GuardarErrorAsync(
-            //             message: ex.Message,
-            //             StackTrace: ex.StackTrace,
-            //             usuario: User.Identity?.Name ?? "Sistema",
-            //             metodo: "HttpGet",
-            //             ruta: $"/api/Vacunas",
-            //             ip: HttpContext.Connection.RemoteIpAddress?.ToString(),
-            //             origen: "VacunasController");
-            //        return StatusCode(500, new ResponseAPI<List<VacunaReaderDto>>
-            //        {
-            //            EsCorrecto = false,
-            //            Valor = null,
-            //            Mensaje = $"Error al obtener la información de vacunas: {ex.Message}",
-            //            CantRegistros = 0
-            //        });
-
-
-            //    }
+            
 
             }
 

@@ -54,7 +54,8 @@
                             <div class="col-md-4">
                                 <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-card-text"></i></span> Documento*</label>
                                 <div class="input-group-custom">
-                                    <InputText class="form-control input-custom" @bind-Value="nuevaInfoFamiliar.Documento" placeholder="Ej: 12345678" />
+                                    <InputText class="form-control input-custom" @bind-Value="nuevaInfoFamiliar.Documento" placeholder="Ej: 12345678" onkeypress="return event.charCode >= 48 && event.charCode <= 57" />
+
                                 </div>
                                 <ValidationMessage For="@(() => nuevaInfoFamiliar.Documento)" class="text-danger small mt-1 d-block fw-medium" />
                             </div>
@@ -62,8 +63,8 @@
                             <div class="col-md-4">
                                 <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-person-dash"></i></span> Parentesco*</label>
                                 <div class="input-group-custom">
-                                    <InputSelect @bind-Value="nuevaInfoFamiliar.ParentescoId" class="form-control input-custom">
-                                        <option value="">Seleccionar Parentesco</option>
+                                    <InputSelect @bind-Value="nuevaInfoFamiliar.ParentescoId" class="form-select">
+                                        <option value="">--Seleccione--</option>
                                         @foreach (var parentesco in listParentescos)
                                         {
                                             <option value="@parentesco.ParentescoId">@parentesco.NombreParentesco</option>
@@ -89,7 +90,7 @@
                             <div class="col-md-4">
                                 <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-house-heart"></i></span> ¿Vive con el empleado? *</label>
                                 <div class="input-group-custom">
-                                    <InputSelect @bind-Value="ViveConEmpleadoString" class="form-control input-custom">
+                                    <InputSelect @bind-Value="ViveConEmpleadoString" class="form-select">
                                         <option value="">-- Seleccione --</option>
                                         <option value="true">Sí</option>
                                         <option value="false">No</option>
@@ -101,7 +102,7 @@
                             <div class="col-md-4">
                                 <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-currency-dollar"></i></span> ¿Depende económicamente? *</label>
                                 <div class="input-group-custom">
-                                    <InputSelect @bind-Value="DependeEconomicamenteString" class="form-control input-custom">
+                                    <InputSelect @bind-Value="DependeEconomicamenteString" class="form-select">
                                         <option value="">-- Seleccione --</option>
                                         <option value="true">Sí</option>
                                         <option value="false">No</option>
@@ -113,7 +114,7 @@
                             <div class="col-md-4">
                                 <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-people"></i></span> ¿Persona a cargo? *</label>
                                 <div class="input-group-custom">
-                                    <InputSelect @bind-Value="PersonaaCargoString" class="form-control input-custom">
+                                    <InputSelect @bind-Value="PersonaaCargoString" class="form-select">
                                         <option value="">-- Seleccione --</option>
                                         <option value="true">Sí</option>
                                         <option value="false">No</option>

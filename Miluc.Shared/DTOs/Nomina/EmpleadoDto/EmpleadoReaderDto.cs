@@ -22,6 +22,7 @@ namespace Miluc.Shared.DTOs.Nomina.EmpleadoDto
         public int EmpresaId { get; set; }
         public string NombreEmpresa { get; set; }
         public int EstadoCivilId { get; set; }//fk
+        public string? EstadoCivilNombre { get; set; }
         public string Celular { get; set; }
         public string? CelularAlterno { get; set; }
         public string CorreoElectronico { get; set; } = string.Empty;

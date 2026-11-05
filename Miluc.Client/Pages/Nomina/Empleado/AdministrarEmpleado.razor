@@ -1,7 +1,7 @@
 @page "/Administrar/Empleado"
 @using Miluc.Client.Interfaces.Nomina
 @using Miluc.Shared.DTOs.Nomina.EmpleadoDto
-@using Miluc.Shared.Models.Response
+
 @inject NavigationManager nav
 @inject IEmpleadoClientService _empleadoClientService
 @inject IJSRuntime js
@@ -333,15 +333,16 @@
 
         if (respuesta != null && respuesta.EsCorrecto)
         {
-            listempleadosOrigen = respuesta.Valor;
-            listempleadosAlservidor = respuesta.Valor;
+            listempleadosOrigen = respuesta.Valor ?? new List<EmpleadoReaderDto>();
+            listempleadosAlservidor = respuesta.Valor ?? new List<EmpleadoReaderDto>();
             totalRegistros = respuesta.CantRegistros;
         }
         else
         {
-            // Reinicia las listas en caso de error para evitar inconsistencias visuales
             listempleadosOrigen = new List<EmpleadoReaderDto>();
             listempleadosAlservidor = new List<EmpleadoReaderDto>();
+            totalRegistros = 0;
+        
 
             string erroresConcatenados = respuesta != null && respuesta.Errores != null && respuesta.Errores.Any()
                ? string.Join("<br>", respuesta.Errores)

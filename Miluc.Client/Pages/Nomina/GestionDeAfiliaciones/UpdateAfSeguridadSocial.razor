@@ -62,7 +62,7 @@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-heart-pulse"></i></span> EPS*</label>
                                     <div class="input-group-custom">
-                                        <InputSelect @bind-Value="nuevaAfiliacion.EpsId" class="form-control input-custom">
+                                        <InputSelect @bind-Value="nuevaAfiliacion.EpsId" class="form-select">
                                             <option value="0">Seleccionar EPS</option>
                                             @foreach (var eps in listaEps)
                                             {
@@ -76,7 +76,7 @@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-piggy-bank"></i></span> Fondo de Pensiones (AFP)*</label>
                                     <div class="input-group-custom">
-                                        <InputSelect @bind-Value="nuevaAfiliacion.AfpId" class="form-control input-custom">
+                                        <InputSelect @bind-Value="nuevaAfiliacion.AfpId" class="form-select">
                                             <option value="0">Seleccionar AFP</option>
                                             @foreach (var afp in listaAfp)
                                             {
@@ -90,7 +90,7 @@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-shield-shaded"></i></span> ARL*</label>
                                     <div class="input-group-custom">
-                                        <InputSelect @bind-Value="nuevaAfiliacion.ArlId" class="form-control input-custom">
+                                        <InputSelect @bind-Value="nuevaAfiliacion.ArlId" class="form-select">
                                             <option value="0">Seleccionar ARL</option>
                                             @foreach (var arl in listaArl)
                                             {
@@ -104,7 +104,7 @@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-house-door"></i></span> Caja Compensación*</label>
                                     <div class="input-group-custom">
-                                        <InputSelect @bind-Value="nuevaAfiliacion.CajaCompensacionId" class="form-control input-custom">
+                                        <InputSelect @bind-Value="nuevaAfiliacion.CajaCompensacionId" class="form-select">
                                             <option value="0">Seleccionar Caja</option>
                                             @foreach (var caja in listaCajas)
                                             {

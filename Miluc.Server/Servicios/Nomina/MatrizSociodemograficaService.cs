@@ -220,7 +220,7 @@ namespace Miluc.Server.Servicios.Nomina
                         UltimaEmpresaTrabajo = dto.UltimaEmpresaTrabajo.Trim().ToUpper(),
                         FechaUltimoEmpleo = dto.FechaUltimoEmpleo,
                         CargoDesempeñado = dto.CargoDesempeñado.Trim().ToUpper(),
-                        UltimoSalario = dto.UltimoSalario,
+                        UltimoSalario = dto.UltimoSalario ?? 0,
                         PersonaEnCasoDeEmergencia = dto.PersonaEnCasoDeEmergencia.Trim().ToUpper(),
                         TelefonoEmergencia = dto.TelefonoEmergencia,
                         DireccionPersonaEmergencia = dto.DireccionPersonaEmergencia.Trim().ToUpper(),
@@ -263,7 +263,7 @@ namespace Miluc.Server.Servicios.Nomina
                     matrizExistente.UltimaEmpresaTrabajo = dto.UltimaEmpresaTrabajo.Trim().ToUpper();
                     matrizExistente.FechaUltimoEmpleo = dto.FechaUltimoEmpleo;
                     matrizExistente.CargoDesempeñado = dto.CargoDesempeñado.Trim().ToUpper();
-                    matrizExistente.UltimoSalario = dto.UltimoSalario;
+                    matrizExistente.UltimoSalario = dto.UltimoSalario?? 0;
                     matrizExistente.PersonaEnCasoDeEmergencia = dto.PersonaEnCasoDeEmergencia.Trim().ToUpper();
                     matrizExistente.TelefonoEmergencia = dto.TelefonoEmergencia;
                     matrizExistente.DireccionPersonaEmergencia = dto.DireccionPersonaEmergencia.Trim().ToUpper();

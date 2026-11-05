@@ -44,7 +44,7 @@ namespace Miluc.Shared.DTOs.Nomina.EmpleadoDto
 
         [RegularExpression(@"^$|^\d{10,15}$", ErrorMessage = "El número de celular alterno debe contener entre 10 y 15 dígitos")]
         public string? CelularAlterno { get; set; } = string.Empty;
-
+        [RegularExpression(@"(?i)^.+@.+\.(com|co|edu|org|gov|net|com\.co|edu\.co)$", ErrorMessage = "El correo debe tener una extensión válida (.com, .co, .edu, .org, .gov, .net, .com.co o .edu.co).")]
         [Required(ErrorMessage = "Correo es obligatorio")]
         [EmailAddress(ErrorMessage = "El formato del correo no es válido")]
         public string CorreoElectronico { get; set; } = string.Empty;
@@ -59,13 +59,13 @@ namespace Miluc.Shared.DTOs.Nomina.EmpleadoDto
         // Tabla: ContratoLaboral
         [Range(1, int.MaxValue, ErrorMessage = "Debe seleccionar una de Empresa")]
         public int EmpresaId { get; set; }
-        public int? TipoContratoId { get; set; }
+        //public int? TipoContratoId { get; set; }
 
         // Tabla: AfiliacionSeguridadSocial
-        public int EpsId { get; set; }
-        public int AfpId { get; set; }
-        public int ArlId { get; set; }
-        public int CajaCompensacionId { get; set; }
+        //public int EpsId { get; set; }
+        //public int AfpId { get; set; }
+        //public int ArlId { get; set; }
+        //public int CajaCompensacionId { get; set; }
 
         public UsuarioCreateDto Usuario { get; set; } = new UsuarioCreateDto();
     }

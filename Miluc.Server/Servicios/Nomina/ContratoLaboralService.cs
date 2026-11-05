@@ -63,8 +63,7 @@ namespace Miluc.Server.Servicios.Nomina
                                 c.ContratoLaboralId,
                                 c.FechaCreacion,
                                 c.Activo,
-                                c.EmpresaId,
-                                
+                                c.EmpresaId,                                
 
                                 NombreEmpresa = c.Empresa != null ? c.Empresa.NombreEmpresa : null,
                                 Nit = c.Empresa != null ? c.Empresa.Nit : null,
@@ -120,7 +119,6 @@ namespace Miluc.Server.Servicios.Nomina
                     CargoId = x.Contrato?.Detalle?.CargoId ?? 0,
                     NombreCargo = x.Contrato?.Detalle?.NombreCargo ?? "Sin Asignar",
 
-
                     Salario = x.Contrato?.Detalle?.Salario ?? 0m,
                     Observacion = x.Contrato?.Detalle?.Observacion,
 
@@ -153,41 +151,21 @@ namespace Miluc.Server.Servicios.Nomina
                         Documento = c.Empleado != null ? c.Empleado.Documento : string.Empty,
 
                         EmpresaId = c.EmpresaId,
-                        NombreEmpresa = c.Empresa != null ? c.Empresa.NombreEmpresa : "Sin Asignar",
-                        Nit = c.Empresa != null ? c.Empresa.Nit : null,
+                        NombreEmpresa = c.Empresa != null ? c.Empresa.NombreEmpresa : "Sin Asignar",Nit = c.Empresa != null ? c.Empresa.Nit : null,
 
                         TipoContratoId = c.TipoContratoId,
                         NombreTipoContrato = c.TipoContrato != null ? c.TipoContrato.NombreContrato : "Sin Asignar",
                         CentroCostoId = c.CentroCostoId,
                         NombreCentroCosto = c.CentroCostos != null ? c.CentroCostos.Nombre : "Sin Asignar",
 
-                        ContratoLaboralDetalleId = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault() != null
-                            ? c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault().ContratoLaboralDetalleId : 0,
-
-                        FechaInicio = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault() != null
-                            ? c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault().FechaInicio : null,
-
-                        FechaFinalizacion = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault() != null
-                            ? c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault().FechaFinalizacion : null,
-
-                        FechaTerminacion = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault() != null
-                            ? c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault().FechaTerminacion : null,
-
-                        CargoId = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault() != null
-                            ? c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault().CargoId : 0,
-
-                        NombreCargo = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault() != null &&
-                                      c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault().Cargo != null
-                            ? c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault().Cargo.CargoNombre
-                            : "Sin Asignar",
-
-                       
-                        Salario = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault() != null
-                            ? c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault().Salario : 0,
-
-                        Observacion = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault() != null
-                            ? c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault().Observacion : null,
-
+                        ContratoLaboralDetalleId = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).Select(d => (int?)d.ContratoLaboralDetalleId).FirstOrDefault() ?? 0,
+                        FechaInicio = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).Select(d => (DateTime?)d.FechaInicio).FirstOrDefault(),
+                        FechaFinalizacion = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).Select(d => d.FechaFinalizacion).FirstOrDefault(),
+                        FechaTerminacion = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).Select(d => d.FechaTerminacion).FirstOrDefault(),
+                        CargoId = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).Select(d => (int?)d.CargoId).FirstOrDefault() ?? 0,
+                        NombreCargo = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).Select(d => d.Cargo != null ? d.Cargo.CargoNombre : null).FirstOrDefault() ?? "Sin Asignar",
+                        Salario = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).Select(d => (decimal?)d.Salario).FirstOrDefault() ?? 0m,
+                        Observacion = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).Select(d => d.Observacion).FirstOrDefault(),
                         FechaCreacion = c.FechaCreacion,
                         Activo = c.Activo
                     })
@@ -332,34 +310,14 @@ namespace Miluc.Server.Servicios.Nomina
                         NombreTipoContrato = c.TipoContrato != null ? c.TipoContrato.NombreContrato : "Sin Asignar",
                         CentroCostoId = c.CentroCostoId,
                         NombreCentroCosto = c.CentroCostos != null ? c.CentroCostos.Nombre : "Sin Asignar",
-
-                        ContratoLaboralDetalleId = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault() != null
-                            ? c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault().ContratoLaboralDetalleId : 0,
-
-                        FechaInicio = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault() != null
-                            ? c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault().FechaInicio : null,
-
-                        FechaFinalizacion = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault() != null
-                            ? c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault().FechaFinalizacion : null,
-
-                        FechaTerminacion = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault() != null
-                            ? c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault().FechaTerminacion : null,
-
-                        CargoId = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault() != null
-                            ? c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault().CargoId : 0,
-
-                        NombreCargo = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault() != null &&
-                                      c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault().Cargo != null
-                            ? c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault().Cargo.CargoNombre
-                            : "Sin Asignar",
-
-                        
-                        Salario = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault() != null
-                            ? c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault().Salario : 0,
-
-                        Observacion = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault() != null
-                            ? c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).FirstOrDefault().Observacion : null,
-
+                        ContratoLaboralDetalleId = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).Select(d => (int?)d.ContratoLaboralDetalleId).FirstOrDefault() ?? 0,
+                        FechaInicio = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).Select(d => (DateTime?)d.FechaInicio).FirstOrDefault(),
+                        FechaFinalizacion = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).Select(d => d.FechaFinalizacion).FirstOrDefault(),
+                        FechaTerminacion = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).Select(d => d.FechaTerminacion).FirstOrDefault(),                
+                        CargoId = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).Select(d => (int?)d.CargoId).FirstOrDefault() ?? 0,
+                        NombreCargo = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).Select(d => d.Cargo != null ? d.Cargo.CargoNombre : null).FirstOrDefault() ?? "Sin Asignar",
+                        Salario = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).Select(d => (decimal?)d.Salario).FirstOrDefault() ?? 0m,
+                        Observacion = c.ContratoLaboralDetalle.OrderByDescending(d => d.FechaInicio).Select(d => d.Observacion).FirstOrDefault(),
                         FechaCreacion = c.FechaCreacion,
                         Activo = c.Activo
                     }).ToListAsync();

@@ -103,8 +103,10 @@ namespace Miluc.Shared.DTOs.Nomina.MatrizSocioDemograficaDto
         public string CargoDesempeñado { get; set; } = string.Empty;
 
 
-        [Range(typeof(decimal), "1", "999999999", ErrorMessage = "Debe ingresar un salario válido.")]
-        public decimal UltimoSalario { get; set; }
+        [Required(ErrorMessage = "El último salario es obligatorio.")]
+        [Range(typeof(decimal), "1", "99999999999",
+        ErrorMessage = "Debe ingresar un salario válido.")]
+        public decimal? UltimoSalario { get; set; }
 
         [Required(ErrorMessage = "La persona de contacto es obligatoria")]
         [MinLength(1, ErrorMessage = "La persona de contacto es obligatoria")]

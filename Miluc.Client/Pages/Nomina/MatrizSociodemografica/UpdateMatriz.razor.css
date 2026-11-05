@@ -1,15 +1,5 @@
-﻿.bg-rojo {
+﻿.bg-Rojo {
     background-color: #D62F46;
-    color: white;
-}
-
-.btn-amarillo {
-    background-color: #FDC922;
-    color: white;
-}
-
-.bg-amarillo {
-    background-color: #FDC922;
     color: white;
 }
 
@@ -24,10 +14,6 @@
 
 .text-rojo {
     color: #D62F46;
-}
-.text-amarillo {
-    background-color: #FDC922;
-    color: white;
 }
 
 x-small {
@@ -77,7 +63,7 @@ x-small {
         text-transform: uppercase;
         letter-spacing: 1px;
         padding: 1.2rem;
-        color: #D62F46;
+        color: #800020;
     }
 
 
@@ -103,24 +89,19 @@ x-small {
     transition: 0.2s;
 }
 
-    /*sombrear a color-profile rojo
-
-
-
-
-    */
+    /*sombrear a color-profile vinotinto*/
     .btn-detail:hover {
-        background: #D62F46;
+        background: #800020;
         color: white;
     }
 
 .edit:hover {
-    background: #D62F46;
+    background: #800020;
     color: white;
 }
 
 .delete:hover {
-    background: #D62F46;
+    background: #800020;
     color: white;
 }
 /* Paginador */
@@ -222,6 +203,10 @@ x-small {
     color: #D62F46;
 }
 
+.bg-vinotinto-suave {
+    background: rgba(128, 0, 32, 0.1);
+    color: #800020;
+}
 
 .bg-amarillo-suave {
     background: rgba(253, 201, 34, 0.2);
@@ -278,10 +263,26 @@ x-small {
 
 body {
 }
-.e-datepicker,
-.e-input-group,
-.e-control-wrapper {
-    width: 100% !important;
+/* Header del Modal con gradiente vinotinto */
+.bg-maroon-modal {
+    background: white !important;
+    color: #D62F46 !important;
+    padding: 1rem 1.25rem;
+    margin-left: 2px;
+    border-bottom: 3px solid #D62F46;
 }
 
-
+/* Botón activo del paginador (Página actual) */
+.btn-maroon.text-white {
+    background-color: #D62F46 !important;
+    border-color: #D62F46 !important;
+    color: #ffffff !important;
+}
+.btn-maroon {
+    background-color: #D62F46 !important;
+    border-color: #D62F46 !important;
+    color: #ffffff !important;
+}
+.list-group::-webkit-scrollbar {
+    width: 6px;
+}
