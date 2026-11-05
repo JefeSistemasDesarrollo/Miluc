@@ -28,6 +28,8 @@ namespace Miluc.Server.Models.Nomina
         public DateTime? FechaCreacion { get; set; }
         public DateTime? FechaActualizacion {  get; set;}
         public bool Activo { get; set; }
+        public bool AceptaTratamientoDatos { get; set; }
+        public DateTime FechaAceptacionTratamientoDatos { get; set; }
 
 
 

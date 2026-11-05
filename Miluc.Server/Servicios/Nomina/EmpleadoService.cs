@@ -55,6 +55,8 @@ namespace Miluc.Server.Servicios.Nomina
                         CorreoElectronico = dto.CorreoElectronico.Trim().ToUpper(),
                       
                         EmpresaId = dto.EmpresaId,
+                        AceptaTratamientoDatos = dto.AceptaTratamientoDatos,
+                        FechaAceptacionTratamientoDatos = dto.FechaAceptacionTratamientoDatos,
 
                         Direccion = dto.Direccion.Trim().ToUpper(),
                         Barrio = dto.Barrio.Trim().ToUpper(),
@@ -141,7 +143,10 @@ namespace Miluc.Server.Servicios.Nomina
                         PrimerNombre = nuevoEmpleado.PrimerNombre,
                         PrimerApellido = nuevoEmpleado.PrimerApellido,
                         Activo = nuevoEmpleado.Activo,
+                        AceptaTratamientoDatos = nuevoEmpleado.AceptaTratamientoDatos,
+                        FechaAceptacionTratamientoDatos = nuevoEmpleado.FechaAceptacionTratamientoDatos,
                         FechaCreacion = nuevoEmpleado.FechaCreacion
+
                     };
                 }
                 catch (Exception ex)
@@ -202,9 +207,10 @@ namespace Miluc.Server.Servicios.Nomina
             TipoDocumentoId = e.TipoDocumento.TipoDocumentoId,
 
             EmpresaId = e.EmpresaId,
-            NombreEmpresa = e.Empresa != null
-                ? e.Empresa.NombreEmpresa
-                : string.Empty,
+            NombreEmpresa = e.Empresa != null? e.Empresa.NombreEmpresa : string.Empty,
+            AceptaTratamientoDatos = e.AceptaTratamientoDatos,
+            FechaAceptacionTratamientoDatos = e.FechaAceptacionTratamientoDatos,
+
 
             Documento = e.Documento,
             FechaExpedicionDoc = e.FechaExpedicionDoc,
@@ -297,6 +303,8 @@ namespace Miluc.Server.Servicios.Nomina
                        EstadoCivilId = e.EstadoCivilId,
                        EmpresaId = e.EmpresaId,
                        NombreEmpresa = e.Empresa != null ? e.Empresa.NombreEmpresa : string.Empty,
+                       AceptaTratamientoDatos = e.AceptaTratamientoDatos,
+                       FechaAceptacionTratamientoDatos = e.FechaAceptacionTratamientoDatos,
 
                        Celular = e.Celular ?? string.Empty,
                        CelularAlterno = e.CelularAlterno ?? string.Empty,
@@ -380,6 +388,8 @@ namespace Miluc.Server.Servicios.Nomina
                 empleado.FechaNacimiento = dto.FechaNacimiento.Value;
                 empleado.EstadoCivilId = dto.EstadoCivilId.Value;
                 empleado.EmpresaId = dto.EmpresaId;
+
+               
 
                 empleado.Celular = dto.Celular;
                 empleado.CelularAlterno = dto.CelularAlterno;
@@ -508,6 +518,8 @@ namespace Miluc.Server.Servicios.Nomina
                     EstadoCivilId = empleado.EstadoCivilId,
                     EmpresaId = empleado.EmpresaId,
                     NombreEmpresa = empleado.Empresa?.NombreEmpresa ?? string.Empty,
+                    AceptaTratamientoDatos = empleado.AceptaTratamientoDatos,
+                    FechaAceptacionTratamientoDatos = empleado.FechaAceptacionTratamientoDatos,
                     Celular = empleado.Celular,
                     CelularAlterno = empleado.CelularAlterno,
                     CorreoElectronico = empleado.CorreoElectronico,

@@ -472,7 +472,7 @@
             if (result.GetProperty("isConfirmed").GetBoolean())
             {
 
-                await _jsRuntime.InvokeVoidAsync("mostrarEspera", "Sincronizando - SAP ONE", "Creando Cliente ...<br><br><b>No cierre esta ventana.</b>", "info");
+                await _jsRuntime.InvokeVoidAsync("mostrarEspera", "Sincronizando ", "Creando Cliente ...<br><br><b>No cierre esta ventana.</b>", "info");
              
                 
                 var respuesta = await _service.ActualizarPermisosPorRolAsync(IdRolSeleccionado.Value, dto);

@@ -14,7 +14,7 @@
         public  bool Alcohol {  get; set; }
         public int BebeVecesAlAño {  get; set; }
         public int DeporteId { get; set; }
-        public int CondicionMedicaId { get; set; }
+        
         public string Hobbies { get; set; }
         public int MedioTransporteId { get; set; }
         public int ClaseDeViviendaId { get; set; }
@@ -39,7 +39,7 @@
         public Genero Genero { get; set; }
         public Pais Pais {  get; set; }
         public Deporte Deporte { get; set; }
-        public CondicionMedica CondicionMedica { get; set; }
+   
         public MedioTransporte MedioTransporte { get; set; }
         public TipoVivienda TipoVivienda { get; set; }
         public ClaseVivienda ClaseVivienda { get; set; }
@@ -50,8 +50,8 @@
 
 
 
+        public virtual ICollection<CondicionMedicaDetalle> CondicionesMedicas { get; set; } = new List<CondicionMedicaDetalle>();
 
-
-        }  
+    }  
 
 }

@@ -55,42 +55,39 @@
 
                             <div class="row g-4">
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom">Primer Nombre <span class="text-danger">*</span></label>
+                                    <label class="form-label label-custom"> <i class="bi bi-person"></i>Primer Nombre<span class="text-danger">*</span> </label>
                                     <div class="input-group-custom">
-                                        <span class="input-icon"><i class="bi bi-person"></i></span>
+                                        
                                         <InputText class="form-control input-custom" @bind-Value="editarEmpleado.PrimerNombre" " placeholder="Ej: Juan" />
                                     </div>
                                     <ValidationMessage For="@(() => editarEmpleado.PrimerNombre)" class="text-danger small mt-1 d-block fw-medium" />
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom text-muted-custom">Segundo Nombre</label>
+                                    <label class="form-label label-custom text-muted-custom"><span class="input-icon"><i class="bi bi-person"></i></span>Segundo Nombre </label>
                                     <div class="input-group-custom">
-                                        <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
-                                       
-                                        <InputText class="form-control input-custom" @bind-Value="editarEmpleado.SegundoNombre" placeholder="Opcional" />
+                                    <InputText class="form-control input-custom" @bind-Value="editarEmpleado.SegundoNombre" placeholder="Opcional" />
                                     </div>
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom text-muted-custom">Primer Apellido<span class="text-danger">*</span></label>
-                                    <div class="input-group-custom">
-                                        <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
+                                    <label class="form-label label-custom text-muted-custom"><span class="input-icon"><i class="bi bi-person"></i></span>Primer Apellido <span class="text-danger">*</span> </label>
+                                    <div class="input-group-custom">                                      
                                         <InputText class="form-control input-custom" @bind-Value="editarEmpleado.PrimerApellido" placeholder="Primer Apellido" />
                                     </div>
                                     <ValidationMessage For="@(() => editarEmpleado.PrimerApellido)" class="text-danger small mt-1 d-block fw-medium" />
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom text-muted-custom">Segundo Apellido</label>
+                                    <label class="form-label label-custom text-muted-custom"><span class="input-icon"><i class="bi bi-person"></i></span>Segundo Apellido </label>
                                     <div class="input-group-custom">
-                                        <span class="input-icon"><i class="bi bi-person-dash text-muted"></i></span>
+                                        
                                         <InputText class="form-control input-custom" @bind-Value="editarEmpleado.SegundoApellido" placeholder="Segundo apellido" />
                                     </div>
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom text-muted-custom">Fecha nacimiento<span class="text-danger">*</span></label>
+                                    <label class="form-label label-custom text-muted-custom"><span class="input-icon"><i class="bi bi-calendar"></i></span> Fecha nacimiento  <span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
                                         <SfDatePicker TValue="DateTime?"
                                                       @bind-Value="editarEmpleado.FechaNacimiento"
@@ -103,7 +100,7 @@
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom text-muted-custom">Tipo de documento<span class="text-danger">*</span></label>
+                                    <label class="form-label label-custom text-muted-custom"><span class="input-icon"><i class="bi bi-card-text"></i></span> Tipo de documento <span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
                                         <InputSelect @bind-Value="editarEmpleado.TipoDocumentoId" class="form-select" disabled="@(!PuedeEditarCampos)">
                                             <option value="">Seleccionar tipo de documento</option>
@@ -117,16 +114,15 @@
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom">Número de Documento <span class="text-danger">*</span></label>
-                                    <div class="input-group-custom">
-                                        <span class="input-icon"><i class="bi bi-card-text"></i></span>
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-card-text"></i></span> Número de Documento <span class="text-danger">*</span></label>
+                                    <div class="input-group-custom">                                        
                                         <InputText class="form-control input-custom" @bind-Value="editarEmpleado.Documento" disabled="@(!PuedeEditarCampos)" placeholder="Ej: 100023456" onkeypress="return event.charCode >= 48 && event.charCode <= 57" />
                                     </div>
                                     <ValidationMessage For="@(() => editarEmpleado.Documento)" class="text-danger small mt-1 d-block fw-medium" />
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom text-muted-custom">Fecha Expedición Documento<span class="text-danger">*</span></label>
+                                    <label class="form-label label-custom text-muted-custom"><span class="input-icon"><i class="bi bi-calendar"></i></span> Fecha Expedición Documento <span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
                                         <SfDatePicker TValue="DateTime?"
                                                       @bind-Value="editarEmpleado.FechaExpedicionDoc"
@@ -139,7 +135,7 @@
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom text-muted-custom">Estado Civil<span class="text-danger">*</span></label>
+                                    <label class="form-label label-custom text-muted-custom"><span class="input-icon"><i class="bi bi-person"></i></span> Estado Civil <span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
                                         <div class="select2-wrapper">
                                             <InputSelect @bind-Value="editarEmpleado.EstadoCivilId" class="form-select">
@@ -155,7 +151,7 @@
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom text-muted-custom">Celular</label>
+                                    <label class="form-label label-custom text-muted-custom"><span class="input-icon"><i class="bi bi-phone"></i></span> Celular </label>
                                     <div class="input-group-custom">
                                         <InputText class="form-control input-custom" @bind-Value="editarEmpleado.Celular" placeholder="Celular" onkeypress="return event.charCode >= 48 && event.charCode <= 57" />
                                     </div>
@@ -163,7 +159,7 @@
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom text-muted-custom">Celular Alterno</label>
+                                    <label class="form-label label-custom text-muted-custom"><span class="input-icon"><i class="bi bi-phone"></i></span> Celular Alterno </label>
                                     <div class="input-group-custom">
                                         <InputText class="form-control input-custom" @bind-Value="editarEmpleado.CelularAlterno" placeholder="Celular Alterno" onkeypress="return event.charCode >= 48 && event.charCode <= 57" />
                                     </div>
@@ -171,7 +167,7 @@
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom text-muted-custom">Correo<span class="text-danger">*</span></label>
+                                    <label class="form-label label-custom text-muted-custom"><span class="input-icon"><i class="bi bi-envelope"></i></span> Correo <span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
                                         <InputText class="form-control input-custom" @bind-Value="editarEmpleado.CorreoElectronico" placeholder="Correo" />
                                     </div>
@@ -179,7 +175,7 @@
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom text-muted-custom">Dirección</label>
+                                    <label class="form-label label-custom text-muted-custom"><span class="input-icon"><i class="bi bi-house"></i></span> Dirección </label>
                                     <div class="input-group-custom">
                                         <InputText class="form-control input-custom" @bind-Value="editarEmpleado.Direccion" placeholder="Direccion" />
                                     </div>
@@ -187,7 +183,7 @@
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom text-muted-custom">Barrio</label>
+                                    <label class="form-label label-custom text-muted-custom"><span class="input-icon"><i class="bi bi-geo-alt"></i></span> Barrio</label>
                                     <div class="input-group-custom">
                                         <InputText class="form-control input-custom" @bind-Value="editarEmpleado.Barrio" placeholder="Barrio" />
                                     </div>
@@ -196,11 +192,14 @@
 
                                 @* Empresa *@
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom">Seleccione la empresa <span class="text-danger">*</span></label>
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-building"> Seleccione la empresa </i></span><span class="text-danger">*</span></label>
                                     <div class="select2-wrapper">
-                                        <InputSelect @bind-Value="editarEmpleado.EmpresaId" class="form-select"
-                                                     disabled="@(!PuedeEditarCampos)">
+                                        <InputSelect @bind-Value="editarEmpleado.EmpresaId"
+                                                     class="form-select"
+                                                     disabled="@(!PuedeEditarEmpresa)">
+
                                             <option value="">Seleccionar empresa</option>
+
                                             @foreach (var empresa in listEmpresas)
                                             {
                                                 <option value="@empresa.EmpresaId">
@@ -216,16 +215,29 @@
                                 <div class="col-md-4 d-flex align-items-center">
                                     <div class="w-100">
                                         <label class="form-label label-custom">Estado</label>
-                                        <div class="form-check form-switch switch-lg d-flex align-items-center gap-2 mt-2">
-                                            <InputCheckbox class="form-check-input" @bind-Value="editarEmpleado.Activo" id="editarActivoSwitch" style="transform: scale(1.3); cursor: pointer;" />
-                                            <label class="form-check-label fw-semibold" for="editarActivoSwitch" style="cursor: pointer;">
+
+                                        <div class="form-check form-switch d-flex align-items-center mt-2">
+                                            <InputCheckbox class="form-check-input"
+                                                           @bind-Value="editarEmpleado.Activo"
+                                                           id="editarActivoSwitch"
+                                                           style="transform:scale(1.3); cursor:pointer;" />
+
+                                            <label class="form-check-label ms-3 fw-semibold"
+                                                   for="editarActivoSwitch"
+                                                   style="cursor:pointer;">
                                                 @if (editarEmpleado.Activo)
                                                 {
-                                                    <span class="text-black"><i class="bi bi-check2-circle me-1"></i> </span>
+                                                    <span class="text-black d-flex align-items-center gap-2">
+                                                        <i class="bi bi-check-circle-fill fs-5"></i>
+                                                        
+                                                    </span>
                                                 }
                                                 else
                                                 {
-                                                    <span class="text-danger"><i class="bi bi-x-circle me-1"></i> </span>
+                                                    <span class="text-danger d-flex align-items-center gap-2">
+                                                        <i class="bi bi-x-circle-fill fs-5"></i>
+                                                        
+                                                    </span>
                                                 }
                                             </label>
                                         </div>
@@ -251,7 +263,7 @@
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label label-custom">Seleccione el municipio <span class="text-danger">*</span></label>
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-geo-alt"></i></span> Seleccione el municipio <span class="text-danger">*</span></label>
                                     <div class="select2-wrapper">
                                         <select id="municipiosSelect" class="form-select input-custom">
                                             <option value="">Buscar municipio...</option>
@@ -335,7 +347,7 @@
     private string correoTemporal = "";
     private bool isProcessing = false;
     private bool PuedeEditarCampos;
-   
+    private bool PuedeEditarEmpresa;
 
     private void Volver() => nav.NavigateTo("/Administrar/Empleado");
 
@@ -356,7 +368,7 @@
                 return;
             }
 
-           
+            PuedeEditarEmpresa = _authCliente.HasPermission("Employee.EditCompany");
 
             PuedeEditarCampos =
                 _authCliente.HasPermission("Empleado.Campos");
