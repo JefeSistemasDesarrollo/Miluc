@@ -1,13 +1,13 @@
 @page "/nomina/empleado/crear"
 
-@using Miluc.Client.Interfaces.Nomina
-@using Miluc.Shared.DTOs.Nomina.EmpleadoDto
-@using Miluc.Shared.DTOs.Nomina.EmpresaDto
-@using Miluc.Shared.DTOs.Nomina.EstadoCivilDto
-@using Miluc.Shared.DTOs.Nomina.MunicipioDto
-@using Miluc.Shared.DTOs.Nomina.TipoDocumento
-@using Miluc.Shared.DTOs.Usuarios
 @using Syncfusion.Blazor.Calendars
+@using global::Miluc.Client.Interfaces
+@using global::Miluc.Client.Interfaces.Nomina
+@using global::Miluc.Shared.DTOs.Nomina.EmpleadoDto
+@using global::Miluc.Shared.DTOs.Nomina.EmpresaDto
+@using global::Miluc.Shared.DTOs.Nomina.EstadoCivilDto
+@using global::Miluc.Shared.DTOs.Nomina.MunicipioDto
+@using global::Miluc.Shared.DTOs.Nomina.TipoDocumento
 
 @inject NavigationManager nav
 @inject IDepartamentosClientService _municipioClientService
@@ -100,7 +100,7 @@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom"> <i class="bi bi-person-vcard"></i> Tipo de documento<span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
-                                        <InputSelect @bind-Value="nuevoEmpleado.TipoDocumentoId" class="form-control input-custom">
+                                        <InputSelect @bind-Value="nuevoEmpleado.TipoDocumentoId" class="form-select">
                                             <option value="">Seleccionar tipo de documento</option>
                                             @foreach (var m in listDocumento)
                                             {
@@ -114,7 +114,7 @@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom"><i class="bi bi-person-vcard"></i> Número de Documento <span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
-                                        <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.Documento" placeholder="Ej: 100023456" />
+                                        <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.Documento" placeholder="Ej: 100023456" onkeypress="return event.charCode >= 48 && event.charCode <= 57" />
                                     </div>
                                     <ValidationMessage For="@(() => nuevoEmpleado.Documento)" class="text-danger small mt-1 d-block fw-medium" />
                                 </div>
@@ -136,7 +136,7 @@
                                     <label class="form-label label-custom text-muted-custom"> <i class="bi bi-person-hearts"></i> Estado Civil<span class="text-danger">*</span></label>
                                     <div class="input-group-custom">
                                         <div class="select2-wrapper">
-                                            <InputSelect @bind-Value="nuevoEmpleado.EstadoCivilId" class="form-control input-custom">
+                                            <InputSelect @bind-Value="nuevoEmpleado.EstadoCivilId" class="form-select">
                                                 <option value="">Seleccionar estado civil</option>
                                                 @foreach (var estado in listEstadoCivil)
                                                 {
@@ -151,7 +151,7 @@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom"> <i class="bi bi-phone"></i> Celular</label>
                                     <div class="input-group-custom">
-                                        <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.Celular" placeholder="Celular" />
+                                        <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.Celular" placeholder="Celular" onkeypress="return event.charCode >= 48 && event.charCode <= 57" />
                                         <ValidationMessage For="@(() => nuevoEmpleado.Celular)" class="text-danger small mt-1 d-block fw-medium" />
                                     </div>
                                 </div>
@@ -159,7 +159,7 @@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom text-muted-custom"><i class="bi bi-phone"></i> Celular Alterno</label>
                                     <div class="input-group-custom">
-                                        <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.CelularAlterno" placeholder="Celular Alterno" />
+                                        <InputText class="form-control input-custom" @bind-Value="nuevoEmpleado.CelularAlterno" placeholder="Celular Alterno" onkeypress="return event.charCode >= 48 && event.charCode <= 57" />
                                         <ValidationMessage For="@(() => nuevoEmpleado.CelularAlterno)" class="text-danger small mt-1 d-block fw-medium" />
                                     </div>
                                 </div>
@@ -192,7 +192,7 @@
                                 <div class="col-md-4">
                                     <label class="form-label label-custom">Seleccione la empresa <span class="text-danger">*</span></label>
                                     <div class="select2-wrapper">
-                                        <InputSelect @bind-Value="nuevoEmpleado.EmpresaId" class="form-control input-custom">
+                                        <InputSelect @bind-Value="nuevoEmpleado.EmpresaId" class="form-select">
                                             <option value="">Seleccionar empresa</option>
                                             @foreach (var empresa in listEmpresas)
                                             {
@@ -313,7 +313,8 @@
     private List<MunicipioReaderDto> listmunicipios = new();
     private List<TipoDocumentoReaderDto> listDocumento = new();
     private List<EstadoCivilReaderDto> listEstadoCivil = new();
-    private List<EmpresaReaderDto> listEmpresas = new();
+    private List<EmpresaReaderDto
+    > listEmpresas = new();
     private bool isProcessing = false;
     public string _correo = "";
 

@@ -125,11 +125,11 @@
                                         Salario<span class="text-danger">*</span>
                                     </label>
                                     <div class="input-group-custom">
-                                        <input type="text"
-                                               class="form-control input-custom"
-                                               value="@salarioFormateado"
-                                               @oninput="FormatearSalario"
-                                               placeholder="Ej. 2.000.000" />
+                                        <InputText class="form-control input-custom"
+                                                   @bind-Value="salarioFormateado"
+                                                   @oninput="FormatearSalario"
+                                                   onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                                                   placeholder="Ej. 2.000.000" />
                                     </div>
                                     <ValidationMessage For="@(() => update.Salario)" class="text-danger small mt-1 d-block fw-medium" />
                                 </div>

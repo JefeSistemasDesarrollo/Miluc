@@ -13,6 +13,7 @@
 @inject IEstadoCivilClientService _estadoCivil
 @inject IJSRuntime JS
 @inject IAuthClientService _authCliente
+
 <div class="empleado-page p-4 animate__animated animate__fadeIn">
     <div class="container-fluid max-width-container">
 
@@ -81,13 +82,23 @@
                                 </div>
 
                                 <div class="col-md-4">
+                                    <label class="form-label label-custom">Tipo de Documento</label>
+                                    <input type="text" class="form-control input-custom-view" value="@TipoDocumentoNombre" readonly />
+                                </div>
+
+                                <div class="col-md-4">
                                     <label class="form-label label-custom">Número de Documento</label>
                                     <input type="text" class="form-control input-custom-view" value="@empleado.Documento" readonly />
                                 </div>
 
                                 <div class="col-md-4">
                                     <label class="form-label label-custom">Fecha Expedición Documento</label>
-                                    <input type="text" class="form-control input-custom-view" value="@empleado.FechaExpedicionDoc.ToString("dd/MM/yyyy")" " readonly  />
+                                    <input type="text" class="form-control input-custom-view" value="@empleado.FechaExpedicionDoc.ToString("dd/MM/yyyy")" readonly />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">Estado Civil</label>
+                                    <input type="text" class="form-control input-custom-view" value="@EstadoCivilNombre" readonly />
                                 </div>
 
                                 <div class="col-md-4">
@@ -116,11 +127,16 @@
                                 </div>
 
                                 <div class="col-md-4">
+                                    <label class="form-label label-custom">Empresa</label>
+                                    <input type="text" class="form-control input-custom-view" value="@empleado.EmpresaId" readonly />
+                                </div>
+
+                                <div class="col-md-4">
                                     <label class="form-label label-custom">Estado</label>
                                     <div>
                                         @if (empleado.Activo)
                                         {
-                                            <i class="bi  text-black bi-check2-circle"></i>
+                                            <i class="bi text-black bi-check2-circle"></i>
                                         }
                                         else
                                         {
@@ -141,12 +157,12 @@
                             <h5 class="fw-bold text-rojo mb-3">Ubicación Laboral / Residencia</h5>
                             <div class="mb-3">
                                 <label class="form-label label-custom">Municipio / Departamento</label>
-                                @* Mostramos el Nombre unificado que viene del JOIN en el backend *@
                                 <input type="text" class="form-control input-custom-view" value="@empleado.NombreMunicipio" readonly />
                             </div>
                         </div>
                     </div>
                 </div>
+
                 @* --- INFORMACIÓN EXTRA ILUSTRATIVA / COMPLEMENTARIA --- *@
                 <div class="col-12 col-lg-6 col-md-4 col-sm-12">
                     <div class="card card-info-banner border-0 shadow-sm rounded-4 h-100 p-4 position-relative overflow-hidden">
@@ -162,23 +178,23 @@
                     </div>
                 </div>
             </div>
-            
         }
     </div>
 </div>
 
-
-
 @code {
-    // Definición correcta de los parámetros para capturar el ID sin importar cómo lo envíe el listado
     [Parameter]
     public int id { get; set; }
 
     [Parameter]
     public int IdEmpleado { get; set; }
 
-    // Usamos el DTO con tipado fuerte
     private EmpleadoReaderDto? empleado = null;
+    private List<EstadoCivilReaderDto> estadosCiviles = new();
+    private List<TipoDocumentoReaderDto> tiposDocumento = new();
+
+    public string EstadoCivilNombre { get; set; } = string.Empty;
+    public string TipoDocumentoNombre { get; set; } = string.Empty;
 
     private void Volver() => nav.NavigateTo("/Administrar/Empleado");
 
@@ -188,10 +204,10 @@
         {
             nav.NavigateTo("/no-autorizado");
             return;
-        } 
+        }
+
         try
         {
-            // Validamos cuál parámetro trae el valor de la URL
             int idFinal = id > 0 ? id : IdEmpleado;
 
             if (idFinal == 0)
@@ -201,11 +217,36 @@
                 return;
             }
 
-            var respuesta = await _empleadoService.GetEmpleadoByIdAsync(idFinal);
+            // Cargar los catálogos en paralelo usando Task.WhenAll
+            var tareaEstados = _estadoCivil.GetEstadosCivilesAsync();
+            var tareaTiposDoc = _tipoDocumentoClientService.GetTipoDocumentosAsync();
+            var tareaEmpleado = _empleadoService.GetEmpleadoByIdAsync(idFinal);
+
+            await Task.WhenAll(tareaEstados, tareaTiposDoc, tareaEmpleado);
+
+            // Validar y extraer la lista de estados civiles desde la respuesta del servicio
+            var respuestaEstados = tareaEstados.Result;
+            if (respuestaEstados != null && respuestaEstados.EsCorrecto && respuestaEstados.Valor != null)
+            {
+                estadosCiviles = respuestaEstados.Valor.ToList();
+            }
+
+            // Validar y extraer la lista de tipos de documento desde la respuesta del servicio
+            var respuestaTiposDoc = tareaTiposDoc.Result;
+            if (respuestaTiposDoc != null && respuestaTiposDoc.EsCorrecto && respuestaTiposDoc.Valor != null)
+            {
+                tiposDocumento = respuestaTiposDoc.Valor.ToList();
+            }
+
+            var respuesta = tareaEmpleado.Result;
 
             if (respuesta != null && respuesta.EsCorrecto && respuesta.Valor != null)
             {
                 empleado = respuesta.Valor;
+
+                // Resolver los nombres utilizando las llaves foráneas (IDs)
+                EstadoCivilNombre = estadosCiviles.FirstOrDefault(x => x.EstadoCivilId == empleado.EstadoCivilId)?.Nombre ?? string.Empty;
+                TipoDocumentoNombre = tiposDocumento.FirstOrDefault(x => x.TipoDocumentoId == empleado.TipoDocumentoId)?.Nombre ?? string.Empty;
             }
             else
             {

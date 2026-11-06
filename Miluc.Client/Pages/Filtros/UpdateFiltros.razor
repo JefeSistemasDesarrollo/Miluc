@@ -149,6 +149,7 @@
 @* --- MODAL DE USUARIOS --- *@
 <div class="modal fade @(mostrarModalUsuario ? "show d-block" : "")" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 1050;">
     <div class="modal-dialog modal-md modal-dialog-centered">
+
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-header bg-maroon-modal text-modal">
                 <h5 class="modal-title mb-0">
@@ -642,51 +643,4 @@
             isProcessing = false;
         }
     }
-
-
-
-    // private async Task EjecutarGuardado()
-    // {
-    //     if (isProcessing) return;
-    //     isProcessing = true;
-
-    //     try
-    //     {
-    //         var response = await _asignacionFiltrosClientService.CreateFiltrosAsync(filtroCreate);
-
-    //         if (response != null && response.EsCorrecto)
-    //         {
-    //             await _js.InvokeVoidAsync("Swal.fire", new
-    //             {
-    //                 icon = "success",
-    //                 title = "¡Éxito!",
-    //                 text = "El filtro ha sido registrado correctamente.",
-    //                 confirmButtonColor = "#6c1d1d"
-    //             });
-    //             Volver();
-    //         }
-    //         else
-    //         {
-    //             string errores = response?.Errores != null && response.Errores.Any()
-    //                 ? string.Join("<br>", response.Errores)
-    //                 : (response?.Mensaje ?? "Ocurrió un error al registrar el filtro.");
-
-    //             await _js.InvokeVoidAsync("Swal.fire", new
-    //             {
-    //                 icon = "error",
-    //                 title = "Error al guardar",
-    //                 html = errores,
-    //                 confirmButtonColor = "#6c1d1d"
-    //             });
-    //         }
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         await _logClientService.GuardarErrorAsync(ex.Message, ex.StackTrace, "error", "EjecutarGuardado");
-    //     }
-    //     finally
-    //     {
-    //         isProcessing = false;
-    //     }
-    // }
 }
