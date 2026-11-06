@@ -140,5 +140,56 @@ namespace Miluc.Server.Controllers.SAPController
                 });
             }
         }
+        [HttpGet("VentasPorVendedor/Excel")]
+        [PermissionAuthorize("Informe.VentasVendedor")]
+        public async Task<IActionResult> VentasPorVendedorExcel([FromQuery] DateTime fechaInicio,[FromQuery] DateTime fechaFinal,[FromQuery] int slpCode = -1)
+        {
+            try
+            {
+                if (fechaInicio > fechaFinal)
+                {
+                    return BadRequest(new ResponseAPI<string>
+                    {
+                        EsCorrecto = false,
+                        Mensaje  = "La fecha inicial no puede ser mayor que la fecha final."
+                    });
+                }
+
+                var stream = await _service.FacturasPorVendedorCabeceraFacturas(
+                    fechaInicio,
+                    fechaFinal,
+                    slpCode
+                );
+
+                if (stream == null || stream.Length == 0)
+                {
+                    return NotFound(new ResponseAPI<string>
+                    {
+                        EsCorrecto = false,
+                        Mensaje = "No se encontraron ventas para los filtros seleccionados."
+                    });
+                }
+
+                stream.Position = 0;
+
+                var nombreArchivo =
+                    $"VentasPorVendedor_{fechaInicio:yyyyMMdd}_{fechaFinal:yyyyMMdd}.xlsx";
+
+                return File(
+                    stream,
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    nombreArchivo
+                );
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ResponseAPI<string>
+                {
+                    EsCorrecto = false,
+                    Mensaje = "Error al generar el reporte de ventas por vendedor."
+                });
+            }
+        }
+
     }
 }

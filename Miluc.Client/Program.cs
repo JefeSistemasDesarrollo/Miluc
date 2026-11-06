@@ -54,7 +54,7 @@ builder.Services.AddScoped(sp =>
     return new HttpClient(handler)
     {
         //BaseAddress = new Uri("https://avicolamiluc.ddns.net:61/")
-        // BaseAddress = new Uri("https://avicolamiluc.ddns.net:61/")
+       //  BaseAddress = new Uri("https://avicolamiluc.ddns.net:61/")
         BaseAddress = new Uri("https://localhost:7222/")
     };
 });
