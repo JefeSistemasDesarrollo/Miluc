@@ -1,0 +1,345 @@
+﻿@page "/informe-ventas-por-vendedor"
+
+@using Miluc.Client.Interfaces.SapInterfaces.Informes
+@using Miluc.Client.Interfaces.SapInterfaces.Oslp
+@using Miluc.Shared.DTOs.Sap.Vendedor
+
+@inject ISapVentasClientService _ventasService
+@inject ISapOslpService _oslpService
+@inject IAuthClientService _auth
+@inject ILogClientService _logErrores
+@inject NavigationManager _nav
+@inject IJSRuntime _js
+
+<div class="FacturasVentas-container container-fluid py-4 px-3 px-md-4">
+
+    <!-- ENCABEZADO -->
+    <div class="d-flex align-items-center mb-4 pb-2 border-bottom border-red-subtle">
+
+        <div class="icon-badge me-3">
+            <i class="bi bi-graph-up-arrow"></i>
+        </div>
+
+        <div>
+            <h3 class="title-brand m-0">
+                Reporte de ventas por vendedor
+            </h3>
+
+            <p class="subtitle-brand m-0">
+                Consulta y exportación de ventas de SAP Business One
+            </p>
+        </div>
+
+    </div>
+
+    <!-- FILTROS -->
+    <div class="card card-brand shadow-sm">
+
+        <div class="card-body p-3 p-md-4">
+
+            <div class="row g-3 align-items-end">
+
+                <!-- FECHA INICIAL -->
+                <div class="col-12 col-sm-6 col-lg-3">
+
+                    <label class="form-label fw-semibold">
+                        <i class="bi bi-calendar-event me-1 text-red"></i>
+                        Fecha inicial
+                    </label>
+
+                    <InputDate @bind-Value="fechaInicio"
+                               class="form-control input-brand" />
+
+                </div>
+
+                <!-- FECHA FINAL -->
+                <div class="col-12 col-sm-6 col-lg-3">
+
+                    <label class="form-label fw-semibold">
+                        <i class="bi bi-calendar-check me-1 text-red"></i>
+                        Fecha final
+                    </label>
+
+                    <InputDate @bind-Value="fechaFinal"
+                               class="form-control input-brand" />
+
+                </div>
+
+                <!-- VENDEDOR -->
+                <div class="col-12 col-sm-6 col-lg-3">
+
+                    <label class="form-label fw-semibold">
+                        <i class="bi bi-person-badge me-1 text-red"></i>
+                        Vendedor
+                    </label>
+
+                    <InputSelect @bind-Value="slpCode"
+                                 class="form-select form-select-sm">
+
+                        @foreach (var vendedor in vendedores)
+                        {
+                            <option value="@vendedor.SlpCode">
+                                @vendedor.SlpName
+                            </option>
+                        }
+
+                    </InputSelect>
+
+                </div>
+
+                <!-- BOTÓN -->
+                <div class="col-12 col-sm-6 col-lg-3">
+
+                    <button class="btn btn-red w-100 d-flex align-items-center justify-content-center"
+                            @onclick="DescargarExcel"
+                            disabled="@cargando">
+
+                        @if (cargando)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2"
+                                  role="status">
+                            </span>
+
+                            <span>Generando reporte...</span>
+                        }
+                        else
+                        {
+                            <i class="bi bi-file-earmark-excel-fill me-2"></i>
+
+                            <span>Descargar Excel</span>
+                        }
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- INFORMACIÓN -->
+    <div class="row g-3 mt-3">
+
+        <div class="col-12 col-md-4">
+
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-body d-flex align-items-center">
+
+                    <div class="icon-badge me-3">
+                        <i class="bi bi-calendar-range"></i>
+                    </div>
+
+                    <div>
+                        <small class="text-muted d-block">
+                            Periodo seleccionado
+                        </small>
+
+                        <strong>
+                            @fechaInicio.ToString("dd/MM/yyyy")
+                            -
+                            @fechaFinal.ToString("dd/MM/yyyy")
+                        </strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-12 col-md-4">
+
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-body d-flex align-items-center">
+
+                    <div class="icon-badge me-3">
+                        <i class="bi bi-people"></i>
+                    </div>
+
+                    <div>
+                        <small class="text-muted d-block">
+                            Vendedores disponibles
+                        </small>
+
+                        <strong>
+                            @vendedores.Count
+                        </strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-12 col-md-4">
+
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-body d-flex align-items-center">
+
+                    <div class="icon-badge me-3">
+                        <i class="bi bi-file-earmark-spreadsheet"></i>
+                    </div>
+
+                    <div>
+                        <small class="text-muted d-block">
+                            Formato del reporte
+                        </small>
+
+                        <strong>Excel (.xlsx)</strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- MENSAJE -->
+    @if (!string.IsNullOrWhiteSpace(mensaje))
+    {
+        <div class="alert alert-red-custom mt-4 d-flex align-items-center shadow-sm"
+             role="alert">
+
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+
+            <div>@mensaje</div>
+
+        </div>
+    }
+
+</div>
+
+@code {
+
+    private DateTime fechaInicio =
+        new(DateTime.Now.Year, DateTime.Now.Month, 1);
+
+    private DateTime fechaFinal = DateTime.Now;
+
+    private int slpCode = -1;
+
+    private bool cargando;
+
+    private bool esVendedorAsignado;
+
+    private string? mensaje;
+
+    private List<SapVendedorReaderDto> vendedores = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if (!_auth.HasPermission("Informe.VentasVendedor"))
+            {
+                _nav.NavigateTo("/no-autorizado");
+                return;
+            }
+
+            int vendedorSesion = Convert.ToInt32(
+                _auth.CurrentSession.CodVendedorSAP
+            );
+
+            var resultado = await _oslpService.GetListVendedoresAsync();
+
+            if (resultado.Valor != null)
+            {
+                vendedores = resultado.Valor
+                    .OrderBy(v => v.SlpName)
+                    .ToList();
+            }
+
+            // Si el usuario tiene vendedor asignado,
+            // solamente podrá consultar sus propias ventas.
+            if (vendedorSesion > 0)
+            {
+                esVendedorAsignado = true;
+
+                slpCode = vendedorSesion;
+
+                vendedores = vendedores
+                    .Where(v => v.SlpCode == vendedorSesion)
+                    .ToList();
+            }
+            else
+            {
+                slpCode = -1;
+            }
+        }
+        catch (Exception ex)
+        {
+            await RegistrarError(ex, nameof(OnInitializedAsync));
+
+            await _js.InvokeVoidAsync("Swal.fire", new
+            {
+                icon = "error",
+                title = "Error al cargar vendedores",
+                text = "No fue posible cargar la información de vendedores."
+            });
+        }
+    }
+
+    private async Task DescargarExcel()
+    {
+        try
+        {
+            cargando = true;
+            mensaje = null;
+
+            if (fechaInicio > fechaFinal)
+            {
+                mensaje = "La fecha inicial no puede ser mayor que la fecha final.";
+                return;
+            }
+
+            if (slpCode == 0 && esVendedorAsignado)
+            {
+                mensaje = "No tienes un vendedor asignado.";
+                return;
+            }
+
+            var resultado = await _ventasService
+                .DescargarVentasPorVendedorExcel(
+                    fechaInicio,
+                    fechaFinal,
+                    slpCode
+                );
+
+            if (!resultado)
+            {
+                mensaje = "No fue posible generar el Excel o no existen registros con los filtros seleccionados.";
+            }
+        }
+        catch (Exception ex)
+        {
+            await RegistrarError(ex, nameof(DescargarExcel));
+
+            mensaje = "Ocurrió un error al generar el reporte de ventas.";
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private async Task RegistrarError(Exception ex, string metodo)
+    {
+        await _logErrores.GuardarErrorAsync(
+            ex.Message,
+            ex.StackTrace,
+            usuario: _auth.CurrentSession.UserName ?? "No encontrado",
+            metodo: metodo,
+            ruta: "/VentasPorVendedor",
+            origen: "Reporte de ventas por vendedor",
+            nivel: "error"
+        );
+    }
+}

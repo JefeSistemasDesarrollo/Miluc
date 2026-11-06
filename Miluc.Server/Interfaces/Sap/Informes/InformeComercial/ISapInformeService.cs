@@ -6,6 +6,8 @@ namespace Miluc.Server.Interfaces.Sap.Informes.InformeComercial
     {
         //Task<Stream> FrecuenciaPorVendedorUltimaFactura(DateTime FechaInicio, DateTime FechaFinal, int? slpCode = null);
         Task<Stream> FacturasPorVendedorUltimaFactura(DateTime FechaInicio, DateTime FechaFinal, int? slpCode = null);
+        //ventas por cada vendedor 
+        Task<Stream> FacturasPorVendedorCabeceraFacturas(DateTime FechaInicio, DateTime FechaFinal, int? slpCode = null);
         Task<Stream> FacturasPorVendedorUltimaFacturaDetalle(DateTime FechaInicio, DateTime FechaFinal, int? slpCode = null);
         //historico sin fechas 
         Task<Stream> FacturasPorVendedorCabeceraHistoricoFacturas( int? slpCode = null);

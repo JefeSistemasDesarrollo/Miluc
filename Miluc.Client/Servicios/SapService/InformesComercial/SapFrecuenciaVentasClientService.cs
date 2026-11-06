@@ -193,6 +193,32 @@ namespace Miluc.Client.Servicios.SapService.InformesComercial
             }
         }
 
+        public async Task<bool> DescargarVentasPorVendedorExcel(DateTime fechaInicio, DateTime fechaFinal, int slpCode = -1)
+        {
+            try
+            {
+                var url = $"api/Informes/VentasPorVendedor/Excel" + $"?fechaInicio={fechaInicio:yyyy-MM-dd}" +$"&fechaFinal={fechaFinal:yyyy-MM-dd}" + $"&slpCode={slpCode}";            
+                var response = await _http.GetAsync(url);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return false;
+                }
+
+
+                var archivo = await response.Content.ReadAsByteArrayAsync();
+                await _js.InvokeVoidAsync(
+                    "descargarArchivo",
+                    $"VentasPorVendedor_{fechaInicio:yyyyMMdd}_{fechaFinal:yyyyMMdd}.xlsx",
+                    archivo);
+                return true;
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error al generar el informe de ventas por vendedor {ex.Message}");
+            }
+        }
 
 
         //public async Task<bool> DescargarFrecuanciaVentasDetalleService(DateTime fechaInicio, DateTime fechaFinal, int slpCode)

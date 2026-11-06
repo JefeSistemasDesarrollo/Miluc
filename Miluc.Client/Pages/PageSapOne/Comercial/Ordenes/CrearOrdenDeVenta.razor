@@ -1,5 +1,7 @@
 ﻿@page "/administrar-pedido/crear-pedido"
+@using System.ComponentModel.DataAnnotations
 @using System.Globalization
+@using System.Text.Json
 @using Miluc.Client.Interfaces.SapInterfaces.Cliente
 @using Miluc.Client.Interfaces.SapInterfaces.Oslp
 @using Miluc.Client.Interfaces.SapInterfaces.SapOitm
@@ -8,7 +10,6 @@
 @using Miluc.Shared.DTOs.Sap.Cliente
 @using Miluc.Shared.DTOs.Sap.Pedidos
 @using Miluc.Shared.DTOs.Sap.Vendedor
-@using System.Text.Json
 @inject ISapOcrdClientService _sapOcrdClientService
 @inject NavigationManager nav
 @inject ILogClientService _logClientService
@@ -33,7 +34,10 @@
             </button> *@
         </div>
     </div>
-    <EditForm id="pedidoForm" Model="clienteSeleccionado" OnValidSubmit="CrearPedido">
+    <EditForm id="pedidoForm" Model="pedidoCreateDto" OnValidSubmit="CrearPedido">
+        <DataAnnotationsValidator />
+        
+        
         <div class="row g-3">
             @* --- DATOS DEL CLIENTE --- *@
             <div class="col-12 col-xl-4">
@@ -83,8 +87,8 @@
                         <div class="mb-3">
                             <label class="form-label">Numero referencia O.C</label>
                             @* <InputDate class="form-control form-control-sm" @bind-Value="fechaEntrega" min="@DateTime.Now.ToString("yyyy-MM-dd")" /> *@
-                            <InputText class="form-control form-control-sm" @bind-Value="clienteSeleccionado.NumAtCard"></InputText>
-                            <ValidationMessage For="@(() => clienteSeleccionado.NumAtCard)" class="text-danger small" />
+                            <InputText class="form-control form-control-sm" @bind-Value="pedidoCreateDto.NumAtCard"></InputText>
+                            <ValidationMessage For="@(() => pedidoCreateDto.NumAtCard)" class="text-danger small" />
                         </div>
                     </div>
                 </div>
@@ -120,6 +124,12 @@
                                     <option value="@origen.OrigenPedidoId">@origen.OrigenNombre</option>
                                 }
                             </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Número Unico del pedido</label>
+                            @* <InputDate class="form-control form-control-sm" @bind-Value="fechaEntrega" min="@DateTime.Now.ToString("yyyy-MM-dd")" /> *@
+                            <InputText class="form-control form-control-sm" @bind-Value="pedidoCreateDto.U_WUID" readonly></InputText>
+                            <ValidationMessage For="@(() => pedidoCreateDto.U_WUID)" class="text-danger small" />
                         </div>
                     </div>
                 </div>
@@ -195,7 +205,7 @@
                                         @if (linea.BuyUnitMsr?.ToUpper() == "KG")
                                         {
                                             <!-- Cuando el artículo se vende por Kg, este campo solo muestra el valor -->
-                                            <InputNumber TValue="decimal?"Value="linea.U_CantidadKg"
+                                            <InputNumber TValue="decimal?" Value="linea.U_CantidadKg"
                                                          ValueExpression="() => linea.U_CantidadKg" class="form-control form-control-sm text-end"
                                                          step="any"
                                                          readonly />
@@ -270,7 +280,13 @@
                 <div class="card shadow-sm border-0 h-100">
                     <div class="card-body">
                         <label class="form-label fw-bold small text-muted text-uppercase">Comentarios</label>
-                        <InputTextArea class="form-control" rows="6" @bind-Value="comentarios" placeholder="Notas adicionales..."></InputTextArea>
+                        <InputTextArea class="form-control" rows="6" @bind-Value="pedidoCreateDto.Comments" placeholder="Notas adicionales..."></InputTextArea>
+                        <ValidationMessage For="@(() => pedidoCreateDto.Comments)" class="text-danger small" />
+                        @*  <ValidationMessage For="@(() => comentarios)" />
+
+                        <small class="text-muted">
+                            @comentarios.Length / 508 caracteres
+                        </small> *@
                     </div>
                 </div>
             </div>
@@ -298,11 +314,28 @@
                     </div>
                 </div>
             </div>
+
+
+            <div class="card-footer bg-white border-0 p-4 text-end">
+                <button type="submit" class="btn btn-miluc btn-lg rounded-pill px-5 shadow-sm">
+                    <i class="bi bi-check-circle me-1"></i> Crear
+                    @*   @if (procesando)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2"></span> <span>Guardando...</span>
+                                    }
+                                    else
+                                    {
+                                        <span><i class="bi bi-person-check-fill me-2"></i>Guardar </span>
+                                    } *@
+                </button>
+            </div>
+
+
         </div>
     </EditForm>
 </div>
 
-<footer class="pedido-footer">
+@* <footer class="pedido-footer">
     <div class="container-fluid d-flex justify-content-end align-items-center">
         <button type="submit"
                 form="pedidoForm"
@@ -310,7 +343,7 @@
             <i class="bi bi-check-circle me-1"></i> Crear
         </button>
     </div>
-</footer>
+</footer> *@
 @* --- MODAL DE BÚSQUEDA DE CLIENTES  --- *@
 <div class="modal fade @(mostrarModalCliente ? "show d-block" : "")" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 1050;">
     <!-- MODAL PEQUEÑO -->
@@ -462,7 +495,7 @@
                         <div class="btn-group">
 
                             <!-- ANTERIOR -->
-                            <button class="btn btn-outline-secondary btn-sm" disabled="@(paginaActualArticulo == 1)" @onclick="PaginaAnteriorArticulo">
+                            <button type="submit" class="btn btn-outline-secondary btn-sm" disabled="@(paginaActualArticulo == 1)" @onclick="PaginaAnteriorArticulo">
                                 <i class="bi bi-chevron-left"></i>
                             </button>
                             <!-- PAGINAS -->
@@ -487,7 +520,15 @@
 @code {
     private bool Cargando = false;
     private bool ProcesandoPedido = false;
-    private string comentarios = "";
+
+    // PedidoCreateDto pedidoCreateDto = new();
+    // [StringLength(508, ErrorMessage = "Máximo 508 caracteres.")]
+    //  private string comentarios = "";
+
+
+    PedidoCreateDto pedidoCreateDto = new PedidoCreateDto();
+
+
     // private decimal descuentoPorcentaje = 0;
     private SapClienteReaderDto? clienteSeleccionado = new();
     private SapOitmDto? ArticuloSeleccionado = new();
@@ -545,13 +586,15 @@
     protected override async Task OnInitializedAsync()
     {
 
+       
         // guid = Guid.NewGuid();
         if (guid == Guid.Empty)
         {
             guid = Guid.NewGuid();
+            pedidoCreateDto.U_WUID = guid.ToString();
         }
-        
 
+        
         // pedido.U_WUID = guid.ToString();
         await InicializarFormulario();
     }
@@ -560,7 +603,7 @@
         clienteSeleccionado = new();
         ArticuloSeleccionado = new();
         lineasPedido.Clear();
-        comentarios = "";
+        // comentarios = "";
         origenSeleccionado = 6;
         fechaContabilizacion = DateTime.Now;
         fechaEntrega = DateTime.Now;
@@ -925,12 +968,12 @@
 
             }
             lineasPedido.Clear();
-            comentarios = "";
+            // comentarios = "";
             origenSeleccionado = 6;
         }
         clienteSeleccionado = cliente;
         // comentarios = clienteSeleccionado?.Free_Text ?? "";
-        comentarios = "";
+        //   comentarios = "";
         CerrarModalCliente();
     }
     private async Task SeleccionarArticulo(SapOitmDto item)
@@ -1069,32 +1112,74 @@
                     RecalcularLinea(line);
 
                 }
+                pedidoCreateDto.U_WUID = guid.ToString();
+                pedidoCreateDto.CardCode = clienteSeleccionado.CardCode;
 
-              
-                PedidoCreateDto pedidoCreateDto = new PedidoCreateDto
+                pedidoCreateDto.NumAtCard = pedidoCreateDto.NumAtCard ?? "";
+                
+                pedidoCreateDto.DocDate = fechaContabilizacion;
+
+
+                pedidoCreateDto.DocDueDate = fechaEntrega;
+                pedidoCreateDto.Reference2 = "Generado por pagina web";
+                pedidoCreateDto.Comments = pedidoCreateDto.Comments;
+                pedidoCreateDto.JournalMemo = "Pedido creado desde Miluc Web";
+                pedidoCreateDto.SalesPersonCode = clienteSeleccionado.SlpCode;
+                pedidoCreateDto.U_OrigenPedido = origenSeleccionado;
+                pedidoCreateDto.U_Responsable = _authClientService.CurrentSession.IdUsuario.ToString();
+                pedidoCreateDto.DocumentLines = lineasPedido.Select(x => new PedidoCrearDetalleLineaDTO
                 {
-                    U_WUID = guid.ToString(),
-                    CardCode = clienteSeleccionado.CardCode,
-                    NumAtCard = clienteSeleccionado.NumAtCard ?? "",
-                    DocDate = fechaContabilizacion,
-                    DocDueDate = fechaEntrega,
-                    Reference2 = "Generado por pagina web",
-                    Comments = comentarios,
-                    JournalMemo = "Pedido creado desde Miluc Web",
-                    SalesPersonCode = clienteSeleccionado.SlpCode,
-                    U_OrigenPedido = origenSeleccionado,
-                    U_Responsable = _authClientService.CurrentSession.IdUsuario.ToString(),
-                    // Printed = "psYes",
-                    //IdUsuario=_authClientService.CurrentSession.IdUsuario,
-                    DocumentLines = lineasPedido.Select(x => new PedidoCrearDetalleLineaDTO
-                    {
-                        ItemCode = x.ItemCode,
-                        Quantity = Convert.ToDecimal(x.Quantity),
-                        U_CantidadKg = Convert.ToDecimal(x.U_CantidadKg),
-                        U_UnidadSal = Convert.ToDecimal(x.U_UnidadSal),
-                        UnitPrice = Convert.ToDecimal(x.PriceAcobrar),
-                    }).ToList()
-                };
+                    ItemCode = x.ItemCode,
+                    Quantity = Convert.ToDecimal(x.Quantity),
+                    U_CantidadKg = Convert.ToDecimal(x.U_CantidadKg),
+                    U_UnidadSal = Convert.ToDecimal(x.U_UnidadSal),
+                    UnitPrice = Convert.ToDecimal(x.PriceAcobrar),
+                }).ToList();
+
+                    
+
+   
+                
+                //     JournalMemo = "Pedido creado desde Miluc Web",
+                //     SalesPersonCode = clienteSeleccionado.SlpCode,
+                //     U_OrigenPedido = origenSeleccionado,
+                //     U_Responsable = _authClientService.CurrentSession.IdUsuario.ToString(),
+                //     DocumentLines = lineasPedido.Select(x => new PedidoCrearDetalleLineaDTO
+                //     {
+                //         ItemCode = x.ItemCode,
+                //         Quantity = Convert.ToDecimal(x.Quantity),
+                //         U_CantidadKg = Convert.ToDecimal(x.U_CantidadKg),
+                //         U_UnidadSal = Convert.ToDecimal(x.U_UnidadSal),
+                //         UnitPrice = Convert.ToDecimal(x.PriceAcobrar),
+                //     }).ToList()
+                // };
+
+                /* PedidoCreateDto pedidoCreateDto = new PedidoCreateDto
+                  {
+                      U_WUID = guid.ToString(),
+                      CardCode = clienteSeleccionado.CardCode,
+                      NumAtCard = clienteSeleccionado.NumAtCard ?? "",
+                      DocDate = fechaContabilizacion,
+                      DocDueDate = fechaEntrega,
+                      Reference2 = "Generado por pagina web",
+                      Comments = comentarios,
+                      JournalMemo = "Pedido creado desde Miluc Web",
+                      SalesPersonCode = clienteSeleccionado.SlpCode,
+                      U_OrigenPedido = origenSeleccionado,
+                      U_Responsable = _authClientService.CurrentSession.IdUsuario.ToString(),
+                      // Printed = "psYes",
+                      //IdUsuario=_authClientService.CurrentSession.IdUsuario,
+                      DocumentLines = lineasPedido.Select(x => new PedidoCrearDetalleLineaDTO
+                      {
+                          ItemCode = x.ItemCode,
+                          Quantity = Convert.ToDecimal(x.Quantity),
+                          U_CantidadKg = Convert.ToDecimal(x.U_CantidadKg),
+                          U_UnidadSal = Convert.ToDecimal(x.U_UnidadSal),
+                          UnitPrice = Convert.ToDecimal(x.PriceAcobrar),
+                      }).ToList()
+                  };*/
+
+               
 
 
 
@@ -1102,7 +1187,7 @@
                 if (TotalFinal > 0)
                 {
 
-                  //  return;
+                    //  return;
                     var response = await _sapOrdrService.CreatePedidoAsyc(pedidoCreateDto);
                     // Cerrar ventana de espera
                     // await _jsRuntime.InvokeVoidAsync("cerrarEspera");
