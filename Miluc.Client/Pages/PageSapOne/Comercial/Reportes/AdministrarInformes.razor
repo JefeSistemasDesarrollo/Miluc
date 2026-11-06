@@ -138,6 +138,38 @@
                 </div>
             </div>
         }
+
+
+
+        @if (_auth.HasPermission("Informe.VentasVendedor"))
+        {
+            <div class="col-12 col-sm-6 col-md-6 col-xl-4">
+                <div class="card h-100 shadow-sm border-0 border-top border-4 border-rojo text-center rounded-4 custom-hover-card alert-dark" style="cursor: pointer;" @onclick='() => nav.NavigateTo("/informe-trazabilidad")'>
+                    <div class="card-body p-4 d-flex flex-column align-items-center justify-content-between">
+                        <div class="w-100">
+                            <div class="p-3 bg-rojo-suave text-rojo fs-3 rounded-circle mx-auto mb-3 icon-box">
+                                <i class="bi bi-bezier2"></i>
+                            </div>
+                            <span class="badge bg-rojo-suave text-dark border rounded-pill px-3 mb-2 small fw-bold">Ventas por Vendedor</span>
+
+                            <h4 class="fw-bold text-dark mb-2 fs-5">Informe de ventas por vendedor</h4>
+                            <p class="text-muted small mb-0">
+                                Gestión de ventas.
+                            </p>
+                        </div>
+                        <button class="btn btn-rojo rounded-pill py-2 w-100 fw-semibold mt-4 shadow-sm"
+                                @onclick='() => nav.NavigateTo("/informe-ventas-por-vendedor")'>
+                            <span>Ventas</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+
+
+
+       
+
     </div>
 </div>
 
