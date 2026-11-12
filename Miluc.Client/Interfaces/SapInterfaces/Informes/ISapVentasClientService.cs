@@ -6,5 +6,8 @@
         Task<bool> CanalDeDistribucionAsync(DateTime FechaIncio, DateTime FechaFinal, int? GrDistribucion = null);
         Task<bool> CarteraVencidaExcel(DateTime fechaFinal, string? cardCode = null, int? codeVendedor = null, int? codCanal = null);
         Task<bool> DescargarTrazabilidad(DateTime fechaInicio, DateTime fechaFinal, int slpCode);
+
+
+        Task<bool> DescargarVentasPorVendedorExcel(DateTime fechaInicio, DateTime fechaFinal, int slpCode = -1);
     }
 }

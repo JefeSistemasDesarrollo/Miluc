@@ -32,7 +32,8 @@
             </button> *@
         </div>
     </div>
-    <EditForm id="pedidoForm" Model="modelUpdateOrden" OnValidSubmit="EditarOrdenVenta">
+    <EditForm id="pedidoForm" Model="UpdatePedido" OnValidSubmit="EditarOrdenVenta">
+        <DataAnnotationsValidator />
         <div class="row g-3">
             @* --- DATOS DEL CLIENTE --- *@
             <div class="col-12 col-xl-4">
@@ -84,8 +85,8 @@
                         <div class="mb-3">
                             <label class="form-label">Numero referencia O.C</label>
                             @* <InputDate class="form-control form-control-sm" @bind-Value="fechaEntrega" min="@DateTime.Now.ToString("yyyy-MM-dd")" /> *@
-                            <InputText class="form-control form-control-sm" @bind-Value="clienteSeleccionado.NumAtCard"></InputText>
-                            <ValidationMessage For="@(() => clienteSeleccionado.NumAtCard)" class="text-danger small" />
+                            <InputText class="form-control form-control-sm" @bind-Value="UpdatePedido.NumAtCard"></InputText>
+                            <ValidationMessage For="@(() => UpdatePedido.NumAtCard)" class="text-danger small" />
                         </div>
                     </div>
                 </div>
@@ -285,7 +286,10 @@
                 <div class="card shadow-sm border-0 h-100">
                     <div class="card-body">
                         <label class="form-label fw-bold small text-muted text-uppercase">Comentarios</label>
-                        <InputTextArea class="form-control" rows="6" @bind-Value="comentarios" placeholder="Notas adicionales..."></InputTextArea>
+                        <InputTextArea class="form-control" rows="6" @bind-Value="UpdatePedido.Comments" placeholder="Notas adicionales..."></InputTextArea>
+                        @* <ValidationMessage For="() => UpdatePedido.Comments" class="alert-danger small"></ValidationMessage> *@
+                        <ValidationMessage For="@(() => UpdatePedido.Comments)" class="text-danger small" />
+
                     </div>
                 </div>
             </div>
@@ -313,10 +317,20 @@
                     </div>
                 </div>
             </div>
+
+            <div class="card-footer bg-white border-0 p-4 text-end">
+                <button type="submit" class="btn btn-miluc btn-lg rounded-pill px-5 shadow-sm">
+
+                    <i class="bi bi-check-circle me-1"></i> Editar
+
+                </button>
+            </div>
+
+
         </div>
     </EditForm>
 </div>
-<footer class="pedido-footer">
+@* <footer class="pedido-footer">
     <div class="container-fluid d-flex justify-content-end align-items-center">
         <button type="submit"
                 form="pedidoForm"
@@ -324,7 +338,7 @@
             <i class="bi bi-check-circle me-1"></i> Editar
         </button>
     </div>
-</footer>
+</footer> *@
 @* MODAL DE ARTICULOS *@
 <div class="modal fade @(mostrarModalArticulo ? "show d-block" : "")" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 1050;">
 
@@ -429,6 +443,9 @@
     private SapOitmDto? ArticuloSeleccionado = new();
     //EL PEDIDO QUE VAMOS A EDITAR, INICIALIZAMOS CON LOS VALORES EXISTENTES PARA MOSTRARLOS EN EL FORMULARIO
     private OrdersReaderDto modelUpdateOrden = new();
+
+    private PedidoUpdateDto UpdatePedido = new();
+
     //LA LISTA ORIGEN DEL PEDIDO LA INICIALIZAMOS CON LOS VALORES FIJOS QUE TENEMOS EN SAP, PARA QUE EL USUARIO PUEDA SELECCIONAR EL ORIGEN DEL PEDIDO
     private List<OrigenPedidoDto> listOrigenPedidos = new();
     //LA LISTA DE LINEAS DEL PEDIDO, INICIALIZAMOS VACIA Y SE IRÁ LLENANDO A MEDIDA QUE EL USUARIO VAYA AGREGANDO ARTÍCULOS, CADA VEZ QUE SE AGREGA O MODIFICA UNA LÍNEA SE CALCULAN LOS TOTALES CORRESPONDIENTES
@@ -503,7 +520,7 @@
         clienteSeleccionado = new();
         ArticuloSeleccionado = new();
         lineasPedido.Clear();
-        comentarios = "";
+       // comentarios = "";
         //ACA VAMOS A INICIALIZAR EL OBJETO modelUpdateOrden CONSULTANDO A SAP POR
         // LOS DETALLES DEL PEDIDO QUE VAMOS A EDITAR, Y ASIGNAMOS LOS VALORES OBTENIDOS A LAS VARIABLES CORRESPONDIENTES
         //  PARA MOSTRARLOS EN EL FORMULARIO, COMO EL CLIENTE SELECCIONADO, LAS LINEAS DEL PEDIDO, LAS FECHAS, EL ORIGEN DEL PEDIDO, ETC
@@ -515,13 +532,15 @@
             origenSeleccionado = modelUpdateOrden.U_OrigenPedido;
             fechaContabilizacion = modelUpdateOrden.DocDate;
             fechaEntrega = modelUpdateOrden.DocDueDate;
-            comentarios = modelUpdateOrden.Comments;
+            //comentarios = modelUpdateOrden.Comments;
+            UpdatePedido.Comments = modelUpdateOrden.Comments;
+            UpdatePedido.NumAtCard = modelUpdateOrden.NumAtCard;
             // ASIGNAMOS EL CLIENTE SELECCIONADO
             if (!string.IsNullOrEmpty(modelUpdateOrden.CardCode))
             {
                 // var responseCliente = await _sapOcrdClientService.GetClienteByCardCodeAsync(modelUpdateOrden.CardCode);
                 clienteSeleccionado.CardCode = modelUpdateOrden.CardCode;
-                clienteSeleccionado.NumAtCard = modelUpdateOrden.NumAtCard;
+              // clienteSeleccionado.NumAtCard = modelUpdateOrden.NumAtCard;
                 clienteSeleccionado.CardName = modelUpdateOrden.CardName;
                 clienteSeleccionado.ListName = modelUpdateOrden.ListName;
                 // clienteSeleccionado.ListName = modelUpdateOrden.ListName;
@@ -785,11 +804,11 @@
                     {
                         DocEntry = DocEntry,
                         CardCode = clienteSeleccionado.CardCode,
-                        NumAtCard = clienteSeleccionado.NumAtCard,
+                        NumAtCard = UpdatePedido.NumAtCard,
                         DocDate = fechaContabilizacion,
                         DocDueDate = fechaEntrega,
                         Reference2 = "Generado por pagina web",
-                        Comments = comentarios,
+                        Comments = UpdatePedido.Comments,
                         JournalMemo = "Pedido editado desde Miluc Web",
                         SalesPersonCode = clienteSeleccionado.SlpCode,
                         U_OrigenPedido = origenSeleccionado,

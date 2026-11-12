@@ -169,6 +169,7 @@ namespace Miluc.Server.Servicios.SapService
                 {
                     throw new Exception("El cliente es inválido");
                 }
+                
 
                 HttpClientHandler clientHandler = new()
                 {

@@ -144,6 +144,66 @@ namespace Miluc.Server.Servicios.SapService
             }
         }
 
+        public async Task<Stream> FacturasPorVendedorCabeceraFacturas(DateTime FechaInicio, DateTime FechaFinal, int? slpCode = null)
+        {
+            try
+            {
+                if (slpCode <= 0)
+                    slpCode = -1;
+
+                var consulta =
+                    from fac in _sapDbContex.OINV.AsNoTracking()
+
+                    join cli in _sapDbContex.OCRD.AsNoTracking()
+                        on fac.CardCode equals cli.CardCode into clijoin
+                    from cli in clijoin.DefaultIfEmpty()
+
+                    join ven in _sapDbContex.OSLP.AsNoTracking()
+                        on fac.SlpCode equals ven.SlpCode into venjoin
+                    from ven in venjoin.DefaultIfEmpty()
+
+                    where fac.CANCELED == 'N'
+                          && fac.DocDate >= FechaInicio
+                          && fac.DocDate <= FechaFinal
+                          && (slpCode == -1 || fac.SlpCode == slpCode)
+
+                    orderby ven.SlpName, fac.DocDate, fac.DocNum
+
+                    select new VentasPorVendedorDto
+                    {
+                        CodigoVendedor = fac.SlpCode,
+                        Vendedor = ven.SlpName ?? "SIN VENDEDOR",
+
+                        CodigoCliente = fac.CardCode,
+                        NombreCliente = fac.CardName,
+
+                        Documento = Convert.ToInt32(fac.DocNum),
+                        Fecha = Convert.ToDateTime(fac.DocDate),
+
+                        Subtotal = fac.DocTotal - fac.VatSum,
+                        Impuestos = fac.VatSum,
+                        TotalVenta = fac.DocTotal
+                    };
+                var stream = new MemoryStream();
+
+                await MiniExcel.SaveAsAsync(
+                    stream,
+                    consulta,
+                    printHeader: true,
+                    sheetName: "VentasPorVendedor",
+                    excelType: ExcelType.XLSX
+                );
+
+                stream.Position = 0;
+
+                return stream;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error Frecuencia de venta por vendedor {ex.Message}");
+            }
+        }
+
         public async Task<Stream> FacturasPorVendedorCabeceraHistoricoFacturas(int? slpCode = null)
         {
             try
@@ -401,16 +461,23 @@ namespace Miluc.Server.Servicios.SapService
 
                 var consulta =
                     from fac in _sapDbContex.OINV.AsNoTracking()
-                    join cli in _sapDbContex.OCRD.AsNoTracking() on fac.CardCode equals cli.CardCode into clijoin from cli  in clijoin.DefaultIfEmpty()
+                    join cli in _sapDbContex.OCRD.AsNoTracking() on fac.CardCode equals cli.CardCode into clijoin
+                    from cli in clijoin.DefaultIfEmpty()
 
-                    join detfac in _sapDbContex.INV1.AsNoTracking() on fac.DocEntry equals detfac.DocEntry into detfacjoin from detfac in detfacjoin.DefaultIfEmpty()
+                    join detfac in _sapDbContex.INV1.AsNoTracking() on fac.DocEntry equals detfac.DocEntry into detfacjoin
+                    from detfac in detfacjoin.DefaultIfEmpty()
 
-                    join art in _sapDbContex.OITM.AsNoTracking() on detfac.ItemCode equals art.ItemCode into artDte from art in artDte.DefaultIfEmpty()
-                    join oitb in _sapDbContex.OITB.AsNoTracking() on art.ItmsGrpCod equals oitb.ItmsGrpCod into artAl from grupo in artAl.DefaultIfEmpty()
-                    //from cli in clijoin.DefaultIfEmpty()
-                    join venfac in _sapDbContex.OSLP.AsNoTracking() on fac.SlpCode equals venfac.SlpCode into venfacjoin from venfac in venfacjoin.DefaultIfEmpty()
-                    join vencli in _sapDbContex.OSLP.AsNoTracking() on cli.SlpCode equals vencli.SlpCode into clivende from vencli in clivende.DefaultIfEmpty()
-                    join suc in _sapDbContex.OBPP.AsNoTracking() on cli.Priority equals suc.PrioCode into scli from suc in scli.DefaultIfEmpty()
+                    join art in _sapDbContex.OITM.AsNoTracking() on detfac.ItemCode equals art.ItemCode into artDte
+                    from art in artDte.DefaultIfEmpty()
+                    join oitb in _sapDbContex.OITB.AsNoTracking() on art.ItmsGrpCod equals oitb.ItmsGrpCod into artAl
+                    from grupo in artAl.DefaultIfEmpty()
+                        //from cli in clijoin.DefaultIfEmpty()
+                    join venfac in _sapDbContex.OSLP.AsNoTracking() on fac.SlpCode equals venfac.SlpCode into venfacjoin
+                    from venfac in venfacjoin.DefaultIfEmpty()
+                    join vencli in _sapDbContex.OSLP.AsNoTracking() on cli.SlpCode equals vencli.SlpCode into clivende
+                    from vencli in clivende.DefaultIfEmpty()
+                    join suc in _sapDbContex.OBPP.AsNoTracking() on cli.Priority equals suc.PrioCode into scli
+                    from suc in scli.DefaultIfEmpty()
 
                     join ultFact in ultimaFactura
                         on fac.DocEntry equals ultFact.DocEntry
@@ -453,7 +520,7 @@ namespace Miluc.Server.Servicios.SapService
                 throw new Exception($"Error Frecuencia de venta por vendedor {ex.Message}");
             }
         }
-        public async  Task<Stream> TrazabilidadFacturas(DateTime fechaInicio, DateTime fechaFin, int? currentUserSlpCode = null)
+        public async Task<Stream> TrazabilidadFacturas(DateTime fechaInicio, DateTime fechaFin, int? currentUserSlpCode = null)
         {
             try
             {
@@ -475,7 +542,7 @@ namespace Miluc.Server.Servicios.SapService
                 stream.Position = 0;
                 return stream;
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 throw new Exception($"Error Frecuencia de venta por vendedor {ex.Message}");
             }
