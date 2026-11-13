@@ -4,6 +4,7 @@
     {
         public int DocEntry { get; set; }
         public int? DocNum { get; set; }
+        public Int16 SlpCode { get; set; }
         public char ?DocType { get; set; }
         public char ? CANCELED { get; set; }
         public char ? Handwrtten { get; set; }
@@ -22,5 +23,6 @@
         public decimal DocTotal { get; set; }
         public decimal VatSum { get; set; }
         public ICollection<RIN1> RIN1 { get; set; }
+
     }
 }

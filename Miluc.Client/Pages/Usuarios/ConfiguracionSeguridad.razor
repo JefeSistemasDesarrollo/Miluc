@@ -10,61 +10,71 @@
 
     <div class="grid-cartas">
 
-        <div class="card-miluc border-rojo">
-            <div class="card-cuerpo">
-                <div class="icono-wrapper bg-rojo-suave">
-                    <i class="bi bi-people-fill"></i>
+        @if (authClient.HasPermission("Modulo.Usuarios"))
+        {
+            <div class="card-miluc border-rojo">
+                <div class="card-cuerpo">
+                    <div class="icono-wrapper bg-rojo-suave">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <h3>Usuarios</h3>
+                    <p>Gestión de personal, creación de cuentas y control de accesos .</p>
+                    <a href="/usuarios" class="btn-miluc btn-rojo">
+                        <span>Administrar Usuarios</span>
+                        <i class="bi bi-arrow-right-short"></i>
+                    </a>
                 </div>
-                <h3>Usuarios</h3>
-                <p>Gestión de personal, creación de cuentas y control de accesos .</p>
-                <a href="/usuarios" class="btn-miluc btn-rojo">
-                    <span>Administrar Usuarios</span>
-                    <i class="bi bi-arrow-right-short"></i>
-                </a>
             </div>
-        </div>
+        }
+        @if (authClient.HasPermission("Modulo.Roles"))
+        {
+            <div class="card-miluc border-amarillo">
+                <div class="card-cuerpo">
+                    <div class="icono-wrapper bg-amarillo-suave">
+                        <i class="bi bi-shield-lock-fill"></i>
+                    </div>
+                    <h3>Roles</h3>
+                    <p>Defina jerarquías de cargos como Administrador, Operador o Contador.</p>
+                    <a href="/configuracion/roles" class="btn-miluc btn-amarillo">
+                        <span>Administrar Roles</span>
+                        <i class="bi bi-arrow-right-short"></i>
+                    </a>
+                </div>
+            </div>
+        }
 
-        <div class="card-miluc border-amarillo">
-            <div class="card-cuerpo">
-                <div class="icono-wrapper bg-amarillo-suave">
-                    <i class="bi bi-shield-lock-fill"></i>
+        @if (authClient.HasPermission("Modulo.Permisos"))
+        {
+            <div class="card-miluc border-rojo">
+                <div class="card-cuerpo">
+                    <div class="icono-wrapper bg-rojo-suave">
+                        <i class="bi bi-key-fill"></i>
+                    </div>
+                    <h3>Permisos</h3>
+                    <p>Ajuste qué módulos específicos puede ver o editar cada perfil de usuario.</p>
+                    <a href="/configuracion/permisos" class="btn-miluc btn-rojo">
+                        <span>Asignar Permisos</span>
+                        <i class="bi bi-arrow-right-short"></i>
+                    </a>
                 </div>
-                <h3>Roles</h3>
-                <p>Defina jerarquías de cargos como Administrador, Operador o Contador.</p>
-                <a href="/configuracion/roles" class="btn-miluc btn-amarillo">
-                    <span>Administrar Roles</span>
-                    <i class="bi bi-arrow-right-short"></i>
-                </a>
             </div>
-        </div>
+        }
+        @if (authClient.HasPermission("Modulo.Filtros"))
+        {
+            <div class="card-miluc border-amarillo">
+                <div class="card-cuerpo">
+                    <div class="icono-wrapper bg-amarillo-suave">
+                        <i class="bi bi-filter"></i>
+                    </div>
+                    <h3>Filtros</h3>
+                    <p>Configure los criterios utilizados para segmentar y consultar la información.</p>
+                    <a href="/Administrar-Filtros" class="btn-miluc btn-amarillo">
+                        <span>Adminitrar Filtros</span>
+                        <i class="bi bi-arrow-right-short"></i>
 
-        <div class="card-miluc border-rojo">
-            <div class="card-cuerpo">
-                <div class="icono-wrapper bg-rojo-suave">
-                    <i class="bi bi-key-fill"></i>
+                    </a>
                 </div>
-                <h3>Permisos</h3>
-                <p>Ajuste qué módulos específicos puede ver o editar cada perfil de usuario.</p>
-                <a href="/configuracion/permisos" class="btn-miluc btn-rojo">
-                    <span>Asignar Permisos</span>
-                    <i class="bi bi-arrow-right-short"></i>
-                </a>
             </div>
-        </div>
-        <div class="card-miluc border-amarillo">
-            <div class="card-cuerpo">
-                <div class="icono-wrapper bg-amarillo-suave">
-                    <i class="bi bi-filter"></i>
-                </div>
-                <h3>Filtros</h3>
-                <p>Configure los criterios utilizados para segmentar y consultar la información.</p>
-                <a href="/Administrar-Filtros" class="btn-miluc btn-amarillo">
-                    <span>Adminitrar Filtros</span>
-                    <i class="bi bi-arrow-right-short"></i>
-                   
-                </a>
-            </div>
-        </div>
-
+        }
     </div>
 </div>
