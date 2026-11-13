@@ -28,7 +28,6 @@ using Miluc.Client.Servicios.Nomina;
 using Miluc.Client.Servicios.SapService;
 using Miluc.Client.Servicios.SapService.InformesComercial;
 using Miluc.Client.Servicios.UsuariosRolesPermisos;
-using Miluc.Shared.DTOs.Nomina.AfiliacionSeguridadSocialDto;
 using Syncfusion.Blazor;
 using System.Globalization;
 using TuProyecto.Client.Services;
@@ -53,7 +52,7 @@ builder.Services.AddScoped(sp =>
 
     return new HttpClient(handler)
     {
-        //BaseAddress = new Uri("https://avicolamiluc.ddns.net:61/")
+       // BaseAddress = new Uri("https://avicolamiluc.ddns.net:91/")
        //  BaseAddress = new Uri("https://avicolamiluc.ddns.net:61/")
         BaseAddress = new Uri("https://localhost:7222/")
     };

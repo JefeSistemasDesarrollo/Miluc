@@ -2,12 +2,10 @@
 {
     public interface ISapVentasClientService
     {
-        Task<bool> DescargarFacturasVentasService(DateTime fechaInicio, DateTime fechaFinal, int slpCode, int tipoInforme);
+        Task<bool> DescargarFacturasVentasService(DateTime fechaInicio, DateTime fechaFinal, int ? slpCode=null, int? tipoInforme=null);
         Task<bool> CanalDeDistribucionAsync(DateTime FechaIncio, DateTime FechaFinal, int? GrDistribucion = null);
-        Task<bool> CarteraVencidaExcel(DateTime fechaFinal, string? cardCode = null, int? codeVendedor = null, int? codCanal = null);
-        Task<bool> DescargarTrazabilidad(DateTime fechaInicio, DateTime fechaFinal, int slpCode);
-
-
-        Task<bool> DescargarVentasPorVendedorExcel(DateTime fechaInicio, DateTime fechaFinal, int slpCode = -1);
+        Task<bool> CarteraVencidaExcel(string? cardCode = null, int? codeVendedor = null, int? codCanal = null);
+        Task<bool> DescargarTrazabilidad(DateTime fechaInicio, DateTime fechaFinal, int?    slpCode=null);
+        Task<bool> DescargarVentasPorVendedorExcel(DateTime fechaInicio, DateTime fechaFinal, int ?slpCode = null, int ?tipoInforme = null);
     }
 }

@@ -13,21 +13,55 @@
 
 <div class="FacturasVentas-container container-fluid py-4 px-3 px-md-4">
 
+
+        <div class="row g-3 mb-4">
+        <div class="col-md-3"> 
+            <label class="form-label text-muted small fw-semibold">
+                Tipo de Informe
+            </label>
+
+            <select class="form-select form-select-sm"
+                    @bind="tipoInformeSeleccionado">
+
+                <option value="1">Detella de Ventas por Vendedor </option>
+                <option value="2">Consolidado de Ventas por Vendedor</option>
+              
+
+            </select>
+         </div> 
+    </div>
+
+
     <!-- ENCABEZADO -->
-    <div class="d-flex align-items-center mb-4 pb-2 border-bottom border-red-subtle">
 
-        <div class="icon-badge me-3">
-            <i class="bi bi-graph-up-arrow"></i>
-        </div>
+    <div class="row g-3 mb-4">
+        <div class="d-flex align-items-center mb-4 pb-2 border-bottom border-red-subtle">
 
-        <div>
-            <h3 class="title-brand m-0">
-                Reporte de ventas por vendedor
-            </h3>
+            <!-- Icono -->
+            <div class="icon-badge me-3">
+                <i class="bi bi-bar-chart-line-fill"></i>
+            </div>
 
-            <p class="subtitle-brand m-0">
-                Consulta y exportación de ventas de SAP Business One
-            </p>
+            <!-- Título y subtítulo -->
+            <div class="flex-grow-1">
+                <h3 class="title-brand m-0">Ventas por vendedor</h3>
+                <p class="subtitle-brand m-0">
+                    Generación de informes de ventas por vendedor
+                </p>
+            </div>
+
+            <!-- Botón volver -->
+            <div class="ms-auto">
+                <button type="button"
+                        class="btn btn-outline-secondary btn-nuevo rounded-pill px-4 shadow-sm"
+                        @onclick="Volver">
+
+                    <i class="bi bi-arrow-left me-2"></i>
+                    Volver
+
+                </button>
+            </div>
+
         </div>
 
     </div>
@@ -49,9 +83,7 @@
 
                     <InputDate @bind-Value="fechaInicio"
                                class="form-control input-brand" />
-
                 </div>
-
                 <!-- FECHA FINAL -->
                 <div class="col-12 col-sm-6 col-lg-3">
 
@@ -59,10 +91,8 @@
                         <i class="bi bi-calendar-check me-1 text-red"></i>
                         Fecha final
                     </label>
-
                     <InputDate @bind-Value="fechaFinal"
                                class="form-control input-brand" />
-
                 </div>
 
                 <!-- VENDEDOR -->
@@ -224,6 +254,19 @@
 
     private DateTime fechaFinal = DateTime.Now;
 
+    private int tipoInformeSeleccionado = 1;
+
+
+    private string TituloInforme => tipoInformeSeleccionado switch
+    {
+        1 => "Detalle por Vendedor",
+        2 => "Detalle consolidado",
+
+    };
+
+
+
+
     private int slpCode = -1;
 
     private bool cargando;
@@ -233,7 +276,7 @@
     private string? mensaje;
 
     private List<SapVendedorReaderDto> vendedores = new();
-
+    private void Volver() => _nav.NavigateTo("/reportes/descargas");
     protected override async Task OnInitializedAsync()
     {
         try
@@ -305,12 +348,11 @@
                 mensaje = "No tienes un vendedor asignado.";
                 return;
             }
-
             var resultado = await _ventasService
                 .DescargarVentasPorVendedorExcel(
                     fechaInicio,
                     fechaFinal,
-                    slpCode
+                    slpCode, tipoInformeSeleccionado
                 );
 
             if (!resultado)

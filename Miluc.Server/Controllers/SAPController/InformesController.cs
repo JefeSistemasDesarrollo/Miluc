@@ -66,16 +66,16 @@ namespace Miluc.Server.Controllers.SAPController
         }
         [HttpGet("CarteraVencida/Excel")]
         [PermissionAuthorize("Informe.CarteraClientes")]
-        public async Task<IActionResult> CarteraVencidaExcel(DateTime fechaFinal, string? cardCode = null, int? codeVendedor = null, int? codCanal = null)
+        public async Task<IActionResult> CarteraVencidaExcel(string? cardCode = null, int? codeVendedor = null, int? codCanal = null)
         {
             try
             {
-                var archivo = await _service.CarteraVencida(fechaFinal, cardCode, codeVendedor, codCanal);
+                var archivo = await _service.CarteraVencida( cardCode, codeVendedor, codCanal);
 
                 return File(
                     archivo,
                     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    $"CarteraVencida_{fechaFinal:yyyyMMdd}.xlsx");
+                    $"CarteraVencida_.xlsx");
             }
             catch (Exception ex)
             {
@@ -142,10 +142,14 @@ namespace Miluc.Server.Controllers.SAPController
         }
         [HttpGet("VentasPorVendedor/Excel")]
         [PermissionAuthorize("Informe.VentasVendedor")]
-        public async Task<IActionResult> VentasPorVendedorExcel([FromQuery] DateTime fechaInicio,[FromQuery] DateTime fechaFinal,[FromQuery] int slpCode = -1)
+        public async Task<IActionResult> VentasPorVendedorExcel([FromQuery] DateTime fechaInicio,[FromQuery] DateTime fechaFinal,[FromQuery] int ?slpCode = null, [FromQuery] int? tipoInforme = null)
         {
             try
             {
+                if(tipoInforme == null)
+                    tipoInforme = 1;
+
+
                 if (fechaInicio > fechaFinal)
                 {
                     return BadRequest(new ResponseAPI<string>
@@ -155,10 +159,20 @@ namespace Miluc.Server.Controllers.SAPController
                     });
                 }
 
-                var stream = await _service.FacturasPorVendedorCabeceraFacturas(
+                if (tipoInforme != null && tipoInforme < 1 || tipoInforme > 2)
+                {
+                    return BadRequest(new ResponseAPI<string>
+                    {
+                        EsCorrecto = false,
+                        Mensaje = "El tipo de reporte debe ser un valor entre 1 y 4."
+                    });
+                }
+
+                var stream = await _service.TotalVentasPorVendedorDetalle(
                     fechaInicio,
                     fechaFinal,
-                    slpCode
+                    slpCode,
+                    tipoInforme
                 );
 
                 if (stream == null || stream.Length == 0)
@@ -169,17 +183,39 @@ namespace Miluc.Server.Controllers.SAPController
                         Mensaje = "No se encontraron ventas para los filtros seleccionados."
                     });
                 }
+                if (tipoInforme == 1)
+                {
+                    stream.Position = 0;
+                    var nombreArchivo =
+                        $"VenDetalle_{fechaInicio:yyyyMMdd}_{fechaFinal:yyyyMMdd}.xlsx";
 
-                stream.Position = 0;
+                    return File(
+                        stream,
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        nombreArchivo
+                    );
+                }
+                else if (tipoInforme == 2)
+                {
+                    stream.Position = 0;
+                    var nombreArchivo =
+                        $"VenCons_{fechaInicio:yyyyMMdd}_{fechaFinal:yyyyMMdd}.xlsx";
+                    return File(
+                        stream,
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        nombreArchivo
+                    );
+                }
+                else
+                {
+                    return BadRequest(new ResponseAPI<string>
+                    {
+                        EsCorrecto = false,
+                        Mensaje = "Tipo de reporte no válido."
+                    });
+                }
 
-                var nombreArchivo =
-                    $"VentasPorVendedor_{fechaInicio:yyyyMMdd}_{fechaFinal:yyyyMMdd}.xlsx";
 
-                return File(
-                    stream,
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    nombreArchivo
-                );
             }
             catch (Exception ex)
             {
