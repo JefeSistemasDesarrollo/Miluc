@@ -37,7 +37,110 @@
                 <i class="bi bi-arrow-left me-2"></i> Volver al listado
             </button>
         </div>
+        @* Modal de autorización de tratamiento de datos personales *@
+        @if (mostrarModalTratamientoDatos)
+        {
+            <div class="modal fade show d-block"
+                 tabindex="-1"
+                 style="background-color: rgba(0,0,0,.6);">
 
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content border-0 shadow">
+
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title">
+                                <i class="bi bi-shield-check me-2"></i>
+                                Autorización de Tratamiento de Datos Personales
+                            </h5>
+                        </div>
+
+                        <div class="modal-body">
+                            <p>
+                                En cumplimiento de la <strong>Ley 1581 de 2012</strong>, el
+                                <strong>Decreto 1377 de 2013</strong> y las demás normas que regulan la
+                                protección de datos personales en Colombia, AVÍCOLA MILUC S.A.S. informa
+                                que los datos suministrados por el colaborador serán recolectados,
+                                almacenados, consultados, actualizados, transmitidos y tratados de forma
+                                segura, confidencial y responsable para el desarrollo de la relación
+                                laboral y el cumplimiento de las obligaciones legales y contractuales de la
+                                compañía.
+                            </p>
+
+                            <h6 class="fw-bold text-danger">
+                                Finalidades del tratamiento de la información
+                            </h6>
+
+                            <ul class="mb-3">
+                                <li>Procesos de selección, vinculación, contratación y administración laboral.</li>
+                                <li>Gestión de nómina, salarios, prestaciones sociales, liquidaciones y beneficios corporativos.</li>
+                                <li>Afiliaciones, novedades y trámites ante EPS, AFP, ARL, Caja de Compensación Familiar y demás entidades del Sistema de Seguridad Social.</li>
+                                <li>Administración de información familiar, beneficiarios, contactos de emergencia y personas registradas por el colaborador.</li>
+                                <li>Gestión de incapacidades, exámenes médicos ocupacionales, esquemas de vacunación y programas de Seguridad y Salud en el Trabajo (SST).</li>
+                                <li>Administración de condiciones médicas, restricciones laborales y demás información necesaria para la protección y bienestar del trabajador.</li>
+                                <li>Elaboración, seguimiento y conservación de contratos laborales, certificaciones, novedades y demás documentos relacionados con la relación laboral.</li>
+                                <li>Gestión de programas de bienestar, capacitaciones, actividades organizacionales y matrices sociodemográficas.</li>
+                                <li>Creación, administración y control de usuarios en plataformas, aplicativos y sistemas de información corporativos.</li>
+                                <li>Verificación de identidad, control de acceso físico y lógico a instalaciones, equipos, aplicaciones y recursos empresariales.</li>
+                                <li>Cumplimiento de obligaciones legales, regulatorias, tributarias, contables, laborales y administrativas.</li>
+                                <li>Atención de requerimientos realizados por autoridades judiciales, administrativas o entidades de control legalmente facultadas.</li>
+                                <li>Conservación de la historia laboral y documental del colaborador durante los plazos establecidos por la legislación vigente.</li>
+                            </ul>
+
+                            <h6 class="fw-bold text-danger">
+                                Derechos del titular de la información
+                            </h6>
+
+                            <ul class="mb-3">
+                                <li>Conocer, actualizar y rectificar sus datos personales.</li>
+                                <li>Solicitar prueba de la autorización otorgada.</li>
+                                <li>Ser informado sobre el uso dado a su información.</li>
+                                <li>Presentar consultas, peticiones, quejas o reclamos.</li>
+                                <li>Solicitar la supresión de información cuando legalmente sea procedente.</li>
+                                <li>Revocar la autorización otorgada, salvo cuando exista un deber legal o contractual que lo impida.</li>
+                            </ul>
+
+                            <div class="alert alert-warning mb-0">
+                                <strong>Declaración de autorización:</strong><br />
+
+                                Declaro que he leído y comprendido la presente autorización y autorizo de
+                                manera libre, previa, expresa e informada a AVÍCOLA MILUC S.A.S. para el
+                                tratamiento de mis datos personales, familiares, laborales, administrativos,
+                                médicos ocupacionales y de seguridad social, conforme a las finalidades
+                                anteriormente descritas y a la normativa vigente sobre protección de datos
+                                personales en Colombia.
+                            </div>
+
+                            <div class="form-check mt-3">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       @bind="aceptaTerminos" />
+
+                                <label class="form-check-label">
+                                    He leído y acepto el tratamiento de mis datos personales.
+                                </label>
+                            </div>
+
+                        </div>
+
+                        <div class="modal-footer">
+
+                            <button class="btn btn-secondary"
+                                    @onclick="CancelarTratamientoDatos">
+                                Cancelar
+                            </button>
+
+                            <button class="btn btn-danger"
+                                    disabled="@(!aceptaTerminos)"
+                                    @onclick="AceptarTratamientoDatos">
+                                Aceptar y Continuar
+                            </button>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        }
         @* --- FORMULARIO PRINCIPAL --- *@
         <EditForm Model="nuevoEmpleado" OnValidSubmit="EjecutarGuardado">
             <DataAnnotationsValidator />
@@ -190,16 +293,22 @@
 
                                 @* Empresa *@
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom">Seleccione la empresa <span class="text-danger">*</span></label>
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-building">Seleccione la empresa  </i></span><span class="text-danger">*</span></label>
                                     <div class="select2-wrapper">
-                                        <InputSelect @bind-Value="nuevoEmpleado.EmpresaId" class="form-select">
-                                            <option value="">Seleccionar empresa</option>
-                                            @foreach (var empresa in listEmpresas)
-                                            {
-                                                <option value="@empresa.EmpresaId">@empresa.EmpresaId - @empresa.NombreEmpresa</option>
-                                            }
-                                        </InputSelect>
-                                    </div>
+                                    <InputSelect @bind-Value="nuevoEmpleado.EmpresaId"
+                                                             class="form-select"
+                                                             disabled="@EsUsuarioTemporal">
+
+                                                    <option value="">Seleccionar empresa</option>
+
+                                                    @foreach (var empresa in listEmpresas)
+                                                    {
+                                                        <option value="@empresa.EmpresaId">
+                                                            @empresa.EmpresaId - @empresa.NombreEmpresa
+                                                        </option>
+                                                    }
+                                     </InputSelect>
+                                                                                    </div>
                                     <ValidationMessage For="@(() => nuevoEmpleado.EmpresaId)" class="text-danger small mt-1 d-block fw-medium" />
                                 </div>
 
@@ -208,22 +317,32 @@
                                 <div class="col-md-4 d-flex align-items-center">
                                     <div class="w-100">
                                         <label class="form-label label-custom">Estado del Empleado</label>
-                                        <div class="form-check form-switch switch-lg d-flex align-items-center gap-2 mt-2">
-                                            <InputCheckbox class="form-check-input" @bind-Value="nuevoEmpleado.Activo" id="activoSwitch" style="transform: scale(1.3); cursor: pointer;" />
-                                            <label class="form-check-label fw-semibold" for="activoSwitch" style="cursor: pointer;">
+
+                                        <div class="form-check form-switch d-flex align-items-center mt-2">
+                                            <InputCheckbox class="form-check-input"
+                                                           @bind-Value="nuevoEmpleado.Activo"
+                                                           id="activoSwitch"
+                                                           style="transform:scale(1.3); cursor:pointer;" />
+
+                                            <label class="form-check-label ms-3 fw-semibold"
+                                                   for="activoSwitch"
+                                                   style="cursor:pointer;">
                                                 @if (nuevoEmpleado.Activo)
                                                 {
-                                                    <span class="text-black"><i class="bi bi-check2-circle me-1"></i> </span>
+                                                    <span class="text-black d-flex align-items-center gap-2">
+                                                        <i class="bi bi-check-circle-fill fs-5"></i>
+                                                    </span>
                                                 }
                                                 else
                                                 {
-                                                    <span class="text-danger"><i class="bi bi-x-circle me-1"></i> </span>
+                                                    <span class="text-danger d-flex align-items-center gap-2">
+                                                        <i class="bi bi-x-circle-fill fs-5"></i>
+                                                    </span>
                                                 }
                                             </label>
                                         </div>
                                     </div>
                                 </div>
-
                             </div>
                         </div>
                     </div>
@@ -241,7 +360,7 @@
 
                                 @* Municipio (Select2 con JS) *@
                                 <div class="mb-3">
-                                    <label class="form-label label-custom">Seleccione el municipio <span class="text-danger">*</span></label>
+                                    <label class="form-label label-custom" <span class="input-icon"><i class="bi bi-geo-alt"></i></span> Seleccione el municipio  <span class="text-danger">*</span></label>
                                     <div class="select2-wrapper">
                                         <select id="municipiosSelect" class="form-select input-custom">
                                             <option value="">Buscar municipio...</option>
@@ -313,10 +432,27 @@
     private List<MunicipioReaderDto> listmunicipios = new();
     private List<TipoDocumentoReaderDto> listDocumento = new();
     private List<EstadoCivilReaderDto> listEstadoCivil = new();
-    private List<EmpresaReaderDto
-    > listEmpresas = new();
+    private List<EmpresaReaderDto> listEmpresas = new();
+    private bool mostrarModalTratamientoDatos = true;
+    private bool aceptaTerminos = false;
+
     private bool isProcessing = false;
+    private bool EsUsuarioTemporal = false;
+
     public string _correo = "";
+    private void AceptarTratamientoDatos()
+    {
+        aceptaTerminos = true;
+        mostrarModalTratamientoDatos = false;
+
+        nuevoEmpleado.AceptaTratamientoDatos = true;
+        nuevoEmpleado.FechaAceptacionTratamientoDatos = DateTime.Now;
+    }
+
+    private void CancelarTratamientoDatos()
+    {
+        nav.NavigateTo("/Administrar/Empleado");
+    }
 
     private void Volver() => nav.NavigateTo("/Administrar/Empleado");
 
@@ -330,7 +466,6 @@
     protected override async Task OnInitializedAsync()
     {
         _correo = _authClientServic.CurrentSession.UserName;
-
 
         if (!_authClientServic.HasPermission("Employee.Create"))
         {
@@ -351,13 +486,39 @@
             listEstadoCivil = respuestaEstado.Valor;
 
         var respuestaEmpresas = await _empresaClientSevice.GetEmpresasAsync(string.Empty, 1, 100);
+
         if (respuestaEmpresas.EsCorrecto)
+        {
             listEmpresas = respuestaEmpresas.Valor;
+
+            int idEmpresa = 0;
+
+            if (_authClientServic.HasPermission("Modulo.Nomina") &&
+                _authClientServic.HasFiltro("Modulo.Nomina"))
+            {
+                var filtroEmpresa = _authClientServic.CurrentSession.Filtros
+                    .FirstOrDefault(f => f.NombreModulo == "Modulo.Nomina");
+
+                if (filtroEmpresa != null &&
+                    int.TryParse(filtroEmpresa.Filtro, out idEmpresa) &&
+                    idEmpresa > 0)
+                {
+                    EsUsuarioTemporal = true;
+
+                    nuevoEmpleado.EmpresaId = idEmpresa;
+
+                    listEmpresas = listEmpresas
+                        .Where(x => x.EmpresaId == idEmpresa)
+                        .ToList();
+                }
+                nuevoEmpleado.AceptaTratamientoDatos = false;
+            }
+        }
 
         nuevoEmpleado.FechaNacimiento = null;
         nuevoEmpleado.FechaExpedicionDoc = null;
+        nuevoEmpleado.AceptaTratamientoDatos = false;
     }
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -369,7 +530,18 @@
 
     public async Task EjecutarGuardado()
     {
+        if (!nuevoEmpleado.AceptaTratamientoDatos)
+        {
+            await JS.InvokeVoidAsync(
+                "Swal.fire",
+                "Atención",
+                "Debe aceptar el tratamiento de datos personales para continuar.",
+                "warning");
+
+            return;
+        }
         isProcessing = true;
+
         try
         {
             nuevoEmpleado.Usuario.Nombres = $"{nuevoEmpleado.PrimerNombre} {nuevoEmpleado.SegundoNombre}";
@@ -388,19 +560,33 @@
             nuevoEmpleado.Usuario.IdTipoUsuario = 2;
 
             var respuesta = await _empleadoService.createEmpleadosAsync(nuevoEmpleado);
+
             if (respuesta.EsCorrecto)
             {
-                await JS.InvokeVoidAsync("Swal.fire", "Éxito", "La información del empleado ha sido registrada correctamente.", "success");
+                await JS.InvokeVoidAsync(
+                    "Swal.fire",
+                    "Éxito",
+                    "La información del empleado ha sido registrada correctamente.",
+                    "success");
+
                 Volver();
             }
             else
             {
-                await JS.InvokeVoidAsync("Swal.fire", "Error", $"{respuesta.Mensaje}", "error");
+                await JS.InvokeVoidAsync(
+                    "Swal.fire",
+                    "Error",
+                    respuesta.Mensaje,
+                    "error");
             }
         }
         catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("Swal.fire", "Fatal Error", $"Excepción Interna: {ex.Message}", "error");
+            await JS.InvokeVoidAsync(
+                "Swal.fire",
+                "Fatal Error",
+                $"Excepción Interna: {ex.Message}",
+                "error");
         }
         finally
         {
@@ -416,8 +602,10 @@
         const string caracteresEspeciales = "!@#$%^&*()_+-=[]{}|;:,.<>?";
 
         const int passwordLength = 8;
+
         var random = new Random();
         var password = new char[passwordLength];
+
         for (int i = 0; i < password.Length; i++)
         {
             if (i < 2)
@@ -429,10 +617,10 @@
             else
                 password[i] = minusculas[random.Next(minusculas.Length)];
         }
+
         return new string(password);
     }
 }
-
 @* --- LÓGICA JAVASCRIPT --- *@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>

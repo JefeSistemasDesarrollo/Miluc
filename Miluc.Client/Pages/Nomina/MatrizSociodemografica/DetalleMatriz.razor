@@ -74,8 +74,7 @@
                             <div class="mb-4 p-3 border rounded bg-light">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <h6 class="fw-bold mb-0">Autorización para el Tratamiento de Datos Personales</h6>
-                                    <span class="badge @(matriz.ConsentimientoInformado == true ? "bg-amarillo texto-amarillo" : "bg-Rojo text-rojo") rounded-pill px-3 py-2 fw-semibold">
-
+                                    <span class="badge @(matriz.ConsentimientoInformado == true ? "bg-amarillo text-dark" : "bg-danger text-white") rounded-pill px-3 py-2 fw-semibold">
                                         @if (matriz.ConsentimientoInformado == true)
                                         {
                                             <i class="bi bi-clipboard2-check-fill me-1"></i>
@@ -86,7 +85,6 @@
                                             <i class="bi bi-clipboard-x me-1"></i>
                                             <span>Pendiente Consentimiento</span>
                                         }
-
                                     </span>
                                 </div>
                                 <p class="small text-muted mb-0">
@@ -96,24 +94,24 @@
 
                             <div class="row g-4">
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom">Nombre Completo Empleado</label>
-                                    <input type="text" class="form-control input-custom-view" value="@(matriz.NombreEmpleado ?? "Sin Nombre")" readonly />
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-person"></i></span> Nombre Completo Empleado</label>
+                                    <input type="text" class="form-control" value="@(matriz.NombreEmpleado ?? "Sin Nombre")" readonly />
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom">Edad</label>
-                                    <input type="text" class="form-control input-custom-view" value="@($"{matriz.Edad} años")" readonly />
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-calendar"></i></span> Edad</label>
+                                    <input type="text" class="form-control" value="@($"{matriz.Edad} años")" readonly />
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom">Género</label>
-                                    <input type="text" class="form-control input-custom-view" value="@(matriz.NombreGenero ?? "N/A")" readonly />
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-gender-male"></i></span> Género</label>
+                                    <input type="text" class="form-control" value="@(matriz.NombreGenero ?? "N/A")" readonly />
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom ">Nacionalidad</label>
-                                    <input type="text" class="form-control input-custom-view text-uppercase" value="@(matriz.NombreNacionalidad ?? "N/A")" readonly />
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-flag"></i></span> Nacionalidad</label>
+                                    <input type="text" class="form-control text-uppercase" value="@(matriz.NombreNacionalidad ?? "N/A")" readonly />
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom">País de Nacimiento</label>
-                                    <input type="text" class="form-control input-custom-view" value="@(matriz.NombrePais ?? "N/A")" readonly />
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-globe"></i></span> País de Nacimiento</label>
+                                    <input type="text" class="form-control" value="@(matriz.NombrePais ?? "N/A")" readonly />
                                 </div>
                             </div>
                         </div>
@@ -126,33 +124,77 @@
                         <div class="card-body p-4">
                             <h5 class="fw-bold text-rojo mb-3"><i class="bi bi-heart-pulse me-2"></i> Salud y Estilo de Vida</h5>
                             <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label label-custom">Condición Médica</label>
-                                    <input type="text" class="form-control input-custom-view text-uppercase" value="@(matriz.NombreCondicionMedica ?? "Ninguna")" readonly />
+
+                                @* --- CONDICIONES MÉDICAS (VISTA DE LECTURA) --- *@
+                                <div class="col-12">
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-heart"></i></span> Condiciones Médicas Reportadas </label>
+
+                                    <div class="border rounded p-3 bg-light">
+
+                                        @if (matriz.CondicionesMedicas != null &&
+                                             matriz.CondicionesMedicas.Any())
+                                        {
+                                            <div class="d-flex flex-wrap gap-2">
+
+                                                @foreach (var cond in matriz.CondicionesMedicas)
+                                                {
+                                                    <span class="badge bg-white text-dark border px-3 py-2 fw-semibold">
+
+                                                        <i class="bi bi-check2-circle text-success me-1"></i>
+
+                                                        @cond.NombreCondicionMedica
+
+                                                        @if (!string.IsNullOrWhiteSpace(cond.OtraCondicionMedica))
+                                                        {
+                                                            <span class="text-muted ms-1">
+                                                                (
+                                                                @string.Join(", ",
+                                                                    cond.OtraCondicionMedica
+                                                                        .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                                                        .Select(x => x.Trim())
+                                                                )
+                                                            </span>
+                                                        }
+
+                                                    </span>
+                                                }
+
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small fst-italic">
+                                                Ninguna condición médica registrada.
+                                            </span>
+                                        }
+
+                                    </div>
                                 </div>
+
+
                                 <div class="col-md-6">
-                                    <label class="form-label label-custom">Deporte Practicado</label>
-                                    <input type="text" class="form-control input-custom-view text-uppercase" value="@(matriz.NombreDeporte ?? "Ninguno")" readonly />
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-bicycle"></i></span> Deporte Practicado</label>
+                                    <input type="text" class="form-control text-uppercase" value="@(matriz.NombreDeporte ?? "Ninguno")" readonly />
                                 </div>
                                 <div class="col-12">
-                                    <label class="form-label label-custom">Hobbies / Aficiones</label>
-                                    <input type="text" class="form-control input-custom-view" value="@(matriz.Hobbies ?? "N/A")" readonly />
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-heart"></i></span> Hobbies / Aficiones</label>
+                                    <input type="text" class="form-control" value="@(matriz.Hobbies ?? "N/A")" readonly />
                                 </div>
                                 <div class="col-12">
-                                    <label class="form-label label-custom">¿Fuma?</label>
-                                    <input type="text" class="form-control input-custom-view" value="@(matriz.Fuma == true ? "Sí" : "No")" readonly />
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-cloud humo"></i></span> ¿Fuma?</label>
+                                    <input type="text" class="form-control" value="@(matriz.Fuma == true ? "Sí" : "No")" readonly />
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label label-custom">¿Cuántas veces al mes fuma?</label>
-                                    <input type="text" class="form-control input-custom-view" value="@(matriz.FumaVecesAlMes)" readonly />
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-cloud humo"></i></span> ¿Cuántas veces al mes fuma?</label>
+                                    <input type="text" class="form-control" value="@(matriz.FumaVecesAlMes > 0 ? matriz.FumaVecesAlMes.ToString() : "N/A")" readonly />
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label label-custom">¿Consume Alcohol?</label>
-                                    <input type="text" class="form-control input-custom-view" value="@(matriz.Alcohol == true ? "Sí" : "No")" readonly />
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-cup-straw"></i></span> ¿Consume Alcohol?</label>
+                                    <input type="text" class="form-control" value="@(matriz.Alcohol == true ? "Sí" : "No")" readonly />
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label label-custom">Frecuencia consumo alcohólico</label>
-                                    <input type="text" class="form-control input-custom-view" value="@(matriz.BebeVecesAlAño)" readonly />
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-cup-straw"></i></span> Frecuencia consumo alcohólico</label>
+                                    <input type="text" class="form-control" value="@(matriz.BebeVecesAlAño > 0 ? matriz.BebeVecesAlAño.ToString() : "N/A")" readonly />
                                 </div>
                             </div>
                         </div>
@@ -165,16 +207,16 @@
                         <div class="card-body p-4">
                             <h5 class="fw-bold text-rojo mb-3"><i class="bi bi-house-door me-2"></i> Vivienda y Transporte</h5>
                             <div class="mb-3">
-                                <label class="form-label label-custom">Medio de Transporte</label>
-                                <input type="text" class="form-control input-custom-view" value="@(matriz.NombreMedioDeTransporte ?? "N/A")" readonly />
+                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-truck"></i></span> Medio de Transporte</label>
+                                <input type="text" class="form-control" value="@(matriz.NombreMedioDeTransporte ?? "N/A")" readonly />
                             </div>
                             <div class="mb-3">
-                                <label class="form-label label-custom">Clase de Vivienda</label>
-                                <input type="text" class="form-control input-custom-view" value="@(matriz.NombreClaseVivienda ?? "N/A")" readonly />
+                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-house"></i></span> Clase de Vivienda</label>
+                                <input type="text" class="form-control" value="@(matriz.NombreClaseVivienda ?? "N/A")" readonly />
                             </div>
                             <div class="mb-0">
-                                <label class="form-label label-custom">Tipo de Vivienda</label>
-                                <input type="text" class="form-control input-custom-view" value="@(matriz.NombreTipoDeVivienda ?? "N/A")" readonly />
+                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-house-door"></i></span> Tipo de Vivienda</label>
+                                <input type="text" class="form-control" value="@(matriz.NombreTipoDeVivienda ?? "N/A")" readonly />
                             </div>
                         </div>
                     </div>
@@ -186,16 +228,20 @@
                         <div class="card-body p-4">
                             <h5 class="fw-bold text-rojo mb-3"><i class="bi bi-journal-bookmark me-2"></i> Formación Académica</h5>
                             <div class="mb-3">
-                                <label class="form-label label-custom">Nivel Académico</label>
-                                <input type="text" class="form-control input-custom-view" value="@(matriz.NombreNivelAcademico ?? "N/A")" readonly />
+                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-mortarboard"></i></span> Nivel Académico</label>
+                                <input type="text" class="form-control" value="@(matriz.NombreNivelAcademico ?? "N/A")" readonly />
                             </div>
                             <div class="mb-3">
-                                <label class="form-label label-custom">Entidad Educativa</label>
-                                <input type="text" class="form-control input-custom-view" value="@(matriz.EntidadEducativa ?? "N/A")" readonly />
+                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-building"></i></span> Entidad Educativa</label>
+                                <input type="text" class="form-control" value="@(matriz.EntidadEducativa ?? "N/A")" readonly />
                             </div>
                             <div class="mb-0">
-                                <label class="form-label label-custom">Título Obtenido</label>
-                                <input type="text" class="form-control input-custom-view" value="@(matriz.TituloObtenido ?? "N/A")" readonly />
+                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-file-earmark-text"></i></span> Título Obtenido</label>
+                                <input type="text" class="form-control" value="@(matriz.TituloObtenido ?? "N/A")" readonly />
+                            </div>
+                            <div class="mt-3">
+                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-calendar"></i></span> Fecha de Culminación de Estudios</label>
+                                <input type="text" class="form-control" value="@(matriz.AñoFinalizacionEducacion.HasValue ? matriz.AñoFinalizacionEducacion.Value.ToString("dd/MM/yyyy") : "N/A")" readonly />
                             </div>
                         </div>
                     </div>
@@ -208,22 +254,22 @@
                             <h5 class="fw-bold text-rojo mb-3"><i class="bi bi-briefcase me-2"></i> Última Experiencia Laboral</h5>
                             <div class="row g-3">
                                 <div class="col-md-6">
-                                    <label class="form-label label-custom">Última Empresa</label>
-                                    <input type="text" class="form-control input-custom-view" value="@(matriz.UltimaEmpresaTrabajo ?? "N/A")" readonly />
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-building"></i></span> Última Empresa</label>
+                                    <input type="text" class="form-control" value="@(matriz.UltimaEmpresaTrabajo ?? "N/A")" readonly />
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label label-custom">Cargo Desempeñado</label>
-                                    <input type="text" class="form-control input-custom-view" value="@(matriz.CargoDesempeñado ?? "N/A")" readonly />
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-person-badge"></i></span> Cargo Desempeñado</label>
+                                    <input type="text" class="form-control" value="@(matriz.CargoDesempeñado ?? "N/A")" readonly />
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label label-custom">Fecha Retiro</label>
-                                    <input type="text" class="form-control input-custom-view" value="@(matriz.FechaUltimoEmpleo.HasValue ? matriz.FechaUltimoEmpleo.Value.ToString("dd/MM/yyyy") : "N/A")" readonly />
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-calendar"></i></span> Fecha Retiro</label>
+                                    <input type="text" class="form-control" value="@(matriz.FechaUltimoEmpleo.HasValue ? matriz.FechaUltimoEmpleo.Value.ToString("dd/MM/yyyy") : "N/A")" readonly />
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label label-custom">Último Salario</label>
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-currency-dollar"></i></span> Último Salario</label>
                                     <input type="text"
-                                           class="form-control input-custom-view"
-                                           value="@(matriz.UltimoSalario.HasValue? matriz.UltimoSalario.Value.ToString("C0", new System.Globalization.CultureInfo("es-CO")): string.Empty)"
+                                           class="form-control"
+                                           value="@(matriz.UltimoSalario.HasValue ? matriz.UltimoSalario.Value.ToString("C0", new System.Globalization.CultureInfo("es-CO")) : "N/A")"
                                            readonly />
                                 </div>
                             </div>
@@ -237,16 +283,16 @@
                         <div class="card-body p-4">
                             <h5 class="fw-bold text-rojo mb-3"><i class="bi bi-telephone-outbound me-2"></i> Contacto de Emergencia</h5>
                             <div class="mb-3">
-                                <label class="form-label label-custom">Persona de Contacto</label>
-                                <input type="text" class="form-control input-custom-view" value="@(matriz.PersonaEnCasoDeEmergencia ?? "No registrado")" readonly />
+                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-person"></i></span> Persona de Contacto</label>
+                                <input type="text" class="form-control" value="@(matriz.PersonaEnCasoDeEmergencia ?? "No registrado")" readonly />
                             </div>
                             <div class="mb-3">
-                                <label class="form-label label-custom">Teléfono de Contacto</label>
-                                <input type="text" class="form-control input-custom-view" value="@(matriz.TelefonoEmergencia ?? "No registrado")" readonly />
+                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-telephone"></i></span> Teléfono de Contacto</label>
+                                <input type="text" class="form-control" value="@(matriz.TelefonoEmergencia ?? "No registrado")" readonly />
                             </div>
                             <div class="mb-0">
-                                <label class="form-label label-custom">Dirección del Contacto</label>
-                                <input type="text" class="form-control input-custom-view" value="@(matriz.DireccionPersonaEmergencia ?? "No registrado")" readonly />
+                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-house"></i></span> Dirección del Contacto</label>
+                                <input type="text" class="form-control" value="@(matriz.DireccionPersonaEmergencia ?? "No registrado")" readonly />
                             </div>
                         </div>
                     </div>
@@ -280,7 +326,7 @@
     private bool cargando = true;
     private string? errorMessage;
 
-    private void Volver() => nav.NavigateTo("Administrar/MatrizSociodemografica");
+    private void Volver() => nav.NavigateTo("/Administrar/MatrizSociodemografica");
 
     protected override async Task OnInitializedAsync()
     {

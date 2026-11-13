@@ -2,6 +2,7 @@
 
 @using Miluc.Client.Interfaces.Nomina
 @using Miluc.Shared.DTOs.Nomina.EmpleadoDto
+@using Miluc.Shared.DTOs.Nomina.EmpresaDto
 @using Miluc.Shared.DTOs.Nomina.EstadoCivilDto
 @using Miluc.Shared.DTOs.Nomina.MunicipioDto
 @using Miluc.Shared.DTOs.Nomina.TipoDocumento
@@ -57,78 +58,103 @@
 
                             <div class="row g-4">
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom">Primer Nombre</label>
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-person"></i></span> Primer Nombre</label>
                                     <input type="text" class="form-control input-custom-view" value="@empleado.PrimerNombre" readonly />
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom">Segundo Nombre</label>
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-person"></i></span> Segundo Nombre</label>
                                     <input type="text" class="form-control input-custom-view" value="@empleado.SegundoNombre" readonly />
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom">Primer Apellido</label>
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-person"></i></span> Primer Apellido</label>
                                     <input type="text" class="form-control input-custom-view" value="@empleado.PrimerApellido" readonly />
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom">Segundo Apellido</label>
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-person"></i></span> Segundo Apellido</label>
                                     <input type="text" class="form-control input-custom-view" value="@empleado.SegundoApellido" readonly />
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom">Fecha de Nacimiento</label>
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-calendar"></i></span> Fecha de Nacimiento</label>
                                     <input type="text" class="form-control input-custom-view" value="@empleado.FechaNacimiento.ToString("dd/MM/yyyy")" readonly />
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom">Tipo de Documento</label>
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-card-list"></i></span> Tipo de Documento</label>
                                     <input type="text" class="form-control input-custom-view" value="@TipoDocumentoNombre" readonly />
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom">Número de Documento</label>
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-card-list"></i></span> Número de Documento</label>
                                     <input type="text" class="form-control input-custom-view" value="@empleado.Documento" readonly />
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom">Fecha Expedición Documento</label>
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-calendar-check"></i></span> Fecha Expedición Documento</label>
                                     <input type="text" class="form-control input-custom-view" value="@empleado.FechaExpedicionDoc.ToString("dd/MM/yyyy")" readonly />
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom">Estado Civil</label>
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-person"></i></span> Estado Civil</label>
                                     <input type="text" class="form-control input-custom-view" value="@EstadoCivilNombre" readonly />
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom">Celular</label>
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-phone"></i></span> Celular</label>
                                     <input type="text" class="form-control input-custom-view" value="@empleado.Celular" readonly />
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom">Celular Alterno</label>
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-phone"></i></span> Celular Alterno</label>
                                     <input type="text" class="form-control input-custom-view" value="@empleado.CelularAlterno" readonly />
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom">Correo Electrónico</label>
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-envelope"></i></span> Correo Electrónico</label>
                                     <input type="text" class="form-control input-custom-view" value="@empleado.CorreoElectronico" readonly />
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom">Dirección</label>
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-house"></i></span> Dirección</label>
                                     <input type="text" class="form-control input-custom-view" value="@empleado.Direccion" readonly />
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom">Barrio</label>
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-geo-alt"></i></span> Barrio</label>
                                     <input type="text" class="form-control input-custom-view" value="@empleado.Barrio" readonly />
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label label-custom">Empresa</label>
-                                    <input type="text" class="form-control input-custom-view" value="@empleado.EmpresaId" readonly />
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-building"></i></span> Empresa</label>
+                                    <input type="text"class="form-control input-custom-view"
+                                           value="@empleado.NombreEmpresa"
+                                           readonly />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">
+                                        <span class="input-icon"><i class="bi bi-file-earmark-text"></i></span>
+                                        Tratamiento de Datos
+                                    </label>
+
+                                    <input type="text"
+                                           class="form-control input-custom-view"
+                                           value="@(empleado.AceptaTratamientoDatos ? "ACEPTADO" : "NO ACEPTADO")"
+                                           readonly />
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label label-custom">
+                                        <span class="input-icon"><i class="bi bi-calendar-check"></i></span>
+                                        Fecha Aceptación
+                                    </label>
+
+                                    <input type="text"
+                                           class="form-control input-custom-view"
+                                           value="@empleado.FechaAceptacionTratamientoDatos.ToString("dd/MM/yyyy")"
+                                           readonly />
                                 </div>
 
                                 <div class="col-md-4">
@@ -156,7 +182,7 @@
                         <div class="card-body p-4">
                             <h5 class="fw-bold text-rojo mb-3">Ubicación Laboral / Residencia</h5>
                             <div class="mb-3">
-                                <label class="form-label label-custom">Municipio / Departamento</label>
+                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-geo-alt"></i></span> Municipio / Departamento</label>
                                 <input type="text" class="form-control input-custom-view" value="@empleado.NombreMunicipio" readonly />
                             </div>
                         </div>
@@ -188,9 +214,12 @@
 
     [Parameter]
     public int IdEmpleado { get; set; }
-
+    private List<EmpresaReaderDto> listEmpresas = new();
     private EmpleadoReaderDto? empleado = null;
     private List<EstadoCivilReaderDto> estadosCiviles = new();
+    public bool AceptaTratamientoDatos { get; set; }
+
+    public DateTime FechaAceptacionTratamientoDatos { get; set; }
     private List<TipoDocumentoReaderDto> tiposDocumento = new();
 
     public string EstadoCivilNombre { get; set; } = string.Empty;

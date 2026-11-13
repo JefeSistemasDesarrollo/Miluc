@@ -92,6 +92,10 @@ namespace Miluc.Shared.DTOs.Nomina.EmpleadoDto
 
         public bool Activo { get; set; }
 
+        public bool AceptaTratamientoDatos { get; set; }
+
+        public DateTime FechaAceptacionTratamientoDatos { get; set; }
+
         public DateTime? FechaCreacion { get; set; }
 
         public DateTime? FechaActualizacion { get; set; }

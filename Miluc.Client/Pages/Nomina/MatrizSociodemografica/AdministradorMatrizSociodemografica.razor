@@ -181,7 +181,7 @@
     private int paginaActual = 1;
     private int totalRegistros = 0;
     private bool cargando = false;
-
+    private bool PuedeEditarEmpresa;
     int idEmpresa = 0;
     public string _correo = "";
     // Propiedad Completa (Full Property) para interceptar los cambios en el buscador en tiempo real
@@ -206,7 +206,7 @@
                 idEmpresa = Convert.ToInt32(_authClientService.CurrentSession.Filtros.FirstOrDefault(f => f.NombreModulo == "Modulo.Nomina").Filtro);
             }
 
-             
+            PuedeEditarEmpresa = _authClientService.HasPermission("");
         }
 
         if (!_authClientService.HasPermission("Matriz.View"))

@@ -261,7 +261,7 @@ namespace Miluc.Server.Servicios.Nomina
                     FechaFinalizacion = fechaFinalizacion,
                     FechaTerminacion = null,
                     CargoId = contratoDto.CargoId,
-                    Salario = contratoDto.Salario ?? 0m,
+                    Salario = contratoDto.Salario,
                     Observacion = string.Empty
                 };
 
@@ -389,7 +389,7 @@ namespace Miluc.Server.Servicios.Nomina
                     detalleDb.FechaInicio = update.FechaInicio ?? detalleDb.FechaInicio;
                     detalleDb.FechaFinalizacion = fechaFinalizacion;
                     detalleDb.CargoId = update.CargoId;
-                    detalleDb.Salario = update.Salario ?? detalleDb.Salario;
+                    detalleDb.Salario = update.Salario;
                     // CentroCosto ya no se toca en el detalle
                 }
 

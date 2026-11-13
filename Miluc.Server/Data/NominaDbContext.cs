@@ -43,6 +43,7 @@ namespace Miluc.Server.Data
         public DbSet<Cargo> Cargos { get; set; }
         public DbSet<Nacionalidad> Nacionalidad { get; set; }
         public DbSet<CentroCostos> CentroCostos { get; set; }
+        public DbSet<CondicionMedicaDetalle> CondicionMedicaDetalle { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -180,8 +181,17 @@ namespace Miluc.Server.Data
 
             // CondicionMedica
             modelBuilder.Entity<CondicionMedica>().ToTable("CondicionMedica");
+
             modelBuilder.Entity<CondicionMedica>().HasKey(c => c.CondicionMedicaId);
-            modelBuilder.Entity<CondicionMedica>().HasMany(g => g.MatrizSociodemografica).WithOne(c => c.CondicionMedica).HasForeignKey(d => d.CondicionMedicaId);
+
+            // CondicionMedicaDetalle
+            modelBuilder.Entity<CondicionMedicaDetalle>().ToTable("CondicionMedicaDetalle");
+
+            modelBuilder.Entity<CondicionMedicaDetalle>().HasKey(c => c.MatrizSociodemograficaCondicionMedicaId);
+
+            modelBuilder.Entity<CondicionMedicaDetalle>().HasOne(c => c.MatrizSociodemografica).WithMany(c => c.CondicionesMedicas).HasForeignKey(c => c.MatrizSociodemograficaId);
+
+            modelBuilder.Entity<CondicionMedicaDetalle>().HasOne(c => c.CondicionMedica).WithMany(c => c.CondicionesMedicasDetalle).HasForeignKey(c => c.CondicionMedicaId);
 
             //nacionalidad
 

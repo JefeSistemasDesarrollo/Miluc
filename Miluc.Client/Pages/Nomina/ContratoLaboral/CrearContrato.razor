@@ -323,6 +323,17 @@
                 return;
             }
 
+            if (createContratoDto.Salario <= 0)
+            {
+                await JS.InvokeVoidAsync(
+                    "Swal.fire",
+                    "Validación",
+                    "Debe ingresar un salario válido.",
+                    "warning");
+
+                return;
+            }
+
             var respuesta =
                 await _contratoService.CreateContratoLaboralAsync(createContratoDto);
 
@@ -358,6 +369,7 @@
             isProcessing = false;
         }
     }
+
 
     private void FormatearSalario(ChangeEventArgs e)
     {
