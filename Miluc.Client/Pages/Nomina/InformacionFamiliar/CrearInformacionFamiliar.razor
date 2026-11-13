@@ -44,7 +44,7 @@
 
                         <div class="row g-4">
                             <div class="col-md-4">
-                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-person"></i></span> Nombre Completo*</label>
+                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-person"></i></span> Nombre Completo<span class="text-danger">*</span></label>
                                 <div class="input-group-custom">
                                     <InputText class="form-control input-custom" @bind-Value="nuevaInfoFamiliar.NombreCompleto" placeholder="Ej: Juan Pérez" />
                                 </div>
@@ -52,7 +52,7 @@
                             </div>
 
                             <div class="col-md-4">
-                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-card-text"></i></span> Documento*</label>
+                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-card-text"></i></span> Documentos<span class="text-danger">*</span></label>
                                 <div class="input-group-custom">
                                     <InputText class="form-control input-custom" @bind-Value="nuevaInfoFamiliar.Documento" placeholder="Ej: 12345678" onkeypress="return event.charCode >= 48 && event.charCode <= 57" />
 
@@ -61,7 +61,7 @@
                             </div>
 
                             <div class="col-md-4">
-                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-person-dash"></i></span> Parentesco*</label>
+                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-person-dash"></i></span> Parentesco<span class="text-danger">*</span></label>
                                 <div class="input-group-custom">
                                     <InputSelect @bind-Value="nuevaInfoFamiliar.ParentescoId" class="form-select">
                                         <option value="">--Seleccione--</option>
@@ -75,7 +75,7 @@
                             </div>
 
                             <div class="col-md-4">
-                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-calendar-event"></i></span> Fecha nacimiento</label>
+                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-calendar-event"></i></span> Fecha nacimiento<span class="text-danger">*</span></label>
                                 <div class="input-group-custom">
                                     <SfDatePicker TValue="DateTime?"
                                                   @bind-Value="nuevaInfoFamiliar.FechaNacimiento"
@@ -88,7 +88,7 @@
                             </div>
 
                             <div class="col-md-4">
-                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-house-heart"></i></span> ¿Vive con el empleado? *</label>
+                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-house-heart"></i></span> ¿Vive con el empleado? <span class="text-danger">*</span></label>
                                 <div class="input-group-custom">
                                     <InputSelect @bind-Value="ViveConEmpleadoString" class="form-select">
                                         <option value="">-- Seleccione --</option>
@@ -100,7 +100,7 @@
                             </div>
 
                             <div class="col-md-4">
-                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-currency-dollar"></i></span> ¿Depende económicamente? *</label>
+                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-currency-dollar"></i></span> ¿Depende económicamente? <span class="text-danger">*</span></label>
                                 <div class="input-group-custom">
                                     <InputSelect @bind-Value="DependeEconomicamenteString" class="form-select">
                                         <option value="">-- Seleccione --</option>
@@ -112,7 +112,7 @@
                             </div>
 
                             <div class="col-md-4">
-                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-people"></i></span> ¿Persona a cargo? *</label>
+                                <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-people"></i></span> ¿Persona a cargo? <span class="text-danger">*</span></label>
                                 <div class="input-group-custom">
                                     <InputSelect @bind-Value="PersonaaCargoString" class="form-select">
                                         <option value="">-- Seleccione --</option>

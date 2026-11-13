@@ -47,10 +47,10 @@ namespace Miluc.Shared.DTOs.Nomina.MatrizSocioDemograficaDto
 
         public string NombreDeporte { get; set; } = string.Empty;
 
-        [Range(1, int.MaxValue, ErrorMessage = "Debe seleccionar condición médica")]
-        public int CondicionMedicaId { get; set; }
 
-        public string NombreCondicionMedica { get; set; } = string.Empty;
+        public List<int> CondicionesMedicasIds { get; set; } = new();
+        public string? OtraCondicionMedica { get; set; }
+
 
         [Required(ErrorMessage = "El campo Hobbies es obligatorio")]
         [MinLength(1, ErrorMessage = "El campo Hobbies es obligatorio")]

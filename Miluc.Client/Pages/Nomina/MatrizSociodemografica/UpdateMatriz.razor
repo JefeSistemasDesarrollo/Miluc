@@ -13,7 +13,6 @@
 @using Syncfusion.Blazor.Calendars
 @using Miluc.Shared.DTOs.Nomina.NacionalidadDto
 
-
 @inject IClaseViviendaClientService _iClaseVivienda
 @inject INacionalidadClienteService _iNacionalidad
 @inject ICondicionMedicaClientService _iCondicionMedica
@@ -72,7 +71,6 @@
         }
         else if (matrizNoEncontrada)
         {
-            @* --- VISTA DE ERROR --- *@
             <div class="card border-0 shadow-sm rounded-4 text-center p-5 my-4">
                 <div class="card-body">
                     <div class="mb-3">
@@ -90,7 +88,6 @@
         }
         else
         {
-            @* --- INICIO DEL EDITFORM --- *@
             <EditForm id="form-matriz" Model="matriz" OnValidSubmit="Guardar">
                 <DataAnnotationsValidator />
 
@@ -124,16 +121,16 @@
 
                                 <div class="row g-4">
                                     <div class="col-md-4">
-                                        <label class="form-label label-custom">Nombre Completo Empleado</label>
+                                        <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-person"></i></span> Nombre Completo Empleado</label>
                                         <input type="text" class="form-control" value="@matriz.NombreEmpleado" readonly />
                                     </div>
                                     <div class="col-md-4">
-                                        <label class="form-label label-custom">Edad</label>
+                                        <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-calendar"></i></span> Edad</label>
                                         <input type="number" class="form-control" @bind="matriz.Edad" />
                                         <ValidationMessage For="@(() => matriz.Edad)" class="text-danger small fw-bold" />
                                     </div>
                                     <div class="col-md-4">
-                                        <label class="form-label label-custom">Género</label>
+                                        <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-gender-male"></i></span> Género</label>
                                         <select class="form-select" @bind="matriz.GeneroId">
                                             <option value="0">Seleccione...</option>
                                             @foreach (var item in generoList)
@@ -144,9 +141,9 @@
                                         <ValidationMessage For="@(() => matriz.GeneroId)" class="text-danger small fw-bold" />
                                     </div>
 
-                                    @* --- NACIONALIDAD (CON MODAL) --- *@
+                                    @* --- NACIONALIDAD --- *@
                                     <div class="col-md-6">
-                                        <label class="form-label label-custom">Nacionalidad</label>
+                                        <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-flag"></i></span> Nacionalidad</label>
                                         <div class="input-group input-group-sm">
                                             <span class="input-group-text bg-white"><i class="bi bi-flag"></i></span>
                                             <input type="text" class="form-control cursor-pointer" readonly @onclick="AbrirModalNacionalidad"
@@ -158,9 +155,9 @@
                                         <ValidationMessage For="@(() => matriz.NacionalidadId)" class="text-danger small fw-bold mt-1 d-block" />
                                     </div>
 
-                                    @* --- PAÍS DE NACIMIENTO (CON MODAL) --- *@
+                                    @* --- PAÍS DE NACIMIENTO --- *@
                                     <div class="col-md-6">
-                                        <label class="form-label label-custom">País de Nacimiento</label>
+                                        <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-globe-americas"></i></span> Países de Nacimiento</label>
                                         <div class="input-group input-group-sm">
                                             <span class="input-group-text bg-white"><i class="bi bi-globe-americas"></i></span>
                                             <input type="text" class="form-control cursor-pointer" readonly @onclick="AbrirModalPais"
@@ -182,19 +179,42 @@
                             <div class="card-body p-4">
                                 <h5 class="fw-bold text-rojo mb-3"><i class="bi bi-heart-pulse me-2"></i>Salud y Estilo de Vida</h5>
                                 <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <label class="form-label label-custom">Condición Médica</label>
-                                        <select class="form-select" @bind="matriz.CondicionMedicaId">
-                                            <option value="0">Seleccione...</option>
-                                            @foreach (var item in condicionMedicaList)
+
+                                    @* --- CONDICIONES MÉDICAS (CHECKLIST CON IDs) --- *@
+
+                                    <div class="col-12">
+                                        <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-heart"></i></span> Condiciones Médicas (Seleccione todas las que apliquen)</label>
+                                        <div class="border rounded p-3 bg-light" style="max-height: 180px; overflow-y: auto;">
+                                            @foreach (var condicion in condicionMedicaList)
                                             {
-                                                <option value="@item.CondicionMedicaId">@item.Nombre</option>
+                                                var estaSeleccionada = condicionesSeleccionadas.Contains(condicion.CondicionMedicaId);
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox"
+                                                           id="@($"cond_{condicion.CondicionMedicaId}")"
+                                                           checked="@estaSeleccionada"
+                                                           @onchange="@(e => ToggleCondicion(condicion.CondicionMedicaId, e))" />
+                                                    <label class="form-check-label fw-semibold" for="@($"cond_{condicion.CondicionMedicaId}")">
+                                                        @condicion.Nombre
+                                                    </label>
+                                                    <ValidationMessage For="@(() => matriz.CondicionesMedicasIds)" class="text-danger small fw-bold" />
+                                                </div>
                                             }
-                                        </select>
-                                        <ValidationMessage For="@(() => matriz.CondicionMedicaId)" class="text-danger small fw-bold" />
+                                        </div>
                                     </div>
+
+                                    @* --- CAMPO DINÁMICO SI SE SELECCIONA 'OTRAS' (ID 22) --- *@
+                                    @if (condicionesSeleccionadas.Contains(22))
+                                    {
+                                        <div class="col-12 animate__animated animate__fadeIn">
+                                            <label class="form-label label-custom text-rojo">Especifique la Otra Condición Médica</label>
+                                            <input type="text" class="form-control border-rojo"
+                                                   placeholder="ej: Parkinson, Lupus, Covid-19"
+                                                   @bind="otraCondicionMedica" />
+                                        </div>
+                                    }
+
                                     <div class="col-md-6">
-                                        <label class="form-label label-custom">Deporte Practicado</label>
+                                        <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-trophy"></i></span> Deporte Practicado</label>
                                         <select class="form-select" @bind="matriz.DeporteId">
                                             <option value="0">Seleccione...</option>
                                             @foreach (var item in deportesList)
@@ -205,12 +225,12 @@
                                         <ValidationMessage For="@(() => matriz.DeporteId)" class="text-danger small fw-bold" />
                                     </div>
                                     <div class="col-12">
-                                        <label class="form-label label-custom">Hobbies / Aficiones</label>
+                                        <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-star"></i></span> Hobbies / Aficiones</label>
                                         <input type="text" class="form-control" @bind="matriz.Hobbies" />
                                         <ValidationMessage For="@(() => matriz.Hobbies)" class="text-danger small fw-bold" />
                                     </div>
                                     <div class="col-12">
-                                        <label class="form-label label-custom">¿Fuma?</label>
+                                        <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-smoking"></i></span> ¿Fuma?</label>
                                         <select class="form-select" @bind="FumaString">
                                             <option value="">Seleccione...</option>
                                             <option value="true">Sí</option>
@@ -219,12 +239,12 @@
                                         <ValidationMessage For="@(() => matriz.Fuma)" class="text-danger small fw-bold" />
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label label-custom">¿Cuántas veces al mes fuma?</label>
+                                        <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-cigarette"></i></span> ¿Cuántas veces al mes fuma?</label>
                                         <input type="number" class="form-control" @bind="matriz.FumaVecesAlMes" disabled="@(matriz.Fuma != true)" />
                                         <ValidationMessage For="@(() => matriz.FumaVecesAlMes)" class="text-danger small fw-bold" />
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label label-custom">¿Consume Alcohol?</label>
+                                        <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-cup-straw"></i></span> ¿Consume Alcohol?</label>
                                         <select class="form-select" @bind="AlcoholString">
                                             <option value="">Seleccione...</option>
                                             <option value="true">Sí</option>
@@ -233,7 +253,7 @@
                                         <ValidationMessage For="@(() => matriz.Alcohol)" class="text-danger small fw-bold" />
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label label-custom">¿Frecuencia de alcohol (al mes)?</label>
+                                        <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-glass-water"></i></span>¿Frecuencia de alcohol (al mes)?</label>
                                         <input type="number" class="form-control" @bind="matriz.BebeVecesAlAño" disabled="@(matriz.Alcohol != true)" />
                                         <ValidationMessage For="@(() => matriz.BebeVecesAlAño)" class="text-danger small fw-bold" />
                                     </div>
@@ -248,7 +268,7 @@
                             <div class="card-body p-4">
                                 <h5 class="fw-bold text-rojo mb-3"><i class="bi bi-house-door me-2"></i>Vivienda y Transporte</h5>
                                 <div class="mb-3">
-                                    <label class="form-label label-custom">Medio de Transporte</label>
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-truck"></i></span> Medio de Transporte</label>
                                     <select class="form-select" @bind="matriz.MedioDeTransporteId">
                                         <option value="0">Seleccione...</option>
                                         @foreach (var item in medioTransporteList)
@@ -259,7 +279,7 @@
                                     <ValidationMessage For="@(() => matriz.MedioDeTransporteId)" class="text-danger small fw-bold" />
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label label-custom">Clase de Vivienda</label>
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-house"></i></span> Clase de Vivienda</label>
                                     <select class="form-select" @bind="matriz.ClaseDeViviendaId">
                                         <option value="0">Seleccione...</option>
                                         @foreach (var item in claseViviendaList)
@@ -270,7 +290,7 @@
                                     <ValidationMessage For="@(() => matriz.ClaseDeViviendaId)" class="text-danger small fw-bold" />
                                 </div>
                                 <div class="mb-0">
-                                    <label class="form-label label-custom">Tipo de Vivienda</label>
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-house-door"></i></span> Tipo de Vivienda</label>
                                     <select class="form-select" @bind="matriz.TipoDeViviendaId">
                                         <option value="0">Seleccione...</option>
                                         @foreach (var item in tipoViviendaList)
@@ -290,7 +310,7 @@
                             <div class="card-body p-4">
                                 <h5 class="fw-bold text-rojo mb-3"><i class="bi bi-journal-bookmark me-2"></i>Formación Académica</h5>
                                 <div class="mb-3">
-                                    <label class="form-label label-custom">Nivel Académico</label>
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-mortarboard"></i></span> Nivel Académico</label>
                                     <select class="form-select" @bind="matriz.NivelAcademicoId">
                                         <option value="0">Seleccione...</option>
                                         @foreach (var item in nivelAcademicoList)
@@ -301,17 +321,17 @@
                                     <ValidationMessage For="@(() => matriz.NivelAcademicoId)" class="text-danger small fw-bold" />
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label label-custom">Entidad Educativa</label>
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-building"></i></span> Entidad Educativa</label>
                                     <input type="text" class="form-control" @bind="matriz.EntidadEducativa" />
                                     <ValidationMessage For="@(() => matriz.EntidadEducativa)" class="text-danger small fw-bold" />
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label label-custom">Título Obtenido</label>
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-file-earmark-text"></i></span> Título Obtenido</label>
                                     <input type="text" class="form-control" @bind="matriz.TituloObtenido" />
                                     <ValidationMessage For="@(() => matriz.TituloObtenido)" class="text-danger small fw-bold" />
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label label-custom">Fecha de Culminación de Estudios</label>
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-calendar"></i></span> Fecha de Culminación de Estudios</label>
                                     <SfDatePicker TValue="DateTime?" @bind-Value="matriz.AñoFinalizacionEducacion" Format="dd/MM/yyyy" Placeholder="dd/mm/aaaa" Width="100%"></SfDatePicker>
                                     <ValidationMessage For="@(() => matriz.AñoFinalizacionEducacion)" class="text-danger small fw-bold" />
                                 </div>
@@ -326,22 +346,22 @@
                                 <h5 class="fw-bold text-rojo mb-3"><i class="bi bi-briefcase me-2"></i>Última Experiencia Laboral</h5>
                                 <div class="row g-3">
                                     <div class="col-md-6">
-                                        <label class="form-label label-custom">Última Empresa</label>
+                                        <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-building"></i></span> Última Empresa</label>
                                         <input type="text" class="form-control" @bind="matriz.UltimaEmpresaTrabajo" />
                                         <ValidationMessage For="@(() => matriz.UltimaEmpresaTrabajo)" class="text-danger small fw-bold" />
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label label-custom">Cargo Desempeñado</label>
+                                        <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-person-badge"></i></span> Cargo Desempeñado</label>
                                         <input type="text" class="form-control" @bind="matriz.CargoDesempeñado" />
                                         <ValidationMessage For="@(() => matriz.CargoDesempeñado)" class="text-danger small fw-bold" />
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label label-custom">Fecha fin ultimo Empleo</label>
+                                        <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-calendar"></i></span> Fecha fin ultimo Empleo</label>
                                         <SfDatePicker TValue="DateTime?" @bind-Value="matriz.FechaUltimoEmpleo" Format="dd/MM/yyyy" Placeholder="dd/mm/aaaa" Width="100%"></SfDatePicker>
                                         <ValidationMessage For="@(() => matriz.FechaUltimoEmpleo)" class="text-danger small fw-bold" />
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label label-custom">Último Salario</label>
+                                        <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-currency-dollar"></i></span> Último Salario</label>
                                         <input type="text" class="form-control" value="@(matriz.UltimoSalario?.ToString("N0") ?? "")" @oninput="@(e => OnSalarioChanged(e.Value?.ToString() ?? string.Empty))" onkeypress="return event.charCode >= 48 && event.charCode <= 57" />
                                         <ValidationMessage For="@(() => matriz.UltimoSalario)" class="text-danger small fw-bold" />
                                     </div>
@@ -356,17 +376,17 @@
                             <div class="card-body p-4">
                                 <h5 class="fw-bold text-rojo mb-3"><i class="bi bi-telephone-outbound me-2"></i>Contacto de Emergencia</h5>
                                 <div class="mb-3">
-                                    <label class="form-label label-custom">Persona de Contacto</label>
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-person"></i></span> Persona de Contacto</label>
                                     <input type="text" class="form-control" @bind="matriz.PersonaEnCasoDeEmergencia" />
                                     <ValidationMessage For="@(() => matriz.PersonaEnCasoDeEmergencia)" class="text-danger small fw-bold" />
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label label-custom">Teléfono de Contacto</label>
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-telephone"></i></span> Teléfono de Contacto</label>
                                     <input type="text" class="form-control" @bind="matriz.TelefonoEmergencia" />
                                     <ValidationMessage For="@(() => matriz.TelefonoEmergencia)" class="text-danger small fw-bold" />
                                 </div>
                                 <div class="mb-0">
-                                    <label class="form-label label-custom">Dirección del Contacto</label>
+                                    <label class="form-label label-custom"><span class="input-icon"><i class="bi bi-house"></i></span> Dirección del Contacto</label>
                                     <input type="text" class="form-control" @bind="matriz.DireccionPersonaEmergencia" />
                                     <ValidationMessage For="@(() => matriz.DireccionPersonaEmergencia)" class="text-danger small fw-bold" />
                                 </div>
@@ -378,7 +398,7 @@
                     <div class="col-12 col-md-6">
                         <div class="card card-info-banner border-0 shadow-sm rounded-4 h-100 p-4 position-relative overflow-hidden">
                             <div class="position-relative z-index-2 d-flex flex-column h-100 justify-content-center">
-                                <h5 class="fw-bold text-rojo mb-2"><i class="bi bi-shield-lock-fill me-2"></i>Seguridad de los datos</h5>
+                                <h5 class="fw-bold text-rojo mb-2"><span class="input-icon"><i class="bi bi-shield-lock-fill me-2"></i></span>Seguridad de los datos</h5>
                                 <p class="text-secondary small mb-0 lh-lg">
                                     Estás editando información confidencial. Asegúrate de verificar los datos con el colaborador.
                                     La organización garantiza la seguridad de estos registros para fines administrativos y legales.
@@ -454,8 +474,6 @@
                             </button>
                         }
                     }
-                   
-                 
                 </div>
                 @if (cantidadDeNacionalidadesEncontradas > 0)
                 {
@@ -488,7 +506,7 @@
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-header bg-maroon-modal text-modal">
                 <h5 class="modal-title mb-0">
-                    <i class="bi bi-globe-americas me-2"></i> Buscar País de Nacimiento
+                    <i class="bi bi-globe-americas me-2"></i> Buscar País
                 </h5>
                 <button type="button" class="btn-close text-modal ms-auto" @onclick="CerrarModalPais"></button>
             </div>
@@ -509,21 +527,19 @@
                     @if (listaPaises.Any())
                     {
                         @foreach (var item in listaPaises
-                                .Skip((paginaActualPais - 1) * CantidadRegistrosPorPais)
-                                .Take(CantidadRegistrosPorPais))
-                            {
-                                <button type="button"
-                                        class="list-group-item list-group-item-action"
-                                        @onclick="() => SeleccionarPais(item)">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <strong class="text-maroon">@item.pais</strong>
-                                        <small class="text-muted">ID: @item.PaisId</small>
-                                    </div>
-                                </button>
-                            }
+                           .Skip((paginaActualPais - 1) * CantidadRegistrosPorPais)
+                           .Take(CantidadRegistrosPorPais))
+                        {
+                            <button type="button"
+                                    class="list-group-item list-group-item-action"
+                                    @onclick="() => SeleccionarPais(item)">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <strong class="text-maroon">@item.pais</strong>
+                                    <small class="text-muted">ID: @item.PaisId</small>
+                                </div>
+                            </button>
                         }
-                    
-                    
+                    }
                 </div>
                 @if (cantidadDePaisesEncontrados > 0)
                 {
@@ -554,6 +570,10 @@
     [Parameter] public int id { get; set; }
 
     private MatrizSocioDemograficaUpdateDto matriz = new();
+
+    // --- VARIABLES PARA MÚLTIPLES CONDICIONES MÉDICAS ---
+    private List<int> condicionesSeleccionadas = new();
+    private string? otraCondicionMedica;
 
     private bool isLoading = true;
     private bool isSaving = false;
@@ -695,7 +715,6 @@
             }
 
             // Cargar Datos de la Matriz por ID
-            // Cargar Datos de la Matriz por ID
             var resMatriz = await _iMatriz.GetMatrizPorEmpleadoIdAsync(id);
 
             if (resMatriz?.EsCorrecto == true && resMatriz.Valor != null)
@@ -704,7 +723,7 @@
 
                 matriz = new MatrizSocioDemograficaUpdateDto
                 {
-
+                    MatrizSociodemograficaId = item.MatrizSociodemograficaId,
                     EmpleadoId = item.EmpleadoId,
                     NombreEmpleado = item.NombreEmpleado,
                     ConsentimientoInformado = item.ConsentimientoInformado,
@@ -712,7 +731,11 @@
                     GeneroId = item.GeneroId,
                     NacionalidadId = item.NacionalidadId,
                     PaisNacimientoId = item.PaisNacimientoId,
-                    CondicionMedicaId = item.CondicionMedicaId,
+
+                    // Sincronización de múltiples condiciones médicas e ID 22 (Otras)
+                    CondicionesMedicasIds = item.CondicionesMedicas?.Select(x => x.CondicionMedicaId).ToList() ?? new(),
+                    OtraCondicionMedica = item.CondicionesMedicas?.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x.OtraCondicionMedica))?.OtraCondicionMedica,
+
                     DeporteId = item.DeporteId,
                     Hobbies = item.Hobbies,
                     Fuma = item.Fuma,
@@ -734,6 +757,10 @@
                     TelefonoEmergencia = item.TelefonoEmergencia,
                     DireccionPersonaEmergencia = item.DireccionPersonaEmergencia
                 };
+
+                // Asignar variables locales para la UI
+                condicionesSeleccionadas = matriz.CondicionesMedicasIds.ToList();
+                otraCondicionMedica = matriz.OtraCondicionMedica;
 
                 if (matriz.NacionalidadId > 0)
                 {
@@ -760,6 +787,28 @@
         finally
         {
             isLoading = false;
+        }
+    }
+
+    // --- ACCIÓN DE CHECKBOXES PARA CONDICIONES MÉDICAS ---
+    private void ToggleCondicion(int idCondicion, ChangeEventArgs e)
+    {
+        bool seleccionado = e.Value is bool valor && valor;
+
+        if (seleccionado)
+        {
+            if (!condicionesSeleccionadas.Contains(idCondicion))
+            {
+                condicionesSeleccionadas.Add(idCondicion);
+            }
+        }
+        else
+        {
+            condicionesSeleccionadas.Remove(idCondicion);
+            if (idCondicion == 22)
+            {
+                otraCondicionMedica = null;
+            }
         }
     }
 
@@ -797,6 +846,7 @@
         cantidadDeNacionalidadesEncontradas = listaNacionalidades.Count;
         paginaActualNacionalidad = 1;
     }
+
     private void FiltrarPais()
     {
         if (string.IsNullOrWhiteSpace(_textoBusquedaPais))
@@ -815,7 +865,6 @@
         cantidadDePaisesEncontrados = listaPaises.Count;
         paginaActualPais = 1;
     }
-
 
     private async Task buscarEnServidorNacionalidad(string? text = null, int? paginador = null, int? cantidad = null)
     {
@@ -880,6 +929,10 @@
 
         try
         {
+            // Asignar los valores seleccionados al DTO antes de enviar al backend
+            matriz.CondicionesMedicasIds = condicionesSeleccionadas.ToList();
+            matriz.OtraCondicionMedica = otraCondicionMedica;
+
             var response = await _iMatriz.updateMatrizAsync(matriz);
             if (response?.EsCorrecto == true)
             {

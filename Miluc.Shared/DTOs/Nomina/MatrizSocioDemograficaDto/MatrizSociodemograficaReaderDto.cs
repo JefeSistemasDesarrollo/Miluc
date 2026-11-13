@@ -13,9 +13,9 @@ namespace Miluc.Shared.DTOs.Nomina.MatrizSocioDemograficaDto
         public int MatrizSociodemograficaId { get; set; }
         public int EmpleadoId { get; set; }
         public string NombreEmpleado { get; set; } = string.Empty;
-        
+
         public int Edad { get; set; }
-        public int NacionalidadId { get; set; } 
+        public int NacionalidadId { get; set; }
         public string NombreNacionalidad { get; set; } = string.Empty;
         public int PaisNacimientoId { get; set; }
         public string NombrePais { get; set; } = string.Empty;
@@ -27,8 +27,7 @@ namespace Miluc.Shared.DTOs.Nomina.MatrizSocioDemograficaDto
         public int BebeVecesAlAño { get; set; }
         public int DeporteId { get; set; }
         public string NombreDeporte { get; set; } = string.Empty;
-        public int CondicionMedicaId { get; set; }
-        public string NombreCondicionMedica { get; set; } = string.Empty;
+
         public string Hobbies { get; set; } = string.Empty;
         public int MedioDeTransporteId { get; set; }
         public string NombreMedioDeTransporte { get; set; } = string.Empty;
@@ -56,5 +55,7 @@ namespace Miluc.Shared.DTOs.Nomina.MatrizSocioDemograficaDto
         public DateTime? FechaCreacion { get; set; }
         public DateTime? FechaActualizacion { get; set; }
         public bool? Activo { get; set; }
+        public List<CondicionMedicaDetalleReaderDto> CondicionesMedicas { get; set; }    = new();
+    
     }
 }

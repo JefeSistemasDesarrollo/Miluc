@@ -18,7 +18,6 @@ namespace Miluc.Server.Servicios.Nomina
         {
             try
             {
-
                 var query = from e in _context.Empleado.AsNoTracking()
                             join m in _context.MatrizSociodemografica.AsNoTracking()
                                 on e.EmpleadoId equals m.EmpleadoId into matrizGroup
@@ -26,90 +25,94 @@ namespace Miluc.Server.Servicios.Nomina
                             where e.EmpleadoId == empleadoId
                             select new { e, m };
 
-
-
                 var resultado = await query.Select(x => new MatrizSociodemograficaReaderDto
                 {
-                    // --- Datos del Empleado (Siempre seguros) ---
                     EmpleadoId = x.e.EmpleadoId,
-                    NombreEmpleado = $"{x.e.PrimerNombre} {x.e.SegundoNombre} {x.e.PrimerApellido} {x.e.SegundoApellido}".Replace("  ", " ").Trim(),
+                    NombreEmpleado = $"{x.e.PrimerNombre} {x.e.SegundoNombre} {x.e.PrimerApellido} {x.e.SegundoApellido}"
+                                        .Replace("  ", " ")
+                                        .Trim(),
 
-                    // --- Datos de la Matriz (Si x.m es null, se asignan valores por defecto) ---
-                    MatrizSociodemograficaId = x.m != null ? x.m.MatrizSociodemograficaId : 0,
-                    ConsentimientoInformado = x.m != null ? x.m.ConSentimientoInformado : false,
+                    MatrizSociodemograficaId = x.m != null ? x.m.MatrizSociodemograficaId : 0,ConsentimientoInformado = x.m != null ? x.m.ConSentimientoInformado : false,
                     Edad = x.m != null ? x.m.Edad : 0,
                     NacionalidadId = x.m != null ? x.m.NacionalidadId : 0,
-                    NombreNacionalidad =x.m != null && x.m.Nacionalidad != null ? x.m.Nacionalidad.NacionalidadNombre : "".Trim().ToUpper(),
-                    PaisNacimientoId = x.m != null ? x.m.PaisNacimientoId : 0,
-                    NombrePais = x.m != null && x.m.Pais != null ? x.m.Pais.pais : "".Trim().ToUpper(),
-                    GeneroId = x.m != null ? x.m.GeneroId : 0,
-                    NombreGenero = x.m != null && x.m.Genero != null ? x.m.Genero.Nombre : "".Trim().ToUpper(),
-                    Fuma = x.m != null ? x.m.Fuma : false,
-                    FumaVecesAlMes = x.m != null ? x.m.FumaVecesAlMes : 0,
+                    NombreNacionalidad = x.m != null && x.m.Nacionalidad != null? x.m.Nacionalidad.NacionalidadNombre: string.Empty,
+
+                    PaisNacimientoId = x.m != null ? x.m.PaisNacimientoId : 0,NombrePais = x.m != null && x.m.Pais != null? x.m.Pais.pais:string.Empty,
+                    GeneroId = x.m != null ? x.m.GeneroId : 0,NombreGenero = x.m != null && x.m.Genero != null? x.m.Genero.Nombre: string.Empty,
+                    Fuma = x.m != null ? x.m.Fuma : false,FumaVecesAlMes = x.m != null ? x.m.FumaVecesAlMes : 0,
                     Alcohol = x.m != null ? x.m.Alcohol : false,
                     BebeVecesAlAño = x.m != null ? x.m.BebeVecesAlAño : 0,
                     DeporteId = x.m != null ? x.m.DeporteId : 0,
-                    NombreDeporte = x.m != null && x.m.Deporte != null ? x.m.Deporte.Nombre : "".Trim().ToUpper(),
-                    CondicionMedicaId = x.m != null ? x.m.CondicionMedicaId : 0,
-                    NombreCondicionMedica = x.m != null && x.m.CondicionMedica != null ? x.m.CondicionMedica.Nombre : "".Trim().ToUpper(),
-                    Hobbies = x.m != null ? x.m.Hobbies : "".Trim().ToUpper(),
+                    NombreDeporte = x.m != null && x.m.Deporte != null? x.m.Deporte.Nombre: string.Empty,
+                    Hobbies = x.m != null ? x.m.Hobbies : string.Empty,
                     MedioDeTransporteId = x.m != null ? x.m.MedioTransporteId : 0,
-                    NombreMedioDeTransporte = x.m != null && x.m.MedioTransporte != null ? x.m.MedioTransporte.Nombre : "".Trim().ToUpper(),
-                    ClaseDeViviendaId = x.m != null ? x.m.ClaseDeViviendaId : 0,
-                    NombreClaseVivienda = x.m != null && x.m.ClaseVivienda != null ? x.m.ClaseVivienda.Nombre : "".Trim().ToUpper(),
-                    TipoDeViviendaId = x.m != null ? x.m.TipoViviendaId : 0,
-                    NombreTipoDeVivienda = x.m != null && x.m.TipoVivienda != null ? x.m.TipoVivienda.Nombre : "".Trim().ToUpper(),
-                    NivelAcademicoId = x.m != null ? x.m.NivelAcademicoId : 0,
-                    NombreNivelAcademico = x.m != null && x.m.NivelAcademico != null ? x.m.NivelAcademico.Nombre : "".Trim().ToUpper(),
-                    AñoFinalizacionEducacion = x.m != null ? x.m.AñoFinalizacionEducacion : null,
-                    EntidadEducativa = x.m != null ? x.m.EntidadEducativa : "".Trim().ToUpper(),
-                    TituloObtenido = x.m != null ? x.m.TituloObtenido : "",
-                    UltimaEmpresaTrabajo = x.m != null ? x.m.UltimaEmpresaTrabajo : "",
-                    FechaUltimoEmpleo = x.m != null ? x.m.FechaUltimoEmpleo : null,
-                    CargoDesempeñado = x.m != null ? x.m.CargoDesempeñado : "",
-                    UltimoSalario = x.m != null ? x.m.UltimoSalario : 0,
-                    PersonaEnCasoDeEmergencia = x.m != null ? x.m.PersonaEnCasoDeEmergencia : "",
-                    TelefonoEmergencia = x.m != null ? x.m.TelefonoEmergencia : "",
-                    DireccionPersonaEmergencia = x.m != null ? x.m.DireccionPersonaEmergencia : "",
-                    FechaCreacion = x.m != null ? x.m.FechaCreacion : null,
-                    FechaActualizacion = x.m != null ? x.m.FechaActualizacion : null,
-                    Activo = x.m != null ? x.m.Activo : false
+                    NombreMedioDeTransporte = x.m != null && x.m.MedioTransporte != null? x.m.MedioTransporte.Nombre: string.Empty,
+                    ClaseDeViviendaId = x.m != null ? x.m.ClaseDeViviendaId : 0,NombreClaseVivienda = x.m != null && x.m.ClaseVivienda != null? x.m.ClaseVivienda.Nombre: string.Empty,
+                    TipoDeViviendaId = x.m != null ? x.m.TipoViviendaId : 0,NombreTipoDeVivienda = x.m != null && x.m.TipoVivienda != null? x.m.TipoVivienda.Nombre: string.Empty,
+                    NivelAcademicoId = x.m != null ? x.m.NivelAcademicoId : 0,NombreNivelAcademico = x.m != null && x.m.NivelAcademico != null? x.m.NivelAcademico.Nombre: string.Empty,
+                    AñoFinalizacionEducacion = x.m != null? x.m.AñoFinalizacionEducacion: null,
+                    EntidadEducativa = x.m != null? x.m.EntidadEducativa: string.Empty,
+                    TituloObtenido = x.m != null? x.m.TituloObtenido: string.Empty,UltimaEmpresaTrabajo = x.m != null? x.m.UltimaEmpresaTrabajo: string.Empty,
+                    FechaUltimoEmpleo = x.m != null? x.m.FechaUltimoEmpleo: null,
+                    CargoDesempeñado = x.m != null? x.m.CargoDesempeñado: string.Empty,
+                    UltimoSalario = x.m != null? x.m.UltimoSalario: 0,
+                    PersonaEnCasoDeEmergencia = x.m != null? x.m.PersonaEnCasoDeEmergencia: string.Empty,
+                    TelefonoEmergencia = x.m != null? x.m.TelefonoEmergencia: string.Empty,
+                    DireccionPersonaEmergencia = x.m != null? x.m.DireccionPersonaEmergencia: string.Empty,
+                    FechaCreacion = x.m != null? x.m.FechaCreacion: null,
+                    FechaActualizacion = x.m != null? x.m.FechaActualizacion: null,
+                    Activo = x.m != null? x.m.Activo                        : false
                 })
                 .FirstOrDefaultAsync();
+
+                if (resultado != null && resultado.MatrizSociodemograficaId > 0)
+                {
+                    resultado.CondicionesMedicas =
+                        await _context.CondicionMedicaDetalle
+                            .AsNoTracking().Where(x =>
+                                x.MatrizSociodemograficaId ==
+                                resultado.MatrizSociodemograficaId)
+                            .Include(x => x.CondicionMedica)
+                            .Select(x => new CondicionMedicaDetalleReaderDto
+                            {
+                                CondicionMedicaId = x.CondicionMedicaId,
+                                NombreCondicionMedica = x.CondicionMedica.Nombre,
+                                OtraCondicionMedica = x.OtraCondicionMedica
+                            })
+                            .ToListAsync();
+                }
 
                 return resultado;
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"Error al obtener la matriz sociodemográfica: {ex.Message}", ex);
+                throw new InvalidOperationException(
+                    $"Error al obtener la matriz sociodemográfica: {ex.Message}",
+                    ex);
             }
         }
 
 
-        public async Task<(List<MatrizSociodemograficaReaderDto> data, int CantidadRegistros)> GetMatrizSocioDemograficasAsync(string? filtro = null, int page = 1, int? cantidad = null, string ? correo=null, int? idEmpresa =null)
+        public async Task<(List<MatrizSociodemograficaReaderDto> data, int CantidadRegistros)>GetMatrizSocioDemograficasAsync(string? filtro = null,int page = 1,int? cantidad = null,string? correo = null,int? idEmpresa = null)
         {
             try
             {
                 int cantidadTop = cantidad ?? 20;
 
-                // 1. Iniciamos desde Empleados para traerlos a todos
                 var query = from e in _context.Empleado.AsNoTracking()
-                            // 2. Hacemos un LEFT JOIN con MatrizSociodemografica
                             join m in _context.MatrizSociodemografica
-                                 on e.EmpleadoId equals m.EmpleadoId into matrizGroup
+                                on e.EmpleadoId equals m.EmpleadoId into matrizGroup
                             from m in matrizGroup.DefaultIfEmpty()
-                                // 3. Aplicamos el filtro sobre el nombre del empleado
                             where string.IsNullOrEmpty(filtro) ||
                                   e.PrimerNombre.Contains(filtro) ||
                                   e.PrimerApellido.Contains(filtro)
-                                 
-                            select new { e, m }; // Proyectamos temporalmente (e = Empleado, m = Matriz)
+                            select new { e, m };
 
                 if (!string.IsNullOrEmpty(correo))
                 {
                     query = query.Where(x => x.e.CorreoElectronico == correo);
-
                 }
+
                 if (idEmpresa.HasValue && idEmpresa.Value > 0)
                 {
                     query = query.Where(x => x.e.EmpresaId == idEmpresa.Value);
@@ -122,78 +125,90 @@ namespace Miluc.Server.Servicios.Nomina
                     .Take(cantidadTop)
                     .Select(x => new MatrizSociodemograficaReaderDto
                     {
-                        // -- DATOS DEL EMPLEADO (Siempre existen) --
                         EmpleadoId = x.e.EmpleadoId,
                         NombreEmpleado = $"{x.e.PrimerNombre} {x.e.SegundoNombre} {x.e.PrimerApellido} {x.e.SegundoApellido}",
 
-                        // -- DATOS DE LA MATRIZ --
-                        // Si x.m es null, significa que no tiene matriz. Asignamos ID 0.
                         MatrizSociodemograficaId = x.m != null ? x.m.MatrizSociodemograficaId : 0,
 
-                        // Textos: Si no hay matriz, devolvemos "Sin asignar"
                         NacionalidadId = x.m != null ? x.m.NacionalidadId : 0,
-                        NombreNacionalidad = x.m != null ? x.m.Nacionalidad.NacionalidadNombre:"".Trim().ToUpper(),
-                        NombrePais = x.m != null && x.m.Pais != null ? x.m.Pais.pais : "".Trim().ToUpper(),
-                        NombreGenero = x.m != null && x.m.Genero != null ? x.m.Genero.Nombre : "".Trim().ToUpper(),
-                        NombreDeporte = x.m != null && x.m.Deporte != null ? x.m.Deporte.Nombre : "".Trim().ToUpper(),
-                        NombreCondicionMedica = x.m != null && x.m.CondicionMedica != null ? x.m.CondicionMedica.Nombre : "".Trim().ToUpper(),
-                        Hobbies = x.m != null && !string.IsNullOrEmpty(x.m.Hobbies) ? x.m.Hobbies : "".Trim().ToUpper(),
-                        NombreMedioDeTransporte = x.m != null && x.m.MedioTransporte != null ? x.m.MedioTransporte.Nombre : "".Trim().ToUpper(),
-                        NombreClaseVivienda = x.m != null && x.m.ClaseVivienda != null ? x.m.ClaseVivienda.Nombre : "".Trim().ToUpper(),
-                        NombreTipoDeVivienda = x.m != null && x.m.TipoVivienda != null ? x.m.TipoVivienda.Nombre : "".Trim().ToUpper(),
-                        NombreNivelAcademico = x.m != null && x.m.NivelAcademico != null ? x.m.NivelAcademico.Nombre : "".Trim().ToUpper(),
-                        EntidadEducativa = x.m != null && !string.IsNullOrEmpty(x.m.EntidadEducativa) ? x.m.EntidadEducativa : "".Trim().ToUpper(),
-                        TituloObtenido = x.m != null && !string.IsNullOrEmpty(x.m.TituloObtenido) ? x.m.TituloObtenido : "".Trim().ToUpper(),
-                        UltimaEmpresaTrabajo = x.m != null && !string.IsNullOrEmpty(x.m.UltimaEmpresaTrabajo) ? x.m.UltimaEmpresaTrabajo : "".Trim().ToUpper(),
-                        CargoDesempeñado = x.m != null && !string.IsNullOrEmpty(x.m.CargoDesempeñado) ? x.m.CargoDesempeñado : "".Trim().ToUpper(),
-                        PersonaEnCasoDeEmergencia = x.m != null && !string.IsNullOrEmpty(x.m.PersonaEnCasoDeEmergencia) ? x.m.PersonaEnCasoDeEmergencia : "".Trim().ToUpper(),
-                        TelefonoEmergencia = x.m != null && !string.IsNullOrEmpty(x.m.TelefonoEmergencia) ? x.m.TelefonoEmergencia : "",
-                        DireccionPersonaEmergencia = x.m != null && !string.IsNullOrEmpty(x.m.DireccionPersonaEmergencia) ? x.m.DireccionPersonaEmergencia : "".Trim().ToUpper(),
-
-                        // Valores numéricos o booleanos (Asignamos 0 o false si no hay matriz)
-                        ConsentimientoInformado = x.m != null ? x.m.ConSentimientoInformado : false,
-                        Edad = x.m != null ? x.m.Edad : 0,
+                        NombreNacionalidad = x.m != null && x.m.Nacionalidad != null? x.m.Nacionalidad.NacionalidadNombre: string.Empty,
                         PaisNacimientoId = x.m != null ? x.m.PaisNacimientoId : 0,
-                        GeneroId = x.m != null ? x.m.GeneroId : 0,
+                        NombrePais = x.m != null && x.m.Pais != null? x.m.Pais.pais: string.Empty,
+                        GeneroId = x.m != null ? x.m.GeneroId : 0,NombreGenero = x.m != null && x.m.Genero != null? x.m.Genero.Nombre: string.Empty,
+                        ConsentimientoInformado = x.m != null? x.m.ConSentimientoInformado: false,
+                        Edad = x.m != null ? x.m.Edad : 0,
                         Fuma = x.m != null ? x.m.Fuma : false,
                         FumaVecesAlMes = x.m != null ? x.m.FumaVecesAlMes : 0,
                         Alcohol = x.m != null ? x.m.Alcohol : false,
                         BebeVecesAlAño = x.m != null ? x.m.BebeVecesAlAño : 0,
-                        DeporteId = x.m != null ? x.m.DeporteId : 0,
-                        CondicionMedicaId = x.m != null ? x.m.CondicionMedicaId : 0,
-                        MedioDeTransporteId = x.m != null ? x.m.MedioTransporteId : 0,
-                        ClaseDeViviendaId = x.m != null ? x.m.ClaseDeViviendaId : 0,
-                        TipoDeViviendaId = x.m != null ? x.m.TipoViviendaId : 0,
-                        NivelAcademicoId = x.m != null ? x.m.NivelAcademicoId : 0,
-                        AñoFinalizacionEducacion = x.m != null ? x.m.AñoFinalizacionEducacion : null,
-                        UltimoSalario = x.m != null ? x.m.UltimoSalario : 0,
-
-                        // Fechas (Deben ser anulables en tu DTO: DateTime?)
-                        FechaUltimoEmpleo = x.m != null ? x.m.FechaUltimoEmpleo : null,
-                        FechaCreacion = x.m != null ? x.m.FechaCreacion : null,
-                        FechaActualizacion = x.m != null ? x.m.FechaActualizacion : null,
-                        Activo = x.m != null ? x.m.Activo : false
-
+                        DeporteId = x.m != null ? x.m.DeporteId : 0,NombreDeporte = x.m != null && x.m.Deporte != null? x.m.Deporte.Nombre: string.Empty,
+                        Hobbies = x.m != null? x.m.Hobbies: string.Empty,
+                        MedioDeTransporteId = x.m != null? x.m.MedioTransporteId: 0,
+                        NombreMedioDeTransporte = x.m != null &&x.m.MedioTransporte != null? x.m.MedioTransporte.Nombre: string.Empty,
+                        ClaseDeViviendaId = x.m != null? x.m.ClaseDeViviendaId: 0,
+                        NombreClaseVivienda = x.m != null &&x.m.ClaseVivienda != null? x.m.ClaseVivienda.Nombre: string.Empty,
+                        TipoDeViviendaId = x.m != null? x.m.TipoViviendaId: 0,
+                        NombreTipoDeVivienda = x.m != null &&x.m.TipoVivienda != null? x.m.TipoVivienda.Nombre: string.Empty,
+                        NivelAcademicoId = x.m != null? x.m.NivelAcademicoId: 0,
+                        NombreNivelAcademico = x.m != null &&x.m.NivelAcademico != null? x.m.NivelAcademico.Nombre: string.Empty,
+                        AñoFinalizacionEducacion = x.m != null? x.m.AñoFinalizacionEducacion: null,         
+                        EntidadEducativa = x.m != null? x.m.EntidadEducativa: string.Empty,
+                        TituloObtenido = x.m != null? x.m.TituloObtenido: string.Empty,UltimaEmpresaTrabajo = x.m != null? x.m.UltimaEmpresaTrabajo: string.Empty,
+                        FechaUltimoEmpleo = x.m != null? x.m.FechaUltimoEmpleo: null,CargoDesempeñado = x.m != null? x.m.CargoDesempeñado: string.Empty,
+                        UltimoSalario = x.m != null? x.m.UltimoSalario: 0,
+                        PersonaEnCasoDeEmergencia = x.m != null? x.m.PersonaEnCasoDeEmergencia: string.Empty,
+                        TelefonoEmergencia = x.m != null? x.m.TelefonoEmergencia: string.Empty,DireccionPersonaEmergencia = x.m != null? x.m.DireccionPersonaEmergencia: string.Empty,
+                        FechaCreacion = x.m != null? x.m.FechaCreacion: null,
+                        FechaActualizacion = x.m != null? x.m.FechaActualizacion: null,
+                        Activo = x.m != null? x.m.Activo: false
                     })
                     .ToListAsync();
+
+                var idsMatrices = matriz
+                    .Where(x => x.MatrizSociodemograficaId > 0)
+                    .Select(x => x.MatrizSociodemograficaId)
+                    .ToList();
+
+                var condiciones = await _context.CondicionMedicaDetalle
+                    .AsNoTracking()
+                    .Include(x => x.CondicionMedica)
+                    .Where(x => idsMatrices.Contains(x.MatrizSociodemograficaId))
+                    .ToListAsync();
+
+                foreach (var item in matriz)
+                {
+                    item.CondicionesMedicas = condiciones
+                        .Where(x => x.MatrizSociodemograficaId == item.MatrizSociodemograficaId)
+                        .Select(x => new CondicionMedicaDetalleReaderDto
+                        {
+                            CondicionMedicaId = x.CondicionMedicaId,
+                            NombreCondicionMedica = x.CondicionMedica.Nombre,
+                            OtraCondicionMedica = x.OtraCondicionMedica
+                        })
+                        .ToList();
+                }
 
                 return (matriz, totalRegistros);
             }
             catch (Exception ex)
             {
-                throw new Exception("Error al obtener la MatrizSocioDemografica", ex);
+                Console.WriteLine(ex.ToString());
+
+                throw;
             }
         }
         public async Task<bool> updateMatrizAsync(MatrizSocioDemograficaUpdateDto dto)
         {
             try
             {
-                // Buscar si ya existe una matriz para el empleado por matrizId o por empleadoId
                 var matrizExistente = await _context.MatrizSociodemografica
                     .Include(x => x.Empleado)
-                    .FirstOrDefaultAsync(x => x.EmpleadoId == dto.EmpleadoId || x.MatrizSociodemograficaId == dto.MatrizSociodemograficaId);
+                    .Include(x => x.CondicionesMedicas)
+                    .FirstOrDefaultAsync(x =>
+                        x.EmpleadoId == dto.EmpleadoId ||
+                        x.MatrizSociodemograficaId == dto.MatrizSociodemograficaId);
 
-                // Si no existe, crear una nueva matriz
+                // Crear
                 if (matrizExistente == null)
                 {
                     var nuevaMatriz = new MatrizSociodemografica
@@ -209,7 +224,6 @@ namespace Miluc.Server.Servicios.Nomina
                         Alcohol = dto.Alcohol ?? false,
                         BebeVecesAlAño = dto.BebeVecesAlAño,
                         DeporteId = dto.DeporteId,
-                        CondicionMedicaId = dto.CondicionMedicaId,
                         Hobbies = dto.Hobbies.Trim().ToUpper(),
                         MedioTransporteId = dto.MedioDeTransporteId,
                         ClaseDeViviendaId = dto.ClaseDeViviendaId,
@@ -224,20 +238,34 @@ namespace Miluc.Server.Servicios.Nomina
                         PersonaEnCasoDeEmergencia = dto.PersonaEnCasoDeEmergencia.Trim().ToUpper(),
                         TelefonoEmergencia = dto.TelefonoEmergencia,
                         DireccionPersonaEmergencia = dto.DireccionPersonaEmergencia.Trim().ToUpper(),
-
-                        // Extrae el entero del año si la fecha no es nula
                         AñoFinalizacionEducacion = dto.AñoFinalizacionEducacion,
-
                         FechaCreacion = DateTime.Now,
                         FechaActualizacion = DateTime.Now,
                         Activo = true
                     };
 
                     await _context.MatrizSociodemografica.AddAsync(nuevaMatriz);
+
+                    // Necesitamos el Id de la matriz
+                    await _context.SaveChangesAsync();
+
+                    foreach (var condicionId in dto.CondicionesMedicasIds)
+                    {
+                        await _context.CondicionMedicaDetalle.AddAsync(
+                            new CondicionMedicaDetalle
+                            {
+                                MatrizSociodemograficaId = nuevaMatriz.MatrizSociodemograficaId,
+                                CondicionMedicaId = condicionId,
+
+                               
+                                OtraCondicionMedica = condicionId == 22
+                                    ? dto.OtraCondicionMedica
+                                    : null
+                            });
+                    }
                 }
                 else
                 {
-                    // En caso de que ya exista, actualizamos
                     matrizExistente.ConSentimientoInformado = dto.ConsentimientoInformado;
                     matrizExistente.Edad = dto.Edad;
                     matrizExistente.NacionalidadId = dto.NacionalidadId;
@@ -248,37 +276,65 @@ namespace Miluc.Server.Servicios.Nomina
                     matrizExistente.Alcohol = dto.Alcohol ?? false;
                     matrizExistente.BebeVecesAlAño = dto.BebeVecesAlAño;
                     matrizExistente.DeporteId = dto.DeporteId;
-                    matrizExistente.CondicionMedicaId = dto.CondicionMedicaId;
                     matrizExistente.Hobbies = dto.Hobbies.Trim().ToUpper();
                     matrizExistente.MedioTransporteId = dto.MedioDeTransporteId;
                     matrizExistente.ClaseDeViviendaId = dto.ClaseDeViviendaId;
                     matrizExistente.TipoViviendaId = dto.TipoDeViviendaId;
                     matrizExistente.NivelAcademicoId = dto.NivelAcademicoId;
-
-                    // Extrae el entero del año o asigna 0 si viene nulo
                     matrizExistente.AñoFinalizacionEducacion = dto.AñoFinalizacionEducacion;
-
                     matrizExistente.EntidadEducativa = dto.EntidadEducativa.Trim().ToUpper();
                     matrizExistente.TituloObtenido = dto.TituloObtenido.Trim().ToUpper();
                     matrizExistente.UltimaEmpresaTrabajo = dto.UltimaEmpresaTrabajo.Trim().ToUpper();
                     matrizExistente.FechaUltimoEmpleo = dto.FechaUltimoEmpleo;
                     matrizExistente.CargoDesempeñado = dto.CargoDesempeñado.Trim().ToUpper();
-                    matrizExistente.UltimoSalario = dto.UltimoSalario?? 0;
+                    matrizExistente.UltimoSalario = dto.UltimoSalario ?? 0;
                     matrizExistente.PersonaEnCasoDeEmergencia = dto.PersonaEnCasoDeEmergencia.Trim().ToUpper();
                     matrizExistente.TelefonoEmergencia = dto.TelefonoEmergencia;
                     matrizExistente.DireccionPersonaEmergencia = dto.DireccionPersonaEmergencia.Trim().ToUpper();
                     matrizExistente.FechaActualizacion = DateTime.Now;
+
+                    // Eliminar condiciones existentes
+                    var condicionesActuales = await _context.CondicionMedicaDetalle
+                        .Where(x => x.MatrizSociodemograficaId ==
+                                    matrizExistente.MatrizSociodemograficaId)
+                        .ToListAsync();
+
+                    _context.CondicionMedicaDetalle.RemoveRange(condicionesActuales);
+
+                    if (!dto.CondicionesMedicasIds.Contains(22))
+                    {
+                        dto.OtraCondicionMedica = null;
+                    }
+                    // Insertar las nuevas
+                    foreach (var condicionId in dto.CondicionesMedicasIds)
+                    {
+                        await _context.CondicionMedicaDetalle.AddAsync(
+                            new CondicionMedicaDetalle
+                            {
+                                MatrizSociodemograficaId =
+                                    matrizExistente.MatrizSociodemograficaId,
+
+                                CondicionMedicaId = condicionId,
+
+                                // Reemplaza 999 por el Id real de "Otro"
+                                OtraCondicionMedica = condicionId == 22
+                                    ? dto.OtraCondicionMedica
+                                    : null
+                            });
+                    }
                 }
 
                 var resultado = await _context.SaveChangesAsync();
-                return resultado >= 0;
+
+                return true;
             }
             catch (Exception ex)
             {
-                throw new Exception("Error al crear o actualizar la MatrizSociodemografica", ex);
+                throw new Exception(
+                    "Error al crear o actualizar la MatrizSociodemografica",
+                    ex);
             }
         }
     }
-}
-
+    }
 

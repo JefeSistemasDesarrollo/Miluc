@@ -52,6 +52,13 @@ namespace Miluc.Shared.DTOs.Nomina.EmpleadoDto
         public string? Barrio { get; set; } = string.Empty;
         public bool Activo { get; set; }
 
+        [Range(typeof(bool), "true", "true",
+        ErrorMessage = "Debe aceptar el tratamiento de datos personales.")]
+        public bool AceptaTratamientoDatos { get; set; }
+
+        [Required(ErrorMessage = "La fecha de aceptación es obligatoria.")]
+        public DateTime FechaAceptacionTratamientoDatos { get; set; }
+
         //SELECCIONAR ESTADO CIVIL OBLIGATORIO
         [Required(ErrorMessage = "Estado civil es obligatorio")]
         public int? EstadoCivilId { get; set; }
