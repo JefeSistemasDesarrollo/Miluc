@@ -15,15 +15,39 @@
 
 <div class="frecuencia-container container-fluid py-4 px-3 px-md-4">
     <!-- Encabezado -->
-    <div class="d-flex align-items-center mb-4 pb-2 border-bottom border-red-subtle">
-        <div class="icon-badge me-3">
-            <i class="bi bi-bar-chart-line-fill"></i>
-        </div>
-        <div>
-            <h3 class="title-brand m-0">Cartera Vencida</h3>
-            <p class="subtitle-brand m-0">Generación de informes de Cartera Vencida</p>
+
+    <div class="row g-3 mb-4">
+        <div class="d-flex align-items-center mb-4 pb-2 border-bottom border-red-subtle">
+
+            <!-- Icono -->
+            <div class="icon-badge me-3">
+                <i class="bi bi-bar-chart-line-fill"></i>
+            </div>
+
+            <!-- Título y subtítulo -->
+            <div class="flex-grow-1">
+                <h3 class="title-brand m-0">Cartera Vencida</h3>
+                <p class="subtitle-brand m-0">
+                    Generación de informes de Cartera Vencida
+                </p>
+            </div>
+
+            <!-- Botón volver -->
+            <div class="ms-auto">
+                <button type="button"
+                        class="btn btn-outline-secondary btn-nuevo rounded-pill px-4 shadow-sm"
+                        @onclick="Volver">
+
+                    <i class="bi bi-arrow-left me-2"></i>
+                    Volver
+
+                </button>
+            </div>
+
         </div>
     </div>
+
+
 
     <!-- Formulario / Card Principal -->
     <div class="card card-brand shadow-sm">
@@ -31,12 +55,12 @@
             <div class="row g-3 align-items-end">
 
                 <!-- Fecha Inicial -->
-                <div class="col-12 col-sm-6 col-lg-3">
+            @*     <div class="col-12 col-sm-6 col-lg-3">
                     <label class="form-label font-weight-bold">
                         <i class="bi bi-calendar-event me-1 text-red"></i> Fecha inicial
                     </label>
                     <InputDate @bind-Value="fechaInicio" class="form-control input-brand" />
-                </div>
+                </div> *@
 
                 <!-- Fecha Final -->
                 <div class="col-12 col-sm-6 col-lg-3">
@@ -58,7 +82,7 @@
                         {
                             <option value="@canal.GroupCode">@canal.GroupName</option>
                         }
-                    </InputSelect>            
+                    </InputSelect>
                 </div>
                 <div class="col-12 col-sm-6 col-lg-3">
                     <label class="form-label text-muted small fw-semibold"> Cliente</label>
@@ -99,7 +123,7 @@
 
 
 @code {
-    private DateTime fechaInicio = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+    // private DateTime fechaInicio = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
     //private DateTime fechaFinal = DateTime.Now;
     private int codigoVendedor = 0;
     private int canal = 0;
@@ -164,7 +188,7 @@
             });
         }
     }
-
+    private void Volver() => _nav.NavigateTo("/reportes/descargas");
     private async Task DescargarExcel()
     {
         try
@@ -173,7 +197,7 @@
             mensaje = null;
 
 
-            var resultado = await _facturasVentasService.CarteraVencidaExcel(fechaInicio, codigoCliente, codigoVendedor, canal);
+            var resultado = await _facturasVentasService.CarteraVencidaExcel( codigoCliente, codigoVendedor, canal);
             if (!resultado)
             {
                 mensaje = "No fue posible generar el archivo Excel o no existen registros con los filtros seleccionados.";

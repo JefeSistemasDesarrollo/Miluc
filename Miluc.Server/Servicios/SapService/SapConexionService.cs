@@ -16,7 +16,7 @@ namespace Miluc.Server.Servicios.SapService
             try
             {
                 var conexion = await _contex.SisConfiguracionesGenerales
-                    .Where(x => x.Modulo == "SapPruebas")
+                    .Where(x => x.Modulo == "SAPPruebas")
                     .Select(x => new ConexionSapServiceLayerDto
                     {
                         URLServiceLayer = x.UrlServiceLayer,
