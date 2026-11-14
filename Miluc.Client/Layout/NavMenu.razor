@@ -48,7 +48,7 @@
                         </NavLink>
                     </div>
                 }
-                @if (_authClientService.HasPermission("Sales.Reports"))
+             @*    @if (_authClientService.HasPermission("Sales.Reports"))
                 {
                     <div class="nav-item px-2">
                         <NavLink class="nav-link" href="/reportes/descargas">
@@ -58,7 +58,7 @@
                             <span class="nav-text">Reportes </span>
                         </NavLink>
                     </div>
-                }
+                } *@
                 <AuthorizeView Roles="Admin" Context="innerContext">
                     <div class="nav-item px-3">
                         <NavLink class="nav-link" href="configuracion">
