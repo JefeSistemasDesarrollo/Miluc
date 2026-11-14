@@ -90,6 +90,33 @@
             </div>
         }
 
+
+                @if (_auth.HasPermission("Reportes.Cards"))
+        {
+            <div class="col-12 col-sm-6 col-md-6 col-xl-4">
+                <div class="card h-100 shadow-sm border-0 border-top border-4 border-amarillo text-center rounded-4 custom-hover-card">
+                    <div class="card-body p-4 d-flex flex-column align-items-center justify-content-between cursor-pointer" style="cursor: pointer;" @onclick='() => nav.NavigateTo("/reportes/descargas")'>
+                        <div class="w-100">
+                            <div class="p-3 bg-amarillo-suave text-amarillo fs-3 rounded-circle mx-auto mb-3 icon-box">
+                                <i class="bi bi-diagram-3-fill"></i>
+                            </div>
+                            <span class="badge bg-amarillo-suave text-amarillo border border-amarillo-subtle rounded-pill px-3 mb-2 small fw-bold">Pedidos</span>
+                            <h4 class="fw-bold text-dark mb-2 fs-5">Administrar Reportes </h4>
+                            <p class="text-muted small mb-0">
+                                Generar diferentes tipos de reportes
+                            </p>
+                        </div>
+                        <button class="btn btn-amarillo rounded-pill py-2 w-100 fw-semibold mt-4 shadow-sm"
+                                @onclick='() => nav.NavigateTo("/reportes/descargas")'>
+                            <span>Reportes</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+
+
+
     </div>
 </div>
 @code {
