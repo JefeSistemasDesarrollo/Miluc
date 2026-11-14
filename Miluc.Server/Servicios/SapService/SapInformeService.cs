@@ -1,8 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Miluc.Server.Data;
 using Miluc.Server.Interfaces.Sap.Informes.InformeComercial;
-using Miluc.Server.Models.Nomina;
-using Miluc.Server.Models.Sap;
 using Miluc.Shared.DTOs.Sap.InformesComercial;
 using MiniExcelLibs;
 
@@ -17,6 +15,7 @@ namespace Miluc.Server.Servicios.SapService
                 if (GrDistribucion == null)
                     GrDistribucion = 0;
 
+                
 
                 var facturas = from fac in _sapDbContex.OINV.AsNoTracking()
                                join dtf in _sapDbContex.INV1.AsNoTracking() on fac.DocEntry equals dtf.DocEntry into dtfjoin
@@ -48,6 +47,7 @@ namespace Miluc.Server.Servicios.SapService
                                    //ValorTotalFactura = Convert.ToDecimal(fac.DocTotal),
                                   Canal=can.GroupName
                                };
+
 
                 var consolidados = facturas
                             .GroupBy(x => new
